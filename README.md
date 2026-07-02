@@ -1,14 +1,15 @@
 # Gmail AI Assistant
 
-> Chrome Extension · Manifest V3 · OpenAI GPT · Gmail API · Carrier Tracking
+> Chrome Extension · Manifest V3 · OpenAI GPT · Gmail API · DPD Ireland
 
 ![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?logo=googlechrome&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-brightgreen)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)
+![DPD Ireland](https://img.shields.io/badge/Carrier-DPD%20Ireland-DC0032)
 ![Status](https://img.shields.io/badge/Status-In%20Development-orange)
 
-A **Chrome Extension** that sits silently in the background, watches your Gmail inbox for customer shipping inquiries, fetches real-time delivery status from the carrier API, and automatically **generates a professional AI-drafted reply** — ready to review and send with one click.
+A **Chrome Extension** built for **DPD Ireland** customer support. It sits silently in the background, watches the Gmail inbox for incoming customer shipping inquiries, fetches real-time parcel status from the DPD Ireland tracking API, and automatically **generates a professional AI-drafted reply** — ready to review and send with one click.
 
 No manual copy-pasting. No looking up tracking numbers. The assistant handles the full loop.
 
@@ -23,7 +24,7 @@ New customer email arrives in Gmail
 Extension extracts: tracking number · order number · customer name
         │
         ▼
-Carrier API lookup → current delivery status + estimated arrival
+DPD Ireland API lookup → current parcel status + estimated delivery
         │
         ▼
 OpenAI GPT builds a polite, accurate, context-aware reply
@@ -40,7 +41,7 @@ The final draft is **never sent automatically**. The human stays in control; the
 
 - **Background polling** — Chrome alarm ticks every N minutes, checks for new unread emails, processes each one without blocking the browser
 - **Structured data extraction** — regex-based parser pulls tracking numbers, order IDs, and customer info out of raw email text
-- **Carrier-agnostic shipment layer** — a normalized `Shipment` schema means swapping carrier providers touches only one file
+- **DPD Ireland tracking integration** — fetches real parcel status via the DPD Ireland API; the normalized `Shipment` schema keeps the rest of the codebase carrier-agnostic
 - **Prompt engineering** — `buildPrompt.js` is a pure function; tune the AI tone/style in one place without touching any network code
 - **Reply validation** — AI output is checked before the draft is saved; malformed or empty replies are rejected
 - **Zero hardcoded secrets** — all API keys live in `chrome.storage.local`, never in source
@@ -54,6 +55,7 @@ The final draft is **never sent automatically**. The human stays in control; the
 | Extension platform | Chrome Manifest V3, Service Worker |
 | AI | OpenAI Chat Completions API (GPT-4o / GPT-4o-mini) |
 | Email | Gmail REST API (read + draft) |
+| Carrier | DPD Ireland Tracking API |
 | Auth | Google OAuth 2.0 via `chrome.identity` |
 | Language | Vanilla JavaScript (ES2022 modules) |
 | Linting | ESLint 9 |
@@ -85,10 +87,10 @@ gmail-ai-assistant/
     │   ├── extractOrderNumber.js
     │   └── extractCustomer.js
     │
-    ├── shipment/              Carrier API adapter
-    │   ├── shipmentApi.js     Low-level HTTP calls to carrier
+    ├── shipment/              DPD Ireland API adapter
+    │   ├── shipmentApi.js     Low-level HTTP calls to DPD Ireland tracking API
     │   ├── getShipment.js     Public entry point with null-guard
-    │   └── normalizeShipment.js   Maps raw response → internal schema
+    │   └── normalizeShipment.js   Maps DPD response → internal Shipment schema
     │
     ├── ai/                    OpenAI adapter
     │   ├── openai.js          Low-level HTTP call to Chat Completions
@@ -122,7 +124,7 @@ gmail-ai-assistant/
 | Decision | Reasoning |
 |---|---|
 | `processEmail.js` is the single orchestrator | One place to read, change, or debug the whole pipeline |
-| Each `src/` folder owns exactly one domain | Swapping OpenAI for another model touches only `ai/`; swapping carriers touches only `shipment/` |
+| Each `src/` folder owns exactly one domain | Swapping OpenAI for another model touches only `ai/`; switching from DPD Ireland to another carrier touches only `shipment/` |
 | `parser/` functions are pure (no I/O) | Can be unit-tested in isolation with zero mocks |
 | `config.js` is the only place keys are read | Eliminates any risk of accidental hardcoded secrets |
 | `request.js` wraps all `fetch()` calls | Single place to add retries, auth headers, logging |
@@ -161,8 +163,8 @@ Open the extension background page DevTools console and run:
 chrome.storage.local.set({
   openaiApiKey:  'sk-...',
   openaiModel:   'gpt-4o-mini',   // or 'gpt-4o'
-  carrierApiUrl: 'https://api.yourcarrier.com',
-  carrierApiKey: 'your-carrier-key',
+  carrierApiUrl: 'https://api.dpd.ie',   // DPD Ireland tracking API base URL
+  carrierApiKey: 'your-dpd-api-key',
 });
 ```
 
@@ -172,7 +174,7 @@ chrome.storage.local.set({
 
 - [ ] Implement `chrome.identity.getAuthToken()` OAuth flow
 - [ ] Real Gmail API polling (`watchEmails.js`)
-- [ ] Real carrier API integration (`shipmentApi.js`)
+- [ ] DPD Ireland API integration (`shipmentApi.js`)
 - [ ] Retry with exponential back-off using `delay.js`
 - [ ] Email deduplication via processed-IDs set in storage
 - [ ] Settings UI in `src/options/` for API key management

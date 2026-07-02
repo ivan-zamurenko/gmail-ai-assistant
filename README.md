@@ -141,7 +141,7 @@ gmail-ai-assistant/
 ### Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/gmail-ai-assistant.git
+git clone https://github.com/ivan-zamurenko/gmail-ai-assistant.git
 cd gmail-ai-assistant
 npm install   # installs ESLint only — no runtime dependencies
 ```

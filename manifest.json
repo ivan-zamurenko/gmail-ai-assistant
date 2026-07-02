@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Gmail AI Assistant",
+  "version": "1.0.0",
+  "description": "Automatically reads Gmail emails, extracts shipment data, and generates AI-powered draft replies.",
+
+  "permissions": [
+    "identity",
+    "storage",
+    "alarms"
+  ],
+
+  "host_permissions": [
+    "https://gmail.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://api.openai.com/*"
+  ],
+
+  "background": {
+    "service_worker": "src/background/background.js",
+    "type": "module"
+  },
+
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "Gmail AI Assistant",
+    "default_icon": {
+      "16":  "assets/icon16.png",
+      "48":  "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16":  "assets/icon16.png",
+    "48":  "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+
+  "oauth2": {
+    "client_id": "__REPLACE_WITH_YOUR_GOOGLE_OAUTH_CLIENT_ID__",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.compose"
+    ]
+  }
+}

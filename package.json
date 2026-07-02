@@ -1,0 +1,14 @@
+{
+  "name": "gmail-ai-assistant",
+  "version": "1.0.0",
+  "description": "Chrome Extension — Gmail AI Assistant (Manifest V3)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint \"src/**/*.js\"",
+    "lint:fix": "eslint \"src/**/*.js\" --fix"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0"
+  }
+}

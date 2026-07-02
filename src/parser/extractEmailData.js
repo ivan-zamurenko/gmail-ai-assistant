@@ -11,12 +11,14 @@
 import { extractTrackingNumber } from './extractTrackingNumber.js';
 import { extractOrderNumber }    from './extractOrderNumber.js';
 import { extractCustomer }       from './extractCustomer.js';
+import { extractPhoneNumber }    from './extractPhoneNumber.js';
 
 /**
  * @typedef {Object} EmailData
- * @property {string|null} trackingNumber
+ * @property {string|null} trackingNumber  - DPD Ireland consignment number (9 digits)
  * @property {string|null} orderNumber
  * @property {string|null} customer
+ * @property {string|null} phoneNumber     - Irish mobile, normalised to 10-digit local format
  */
 
 /**
@@ -32,5 +34,6 @@ export function extractEmailData(email) {
     trackingNumber: extractTrackingNumber(text),
     orderNumber:    extractOrderNumber(text),
     customer:       extractCustomer(email.from),
+    phoneNumber:    extractPhoneNumber(text),
   };
 }

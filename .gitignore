@@ -8,6 +8,9 @@ dist/
 .env.local
 .env.*.local
 
+# Private — label photos (real parcel data, not for public repo)
+labels_example/
+
 # macOS
 .DS_Store
 

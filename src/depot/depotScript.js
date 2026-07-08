@@ -88,17 +88,24 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
   // ── Pending list ──────────────────────────────────────────────────────────────
 
-  // Captures the pending list URL from the trigger link without opening a popup.
-  async function getPendingListUrl() {
+  // Captures the pending list URL from the trigger link's onclick attribute.
+  // Reading the attribute string avoids any MAIN-world execution and works
+  // in ISOLATED world regardless of the page's Content Security Policy.
+  function getPendingListUrl() {
     const trigger = document.querySelector('thead th:nth-child(2) a.normal');
     if (!trigger) throw new Error('Pending trigger link not found. Are you on the correct depot page?');
-    let url = null;
-    const orig = window.open;
-    window.open = (u) => { url = u; return { closed: true, close() {} }; };
-    trigger.click();
-    window.open = orig;
-    if (!url) throw new Error('Could not capture pending list URL from trigger link');
-    return url;
+
+    // Most depot systems set onclick as an HTML attribute: onclick="window.open('url')"
+    const onclick = trigger.getAttribute('onclick') ?? '';
+    const match   = onclick.match(/window\.open\(\s*['"]([^'"]+)['"]/)
+                 ?? onclick.match(/open\(\s*['"]([^'"]+)['"]/);
+    if (match) return match[1];
+
+    // Fallback: plain href (some depot versions use <a href> directly)
+    const href = trigger.getAttribute('href');
+    if (href && href !== '#' && !href.startsWith('javascript')) return href;
+
+    throw new Error('Could not read pending list URL. The trigger link has no readable onclick or href.');
   }
 
   // Parses all rows from the pending list into { consNumber, consId, type, route }.
@@ -119,14 +126,14 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
   }
 
   async function getCADConsignments() {
-    const doc = await fetchDoc(await getPendingListUrl());
+    const doc = await fetchDoc(getPendingListUrl());
     return parseRows(doc).filter(r => r.route === 'cad');
   }
 
   // For label mode: finds parcels in the pending list matching our scanned numbers.
   // Checks both consNumber and consId since the label may show either.
   async function findByNumbers(numbers) {
-    const doc = await fetchDoc(await getPendingListUrl());
+    const doc = await fetchDoc(getPendingListUrl());
     const set = new Set(numbers);
     return parseRows(doc).filter(r => set.has(r.consNumber) || set.has(r.consId));
   }

@@ -100,6 +100,7 @@ scanCADBtn.addEventListener('click', async () => {
       target: { tabId: tab.id },
       func:   depotMain,
       args:   [{ dryRun: dryRunToggle.checked, mode: 'cad' }],
+      world:  'ISOLATED',
     });
     showDepotResult(result);
   } catch (err) {
@@ -133,6 +134,7 @@ scanDriveBtn.addEventListener('click', async () => {
       target: { tabId: tab.id },
       func:   depotMain,
       args:   [{ dryRun: dryRunToggle.checked, mode: 'labels', consNumbers }],
+      world:  'ISOLATED',
     });
     showDepotResult(result);
   } catch (err) {

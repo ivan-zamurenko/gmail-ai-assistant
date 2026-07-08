@@ -42,7 +42,7 @@ When drivers photograph parcel labels and upload them to a shared Google Drive f
 
 > **Real label example used during development:**
 >
-> ![DPD Label](labels_example/IMG_0078.jpg)
+> ![DPD Label](labels_example/label_example.png)
 
 ### Gmail Auto-Reply *(in progress)*
 

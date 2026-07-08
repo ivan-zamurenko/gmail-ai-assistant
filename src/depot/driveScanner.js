@@ -16,8 +16,8 @@ function parseFolderId(input) {
   return match ? match[1] : input.trim();
 }
 
-const DRIVE_API  = 'https://www.googleapis.com/drive/v3';
-const OPENAI_API = 'https://api.openai.com/v1/chat/completions';
+const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
+const GEMINI_API  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 // ── Drive helpers ──────────────────────────────────────────────────────────────
 
@@ -78,27 +78,19 @@ async function moveFile(fileId, fromId, toId, token) {
   if (!res.ok) throw new Error(`Failed to move file ${fileId}: HTTP ${res.status}`);
 }
 
-// ── OpenAI Vision ──────────────────────────────────────────────────────────────
+// ── Gemini Vision ──────────────────────────────────────────────────────────────
 
-async function readLabelNumber(base64, mimeType, openaiKey) {
-  const res = await fetch(OPENAI_API, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json',
-    },
+async function readLabelNumber(base64, mimeType, geminiKey) {
+  const res = await fetch(`${GEMINI_API}?key=${geminiKey}`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 50,
-      messages: [{
-        role: 'user',
-        content: [
+      contents: [{
+        parts: [
           {
-            type: 'image_url',
-            image_url: { url: `data:${mimeType};base64,${base64}`, detail: 'low' },
+            inline_data: { mime_type: mimeType, data: base64 },
           },
           {
-            type: 'text',
             text: [
               'Find the consignment/tracking number on this DPD parcel label.',
               'Look for: a number after the word "Consignment", OR a number in format XXXXX/X/X, OR a number of 14-15 characters.',
@@ -109,9 +101,9 @@ async function readLabelNumber(base64, mimeType, openaiKey) {
       }],
     }),
   });
-  if (!res.ok) throw new Error(`OpenAI API ${res.status}`);
+  if (!res.ok) throw new Error(`Gemini API ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  return data.choices[0].message.content.trim();
+  return data.candidates[0].content.parts[0].text.trim();
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -121,11 +113,11 @@ async function readLabelNumber(base64, mimeType, openaiKey) {
  * and moves each processed photo into a "Done" subfolder.
  *
  * @param {string} folderId  - Google Drive folder ID
- * @param {string} openaiKey - OpenAI API key
+ * @param {string} geminiKey - Google Gemini API key (from aistudio.google.com)
  * @param {string} token     - Google OAuth access token
  * @returns {Promise<string[]>} Extracted consignment numbers
  */
-export async function scanDriveLabels(folderInput, openaiKey, token) {
+export async function scanDriveLabels(folderInput, geminiKey, token) {
   const folderId = parseFolderId(folderInput);
   const photos = await listPhotos(folderId, token);
   if (photos.length === 0) return [];
@@ -136,7 +128,7 @@ export async function scanDriveLabels(folderInput, openaiKey, token) {
   for (const photo of photos) {
     try {
       const { base64, mimeType } = await downloadAsBase64(photo.id, photo.mimeType, token);
-      const raw        = await readLabelNumber(base64, mimeType, openaiKey);
+      const raw        = await readLabelNumber(base64, mimeType, geminiKey);
       const consNumber = extractConsignmentNumber(raw);
       console.log(`[${photo.name}] raw="${raw}" → "${consNumber}"`);
       consNumbers.push(consNumber);

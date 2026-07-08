@@ -28,7 +28,7 @@ const autoProcessToggle = document.getElementById('autoProcess');
 const draftModeToggle   = document.getElementById('draftMode');
 const runNowBtn        = document.getElementById('runNow');
 
-const openaiKeyInput   = document.getElementById('openaiApiKey');
+const geminiKeyInput   = document.getElementById('geminiApiKey');
 const driveFolderInput = document.getElementById('driveFolderId');
 
 // ── Status helpers ────────────────────────────────────────────────────────────
@@ -117,11 +117,11 @@ scanDriveBtn.addEventListener('click', async () => {
   setDepotButtons(true);
   try {
     const config = await loadConfig();
-    if (!config.openaiApiKey)  throw new Error('OpenAI API Key not set in Settings');
+    if (!config.geminiApiKey)  throw new Error('Gemini API Key not set in Settings');
     if (!config.driveFolderId) throw new Error('Drive Folder ID not set in Settings');
 
     const token       = await getAuthToken();
-    const consNumbers = await scanDriveLabels(config.driveFolderId, config.openaiApiKey, token);
+    const consNumbers = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token);
 
     if (consNumbers.length === 0) {
       setDepotStatus('done', 'No label photos found in Drive folder');
@@ -174,8 +174,8 @@ runNowBtn.addEventListener('click', async () => {
 
 // ── Settings persistence ──────────────────────────────────────────────────────
 
-openaiKeyInput.addEventListener('change', () =>
-  chrome.storage.local.set({ openaiApiKey: openaiKeyInput.value })
+geminiKeyInput.addEventListener('change', () =>
+  chrome.storage.local.set({ geminiApiKey: geminiKeyInput.value })
 );
 
 driveFolderInput.addEventListener('change', () =>
@@ -188,7 +188,7 @@ async function init() {
   const [settings, config] = await Promise.all([getSettings(), loadConfig()]);
   autoProcessToggle.checked = settings.autoProcess;
   draftModeToggle.checked   = settings.draftMode;
-  if (config.openaiApiKey)  openaiKeyInput.value   = config.openaiApiKey;
+  if (config.geminiApiKey)  geminiKeyInput.value   = config.geminiApiKey;
   if (config.driveFolderId) driveFolderInput.value = config.driveFolderId;
 }
 

@@ -1,4 +1,4 @@
-/* popup.css */
+/* popup.css — DPD Assistance */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -7,11 +7,12 @@
 }
 
 body {
-  width: 300px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
   font-size: 14px;
   color: #1a1a1a;
-  background: #fff;
+  background: #f2f2f7;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ─── Header ──────────────────────────────────────── */
@@ -21,27 +22,85 @@ body {
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  border-bottom: 1px solid #e8e8e8;
+  background: #2c2c2e;
 }
 
 .header__icon {
   width: 28px;
   height: 28px;
+  flex-shrink: 0;
 }
 
 .header__title {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #fff;
+}
+
+.header__flag {
+  font-size: 18px;
+  margin-left: auto;
+  line-height: 1;
 }
 
 /* ─── Main ────────────────────────────────────────── */
 
 .main {
-  padding: 16px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
+}
+
+/* ─── Accordion (details/summary) ─────────────────── */
+
+.section {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.section__header {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  cursor: pointer;
+  user-select: none;
+  gap: 8px;
+}
+
+.section__header::-webkit-details-marker { display: none; }
+
+.section__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: -0.1px;
+}
+
+.section__arrow {
+  font-size: 18px;
+  color: #c7c7cc;
+  transition: transform 0.22s ease;
+  line-height: 1;
+  font-weight: 300;
+}
+
+details[open] > .section__header .section__arrow {
+  transform: rotate(90deg);
+  color: #E2001A;
+}
+
+.section__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 14px;
+  overflow: hidden;
 }
 
 /* ─── Status ──────────────────────────────────────── */
@@ -49,80 +108,175 @@ body {
 .status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   font-size: 13px;
-  color: #555;
+  color: #666;
+  padding-top: 2px;
 }
 
 .status__dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #ccc;
+  background: #c7c7cc;
   flex-shrink: 0;
 }
 
-.status__dot--running { background: #22c55e; }
-.status__dot--error   { background: #ef4444; }
+.status__dot--running {
+  background: #34c759;
+  box-shadow: 0 0 0 3px rgba(52,199,89,0.18);
+}
+
+.status__dot--error {
+  background: #E2001A;
+  box-shadow: 0 0 0 3px rgba(226,0,26,0.13);
+}
 
 /* ─── Settings ────────────────────────────────────── */
 
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  background: #f8f8f8;
-  border-radius: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e5ea;
 }
 
 .setting {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
+  padding: 10px 13px;
+  background: #fff;
   gap: 12px;
 }
 
+.setting + .setting {
+  border-top: 1px solid #e5e5ea;
+}
+
 .setting__label {
-  color: #333;
-  line-height: 1.4;
+  font-size: 13px;
+  color: #1a1a1a;
 }
 
+/* iOS-style toggle */
 .setting__toggle {
+  -webkit-appearance: none;
+  appearance: none;
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
+  width: 38px;
+  height: 22px;
+  background: #ddd;
+  border-radius: 11px;
   cursor: pointer;
-  accent-color: #1a73e8;
+  position: relative;
+  transition: background 0.2s ease;
 }
 
-/* ─── Button ──────────────────────────────────────── */
+.setting__toggle:checked { background: #E2001A; }
+
+.setting__toggle::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: left 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.22);
+}
+
+.setting__toggle:checked::after { left: 18px; }
+
+/* ─── Buttons ─────────────────────────────────────── */
 
 .btn {
-  padding: 9px 16px;
+  width: 100%;
+  padding: 11px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
+.btn:active:not(:disabled) { transform: scale(0.975); }
+
 .btn--primary {
-  background: #1a73e8;
+  background: #E2001A;
   color: #fff;
 }
 
-.btn--primary:hover:not(:disabled) { background: #1558b0; }
-.btn--primary:disabled             { opacity: 0.5; cursor: not-allowed; }
+.btn--primary:hover:not(:disabled) { opacity: 0.88; }
+.btn--primary:disabled             { opacity: 0.4; cursor: not-allowed; }
 
-/* ─── Error message ───────────────────────────────── */
-
-.error {
-  font-size: 12px;
-  color: #d93025;
-  padding: 8px;
-  background: #fce8e6;
-  border-radius: 6px;
+.btn--secondary {
+  background: rgba(226,0,26,0.07);
+  color: #E2001A;
 }
+
+.btn--secondary:hover:not(:disabled) { background: rgba(226,0,26,0.12); }
+.btn--secondary:disabled             { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Message ─────────────────────────────────────── */
+
+.message {
+  font-size: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #e9f7ec;
+  color: #1a7431;
+  line-height: 1.5;
+}
+
+.message--error {
+  background: #fff0f1;
+  color: #B50015;
+}
+
+/* ─── Config inputs ───────────────────────────────── */
+
+.config {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e5ea;
+}
+
+.config__field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 13px;
+  background: #fff;
+}
+
+.config__field + .config__field { border-top: 1px solid #e5e5ea; }
+
+.config__label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8e8e93;
+}
+
+.config__input {
+  padding: 2px 0;
+  border: none;
+  font-size: 14px;
+  font-family: inherit;
+  color: #1a1a1a;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+.config__input::placeholder { color: #c7c7cc; }

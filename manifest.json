@@ -1,13 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Gmail AI Assistant",
+  "name": "DPD Assistance",
   "version": "1.0.0",
-  "description": "Automatically reads Gmail emails, extracts shipment data, and generates AI-powered draft replies.",
+  "description": "DPD depot tools: Future Dates automation, Drive label scanning, and Gmail auto-reply.",
 
   "permissions": [
     "identity",
     "storage",
-    "alarms"
+    "alarms",
+    "scripting",
+    "activeTab"
   ],
 
   "host_permissions": [
@@ -23,7 +25,7 @@
 
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "Gmail AI Assistant",
+    "default_title": "DPD Assistance",
     "default_icon": {
       "16":  "assets/icon16.png",
       "48":  "assets/icon48.png",
@@ -38,10 +40,11 @@
   },
 
   "oauth2": {
-    "client_id": "__REPLACE_WITH_YOUR_GOOGLE_OAUTH_CLIENT_ID__",
+    "client_id": "1086531780938-v9igtefdsfk0613ljglpl2bq0nuevqlv.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/gmail.readonly",
-      "https://www.googleapis.com/auth/gmail.compose"
+      "https://www.googleapis.com/auth/gmail.compose",
+      "https://www.googleapis.com/auth/drive"
     ]
   }
 }

@@ -1,93 +1,206 @@
 /**
  * popup/popup.js
  * ==============
- * UI controller for the extension popup.
- *
- * Responsibility: bind DOM events, read/write settings, trigger the
- * background service worker via chrome.runtime.sendMessage.
- * No business logic here.
+ * UI controller for the DPD Assistance extension popup.
+ * Handles both Depot (Future Dates) and Gmail (Auto-Reply) features.
  */
 
 import { getSettings, saveSettings } from '../storage/settings.js';
-import { logger }                    from '../utils/logger.js';
+import { loadConfig }                 from '../config/config.js';
+import { getAuthToken }               from '../auth/getAuthToken.js';
+import { depotMain }                  from '../depot/depotScript.js';
+import { scanDriveLabels }            from '../depot/driveScanner.js';
+import { logger }                     from '../utils/logger.js';
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
 
-const statusDot    = document.getElementById('statusDot');
-const statusLabel  = document.getElementById('statusLabel');
-const autoProcess  = document.getElementById('autoProcess');
-const draftMode    = document.getElementById('draftMode');
-const runNowBtn    = document.getElementById('runNow');
-const errorMessage = document.getElementById('errorMessage');
+const depotStatusDot   = document.getElementById('depotStatusDot');
+const depotStatusLabel = document.getElementById('depotStatusLabel');
+const depotMessage     = document.getElementById('depotMessage');
+const dryRunToggle     = document.getElementById('dryRun');
+const scanCADBtn       = document.getElementById('scanCAD');
+const scanDriveBtn     = document.getElementById('scanDrive');
+
+const gmailStatusDot   = document.getElementById('gmailStatusDot');
+const gmailStatusLabel = document.getElementById('gmailStatusLabel');
+const gmailMessage     = document.getElementById('gmailMessage');
+const autoProcessToggle = document.getElementById('autoProcess');
+const draftModeToggle   = document.getElementById('draftMode');
+const runNowBtn        = document.getElementById('runNow');
+
+const openaiKeyInput   = document.getElementById('openaiApiKey');
+const driveFolderInput = document.getElementById('driveFolderId');
 
 // ── Status helpers ────────────────────────────────────────────────────────────
 
-/**
- * Updates the status indicator.
- * @param {'idle'|'running'|'error'} state
- * @param {string} [label]
- */
-function setStatus(state, label) {
-  statusDot.className = 'status__dot';
-  errorMessage.hidden = true;
+function setStatus(dot, label, msgEl, state, text) {
+  dot.className  = 'status__dot';
+  msgEl.hidden   = true;
+  msgEl.className = 'message';
 
   switch (state) {
     case 'running':
-      statusDot.classList.add('status__dot--running');
-      statusLabel.textContent = label ?? 'Running...';
+      dot.classList.add('status__dot--running');
+      label.textContent = text ?? 'Running...';
       break;
     case 'error':
-      statusDot.classList.add('status__dot--error');
-      statusLabel.textContent = 'Error';
-      errorMessage.textContent = label ?? 'Something went wrong.';
-      errorMessage.hidden = false;
+      dot.classList.add('status__dot--error');
+      label.textContent = 'Error';
+      msgEl.textContent = text ?? 'Something went wrong.';
+      msgEl.classList.add('message--error');
+      msgEl.hidden = false;
+      break;
+    case 'done':
+      label.textContent = text ?? 'Done';
       break;
     default:
-      statusLabel.textContent = label ?? 'Idle';
+      label.textContent = text ?? 'Idle';
   }
 }
 
-// ── Initialise ────────────────────────────────────────────────────────────────
+const setDepotStatus = (state, text) =>
+  setStatus(depotStatusDot, depotStatusLabel, depotMessage, state, text);
 
-async function init() {
-  const settings = await getSettings();
-  autoProcess.checked = settings.autoProcess;
-  draftMode.checked   = settings.draftMode;
+const setGmailStatus = (state, text) =>
+  setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, state, text);
+
+// ── Depot helpers ─────────────────────────────────────────────────────────────
+
+async function getActiveTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) throw new Error('No active tab found');
+  return tab;
 }
 
-// ── Settings persistence ──────────────────────────────────────────────────────
+function setDepotButtons(disabled) {
+  scanCADBtn.disabled   = disabled;
+  scanDriveBtn.disabled = disabled;
+}
 
-autoProcess.addEventListener('change', () =>
-  saveSettings({ autoProcess: autoProcess.checked })
+function showDepotResult(result) {
+  if (result.dryRun) {
+    setDepotStatus('done', `Dry run: ${result.count} parcel(s) would be processed`);
+  } else if (result.warning) {
+    setDepotStatus('done', result.warning);
+  } else {
+    setDepotStatus('done',
+      `Done — Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`
+    );
+  }
+}
+
+// ── Depot: Scan CAD List ──────────────────────────────────────────────────────
+
+scanCADBtn.addEventListener('click', async () => {
+  setDepotStatus('running', 'Scanning CAD list...');
+  setDepotButtons(true);
+  try {
+    const tab = await getActiveTab();
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func:   depotMain,
+      args:   [{ dryRun: dryRunToggle.checked, mode: 'cad' }],
+    });
+    showDepotResult(result);
+  } catch (err) {
+    setDepotStatus('error', err.message);
+  } finally {
+    setDepotButtons(false);
+  }
+});
+
+// ── Depot: Scan Drive Labels ──────────────────────────────────────────────────
+
+scanDriveBtn.addEventListener('click', async () => {
+  setDepotStatus('running', 'Reading Drive labels...');
+  setDepotButtons(true);
+  try {
+    const config = await loadConfig();
+    if (!config.openaiApiKey)  throw new Error('OpenAI API Key not set in Settings');
+    if (!config.driveFolderId) throw new Error('Drive Folder ID not set in Settings');
+
+    const token       = await getAuthToken();
+    const consNumbers = await scanDriveLabels(config.driveFolderId, config.openaiApiKey, token);
+
+    if (consNumbers.length === 0) {
+      setDepotStatus('done', 'No label photos found in Drive folder');
+      return;
+    }
+
+    setDepotStatus('running', `${consNumbers.length} label(s) read — checking depot...`);
+    const tab = await getActiveTab();
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func:   depotMain,
+      args:   [{ dryRun: dryRunToggle.checked, mode: 'labels', consNumbers }],
+    });
+    showDepotResult(result);
+  } catch (err) {
+    setDepotStatus('error', err.message);
+  } finally {
+    setDepotButtons(false);
+  }
+});
+
+// ── Gmail ─────────────────────────────────────────────────────────────────────
+
+autoProcessToggle.addEventListener('change', () =>
+  saveSettings({ autoProcess: autoProcessToggle.checked })
 );
 
-draftMode.addEventListener('change', () =>
-  saveSettings({ draftMode: draftMode.checked })
+draftModeToggle.addEventListener('change', () =>
+  saveSettings({ draftMode: draftModeToggle.checked })
 );
-
-// ── Manual trigger ────────────────────────────────────────────────────────────
 
 runNowBtn.addEventListener('click', async () => {
-  setStatus('running');
+  setGmailStatus('running');
   runNowBtn.disabled = true;
-
   try {
-    // Delegate to the background service worker
     const response = await chrome.runtime.sendMessage({ type: 'RUN_NOW' });
-
     if (response?.ok) {
-      setStatus('idle', 'Done ✓');
+      setGmailStatus('done', 'Done ✓');
     } else {
-      setStatus('error', response?.error ?? 'Unknown error');
+      setGmailStatus('error', response?.error ?? 'Unknown error');
     }
   } catch (err) {
-    logger.error('popup: run failed', err);
-    setStatus('error', err.message);
+    logger.error('popup: gmail run failed', err);
+    setGmailStatus('error', err.message);
   } finally {
     runNowBtn.disabled = false;
   }
 });
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
+// ── Settings persistence ──────────────────────────────────────────────────────
+
+openaiKeyInput.addEventListener('change', () =>
+  chrome.storage.local.set({ openaiApiKey: openaiKeyInput.value })
+);
+
+driveFolderInput.addEventListener('change', () =>
+  chrome.storage.local.set({ driveFolderId: driveFolderInput.value })
+);
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+async function init() {
+  const [settings, config] = await Promise.all([getSettings(), loadConfig()]);
+  autoProcessToggle.checked = settings.autoProcess;
+  draftModeToggle.checked   = settings.draftMode;
+  if (config.openaiApiKey)  openaiKeyInput.value   = config.openaiApiKey;
+  if (config.driveFolderId) driveFolderInput.value = config.driveFolderId;
+}
+
+// ── Accordion: one section open at a time ────────────────────────────────────
+
+document.querySelectorAll('details.section').forEach(detail => {
+  detail.querySelector('.section__header').addEventListener('click', (e) => {
+    e.preventDefault();
+    const isOpen = detail.open;
+    document.querySelectorAll('details.section').forEach(d => { d.open = false; });
+    if (!isOpen) detail.open = true;
+  });
+});
 
 init();
+
+

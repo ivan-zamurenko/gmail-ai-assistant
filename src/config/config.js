@@ -22,6 +22,7 @@
  * @property {string} openaiModel    - Model ID (e.g. 'gpt-4o-mini')
  * @property {string} carrierApiUrl  - Base URL for the carrier tracking API
  * @property {string} carrierApiKey  - Auth key for the carrier API
+ * @property {string} driveFolderId  - Google Drive folder ID containing label photos
  */
 
 /** @type {Config|null} */
@@ -36,13 +37,14 @@ let _cache = null;
 export function loadConfig() {
   return new Promise((resolve) => {
     chrome.storage.local.get(
-      ['openaiApiKey', 'openaiModel', 'carrierApiUrl', 'carrierApiKey'],
+      ['openaiApiKey', 'openaiModel', 'carrierApiUrl', 'carrierApiKey', 'driveFolderId'],
       (result) => {
         resolve({
           openaiApiKey:  result.openaiApiKey  ?? '',
           openaiModel:   result.openaiModel   ?? 'gpt-4o-mini',
           carrierApiUrl: result.carrierApiUrl ?? '',
           carrierApiKey: result.carrierApiKey ?? '',
+          driveFolderId: result.driveFolderId ?? '',
         });
       }
     );

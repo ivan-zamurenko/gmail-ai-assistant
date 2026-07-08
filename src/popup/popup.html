@@ -3,42 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gmail AI Assistant</title>
+  <title>DPD Assistance</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
 
   <header class="header">
-    <img src="../../assets/icon48.png" alt="" class="header__icon" />
-    <h1 class="header__title">Gmail AI Assistant</h1>
+    <img src="../../assets/icon48.png" alt="DPD" class="header__icon" />
+    <h1 class="header__title">DPD Assistance</h1>
+    <span class="header__flag">🇮🇪</span>
   </header>
 
   <main class="main">
 
-    <!-- Status indicator -->
-    <div class="status">
-      <span class="status__dot" id="statusDot"></span>
-      <span class="status__label" id="statusLabel">Idle</span>
-    </div>
+    <!-- ── DEPOT: Future Dates ──────────────────────── -->
+    <details class="section" open>
+      <summary class="section__header">
+        <span class="section__title">Future Dates</span>
+        <span class="section__arrow">›</span>
+      </summary>
+      <div class="section__body">
+        <div class="status">
+          <span class="status__dot" id="depotStatusDot"></span>
+          <span class="status__label" id="depotStatusLabel">Idle</span>
+        </div>
+        <div class="settings">
+          <label class="setting">
+            <span class="setting__label">Dry Run (preview only)</span>
+            <input type="checkbox" id="dryRun" class="setting__toggle" checked />
+          </label>
+        </div>
+        <button class="btn btn--primary" id="scanCAD">Scan CAD List</button>
+        <button class="btn btn--secondary" id="scanDrive">Scan Drive Labels</button>
+        <p class="message" id="depotMessage" hidden></p>
+      </div>
+    </details>
 
-    <!-- Settings toggles -->
-    <section class="settings">
-      <label class="setting">
-        <span class="setting__label">Auto-process emails</span>
-        <input type="checkbox" id="autoProcess" class="setting__toggle" />
-      </label>
+    <!-- ── GMAIL: Auto-Reply ────────────────────────── -->
+    <details class="section">
+      <summary class="section__header">
+        <span class="section__title">Gmail Auto-Reply</span>
+        <span class="section__arrow">›</span>
+      </summary>
+      <div class="section__body">
+        <div class="status">
+          <span class="status__dot" id="gmailStatusDot"></span>
+          <span class="status__label" id="gmailStatusLabel">Idle</span>
+        </div>
+        <div class="settings">
+          <label class="setting">
+            <span class="setting__label">Auto-process emails</span>
+            <input type="checkbox" id="autoProcess" class="setting__toggle" />
+          </label>
+          <label class="setting">
+            <span class="setting__label">Draft mode (no auto-send)</span>
+            <input type="checkbox" id="draftMode" class="setting__toggle" />
+          </label>
+        </div>
+        <button class="btn btn--primary" id="runNow">Run now</button>
+        <p class="message message--error" id="gmailMessage" hidden></p>
+      </div>
+    </details>
 
-      <label class="setting">
-        <span class="setting__label">Draft mode (no auto-send)</span>
-        <input type="checkbox" id="draftMode" class="setting__toggle" />
-      </label>
-    </section>
-
-    <!-- Manual trigger -->
-    <button class="btn btn--primary" id="runNow">Run now</button>
-
-    <!-- Error message (hidden by default) -->
-    <p class="error" id="errorMessage" hidden></p>
+    <!-- ── SETTINGS ─────────────────────────────────── -->
+    <details class="section">
+      <summary class="section__header">
+        <span class="section__title">Settings</span>
+        <span class="section__arrow">›</span>
+      </summary>
+      <div class="section__body">
+        <div class="config">
+          <label class="config__field">
+            <span class="config__label">OpenAI API Key</span>
+            <input type="password" id="openaiApiKey" class="config__input" placeholder="sk-..." />
+          </label>
+          <label class="config__field">
+            <span class="config__label">Drive Folder ID</span>
+            <input type="text" id="driveFolderId" class="config__input" placeholder="Folder ID or Drive link" />
+          </label>
+        </div>
+      </div>
+    </details>
 
   </main>
 

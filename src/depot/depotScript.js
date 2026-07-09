@@ -5,16 +5,15 @@
  * MUST be self-contained — no imports, no outer scope references.
  *
  * Modes:
- *   'cad'    — reads the pending list, processes only CAD-scanned parcels (original flow)
- *   'labels' — receives consignment numbers extracted from Drive label photos,
- *              looks them up in the pending list, then processes them
+ *   'cad'    — reads the pending list, processes only CAD-scanned parcels
+ *   'labels' — receives consignment numbers from Drive label photos, looks them up
  *
  * @param {{ dryRun?: boolean, mode?: 'cad'|'labels', consNumbers?: string[] }} options
+ * @returns {{ dryRun?, count?, changed?, skipped?, errors?, results?, warning?, __error? }}
  */
 export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] } = {}) {
-  try {
 
-  // ── Constants ─────────────────────────────────────────────────────────────────
+  // ── Constants ──────────────────────────────────────────────────────────────────
 
   const STATUS = {
     PENDING:    'PENDING',
@@ -29,7 +28,16 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     '01/06/26', '03/08/26', '26/10/26', '25/12/26', '26/12/26',
   ]);
 
-  // ── Date helpers ──────────────────────────────────────────────────────────────
+  // Type codes used by lookupConsignmentList() on the depot page
+  const CONS_LIST_TYPE = {
+    P: 'Pending', PA: 'PendingAlert', IFU: 'IFUMisdirects', IFUA: 'IFUMisdirectsAlert',
+    GH: 'GoodsHeld', GHA: 'GoodsHeldAlert', OFD: 'OFD', OFDA: 'OFDAlert',
+    POD: 'POD', PODA: 'PODAlert', R: 'Returns', RA: 'ReturnsAlert',
+    RS: 'Rescheduled', RSA: 'RescheduledAlert', T: 'Total', TA: 'TotalAlert',
+    F: 'Future', NFU: 'NFUMisdirects', NFUA: 'NFUMisdirectsAlert',
+  };
+
+  // ── Date helpers ───────────────────────────────────────────────────────────────
 
   const pad = n => String(n).padStart(2, '0');
 
@@ -47,25 +55,23 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     next.setDate(today.getDate() + 1);
     while (isNonWorkingDay(next)) next.setDate(next.getDate() + 1);
     return {
-      todayShort:    `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${String(today.getFullYear()).slice(-2)}`,
+      todayShort:    toDateKey(today),
       tomorrowInput: `${pad(next.getDate())}/${pad(next.getMonth() + 1)}/${next.getFullYear()}`,
     };
   }
 
-  // ── Classify ──────────────────────────────────────────────────────────────────
+  // ── Classify ───────────────────────────────────────────────────────────────────
 
   function buildNotesPattern(todayShort) {
-    const e = todayShort.replace(/\//g, '\\/');
+    const escaped = todayShort.replace(/\//g, '\\/');
     return new RegExp(
-      `Del\\.\\s*date\\s*changed\\s*FROM\\s*\\d{2}\\/\\d{2}\\/\\d{2}\\s*TO\\s*${e}`, 'i'
+      `Del\\.\\s*date\\s*changed\\s*FROM\\s*\\d{2}\\/\\d{2}\\/\\d{2}\\s*TO\\s*${escaped}`, 'i'
     );
   }
 
   function classify(status, notes, todayShort) {
-    if (status === STATUS.PENDING)
-      return { action: 'CHANGE_DATE', reason: 'PENDING' };
-    if (status === STATUS.DELIVERED || status === STATUS.OFD)
-      return { action: 'CHANGE_DATE', reason: `${status} → multi-parcel, one left in depot` };
+    if (status === STATUS.PENDING || status === STATUS.DELIVERED || status === STATUS.OFD)
+      return { action: 'CHANGE_DATE', reason: status };
     if (status === STATUS.GOODS_HELD) {
       return buildNotesPattern(todayShort).test(notes)
         ? { action: 'CHANGE_DATE', reason: 'GOODS HELD → Future Dated yesterday' }
@@ -74,7 +80,12 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     return { action: 'SKIP', reason: `Unknown status: "${status}"` };
   }
 
-  // ── Fetch helpers ─────────────────────────────────────────────────────────────
+  // ── Fetch helpers ──────────────────────────────────────────────────────────────
+
+  function getSessionParams() {
+    const p = new URLSearchParams(window.location.search);
+    return { session: p.get('session'), uid: p.get('UID') };
+  }
 
   async function fetchDoc(url) {
     const res = await fetch(url, { credentials: 'include' });
@@ -82,71 +93,43 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     return new DOMParser().parseFromString(await res.text(), 'text/html');
   }
 
-  function getSessionParams() {
-    const p = new URLSearchParams(window.location.search);
-    return { session: p.get('session'), uid: p.get('UID') };
-  }
+  // ── Pending list ───────────────────────────────────────────────────────────────
 
-  // ── Pending list ──────────────────────────────────────────────────────────────
-
-  // Builds the pending list URL directly from the trigger link's CL() arguments
-  // and the page session parameters — no window.open interception needed.
+  // Builds the pending list URL from the trigger link's CL() arguments + session params.
+  // The trigger href looks like: javascript:CL('24143736', 'P')
+  // No window.open interception needed.
   function getPendingListUrl() {
     const trigger = document.querySelector('thead th:nth-child(2) a.normal');
-    if (!trigger) throw new Error('Pending trigger link not found. Are you on the correct depot page?');
+    if (!trigger) throw new Error('Pending trigger link not found — are you on the correct depot page?');
 
-    const href = trigger.getAttribute('href') ?? '';
-    const m = href.match(/CL\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/);
-    if (!m) throw new Error(`Unexpected trigger href format: ${href}`);
+    const m = (trigger.getAttribute('href') ?? '').match(/CL\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/);
+    if (!m) throw new Error(`Unexpected trigger href: ${trigger.getAttribute('href')}`);
 
-    const rowNo    = m[1];
-    const typeCode = m[2];
-    const typeMap  = {
-      P: 'Pending', PA: 'PendingAlert', IFU: 'IFUMisdirects', IFUA: 'IFUMisdirectsAlert',
-      GH: 'GoodsHeld', GHA: 'GoodsHeldAlert', OFD: 'OFD', OFDA: 'OFDAlert',
-      POD: 'POD', PODA: 'PODAlert', R: 'Returns', RA: 'ReturnsAlert',
-      RS: 'Rescheduled', RSA: 'RescheduledAlert', T: 'Total', TA: 'TotalAlert',
-      F: 'Future', NFU: 'NFUMisdirects', NFUA: 'NFUMisdirectsAlert',
-    };
-    const typeName = typeMap[typeCode] ?? typeCode;
     const { session, uid } = getSessionParams();
+    const typeName = CONS_LIST_TYPE[m[2]] ?? m[2];
 
     return `/scripts/cgiip.exe/WService=wsInterlink/woConsignmentList.p` +
       `?session=${encodeURIComponent(session)}&UID=${encodeURIComponent(uid)}` +
-      `&RowNo=${encodeURIComponent(rowNo)}&Type=${encodeURIComponent(typeName)}&DashName=Customer`;
+      `&RowNo=${encodeURIComponent(m[1])}&Type=${encodeURIComponent(typeName)}&DashName=Customer`;
   }
 
-  // Parses all rows from the pending list into { consNumber, consId, type, route }.
   function parseRows(doc) {
-    return Array.from(doc.querySelectorAll('tbody tr')).map(tr => {
+    return Array.from(doc.querySelectorAll('tbody tr')).flatMap(tr => {
       const tds  = tr.querySelectorAll('td');
       const link = tds[1]?.querySelector('a');
-      if (!link) return null;
+      if (!link) return [];
       const m = (link.getAttribute('href') ?? '').match(/chooseItem\('([^']+)'\s*,\s*'([^']+)'\)/);
-      if (!m) return null;
-      return {
-        consNumber: link.textContent.trim(),
-        consId:     m[1],
-        type:       m[2],
-        route:      tds[5]?.textContent.trim().toLowerCase() ?? '',
-      };
-    }).filter(Boolean);
+      if (!m) return [];
+      return [{ consNumber: link.textContent.trim(), consId: m[1], type: m[2],
+                route: tds[5]?.textContent.trim().toLowerCase() ?? '' }];
+    });
   }
 
-  async function getCADConsignments() {
-    const doc = await fetchDoc(getPendingListUrl());
-    return parseRows(doc).filter(r => r.route === 'cad');
+  async function fetchPendingList() {
+    return parseRows(await fetchDoc(getPendingListUrl()));
   }
 
-  // For label mode: finds parcels in the pending list matching our scanned numbers.
-  // Checks both consNumber and consId since the label may show either.
-  async function findByNumbers(numbers) {
-    const doc = await fetchDoc(getPendingListUrl());
-    const set = new Set(numbers);
-    return parseRows(doc).filter(r => set.has(r.consNumber) || set.has(r.consId));
-  }
-
-  // ── Consignment detail ────────────────────────────────────────────────────────
+  // ── Consignment detail ─────────────────────────────────────────────────────────
 
   async function fetchConsignment(consId, type = 'PopUp') {
     const { session, uid } = getSessionParams();
@@ -158,25 +141,26 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
   }
 
   async function getNotes(consDoc) {
-    let notesUrl = null;
     for (const s of consDoc.querySelectorAll('script')) {
       const m = s.textContent.match(/ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*['"]([^'"]+)['"]/);
-      if (m) { notesUrl = m[1]; break; }
+      if (!m) continue;
+      try {
+        const doc = await fetchDoc(new URL(m[1], window.location.href).href);
+        return doc.body?.textContent?.trim() ?? '';
+      } catch { return ''; }
     }
-    if (!notesUrl) return '';
-    try {
-      const doc = await fetchDoc(new URL(notesUrl, window.location.href).href);
-      return doc.body?.textContent?.trim() ?? '';
-    } catch { return ''; }
+    return '';
   }
 
-  // ── Actions ───────────────────────────────────────────────────────────────────
+  // ── Actions ────────────────────────────────────────────────────────────────────
 
   async function logCall(consId, consDoc) {
     const btn = consDoc.getElementById('btnLogCall');
     if (!btn) return;
+
     const { session, uid } = getSessionParams();
 
+    // Prefer form submission if available
     const form = btn.closest('form');
     if (form?.getAttribute('action')) {
       const body = new URLSearchParams({ session, ConsId: consId });
@@ -184,24 +168,23 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
         if (el.name && el.type === 'hidden') body.set(el.name, el.value);
       }
       await fetch(new URL(form.getAttribute('action'), window.location.href).href, {
-        method: 'POST',
+        method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString(),
-        credentials: 'include',
       });
       return;
     }
 
-    const onclick = btn.getAttribute('onclick') ?? '';
-    const om = onclick.match(
-      /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([\/\w][^'"]+)['"]/
+    // Try onclick URL
+    const om = (btn.getAttribute('onclick') ?? '').match(
+      /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([/\w][^'"]+)['"]/
     );
     if (om) {
       await fetch(new URL(om[1], window.location.href).href, { credentials: 'include' });
       return;
     }
 
-    // Fallback: direct POST to the standard endpoint
+    // Fallback: standard endpoint
     await fetch(
       `/scripts/cgiip.exe/WService=wsInterlink/woLogCall.p` +
       `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}&UID=${encodeURIComponent(uid)}`,
@@ -211,30 +194,26 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
   async function submitReschedule(consId, tomorrowInput) {
     const { session } = getSessionParams();
-    const formUrl =
-      `/scripts/cgiip.exe/WService=wsInterlink/woRearrangeConsignment.p` +
+    const formUrl = `/scripts/cgiip.exe/WService=wsInterlink/woRearrangeConsignment.p` +
       `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}`;
 
     const formDoc = await fetchDoc(formUrl);
     const form    = formDoc.querySelector('form');
-    if (!form) throw new Error('Reschedule form not found in server response');
+    if (!form) throw new Error('Reschedule form not found');
 
     const body = new URLSearchParams();
     for (const el of form.elements) {
       if (el.name && el.type === 'hidden') body.append(el.name, el.value);
     }
-    body.set('arranged-by',   'customer');
-    body.set('arrange',       '1');
+    body.set('arranged-by', 'customer');
+    body.set('arrange', '1');
     body.set('arranged-date', tomorrowInput);
 
     const res = await fetch(
       new URL(form.getAttribute('action') ?? formUrl, window.location.href).href,
-      {
-        method: 'POST',
+      { method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-        credentials: 'include',
-      }
+        body: body.toString() }
     );
     if (!res.ok) throw new Error(`Reschedule POST returned HTTP ${res.status}`);
 
@@ -245,11 +224,11 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     throw new Error(err?.textContent.trim() ?? 'No success or error message in server response');
   }
 
-  // ── Process loop ──────────────────────────────────────────────────────────────
+  // ── Process loop ───────────────────────────────────────────────────────────────
 
   async function processPackages(packages, todayShort, tomorrowInput) {
     let changed = 0, skipped = 0, errors = 0;
-    const results = []; // per-parcel outcome — used by organizeLabels() to route photos
+    const results = [];
 
     for (const pkg of packages) {
       try {
@@ -267,7 +246,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
           console.log(`[${pkg.consNumber}] ✅ ${msg}`);
           changed++;
         } else {
-          console.log(`[${pkg.consNumber}] ⏭️  Skipped`);
+          console.log(`[${pkg.consNumber}] ⏭️  skipped`);
           skipped++;
         }
 
@@ -282,33 +261,36 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     return { changed, skipped, errors, results };
   }
 
-  // ── Entry point ───────────────────────────────────────────────────────────────
+  // ── Entry point ────────────────────────────────────────────────────────────────
 
-  console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'} | ${new Date().toLocaleTimeString()}`);
+  try {
+    console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'} | ${new Date().toLocaleTimeString()}`);
 
-  const { todayShort, tomorrowInput } = getDates();
+    const { todayShort, tomorrowInput } = getDates();
+    const allRows = await fetchPendingList();
+    const consSet = new Set(consNumbers);
 
-  const packages = mode === 'cad'
-    ? await getCADConsignments()
-    : await findByNumbers(consNumbers);
+    const packages = mode === 'cad'
+      ? allRows.filter(r => r.route === 'cad')
+      : allRows.filter(r => consSet.has(r.consNumber) || consSet.has(r.consId));
 
-  if (packages.length === 0) {
-    const warning = mode === 'cad'
-      ? 'No CAD parcels found. Are you on the correct depot page?'
-      : `None of the scanned numbers found in the pending list: ${consNumbers.join(', ')}`;
-    console.warn(`⚠️ ${warning}`);
-    return { changed: 0, skipped: 0, errors: 0, warning };
-  }
+    if (packages.length === 0) {
+      const warning = mode === 'cad'
+        ? 'No CAD parcels found — are you on the correct depot page?'
+        : `None of the scanned numbers found in the pending list: ${consNumbers.join(', ')}`;
+      console.warn(`⚠️ ${warning}`);
+      return { changed: 0, skipped: 0, errors: 0, warning };
+    }
 
-  if (dryRun) {
-    console.table(packages.map(({ consNumber, consId }) => ({ consNumber, consId })));
-    console.log(`DRY RUN — ${packages.length} parcel(s) would be processed. No changes made.`);
-    return { dryRun: true, count: packages.length };
-  }
+    if (dryRun) {
+      console.table(packages.map(({ consNumber, consId }) => ({ consNumber, consId })));
+      console.log(`DRY RUN — ${packages.length} parcel(s) would be processed.`);
+      return { dryRun: true, count: packages.length };
+    }
 
-  const result = await processPackages(packages, todayShort, tomorrowInput);
-  console.log(`Done | Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
-  return result;
+    const result = await processPackages(packages, todayShort, tomorrowInput);
+    console.log(`Done | Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
+    return result;
 
   } catch (err) {
     console.error('[depotMain] fatal:', err);

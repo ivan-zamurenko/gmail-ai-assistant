@@ -12,6 +12,15 @@
  * @param {{ dryRun?: boolean, mode?: 'cad'|'labels', consNumbers?: string[] }} options
  */
 export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] } = {}) {
+  try {
+    return await _depotMainImpl({ dryRun, mode, consNumbers });
+  } catch (err) {
+    console.error('[depotMain] fatal:', err);
+    return { __error: err?.message ?? String(err) };
+  }
+}
+
+async function _depotMainImpl({ dryRun, mode, consNumbers }) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
 

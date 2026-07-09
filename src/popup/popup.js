@@ -97,13 +97,15 @@ scanCADBtn.addEventListener('click', async () => {
   setDepotButtons(true);
   try {
     const tab = await getActiveTab();
-    const [{ result }] = await chrome.scripting.executeScript({
+    const [cadInjection] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func:   depotMain,
       args:   [{ dryRun: dryRunToggle.checked, mode: 'cad' }],
       world:  'ISOLATED',
     });
-    showDepotResult(result);
+    if (!cadInjection.result) throw new Error('Depot script returned no result — check you are on the depot page');
+    if (cadInjection.result.__error) throw new Error(cadInjection.result.__error);
+    showDepotResult(cadInjection.result);
   } catch (err) {
     setDepotStatus('error', err.message);
   } finally {
@@ -133,12 +135,15 @@ scanDriveBtn.addEventListener('click', async () => {
     // Step 2: find & process in depot
     setDepotStatus('running', `${photos.length} label(s) read — checking depot...`);
     const tab = await getActiveTab();
-    const [{ result }] = await chrome.scripting.executeScript({
+    const [labelsInjection] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func:   depotMain,
       args:   [{ dryRun: dryRunToggle.checked, mode: 'labels', consNumbers: photos.map(p => p.consNumber) }],
       world:  'ISOLATED',
     });
+    if (!labelsInjection.result) throw new Error('Depot script returned no result — check you are on the depot page');
+    if (labelsInjection.result.__error) throw new Error(labelsInjection.result.__error);
+    const result = labelsInjection.result;
 
     // Step 3 (live only): organise photos into status subfolders
     if (!dryRunToggle.checked && result.results?.length > 0) {

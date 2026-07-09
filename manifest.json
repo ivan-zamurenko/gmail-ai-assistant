@@ -40,7 +40,7 @@
   },
 
   "oauth2": {
-    "client_id": "1086531780938-v9igtefdsfk0613ljglpl2bq0nuevqlv.apps.googleusercontent.com",
+    "client_id": "647516996436-kon8g0nkri73ck79vhc0uvk3hgf9m5ss.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/gmail.readonly",
       "https://www.googleapis.com/auth/gmail.compose",

@@ -13,14 +13,6 @@
  */
 export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] } = {}) {
   try {
-    return await _depotMainImpl({ dryRun, mode, consNumbers });
-  } catch (err) {
-    console.error('[depotMain] fatal:', err);
-    return { __error: err?.message ?? String(err) };
-  }
-}
-
-async function _depotMainImpl({ dryRun, mode, consNumbers }) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -310,4 +302,9 @@ async function _depotMainImpl({ dryRun, mode, consNumbers }) {
   const result = await processPackages(packages, todayShort, tomorrowInput);
   console.log(`Done | Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
   return result;
+
+  } catch (err) {
+    console.error('[depotMain] fatal:', err);
+    return { __error: err?.message ?? String(err) };
+  }
 }

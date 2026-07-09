@@ -89,21 +89,31 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
   // ── Pending list ──────────────────────────────────────────────────────────────
 
-  // Captures the pending list URL by temporarily replacing window.open,
-  // clicking the trigger link, and restoring the original.
-  // Works in MAIN world (same JS context as the page's CL() function).
+  // Builds the pending list URL directly from the trigger link's CL() arguments
+  // and the page session parameters — no window.open interception needed.
   function getPendingListUrl() {
     const trigger = document.querySelector('thead th:nth-child(2) a.normal');
     if (!trigger) throw new Error('Pending trigger link not found. Are you on the correct depot page?');
 
-    let pendingUrl = null;
-    const orig = window.open;
-    window.open = (url) => { pendingUrl = url; return { closed: true, close() {} }; };
-    trigger.click();
-    window.open = orig;
+    const href = trigger.getAttribute('href') ?? '';
+    const m = href.match(/CL\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/);
+    if (!m) throw new Error(`Unexpected trigger href format: ${href}`);
 
-    if (!pendingUrl) throw new Error('Could not capture pending list URL — window.open was not called by trigger click.');
-    return pendingUrl;
+    const rowNo    = m[1];
+    const typeCode = m[2];
+    const typeMap  = {
+      P: 'Pending', PA: 'PendingAlert', IFU: 'IFUMisdirects', IFUA: 'IFUMisdirectsAlert',
+      GH: 'GoodsHeld', GHA: 'GoodsHeldAlert', OFD: 'OFD', OFDA: 'OFDAlert',
+      POD: 'POD', PODA: 'PODAlert', R: 'Returns', RA: 'ReturnsAlert',
+      RS: 'Rescheduled', RSA: 'RescheduledAlert', T: 'Total', TA: 'TotalAlert',
+      F: 'Future', NFU: 'NFUMisdirects', NFUA: 'NFUMisdirectsAlert',
+    };
+    const typeName = typeMap[typeCode] ?? typeCode;
+    const { session, uid } = getSessionParams();
+
+    return `/scripts/cgiip.exe/WService=wsInterlink/woConsignmentList.p` +
+      `?session=${encodeURIComponent(session)}&UID=${encodeURIComponent(uid)}` +
+      `&RowNo=${encodeURIComponent(rowNo)}&Type=${encodeURIComponent(typeName)}&DashName=Customer`;
   }
 
   // Parses all rows from the pending list into { consNumber, consId, type, route }.

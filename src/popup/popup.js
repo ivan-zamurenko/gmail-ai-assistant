@@ -101,7 +101,7 @@ scanCADBtn.addEventListener('click', async () => {
       target: { tabId: tab.id },
       func:   depotMain,
       args:   [{ dryRun: dryRunToggle.checked, mode: 'cad' }],
-      world:  'MAIN',
+      world:  'ISOLATED',
     });
     if (!cadInjection.result) throw new Error('Depot script returned no result — check you are on the depot page');
     if (cadInjection.result.__error) throw new Error(cadInjection.result.__error);
@@ -139,7 +139,7 @@ scanDriveBtn.addEventListener('click', async () => {
       target: { tabId: tab.id },
       func:   depotMain,
       args:   [{ dryRun: dryRunToggle.checked, mode: 'labels', consNumbers: photos.map(p => p.consNumber) }],
-      world:  'MAIN',
+      world:  'ISOLATED',
     });
     if (!labelsInjection.result) throw new Error('Depot script returned no result — check you are on the depot page');
     if (labelsInjection.result.__error) throw new Error(labelsInjection.result.__error);

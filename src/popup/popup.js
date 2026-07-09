@@ -9,7 +9,7 @@ import { getSettings, saveSettings } from '../storage/settings.js';
 import { loadConfig }                 from '../config/config.js';
 import { getAuthToken }               from '../auth/getAuthToken.js';
 import { depotMain }                  from '../depot/depotScript.js';
-import { scanDriveLabels }            from '../depot/driveScanner.js';
+import { scanDriveLabels, organizeLabels } from '../depot/driveScanner.js';
 import { logger }                     from '../utils/logger.js';
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
@@ -30,6 +30,7 @@ const runNowBtn        = document.getElementById('runNow');
 
 const geminiKeyInput   = document.getElementById('geminiApiKey');
 const driveFolderInput = document.getElementById('driveFolderId');
+const saveSettingsBtn  = document.getElementById('saveSettings');
 
 // ── Status helpers ────────────────────────────────────────────────────────────
 
@@ -120,22 +121,31 @@ scanDriveBtn.addEventListener('click', async () => {
     if (!config.geminiApiKey)  throw new Error('Gemini API Key not set in Settings');
     if (!config.driveFolderId) throw new Error('Drive Folder ID not set in Settings');
 
-    const token       = await getAuthToken();
-    const consNumbers = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token);
+    const token  = await getAuthToken();
 
-    if (consNumbers.length === 0) {
+    // Step 1: OCR all photos — get [{ id, name, consNumber }]
+    const photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token);
+    if (photos.length === 0) {
       setDepotStatus('done', 'No label photos found in Drive folder');
       return;
     }
 
-    setDepotStatus('running', `${consNumbers.length} label(s) read — checking depot...`);
+    // Step 2: find & process in depot
+    setDepotStatus('running', `${photos.length} label(s) read — checking depot...`);
     const tab = await getActiveTab();
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func:   depotMain,
-      args:   [{ dryRun: dryRunToggle.checked, mode: 'labels', consNumbers }],
+      args:   [{ dryRun: dryRunToggle.checked, mode: 'labels', consNumbers: photos.map(p => p.consNumber) }],
       world:  'ISOLATED',
     });
+
+    // Step 3 (live only): organise photos into status subfolders
+    if (!dryRunToggle.checked && result.results?.length > 0) {
+      setDepotStatus('running', 'Organising label photos...');
+      await organizeLabels(photos, result.results, config.driveFolderId, token);
+    }
+
     showDepotResult(result);
   } catch (err) {
     setDepotStatus('error', err.message);
@@ -174,13 +184,20 @@ runNowBtn.addEventListener('click', async () => {
 
 // ── Settings persistence ──────────────────────────────────────────────────────
 
-geminiKeyInput.addEventListener('change', () =>
-  chrome.storage.local.set({ geminiApiKey: geminiKeyInput.value })
-);
+// ── Settings: Save button ─────────────────────────────────────────────────────
 
-driveFolderInput.addEventListener('change', () =>
-  chrome.storage.local.set({ driveFolderId: driveFolderInput.value })
-);
+saveSettingsBtn.addEventListener('click', async () => {
+  await chrome.storage.local.set({
+    geminiApiKey:  geminiKeyInput.value.trim(),
+    driveFolderId: driveFolderInput.value.trim(),
+  });
+  saveSettingsBtn.textContent = 'Saved ✓';
+  saveSettingsBtn.classList.add('btn--saved');
+  setTimeout(() => {
+    saveSettingsBtn.textContent = 'Save';
+    saveSettingsBtn.classList.remove('btn--saved');
+  }, 2000);
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 

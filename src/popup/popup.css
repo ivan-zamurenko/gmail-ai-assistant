@@ -240,6 +240,14 @@ details[open] > .section__header .section__arrow {
   color: #B50015;
 }
 
+.btn--saved {
+  background: #1a7431 !important;
+}
+
+.btn--saved:hover {
+  background: #155c28 !important;
+}
+
 /* ─── Config inputs ───────────────────────────────── */
 
 .config {

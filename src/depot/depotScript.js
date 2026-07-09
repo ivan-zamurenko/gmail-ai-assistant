@@ -241,6 +241,8 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
   async function processPackages(packages, todayShort, tomorrowInput) {
     let changed = 0, skipped = 0, errors = 0;
+    const results = []; // per-parcel outcome — used by organizeLabels() to route photos
+
     for (const pkg of packages) {
       try {
         const consDoc = await fetchConsignment(pkg.consId, pkg.type);
@@ -260,12 +262,16 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
           console.log(`[${pkg.consNumber}] ⏭️  Skipped`);
           skipped++;
         }
+
+        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action });
       } catch (err) {
         console.error(`[${pkg.consNumber}] ❌ ${err.message}`);
         errors++;
+        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR' });
       }
     }
-    return { changed, skipped, errors };
+
+    return { changed, skipped, errors, results };
   }
 
   // ── Entry point ───────────────────────────────────────────────────────────────

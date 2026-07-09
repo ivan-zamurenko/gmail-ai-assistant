@@ -166,12 +166,12 @@ function todayStr() {
 }
 
 // Maps a depot per-parcel result to the Drive subfolder name.
+// Folder name = parcel status (e.g. PENDING, OFD, GOODS HELD).
+// This way you can pre-create folders for each status and photos sort themselves.
 function folderForResult(result) {
-  if (!result)                         return 'Not Found';
-  if (result.action === 'CHANGE_DATE') return 'Done';
-  if (result.action === 'ERROR')       return 'Error';
-  // Skipped parcels go into a folder named after their depot status
-  return result.status ?? 'Skipped';
+  if (!result)               return 'Not Found';
+  if (result.action === 'ERROR') return 'Error';
+  return result.status ?? 'Unknown';
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────

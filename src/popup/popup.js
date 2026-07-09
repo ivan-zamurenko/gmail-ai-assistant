@@ -184,8 +184,18 @@ runNowBtn.addEventListener('click', async () => {
 
 // ── Settings persistence ──────────────────────────────────────────────────────
 
-// ── Settings: Save button ─────────────────────────────────────────────────────
+// ── Settings: auto-save on input + confirm button ─────────────────────────────
 
+// Save immediately as the user types — prevents data loss when the popup
+// closes on tab switch before the Save button is pressed.
+geminiKeyInput.addEventListener('input', () =>
+  chrome.storage.local.set({ geminiApiKey: geminiKeyInput.value.trim() })
+);
+driveFolderInput.addEventListener('input', () =>
+  chrome.storage.local.set({ driveFolderId: driveFolderInput.value.trim() })
+);
+
+// Save button gives visual confirmation that values are stored.
 saveSettingsBtn.addEventListener('click', async () => {
   await chrome.storage.local.set({
     geminiApiKey:  geminiKeyInput.value.trim(),

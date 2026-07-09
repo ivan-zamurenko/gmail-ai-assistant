@@ -8,11 +8,7 @@
  * Does NOT read email content — that is readEmail()'s job.
  */
 
-import { processEmail }  from '../workflow/processEmail.js';
-import { getAuthToken }  from '../auth/getAuthToken.js';
-import { request }       from '../utils/request.js';
-import { logger }        from '../utils/logger.js';
-import { CONSTANTS }     from '../utils/constants.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Fetches new unread message IDs from Gmail and processes each one.
@@ -21,47 +17,7 @@ import { CONSTANTS }     from '../utils/constants.js';
  * @returns {Promise<void>}
  */
 export async function watchEmails() {
-  logger.info('watchEmails: checking for new emails...');
-
-  const messageIds = await listNewMessageIds();
-
-  if (messageIds.length === 0) {
-    logger.info('watchEmails: no new emails');
-    return;
-  }
-
-  logger.info(`watchEmails: found ${messageIds.length} new email(s)`);
-
-  for (const id of messageIds) {
-    try {
-      await processEmail(id);
-    } catch (err) {
-      // Log and continue — one failed email must not block the rest
-      logger.error(`watchEmails: failed to process message ${id}`, err);
-    }
-  }
+  // TODO: Gmail auto-reply feature not yet implemented — skip everything
+  logger.info('watchEmails: email processing not yet implemented — skipping');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Private helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Lists unread Gmail message IDs from the INBOX.
- *
- * @returns {Promise<string[]>}
- */
-async function listNewMessageIds() {
-  const token = await getAuthToken();
-
-  const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages`
-    + `?labelIds=${CONSTANTS.GMAIL_LABEL_INBOX}`
-    + `&labelIds=${CONSTANTS.GMAIL_LABEL_UNREAD}`
-    + `&maxResults=${CONSTANTS.GMAIL_MAX_RESULTS}`;
-
-  const result = await request.get(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return (result.messages ?? []).map((m) => m.id);
-}

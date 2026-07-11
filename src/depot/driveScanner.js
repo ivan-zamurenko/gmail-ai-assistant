@@ -27,7 +27,7 @@ import { delay }                   from '../utils/delay.js';
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const DRIVE_API  = 'https://www.googleapis.com/drive/v3';
-const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 // ── Drive helpers ──────────────────────────────────────────────────────────────
 

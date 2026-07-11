@@ -178,11 +178,13 @@ async function readLabelNumber(base64, mimeType, geminiKey) {
           {
             text: [
               'Find the CONSIGNMENT number on this DPD parcel label.',
-              'Look for the field labeled "Consignment" and read the number next to it.',
-              'IMPORTANT: The consignment field often shows "NUMBER PARCEL_COUNT" (e.g. "131129496 1") — return ONLY the number before the space, ignore the parcel count.',
-              'If the number is in slash format like "040111977/0/1", return it exactly as shown including slashes.',
-              'If the number starts with a 4-digit routing prefix like "0511" or "0512", include those digits.',
-              'Return ONLY the raw number. No spaces. No labels. No other text.',
+              'Look for the large tracking number printed on the label, typically in format: XXXX XXXX XXXX XX X (4-digit prefix, then digits, then a check letter or digit).',
+              'Examples of this format: "1597 6797 5473 04 B" or "0511 2998 7189 42 8".',
+              'ALSO look for a field labeled "Consignment" — the number next to it.',
+              'IMPORTANT: If the consignment field shows "NUMBER PARCEL_COUNT" like "131129496 1", return ONLY the number before the space.',
+              'Remove all spaces from the number before returning.',
+              'If the format is XXXXX/X/X like "040111977/0/1", return it exactly with slashes.',
+              'Return ONLY the number. No labels. No extra text.',
             ].join(' '),
           },
         ],

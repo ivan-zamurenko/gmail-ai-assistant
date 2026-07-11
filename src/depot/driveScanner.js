@@ -177,9 +177,10 @@ async function readLabelNumber(base64, mimeType, geminiKey) {
           { inline_data: { mime_type: mimeType, data: base64 } },
           {
             text: [
+              'The label in this image may be rotated or appear sideways — read it in any orientation.',
               'Find the CONSIGNMENT number on this DPD parcel label.',
               'Look for the large tracking number printed on the label, typically in format: XXXX XXXX XXXX XX X (4-digit prefix, then digits, then a check letter or digit).',
-              'Examples of this format: "1597 6797 5473 04 B" or "0511 2998 7189 42 8".',
+              'Examples of this format: "1597 6797 5473 04 B" or "0511 2998 7189 42 8" or "1550 5955 0587 77 B".',
               'ALSO look for a field labeled "Consignment" — the number next to it.',
               'IMPORTANT: If the consignment field shows "NUMBER PARCEL_COUNT" like "131129496 1", return ONLY the number before the space.',
               'Remove all spaces from the number before returning.',

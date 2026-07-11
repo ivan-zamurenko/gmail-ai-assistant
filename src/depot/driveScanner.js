@@ -139,10 +139,6 @@ class DriveOrganizer {
 }
 
 // ── Gemini Vision ──────────────────────────────────────────────────────────────
-
-// Free tier: 15 requests/minute = 1 request every 4s.
-const GEMINI_REQUEST_INTERVAL_MS = 4200;
-
 // Parses the retryDelay field from a Gemini 429 response body.
 // Returns milliseconds to wait, with a 1s buffer.
 function parseRetryDelay(body) {
@@ -209,12 +205,11 @@ function folderForResult(photo, depotResult) {
  * @param {string} folderInput - Drive folder ID or full Drive URL
  * @param {string} geminiKey   - Gemini API key
  * @param {string} token       - Google OAuth access token
- * @param {(current: number, total: number) => void} [onProgress]
- * @param {(secondsLeft: number) => void} [onWait] - called every second during inter-request delay
+ * @param {(current: number, total: number, state: string) => void} [onProgress]
  * @param {boolean} [testMode] - when true, scans only the first photo (saves API quota during dev)
  * @returns {Promise<Array<{ id: string, name: string, consNumber: string|null, error: string|null }>>}
  */
-export async function scanDriveLabels(folderInput, geminiKey, token, onProgress, onWait, testMode = false) {
+export async function scanDriveLabels(folderInput, geminiKey, token, onProgress, testMode = false) {
   const folderId = parseFolderId(folderInput);
   let   photos   = await listPhotos(folderId, token);
   if (testMode && photos.length > 1) {
@@ -228,17 +223,20 @@ export async function scanDriveLabels(folderInput, geminiKey, token, onProgress,
     console.group(`[scan] ${i + 1}/${photos.length} ${photo.name}`);
     try {
       console.log('↓ downloading...');
+      onProgress?.(i + 1, photos.length, 'downloading');
       const { base64, mimeType } = await downloadAsBase64(photo.id, photo.mimeType, token);
       console.log(`↓ downloaded (${mimeType})`);
 
       let raw;
       try {
         console.log('→ sending to Gemini...');
+        onProgress?.(i + 1, photos.length, 'scanning');
         raw = await readLabelNumber(base64, mimeType, geminiKey);
       } catch (err) {
         if (!err.retryAfterMs) throw err;
         const waitSec = Math.ceil(err.retryAfterMs / 1000);
         console.warn(`rate limited — waiting ${waitSec}s...`);
+        onProgress?.(i + 1, photos.length, `waiting ${waitSec}s`);
         await delay(err.retryAfterMs);
         console.log('→ retrying Gemini...');
         raw = await readLabelNumber(base64, mimeType, geminiKey);
@@ -251,25 +249,14 @@ export async function scanDriveLabels(folderInput, geminiKey, token, onProgress,
       } else {
         console.warn(`✗ not identified`);
       }
-      onProgress?.(i + 1, photos.length);
+      onProgress?.(i + 1, photos.length, 'done');
       result.push({ id: photo.id, name: photo.name, consNumber: consNumber ?? null, error: null });
     } catch (err) {
       console.error(`✗ error: ${err.message}`);
-      onProgress?.(i + 1, photos.length);
+      onProgress?.(i + 1, photos.length, 'error');
       result.push({ id: photo.id, name: photo.name, consNumber: null, error: err.message });
     } finally {
       console.groupEnd();
-    }
-
-    // Stay under 15 RPM free tier: pause between every request except the last.
-    // Counts down every second so the UI can show progress.
-    if (i < photos.length - 1) {
-      let secsLeft = Math.ceil(GEMINI_REQUEST_INTERVAL_MS / 1000);
-      while (secsLeft > 0) {
-        onWait?.(secsLeft);
-        await delay(1000);
-        secsLeft--;
-      }
     }
   }
 

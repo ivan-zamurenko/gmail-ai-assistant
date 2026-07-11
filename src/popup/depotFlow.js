@@ -39,14 +39,14 @@ export function initDepotFlow({
     }
   }
 
-  function showProgress(current, total) {
+  function showProgress(current, total, state = '') {
     scanProgress.hidden = false;
     progressFill.style.width = `${Math.round((current / total) * 100)}%`;
-    progressLabel.textContent = `Scanning ${current} of ${total}`;
-  }
-
-  function showWait(secondsLeft) {
-    progressLabel.textContent = `Next in ${secondsLeft}s`;
+    const stateLabel = state === 'downloading' ? 'Downloading'
+                     : state === 'scanning'    ? 'Scanning'
+                     : state.startsWith('waiting') ? state
+                     : `Scanning`;
+    progressLabel.textContent = `${stateLabel} ${current} of ${total}`;
   }
 
   function hideProgress() {
@@ -97,13 +97,13 @@ export function initDepotFlow({
       let token = await getAuthToken();
       let photos;
       try {
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait, testModeToggle.checked);
+        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, testModeToggle.checked);
       } catch (err) {
         if (!err.message.includes('403')) throw err;
         // Cached token is stale (missing Drive scope) — remove and retry with fresh one
         await removeCachedAuthToken(token);
         token = await getAuthToken({ interactive: true });
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait, testModeToggle.checked);
+        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, testModeToggle.checked);
       }
 
       if (photos.length === 0) {

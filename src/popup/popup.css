@@ -288,3 +288,69 @@ details[open] > .section__header .section__arrow {
 }
 
 .config__input::placeholder { color: #c7c7cc; }
+
+.config__link {
+  font-size: 10px;
+  color: #dc1928;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.config__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config__row .config__input { flex: 1; }
+
+.btn--icon {
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.config__picker {
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid #e5e5ea;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 2px;
+}
+
+.progress {
+  margin-top: 8px;
+}
+
+.progress__bar {
+  height: 4px;
+  background: #e5e5ea;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: #dc1928;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress__label {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #8e8e93;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

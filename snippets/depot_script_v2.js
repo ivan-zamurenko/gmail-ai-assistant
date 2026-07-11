@@ -365,7 +365,9 @@ async function run() {
       console.log(`[${pkg.consNumber}] → ${action} | ${reason}`);
 
       if (action === 'CHANGE_DATE') {
+        console.log(`[${pkg.consNumber}] → logCall...`);
         await logCall(pkg.consId, consDoc);
+        console.log(`[${pkg.consNumber}] → submitReschedule...`);
         const msg = await submitReschedule(pkg.consId, tomorrowInput);
         console.log(`[${pkg.consNumber}] ✅ ${msg}`);
         changed++;

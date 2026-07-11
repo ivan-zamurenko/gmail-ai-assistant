@@ -37,6 +37,8 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     F: 'Future', NFU: 'NFUMisdirects', NFUA: 'NFUMisdirectsAlert',
   };
 
+
+
   // ── Date helpers ───────────────────────────────────────────────────────────────
 
   const pad = n => String(n).padStart(2, '0');
@@ -97,7 +99,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
   // Builds the pending list URL from the trigger link's CL() arguments + session params.
   // The trigger href looks like: javascript:CL('24143736', 'P')
-  // No window.open interception needed.
   function getPendingListUrl() {
     const trigger = document.querySelector('thead th:nth-child(2) a.normal');
     if (!trigger) throw new Error('Pending trigger link not found — are you on the correct depot page?');
@@ -155,41 +156,46 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
   // ── Actions ────────────────────────────────────────────────────────────────────
 
   async function logCall(consId, consDoc) {
-    const btn = consDoc.getElementById('btnLogCall');
-    if (!btn) return;
+    // Fully best-effort — a logCall failure must never block the reschedule.
+    try {
+      const btn = consDoc.getElementById('btnLogCall');
+      if (!btn) return;
 
-    const { session, uid } = getSessionParams();
+      const { session, uid } = getSessionParams();
 
-    // Prefer form submission if available
-    const form = btn.closest('form');
-    if (form?.getAttribute('action')) {
-      const body = new URLSearchParams({ session, ConsId: consId });
-      for (const el of form.elements) {
-        if (el.name && el.type === 'hidden') body.set(el.name, el.value);
+      // Prefer form submission if available
+      const form = btn.closest('form');
+      if (form?.getAttribute('action')) {
+        const body = new URLSearchParams({ session, ConsId: consId });
+        for (const el of form.elements) {
+          if (el.name && el.type === 'hidden') body.set(el.name, el.value);
+        }
+        await fetch(new URL(form.getAttribute('action'), window.location.href).href, {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
+        });
+        return;
       }
-      await fetch(new URL(form.getAttribute('action'), window.location.href).href, {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-      });
-      return;
-    }
 
-    // Try onclick URL
-    const om = (btn.getAttribute('onclick') ?? '').match(
-      /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([/\w][^'"]+)['"]/
-    );
-    if (om) {
-      await fetch(new URL(om[1], window.location.href).href, { credentials: 'include' });
-      return;
-    }
+      // Try onclick URL
+      const om = (btn.getAttribute('onclick') ?? '').match(
+        /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([/\w][^'"]+)['"]/
+      );
+      if (om) {
+        await fetch(new URL(om[1], window.location.href).href, { credentials: 'include' });
+        return;
+      }
 
-    // Fallback: standard endpoint
-    await fetch(
-      `/scripts/cgiip.exe/WService=wsInterlink/woLogCall.p` +
-      `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}&UID=${encodeURIComponent(uid)}`,
-      { credentials: 'include' }
-    ).catch(() => {});
+      // Fallback: standard endpoint
+      await fetch(
+        `/scripts/cgiip.exe/WService=wsInterlink/woLogCall.p` +
+        `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}&UID=${encodeURIComponent(uid)}`,
+        { credentials: 'include' }
+      );
+    } catch (e) {
+      console.warn(`[logCall] non-fatal: ${e.message}`);
+    }
   }
 
   async function submitReschedule(consId, tomorrowInput) {
@@ -199,7 +205,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
     const formDoc = await fetchDoc(formUrl);
     const form    = formDoc.querySelector('form');
-    if (!form) throw new Error('Reschedule form not found');
+    if (!form) {
+      const preview = formDoc.body?.textContent?.trim().slice(0, 200) ?? '(empty)';
+      throw new Error(`Reschedule form not found. Page says: ${preview}`);
+    }
 
     const body = new URLSearchParams();
     for (const el of form.elements) {
@@ -209,19 +218,27 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     body.set('arrange', '1');
     body.set('arranged-date', tomorrowInput);
 
-    const res = await fetch(
-      new URL(form.getAttribute('action') ?? formUrl, window.location.href).href,
-      { method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString() }
-    );
-    if (!res.ok) throw new Error(`Reschedule POST returned HTTP ${res.status}`);
+    const actionUrl = new URL(form.getAttribute('action') ?? formUrl, window.location.href).href;
+    const res = await fetch(actionUrl, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    });
+    if (!res.ok) throw new Error(`Reschedule POST returned HTTP ${res.status}: ${actionUrl}`);
 
-    const resultDoc = new DOMParser().parseFromString(await res.text(), 'text/html');
-    const ok  = resultDoc.querySelector('.panel-success p, #panel-success p');
+    const responseText = await res.text();
+    const resultDoc = new DOMParser().parseFromString(responseText, 'text/html');
+
+    const ok = resultDoc.querySelector('.panel-success p, #panel-success p, .alert-success p, .success p');
     if (ok) return ok.textContent.trim();
-    const err = resultDoc.querySelector('.panel-danger p, #panel-error p, .alert p');
-    throw new Error(err?.textContent.trim() ?? 'No success or error message in server response');
+
+    const errEl = resultDoc.querySelector('.panel-danger p, #panel-error p, .alert-danger p, .alert p, .error p');
+    const errMsg = errEl?.textContent.trim();
+    if (errMsg) throw new Error(`Server error: ${errMsg}`);
+
+    // Neither success nor known error — dump first 300 chars of response so the user can see what came back
+    const preview = responseText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+    throw new Error(`Reschedule: unexpected server response — ${preview}`);
   }
 
   // ── Process loop ───────────────────────────────────────────────────────────────
@@ -241,7 +258,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
         console.log(`[${pkg.consNumber}] ${status} → ${action} | ${reason}`);
 
         if (action === 'CHANGE_DATE') {
+          console.log(`[${pkg.consNumber}] → logCall...`);
           await logCall(pkg.consId, consDoc);
+          console.log(`[${pkg.consNumber}] → submitReschedule (date: ${tomorrowInput})...`);
           const msg = await submitReschedule(pkg.consId, tomorrowInput);
           console.log(`[${pkg.consNumber}] ✅ ${msg}`);
           changed++;

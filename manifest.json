@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "DPD Assistance",
-  "version": "1.0.0",
+  "version": "1.0.0.14",
   "description": "DPD depot tools: Future Dates automation, Drive label scanning, and Gmail auto-reply.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxBqmIQZ3Q3tco0gYEXrgOiy18AQAydZHBLcuA0v33FJKx4zk0f14Sa+Yiw8Y27hmIuDfyS0rSzTyLrge+BwKX2TxHcQZtsDEsB6c16I0EGKDbUI3lh3xRepivzp+3SMxo5Uh4nHl944u/F/hlWSZM9ZNeN/AZBKm4rJO2BdlmR4+ld9C/VxUYQuqXmi5RwslCKDa7rPl16EM8aqtetfvhJJAN7vHcn07fvyOztleUCJaQL0mDhDAuna9U2SoyZBz6LjUi1scm1zX2evUSIfhs7BSK5rrrYcfRfVmqFk/dQxOvV10DxZYY+xCOQZCdnEtHIWGIQeUPydbVUR88LzRTwIDAQAB",
 
   "permissions": [
     "identity",

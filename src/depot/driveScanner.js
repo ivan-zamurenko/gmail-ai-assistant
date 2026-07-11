@@ -45,12 +45,19 @@ async function driveGet(path, token) {
 }
 
 async function listPhotos(folderId, token) {
-  const q = `'${folderId}' in parents and (mimeType='image/jpeg' or mimeType='image/png') and trashed=false`;
-  const data = await driveGet(
-    `files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType)&pageSize=100`,
-    token
-  );
-  return data.files ?? [];
+  const q = `'${folderId}' in parents and mimeType contains 'image/' and trashed=false`;
+  const files = [];
+  let pageToken = '';
+
+  do {
+    const url = `files?q=${encodeURIComponent(q)}&fields=nextPageToken,files(id,name,mimeType)&pageSize=200` +
+      (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
+    const data = await driveGet(url, token);
+    files.push(...(data.files ?? []));
+    pageToken = data.nextPageToken ?? '';
+  } while (pageToken);
+
+  return files;
 }
 
 async function downloadAsBase64(fileId, mimeType, token) {
@@ -165,13 +172,10 @@ function todayStr() {
   return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${String(d.getFullYear()).slice(-2)}`;
 }
 
-// Maps a depot per-parcel result to the Drive subfolder name.
-// Folder name = parcel status (e.g. PENDING, OFD, GOODS HELD).
-// This way you can pre-create folders for each status and photos sort themselves.
-function folderForResult(result) {
-  if (!result)               return 'Not Found';
-  if (result.action === 'ERROR') return 'Error';
-  return result.status ?? 'Unknown';
+// Maps photo + depot result to the Drive subfolder name.
+function folderForResult(photo, depotResult) {
+  if (!photo.consNumber) return 'Unknown';   // OCR couldn't read the label
+  return 'Complete';                          // number was identified
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────
@@ -184,22 +188,28 @@ function folderForResult(result) {
  * @param {string} folderInput - Drive folder ID or full Drive URL
  * @param {string} geminiKey   - Gemini API key
  * @param {string} token       - Google OAuth access token
- * @returns {Promise<Array<{ id: string, name: string, consNumber: string }>>}
+ * @param {(current: number, total: number, name: string, result: string|null, error: string|null) => void} [onProgress]
+ * @returns {Promise<Array<{ id: string, name: string, consNumber: string|null, error: string|null }>>}
  */
-export async function scanDriveLabels(folderInput, geminiKey, token) {
+export async function scanDriveLabels(folderInput, geminiKey, token, onProgress) {
   const folderId = parseFolderId(folderInput);
   const photos   = await listPhotos(folderId, token);
   const result   = [];
 
-  for (const photo of photos) {
+  for (let i = 0; i < photos.length; i++) {
+    const photo = photos[i];
     try {
       const { base64, mimeType } = await downloadAsBase64(photo.id, photo.mimeType, token);
       const raw        = await readLabelNumber(base64, mimeType, geminiKey);
       const consNumber = extractConsignmentNumber(raw);
-      console.log(`[scan] ${photo.name} → "${consNumber}"`);
-      result.push({ id: photo.id, name: photo.name, consNumber });
+      const display    = consNumber ?? `not identified (Gemini: "${raw.slice(0, 40)}")`;
+      console.log(`[scan] ${photo.name} → ${display}`);
+      onProgress?.(i + 1, photos.length, photo.name, consNumber, null);
+      result.push({ id: photo.id, name: photo.name, consNumber: consNumber ?? null, error: null });
     } catch (err) {
       console.error(`[scan] ${photo.name}: ${err.message}`);
+      onProgress?.(i + 1, photos.length, photo.name, null, err.message);
+      result.push({ id: photo.id, name: photo.name, consNumber: null, error: err.message });
     }
   }
 
@@ -221,15 +231,13 @@ export async function scanDriveLabels(folderInput, geminiKey, token) {
 export async function organizeLabels(photos, depotResults, folderInput, token) {
   const folderId  = parseFolderId(folderInput);
   const organizer = new DriveOrganizer(folderId, token);
-  const resultMap = new Map(depotResults.map(r => [r.consNumber, r]));
   const date      = todayStr();
 
   for (const photo of photos) {
     try {
-      const result  = resultMap.get(photo.consNumber);
-      const folder  = folderForResult(result);
+      const folder  = folderForResult(photo);
       const ext     = photo.name.split('.').pop() || 'jpg';
-      const fileId  = result?.consId ?? photo.consNumber;
+      const fileId  = photo.consNumber ?? photo.id;
       const newName = `${date}_${fileId}.${ext}`;
 
       await organizer.placeFile(photo.id, folder, newName);

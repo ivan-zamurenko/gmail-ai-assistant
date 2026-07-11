@@ -27,3 +27,15 @@ export function getAuthToken({ interactive = true } = {}) {
     });
   });
 }
+
+/**
+ * Removes a token from Chrome's cache, forcing a fresh token on the next getAuthToken() call.
+ * Call this when an API returns 401 or 403 — the cached token may be stale or missing a scope.
+ *
+ * @param {string} token
+ */
+export function removeCachedAuthToken(token) {
+  return new Promise((resolve) => {
+    chrome.identity.removeCachedAuthToken({ token }, resolve);
+  });
+}

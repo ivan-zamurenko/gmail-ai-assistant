@@ -28,6 +28,11 @@ export function extractConsignmentNumber(raw) {
     return value.slice(4, -1);
   }
 
-  // Type 1: plain number — return as-is
-  return value;
+  // Type 1: plain number — must be at least 6 digits, nothing else
+  if (/^\d{6,}$/.test(value)) {
+    return value;
+  }
+
+  // Gemini returned something that isn't a number (e.g. "not found", "N/A")
+  return null;
 }

@@ -35,6 +35,12 @@
         </div>
         <button class="btn btn--primary" id="scanCAD">Scan CAD List</button>
         <button class="btn btn--secondary" id="scanDrive">Scan Drive Labels</button>
+        <div id="scanProgress" class="progress" hidden>
+          <div class="progress__bar">
+            <div class="progress__fill" id="progressFill"></div>
+          </div>
+          <span class="progress__label" id="progressLabel"></span>
+        </div>
         <p class="message" id="depotMessage" hidden></p>
       </div>
     </details>
@@ -74,12 +80,16 @@
       <div class="section__body">
         <div class="config">
           <label class="config__field">
-            <span class="config__label">Gemini API Key</span>
+            <span class="config__label">Gemini API Key <a href="https://aistudio.google.com/app/apikey" target="_blank" class="config__link">Get key ↗</a></span>
             <input type="password" id="geminiApiKey" class="config__input" placeholder="AIzaSy..." />
           </label>
           <label class="config__field">
-            <span class="config__label">Drive Folder ID</span>
-            <input type="text" id="driveFolderId" class="config__input" placeholder="Folder ID or Drive link" />
+            <span class="config__label">Drive Folder</span>
+            <div class="config__row">
+              <input type="text" id="driveFolderId" class="config__input" placeholder="Paste link or browse →" />
+              <button class="btn btn--icon" id="browseDrive" title="Browse Drive folders">📁</button>
+            </div>
+            <select id="driveFolderPicker" class="config__picker" hidden size="5"></select>
           </label>
         </div>
         <button class="btn btn--primary" id="saveSettings">Save</button>

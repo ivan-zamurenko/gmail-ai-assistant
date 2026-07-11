@@ -8,7 +8,7 @@
 
 import { loadConfig }                         from '../config/config.js';
 import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
-import { scanDriveLabels, organizeLabels }    from '../depot/driveScanner.js';
+import { scanDriveLabels, saveToSamples }    from '../depot/driveScanner.js';
 import { setStatus }                          from './statusHelper.js';
 
 export function initDepotFlow({
@@ -131,16 +131,16 @@ export function initDepotFlow({
 
       if (identified.length === 0) {
         if (!dryRunToggle.checked) {
-          setDepotStatus('running', 'No numbers identified — moving to Unknown...');
-          await organizeLabels(photos, [], config.driveFolderId, token);
+          setDepotStatus('running', 'No numbers identified — saving to Samples...');
+          await saveToSamples(photos, config.driveFolderId, token);
         }
         setDepotStatus('done', `Scanned ${photos.length} photo(s) — 0 numbers identified. Check labels or Gemini key.`);
         return;
       }
 
       if (!dryRunToggle.checked) {
-        setDepotStatus('running', 'Organising label photos...');
-        await organizeLabels(photos, [], config.driveFolderId, token);
+        setDepotStatus('running', 'Saving to Samples...');
+        await saveToSamples(photos, config.driveFolderId, token);
       }
 
       setDepotStatus('done',

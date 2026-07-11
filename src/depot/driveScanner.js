@@ -318,3 +318,31 @@ export async function organizeLabels(photos, depotResults, folderInput, token) {
     }
   }
 }
+
+/**
+ * Saves all scanned label photos to a Samples/ subfolder for training data.
+ * Identified photos are renamed to {consNumber}_{date}.{ext}.
+ * Unidentified photos are renamed to unknown_{date}_{originalName}.
+ *
+ * @param {Array<{ id, name, consNumber }>} photos  - from scanDriveLabels
+ * @param {string} folderInput - Drive folder ID or URL
+ * @param {string} token       - Google OAuth access token
+ */
+export async function saveToSamples(photos, folderInput, token) {
+  const folderId  = parseFolderId(folderInput);
+  const organizer = new DriveOrganizer(folderId, token);
+  const date      = todayStr();
+
+  for (const photo of photos) {
+    try {
+      const ext     = photo.name.split('.').pop() || 'jpg';
+      const newName = photo.consNumber
+        ? `${photo.consNumber}_${date}.${ext}`
+        : `unknown_${date}_${photo.name}`;
+      await organizer.placeFile(photo.id, 'Samples', newName);
+      console.log(`[samples] ${photo.name} → Samples/${newName}`);
+    } catch (err) {
+      console.error(`[samples] ${photo.name}: ${err.message}`);
+    }
+  }
+}

@@ -27,7 +27,7 @@ import { delay }                   from '../utils/delay.js';
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const DRIVE_API  = 'https://www.googleapis.com/drive/v3';
-const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
+const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
 
 // ── Drive helpers ──────────────────────────────────────────────────────────────
 
@@ -148,6 +148,25 @@ function parseRetryDelay(body) {
   return (isNaN(seconds) ? 30 : Math.ceil(seconds)) * 1000 + 1000;
 }
 
+// Downscales an image to max 1024px wide before sending to Gemini.
+// Reduces token count ~10x for high-res phone photos → lower cost.
+function resizeImage(base64, mimeType) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1024;
+      if (img.width <= MAX) { resolve({ base64, mimeType }); return; }
+      const scale  = MAX / img.width;
+      const canvas = document.createElement('canvas');
+      canvas.width  = MAX;
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' });
+    };
+    img.src = `data:${mimeType};base64,${base64}`;
+  });
+}
+
 async function readLabelNumber(base64, mimeType, geminiKey) {
   const res = await fetch(`${GEMINI_API}?key=${geminiKey}`, {
     method:  'POST',
@@ -225,13 +244,15 @@ export async function scanDriveLabels(folderInput, geminiKey, token, onProgress,
       console.log('↓ downloading...');
       onProgress?.(i + 1, photos.length, 'downloading');
       const { base64, mimeType } = await downloadAsBase64(photo.id, photo.mimeType, token);
-      console.log(`↓ downloaded (${mimeType})`);
+      console.log(`↓ downloaded (${mimeType}), resizing...`);
+      const resized = await resizeImage(base64, mimeType);
+      console.log(`↓ resized to max 1024px`);
 
       let raw;
       try {
         console.log('→ sending to Gemini...');
         onProgress?.(i + 1, photos.length, 'scanning');
-        raw = await readLabelNumber(base64, mimeType, geminiKey);
+        raw = await readLabelNumber(resized.base64, resized.mimeType, geminiKey);
       } catch (err) {
         if (!err.retryAfterMs) throw err;
         const waitSec = Math.ceil(err.retryAfterMs / 1000);

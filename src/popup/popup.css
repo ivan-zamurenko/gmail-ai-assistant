@@ -328,29 +328,36 @@ details[open] > .section__header .section__arrow {
 
 .progress {
   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.progress__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8e8e93;
+  letter-spacing: 0.01em;
 }
 
 .progress__bar {
-  height: 4px;
+  height: 3px;
   background: #e5e5ea;
-  border-radius: 2px;
+  border-radius: 99px;
   overflow: hidden;
 }
 
 .progress__fill {
   height: 100%;
-  background: #dc1928;
-  border-radius: 2px;
-  transition: width 0.3s ease;
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   width: 0%;
+  background: linear-gradient(90deg, #dc1928 0%, #ff3b52 50%, #dc1928 100%);
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.8s ease-in-out infinite;
 }
 
-.progress__label {
-  display: block;
-  margin-top: 4px;
-  font-size: 11px;
-  color: #8e8e93;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+@keyframes progress-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

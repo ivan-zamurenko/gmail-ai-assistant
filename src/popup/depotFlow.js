@@ -39,31 +39,20 @@ export function initDepotFlow({
     }
   }
 
-  let lastProgressText = '';
-
-  function showProgress(current, total, name, consNumber, error) {
+  function showProgress(current, total) {
     scanProgress.hidden = false;
-    const pct = Math.round((current / total) * 100);
-    progressFill.style.width = `${pct}%`;
-    if (error) {
-      lastProgressText = `${current}/${total} — ❌ ${name}: ${error}`;
-    } else if (!consNumber) {
-      lastProgressText = `${current}/${total} — ⚠️ ${name}: number not identified`;
-    } else {
-      lastProgressText = `${current}/${total} — ✓ ${name} → ${consNumber}`;
-    }
-    progressLabel.textContent = lastProgressText;
+    progressFill.style.width = `${Math.round((current / total) * 100)}%`;
+    progressLabel.textContent = `Scanning ${current} of ${total}`;
   }
 
   function showWait(secondsLeft) {
-    progressLabel.textContent = `${lastProgressText} — next in ${secondsLeft}s`;
+    progressLabel.textContent = `Next in ${secondsLeft}s`;
   }
 
   function hideProgress() {
     scanProgress.hidden = true;
     progressFill.style.width = '0%';
     progressLabel.textContent = '';
-    lastProgressText = '';
   }
 
   async function getActiveTab() {
@@ -98,7 +87,7 @@ export function initDepotFlow({
   // ── Scan Drive Labels ───────────────────────────────────────────────────────
 
   scanDriveBtn.addEventListener('click', async () => {
-    setDepotStatus('running', '🔒 Keep this window open — scanning labels...');
+    setDepotStatus('running', 'Keep this window open — scanning labels...');
     setDepotButtons(true);
     try {
       const config = await loadConfig();

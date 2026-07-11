@@ -225,29 +225,40 @@ export async function scanDriveLabels(folderInput, geminiKey, token, onProgress,
 
   for (let i = 0; i < photos.length; i++) {
     const photo = photos[i];
+    console.group(`[scan] ${i + 1}/${photos.length} ${photo.name}`);
     try {
+      console.log('↓ downloading...');
       const { base64, mimeType } = await downloadAsBase64(photo.id, photo.mimeType, token);
+      console.log(`↓ downloaded (${mimeType})`);
 
       let raw;
       try {
+        console.log('→ sending to Gemini...');
         raw = await readLabelNumber(base64, mimeType, geminiKey);
       } catch (err) {
         if (!err.retryAfterMs) throw err;
         const waitSec = Math.ceil(err.retryAfterMs / 1000);
-        console.warn(`[scan] ${photo.name}: rate limited — waiting ${waitSec}s...`);
+        console.warn(`rate limited — waiting ${waitSec}s...`);
         await delay(err.retryAfterMs);
+        console.log('→ retrying Gemini...');
         raw = await readLabelNumber(base64, mimeType, geminiKey);
       }
 
+      console.log(`← Gemini raw: "${raw}"`);
       const consNumber = extractConsignmentNumber(raw);
-      const display    = consNumber ?? `not identified (Gemini: "${raw.slice(0, 40)}")`;
-      console.log(`[scan] ${photo.name} → ${display}`);
+      if (consNumber) {
+        console.log(`✓ consignment: ${consNumber}`);
+      } else {
+        console.warn(`✗ not identified`);
+      }
       onProgress?.(i + 1, photos.length);
       result.push({ id: photo.id, name: photo.name, consNumber: consNumber ?? null, error: null });
     } catch (err) {
-      console.error(`[scan] ${photo.name}: ${err.message}`);
+      console.error(`✗ error: ${err.message}`);
       onProgress?.(i + 1, photos.length);
       result.push({ id: photo.id, name: photo.name, consNumber: null, error: err.message });
+    } finally {
+      console.groupEnd();
     }
 
     // Stay under 15 RPM free tier: pause between every request except the last.

@@ -22,6 +22,7 @@
  */
 
 import { extractConsignmentNumber } from './labelParser.js';
+import { delay }                   from '../utils/delay.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -139,6 +140,18 @@ class DriveOrganizer {
 
 // ── Gemini Vision ──────────────────────────────────────────────────────────────
 
+// Free tier: 15 requests/minute = 1 request every 4s.
+const GEMINI_REQUEST_INTERVAL_MS = 4200;
+
+// Parses the retryDelay field from a Gemini 429 response body.
+// Returns milliseconds to wait, with a 1s buffer.
+function parseRetryDelay(body) {
+  const retryInfo = body?.error?.details?.find(d => d['@type']?.includes('RetryInfo'));
+  const raw       = retryInfo?.retryDelay ?? '30s';
+  const seconds   = parseFloat(raw);
+  return (isNaN(seconds) ? 30 : Math.ceil(seconds)) * 1000 + 1000;
+}
+
 async function readLabelNumber(base64, mimeType, geminiKey) {
   const res = await fetch(`${GEMINI_API}?key=${geminiKey}`, {
     method:  'POST',
@@ -158,7 +171,15 @@ async function readLabelNumber(base64, mimeType, geminiKey) {
       }],
     }),
   });
-  if (!res.ok) throw new Error(`Gemini API ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    if (res.status === 429) {
+      const err = new Error(`Gemini API 429: rate limited`);
+      err.retryAfterMs = parseRetryDelay(body);
+      throw err;
+    }
+    throw new Error(`Gemini API ${res.status}: ${JSON.stringify(body)}`);
+  }
   const data = await res.json();
   return data.candidates[0].content.parts[0].text.trim();
 }
@@ -200,7 +221,20 @@ export async function scanDriveLabels(folderInput, geminiKey, token, onProgress)
     const photo = photos[i];
     try {
       const { base64, mimeType } = await downloadAsBase64(photo.id, photo.mimeType, token);
-      const raw        = await readLabelNumber(base64, mimeType, geminiKey);
+
+      let raw;
+      try {
+        raw = await readLabelNumber(base64, mimeType, geminiKey);
+      } catch (err) {
+        if (!err.retryAfterMs) throw err;
+        // 429 — wait the suggested delay and retry once
+        const waitSec = Math.ceil(err.retryAfterMs / 1000);
+        console.warn(`[scan] ${photo.name}: rate limited — waiting ${waitSec}s...`);
+        onProgress?.(i + 1, photos.length, photo.name, null, `rate limited — waiting ${waitSec}s`);
+        await delay(err.retryAfterMs);
+        raw = await readLabelNumber(base64, mimeType, geminiKey);
+      }
+
       const consNumber = extractConsignmentNumber(raw);
       const display    = consNumber ?? `not identified (Gemini: "${raw.slice(0, 40)}")`;
       console.log(`[scan] ${photo.name} → ${display}`);
@@ -211,6 +245,9 @@ export async function scanDriveLabels(folderInput, geminiKey, token, onProgress)
       onProgress?.(i + 1, photos.length, photo.name, null, err.message);
       result.push({ id: photo.id, name: photo.name, consNumber: null, error: err.message });
     }
+
+    // Stay under 15 RPM free tier: pause between every request except the last
+    if (i < photos.length - 1) await delay(GEMINI_REQUEST_INTERVAL_MS);
   }
 
   return result;

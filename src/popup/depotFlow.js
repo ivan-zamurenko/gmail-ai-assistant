@@ -8,7 +8,6 @@
 
 import { loadConfig }                         from '../config/config.js';
 import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
-import { depotMain }                          from '../depot/depotScript.js';
 import { scanDriveLabels, organizeLabels }    from '../depot/driveScanner.js';
 import { setStatus }                          from './statusHelper.js';
 
@@ -116,6 +115,22 @@ export function initDepotFlow({
       }
 
       const identified = photos.filter(p => p.consNumber);
+      const unknown    = photos.filter(p => !p.consNumber);
+
+      // ── Console output ──────────────────────────────────────────────────────
+      console.group(`📦 Scan Drive Labels — ${photos.length} photo(s)`);
+      if (identified.length) {
+        console.group(`✅ Identified (${identified.length})`);
+        identified.forEach(p => console.log(`  ${p.consNumber}  ←  ${p.name}`));
+        console.groupEnd();
+      }
+      if (unknown.length) {
+        console.group(`❓ Not identified (${unknown.length})`);
+        unknown.forEach(p => console.log(`  ${p.name}${p.error ? `  [error: ${p.error}]` : ''}`));
+        console.groupEnd();
+      }
+      console.groupEnd();
+      // ───────────────────────────────────────────────────────────────────────
 
       if (identified.length === 0) {
         if (!dryRunToggle.checked) {
@@ -126,27 +141,14 @@ export function initDepotFlow({
         return;
       }
 
-      setDepotStatus('running',
-        `${identified.length}/${photos.length} identified: ${identified.map(p => p.consNumber).join(', ')} — checking depot...`
-      );
-
-      const tab = await getActiveTab();
-      const [injection] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func:   depotMain,
-        args:   [{ dryRun: dryRunToggle.checked, mode: 'labels', consNumbers: identified.map(p => p.consNumber) }],
-        world:  'ISOLATED',
-      });
-      if (!injection.result) throw new Error('Depot script returned no result — check you are on the depot page');
-      if (injection.result.__error) throw new Error(injection.result.__error);
-      const result = injection.result;
-
       if (!dryRunToggle.checked) {
         setDepotStatus('running', 'Organising label photos...');
-        await organizeLabels(photos, result.results ?? [], config.driveFolderId, token);
+        await organizeLabels(photos, [], config.driveFolderId, token);
       }
 
-      showDepotResult(result);
+      setDepotStatus('done',
+        `${identified.length}/${photos.length} identified: ${identified.map(p => p.consNumber).join(', ')}`
+      );
     } catch (err) {
       setDepotStatus('error', err.message);
     } finally {

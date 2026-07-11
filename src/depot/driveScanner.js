@@ -211,11 +211,16 @@ function folderForResult(photo, depotResult) {
  * @param {string} token       - Google OAuth access token
  * @param {(current: number, total: number) => void} [onProgress]
  * @param {(secondsLeft: number) => void} [onWait] - called every second during inter-request delay
+ * @param {boolean} [testMode] - when true, scans only the first photo (saves API quota during dev)
  * @returns {Promise<Array<{ id: string, name: string, consNumber: string|null, error: string|null }>>}
  */
-export async function scanDriveLabels(folderInput, geminiKey, token, onProgress, onWait) {
+export async function scanDriveLabels(folderInput, geminiKey, token, onProgress, onWait, testMode = false) {
   const folderId = parseFolderId(folderInput);
-  const photos   = await listPhotos(folderId, token);
+  let   photos   = await listPhotos(folderId, token);
+  if (testMode && photos.length > 1) {
+    console.info(`[scan] Test Mode ON — scanning 1 of ${photos.length} photo(s)`);
+    photos = photos.slice(0, 1);
+  }
   const result   = [];
 
   for (let i = 0; i < photos.length; i++) {

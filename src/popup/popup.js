@@ -17,6 +17,7 @@ const depotStatusDot    = document.getElementById('depotStatusDot');
 const depotStatusLabel  = document.getElementById('depotStatusLabel');
 const depotMessage      = document.getElementById('depotMessage');
 const dryRunToggle      = document.getElementById('dryRun');
+const testModeToggle    = document.getElementById('testMode');
 const scanCADBtn        = document.getElementById('scanCAD');
 const scanDriveBtn      = document.getElementById('scanDrive');
 const scanProgress      = document.getElementById('scanProgress');
@@ -44,7 +45,7 @@ function setDepotStatus(state, text) {
 
 initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, scanCADBtn, scanDriveBtn,
+  dryRunToggle, testModeToggle, scanCADBtn, scanDriveBtn,
   scanProgress, progressFill, progressLabel,
 });
 

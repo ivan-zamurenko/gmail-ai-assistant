@@ -13,7 +13,7 @@ import { setStatus }                          from './statusHelper.js';
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, scanCADBtn, scanDriveBtn,
+  dryRunToggle, testModeToggle, scanCADBtn, scanDriveBtn,
   scanProgress, progressFill, progressLabel,
 }) {
   // ── Internal helpers ────────────────────────────────────────────────────────
@@ -97,13 +97,13 @@ export function initDepotFlow({
       let token = await getAuthToken();
       let photos;
       try {
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait);
+        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait, testModeToggle.checked);
       } catch (err) {
         if (!err.message.includes('403')) throw err;
         // Cached token is stale (missing Drive scope) — remove and retry with fresh one
         await removeCachedAuthToken(token);
         token = await getAuthToken({ interactive: true });
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait);
+        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait, testModeToggle.checked);
       }
 
       if (photos.length === 0) {

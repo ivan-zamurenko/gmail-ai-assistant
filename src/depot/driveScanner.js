@@ -210,9 +210,10 @@ function folderForResult(photo, depotResult) {
  * @param {string} geminiKey   - Gemini API key
  * @param {string} token       - Google OAuth access token
  * @param {(current: number, total: number, name: string, result: string|null, error: string|null) => void} [onProgress]
+ * @param {(secondsLeft: number) => void} [onWait] - called every second during inter-request delay
  * @returns {Promise<Array<{ id: string, name: string, consNumber: string|null, error: string|null }>>}
  */
-export async function scanDriveLabels(folderInput, geminiKey, token, onProgress) {
+export async function scanDriveLabels(folderInput, geminiKey, token, onProgress, onWait) {
   const folderId = parseFolderId(folderInput);
   const photos   = await listPhotos(folderId, token);
   const result   = [];
@@ -246,8 +247,16 @@ export async function scanDriveLabels(folderInput, geminiKey, token, onProgress)
       result.push({ id: photo.id, name: photo.name, consNumber: null, error: err.message });
     }
 
-    // Stay under 15 RPM free tier: pause between every request except the last
-    if (i < photos.length - 1) await delay(GEMINI_REQUEST_INTERVAL_MS);
+    // Stay under 15 RPM free tier: pause between every request except the last.
+    // Counts down every second so the UI can show progress.
+    if (i < photos.length - 1) {
+      let secsLeft = Math.ceil(GEMINI_REQUEST_INTERVAL_MS / 1000);
+      while (secsLeft > 0) {
+        onWait?.(secsLeft);
+        await delay(1000);
+        secsLeft--;
+      }
+    }
   }
 
   return result;

@@ -39,23 +39,31 @@ export function initDepotFlow({
     }
   }
 
+  let lastProgressText = '';
+
   function showProgress(current, total, name, consNumber, error) {
     scanProgress.hidden = false;
     const pct = Math.round((current / total) * 100);
     progressFill.style.width = `${pct}%`;
     if (error) {
-      progressLabel.textContent = `${current}/${total} — ❌ ${name}: ${error}`;
+      lastProgressText = `${current}/${total} — ❌ ${name}: ${error}`;
     } else if (!consNumber) {
-      progressLabel.textContent = `${current}/${total} — ⚠️ ${name}: number not identified`;
+      lastProgressText = `${current}/${total} — ⚠️ ${name}: number not identified`;
     } else {
-      progressLabel.textContent = `${current}/${total} — ✓ ${name} → ${consNumber}`;
+      lastProgressText = `${current}/${total} — ✓ ${name} → ${consNumber}`;
     }
+    progressLabel.textContent = lastProgressText;
+  }
+
+  function showWait(secondsLeft) {
+    progressLabel.textContent = `${lastProgressText} — next in ${secondsLeft}s`;
   }
 
   function hideProgress() {
     scanProgress.hidden = true;
     progressFill.style.width = '0%';
     progressLabel.textContent = '';
+    lastProgressText = '';
   }
 
   async function getActiveTab() {
@@ -90,7 +98,7 @@ export function initDepotFlow({
   // ── Scan Drive Labels ───────────────────────────────────────────────────────
 
   scanDriveBtn.addEventListener('click', async () => {
-    setDepotStatus('running', 'Reading Drive labels...');
+    setDepotStatus('running', '🔒 Keep this window open — scanning labels...');
     setDepotButtons(true);
     try {
       const config = await loadConfig();
@@ -100,13 +108,13 @@ export function initDepotFlow({
       let token = await getAuthToken();
       let photos;
       try {
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress);
+        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait);
       } catch (err) {
         if (!err.message.includes('403')) throw err;
         // Cached token is stale (missing Drive scope) — remove and retry with fresh one
         await removeCachedAuthToken(token);
         token = await getAuthToken({ interactive: true });
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress);
+        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, showWait);
       }
 
       if (photos.length === 0) {

@@ -134,7 +134,7 @@ export function initDepotFlow({
           setDepotStatus('running', 'No numbers identified — saving to Samples...');
           await saveToSamples(photos, config.driveFolderId, token);
         }
-        setDepotStatus('done', `Scanned ${photos.length} photo(s) — 0 numbers identified. Check labels or Gemini key.`);
+        setDepotStatus('done', `Scanned ${photos.length} — 0 identified. Check console.`);
         return;
       }
 
@@ -143,9 +143,7 @@ export function initDepotFlow({
         await saveToSamples(photos, config.driveFolderId, token);
       }
 
-      setDepotStatus('done',
-        `${identified.length}/${photos.length} identified: ${identified.map(p => p.consNumber).join(', ')}`
-      );
+      setDepotStatus('done', `${identified.length}/${photos.length} identified — see console`);
     } catch (err) {
       setDepotStatus('error', err.message);
     } finally {

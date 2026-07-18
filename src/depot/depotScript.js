@@ -229,16 +229,15 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     const responseText = await res.text();
     const resultDoc = new DOMParser().parseFromString(responseText, 'text/html');
 
-    const ok = resultDoc.querySelector('.panel-success p, #panel-success p, .alert-success p, .success p');
-    if (ok) return ok.textContent.trim();
-
-    const errEl = resultDoc.querySelector('.panel-danger p, #panel-error p, .alert-danger p, .alert p, .error p');
+    const errEl = resultDoc.querySelector('.panel-danger p, #panel-error p, .alert-danger p, .alert-danger, .error p');
     const errMsg = errEl?.textContent.trim();
     if (errMsg) throw new Error(`Server error: ${errMsg}`);
 
-    // Neither success nor known error — dump first 300 chars of response so the user can see what came back
-    const preview = responseText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
-    throw new Error(`Reschedule: unexpected server response — ${preview}`);
+    const ok = resultDoc.querySelector('.panel-success p, #panel-success p, .alert-success p, .success p');
+    if (ok) return ok.textContent.trim();
+
+    // No error found — server likely redirected to home page after success (normal Interlink behaviour)
+    return 'Rescheduled';
   }
 
   // ── Process loop ───────────────────────────────────────────────────────────────

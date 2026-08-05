@@ -15,8 +15,10 @@
  */
 export function extractOrderNumber(text) {
   // Pattern: "Order: 12345", "order #ORD-9876", "consignment: CON001"
+  // \b keeps the label a whole word, so "reorder" and "Reference" are not
+  // mistaken for a label followed by a value.
   const match = text.match(
-    /(?:order|consignment|cons\.?|ref\.?)\s*(?:number|no\.?|#)?\s*[:\-]?\s*([A-Z0-9\-]{4,20})/i
+    /\b(?:order|consignment|cons|ref(?:erence)?)\b\.?\s*(?:number|no\.?|#)?\s*[:\-]?\s*([A-Z0-9\-]{4,20})/i
   );
 
   return match ? match[1].toUpperCase() : null;

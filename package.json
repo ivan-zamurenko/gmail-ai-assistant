@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
+    "test": "node --test tests/",
     "lint": "eslint \"src/**/*.js\"",
     "lint:fix": "eslint \"src/**/*.js\" --fix"
   },

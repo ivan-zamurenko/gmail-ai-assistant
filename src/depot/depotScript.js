@@ -114,7 +114,19 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
       `&RowNo=${encodeURIComponent(m[1])}&Type=${encodeURIComponent(typeName)}&DashName=Customer`;
   }
 
+  // The Route column has moved between depot releases, so trust the header over a fixed index.
+  function findRouteIndex(doc) {
+    const headers = Array.from(doc.querySelectorAll('thead th, thead td'));
+    const idx = headers.findIndex(h => /route/i.test(h.textContent ?? ''));
+    if (idx === -1) {
+      console.warn(`[pending list] no "Route" header found, falling back to column 6. Headers: ${headers.map(h => h.textContent.trim()).join(' | ')}`);
+      return 5;
+    }
+    return idx;
+  }
+
   function parseRows(doc) {
+    const routeIdx = findRouteIndex(doc);
     return Array.from(doc.querySelectorAll('tbody tr')).flatMap(tr => {
       const tds  = tr.querySelectorAll('td');
       const link = tds[1]?.querySelector('a');
@@ -122,12 +134,16 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
       const m = (link.getAttribute('href') ?? '').match(/chooseItem\('([^']+)'\s*,\s*'([^']+)'\)/);
       if (!m) return [];
       return [{ consNumber: link.textContent.trim(), consId: m[1], type: m[2],
-                route: tds[5]?.textContent.trim().toLowerCase() ?? '' }];
+                route: tds[routeIdx]?.textContent.trim().toLowerCase() ?? '' }];
     });
   }
 
   async function fetchPendingList() {
-    return parseRows(await fetchDoc(getPendingListUrl()));
+    const url = getPendingListUrl();
+    console.log(`[pending list] ${url}`);
+    const rows = parseRows(await fetchDoc(url));
+    console.log(`[pending list] ${rows.length} row(s) parsed`);
+    return rows;
   }
 
   // ── Consignment detail ─────────────────────────────────────────────────────────
@@ -308,9 +324,15 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
       : allRows.filter(r => consSet.has(r.consNumber) || consSet.has(r.consId));
 
     if (packages.length === 0) {
-      const warning = mode === 'cad'
-        ? 'No CAD parcels found — are you on the correct depot page?'
-        : `None of the scanned numbers found in the pending list: ${consNumbers.join(', ')}`;
+      let warning;
+      if (allRows.length === 0) {
+        warning = 'Pending list came back empty — the list page did not load or its layout changed.';
+      } else if (mode === 'cad') {
+        const routes = [...new Set(allRows.map(r => r.route))].filter(Boolean);
+        warning = `No CAD parcels among ${allRows.length} pending. Routes seen: ${routes.join(', ') || '(all blank)'}`;
+      } else {
+        warning = `None of the scanned numbers found in the pending list: ${consNumbers.join(', ')}`;
+      }
       console.warn(`⚠️ ${warning}`);
       return { changed: 0, skipped: 0, errors: 0, warning };
     }

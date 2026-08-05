@@ -17,13 +17,18 @@
  * @returns {string}
  */
 export function buildPrompt(email, shipment) {
-  const shipmentSection = shipment
-    ? [
-        `Status:             ${shipment.status}`,
-        `Last event:         ${shipment.lastEvent          ?? 'N/A'}`,
-        `Estimated delivery: ${shipment.estimatedDelivery  ?? 'N/A'}`,
-      ].join('\n')
-    : 'No shipment information available for this inquiry.';
+  let shipmentSection;
+  if (!shipment) {
+    shipmentSection = 'No consignment number was found in this email.';
+  } else if (!shipment.found) {
+    shipmentSection = `Consignment ${shipment.trackingNumber} is not in the depot system.`;
+  } else {
+    shipmentSection = [
+      `Consignment: ${shipment.trackingNumber}`,
+      `Status:      ${shipment.status}`,
+      `Depot notes: ${shipment.lastEvent ?? 'none'}`,
+    ].join('\n');
+  }
 
   return `
 You are a professional customer support agent for a delivery company.

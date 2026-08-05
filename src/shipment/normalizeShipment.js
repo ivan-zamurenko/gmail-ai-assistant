@@ -1,35 +1,32 @@
 /**
  * shipment/normalizeShipment.js
  * ==============================
- * Maps a raw carrier API response to a stable internal schema.
+ * Maps a raw depot lookup result to a stable internal schema.
  *
  * Responsibility: data transformation only — pure function.
- * Decouples the rest of the app from carrier-specific field names.
- * If the carrier changes their API, only this file needs updating.
+ * Decouples the rest of the app from the depot's field names and page layout.
+ * If the depot changes, only this file and lookupConsignment.js need updating.
  */
 
 /**
  * @typedef {Object} Shipment
  * @property {string}      trackingNumber
- * @property {string}      status             - e.g. 'in_transit', 'delivered', 'unknown'
- * @property {string|null} lastEvent          - Human-readable description of the latest event
- * @property {string|null} estimatedDelivery  - ISO date string or null
+ * @property {boolean}     found              - false when the depot has no such parcel
+ * @property {string}      status             - Depot status, e.g. 'PENDING', 'DELIVERED', or 'unknown'
+ * @property {string|null} lastEvent          - Latest depot note, when available
  */
 
 /**
- * Converts a raw carrier API response into the internal Shipment shape.
+ * Converts a raw depot lookup into the internal Shipment shape.
  *
- * TODO: map carrier-specific field names here as real API integration is added.
- *       e.g. DPD uses "Scan" events, DHL uses "events[].description", etc.
- *
- * @param {object} raw - Raw API response from shipmentApi.track()
+ * @param {import('../depot/lookupConsignment.js').DepotConsignment} raw
  * @returns {Shipment}
  */
 export function normalizeShipment(raw) {
   return {
-    trackingNumber:    raw.trackingNumber                  ?? null,
-    status:            raw.status                          ?? 'unknown',
-    lastEvent:         raw.events?.[0]?.description        ?? null,
-    estimatedDelivery: raw.estimatedDelivery               ?? null,
+    trackingNumber: raw.consNumber ?? null,
+    found:          raw.found === true,
+    status:         raw.status     ?? 'unknown',
+    lastEvent:      raw.notes      ?? null,
   };
 }

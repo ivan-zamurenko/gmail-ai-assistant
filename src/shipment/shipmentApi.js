@@ -1,40 +1,28 @@
 /**
  * shipment/shipmentApi.js
  * =======================
- * Low-level HTTP wrapper for the carrier tracking API.
- * All carrier-specific network calls go through this file.
+ * Fetches raw parcel data for a tracking number.
  *
- * Responsibility: one-to-one mapping to API endpoints.
- * Does NOT transform or interpret the response — that is normalizeShipment's job.
+ * There is no carrier API available, so the depot system is the source of
+ * truth: it already knows every parcel's status, and we query it the same way
+ * a human would — through the depot page's quick-search.
+ *
+ * Responsibility: fetching only. Interpreting the response is
+ * normalizeShipment's job.
  */
 
-import { request }    from '../utils/request.js';
-import { loadConfig } from '../config/config.js';
+import { runInDepotTab }        from '../depot/depotTab.js';
+import { lookupConsignmentMain } from '../depot/lookupConsignment.js';
 
 export const shipmentApi = {
   /**
-   * Fetches raw tracking data for a given tracking number.
-   *
-   * TODO: replace stub with real carrier API call.
-   *       Different carriers have different auth/URL schemes —
-   *       add a switch on config.carrierProvider if you support multiple.
+   * Looks a consignment up in the depot system.
    *
    * @param {string} trackingNumber
-   * @returns {Promise<object>} Raw API response (carrier-specific shape)
+   * @returns {Promise<import('../depot/lookupConsignment.js').DepotConsignment>}
+   * @throws {import('../depot/depotTab.js').DepotTabMissingError} when the depot page is closed
    */
   async track(trackingNumber) {
-    const { carrierApiUrl, carrierApiKey } = await loadConfig();
-
-    // return request.get(`${carrierApiUrl}/track/${trackingNumber}`, {
-    //   headers: { Authorization: `Bearer ${carrierApiKey}` },
-    // });
-
-    // Stub — returns a minimal shape that normalizeShipment can consume
-    return {
-      trackingNumber,
-      status:            'unknown',
-      events:            [],
-      estimatedDelivery: null,
-    };
+    return runInDepotTab(lookupConsignmentMain, [trackingNumber]);
   },
 };

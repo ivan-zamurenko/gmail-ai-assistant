@@ -28,6 +28,11 @@ export const CONSTANTS = Object.freeze({
   // Roughly 10 days of history at 500 emails/day; oldest entries are pruned.
   PROCESSED_IDS_MAX: 5000,
 
+  // Depot
+  // Wildcard host: the depot runs on a named VM (e.g. 22-eolas-vm), and that
+  // name changes more often than the domain does.
+  DEPOT_URL_PATTERN: 'http://*.interlink.local/*',
+
   // AI (Gemini)
   GEMINI_BASE_URL:     'https://generativelanguage.googleapis.com/v1beta/models',
   GEMINI_TEXT_MODEL:   'gemini-2.0-flash',

@@ -216,7 +216,9 @@ function todayStr() {
 }
 
 // Maps photo + depot result to the Drive subfolder name.
-function folderForResult(photo, depotResult) {
+// Depot result is not consulted yet — the Not Found/Error folders in the
+// header comment are still to be implemented.
+function folderForResult(photo, _depotResult) {
   if (!photo.consNumber) return 'Unknown';   // OCR couldn't read the label
   return 'Complete';                          // number was identified
 }

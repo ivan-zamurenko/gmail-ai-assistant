@@ -18,6 +18,7 @@
 import { listMessages }  from './listMessages.js';
 import { processEmail }  from '../workflow/processEmail.js';
 import { getProcessedIds, markProcessed } from '../storage/processedStore.js';
+import { DepotTabMissingError } from '../depot/depotTab.js';
 import { getSettings }   from '../storage/settings.js';
 import { logger }        from '../utils/logger.js';
 import { CONSTANTS }     from '../utils/constants.js';
@@ -58,6 +59,14 @@ export async function watchEmails({ force = false } = {}) {
       await processEmail(id);
       done.push(id);
     } catch (err) {
+      // The depot tab being closed is temporary and affects every message
+      // equally. Stop the batch and keep the IDs unprocessed so they are
+      // retried once the tab is back, rather than silently skipped.
+      if (err instanceof DepotTabMissingError) {
+        logger.warn(`watchEmails: ${err.message} — pausing, will retry next tick`);
+        break;
+      }
+
       failed++;
       // Marked as processed anyway: a message that fails deterministically
       // (unparseable body, blocked sender) would otherwise be retried on
@@ -69,7 +78,7 @@ export async function watchEmails({ force = false } = {}) {
 
   await markProcessed(done);
 
-  const skipped = pending.length - batch.length;
+  const skipped = pending.length - done.length;
   logger.info(`watchEmails: done — ${done.length - failed} ok, ${failed} failed, ${skipped} queued for next tick`);
 
   return { processed: done.length - failed, failed, skipped };

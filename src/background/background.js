@@ -15,17 +15,8 @@ import { CONSTANTS }    from '../utils/constants.js';
 // Guards against a second run being started while one is still in flight.
 let runInFlight = false;
 
-/**
- * Runs the Gmail flow to completion, recording progress in storage.
- * Never rejects — callers are fire-and-forget.
- *
- * @param {{ force?: boolean }} [options]
- */
 async function runGmailFlow({ force = false } = {}) {
-  if (runInFlight) {
-    logger.info('background: run already in progress — ignoring');
-    return;
-  }
+  if (runInFlight) return;
   runInFlight = true;
 
   try {
@@ -67,11 +58,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type !== 'RUN_NOW') return;
 
-  // Acknowledge at once. The run outlives the popup — any click outside it
-  // destroys the window, and a channel held open for the whole pipeline would
-  // die with it. Progress reaches the popup through runState in storage.
-  // force: the user pressed the button, so honour it even when auto-process
-  // is switched off.
+  // Answer at once: the run outlives the popup, and a channel held open for
+  // the whole pipeline would die with it. The popup reads runState instead.
   runGmailFlow({ force: true });
   sendResponse({ ok: true });
 });

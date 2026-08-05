@@ -4,7 +4,7 @@
  * Shared helper for updating status dots and message elements.
  */
 
-export function setStatus(dot, label, msgEl, state, text) {
+export function setStatus(dot, label, msgEl, state, text, detail) {
   dot.className   = 'status__dot';
   msgEl.hidden    = true;
   msgEl.className = 'message';
@@ -23,6 +23,10 @@ export function setStatus(dot, label, msgEl, state, text) {
       break;
     case 'done':
       label.textContent = text ?? 'Done';
+      if (detail) {
+        msgEl.textContent = detail;
+        msgEl.hidden = false;
+      }
       break;
     default:
       label.textContent = text ?? 'Idle';

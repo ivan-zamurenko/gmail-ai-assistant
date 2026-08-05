@@ -29,23 +29,27 @@ import { CONSTANTS }     from '../utils/constants.js';
  *
  * @param {{ force?: boolean }} [options]  force bypasses the autoProcess setting,
  *                                        used by the popup's "Run now" button
- * @returns {Promise<{ processed: number, failed: number, skipped: number }>}
+ * @returns {Promise<{ matched: number, processed: number, failed: number, skipped: number }>}
  */
 export async function watchEmails({ force = false } = {}) {
   const settings = await getSettings();
 
   if (!settings.autoProcess && !force) {
     logger.info('watchEmails: auto-process is off — skipping');
-    return { processed: 0, failed: 0, skipped: 0 };
+    return { matched: 0, processed: 0, failed: 0, skipped: 0 };
   }
 
-  const ids       = await listMessages();
+  // An empty setting must not silently match the whole mailbox.
+  const query = settings.gmailQuery?.trim() || CONSTANTS.GMAIL_SEARCH_QUERY;
+  logger.info(`watchEmails: searching Gmail for "${query}"`);
+
+  const ids       = await listMessages(query);
   const processed = await getProcessedIds();
   const pending   = ids.filter((id) => !processed.has(id));
 
   if (pending.length === 0) {
     logger.info(`watchEmails: nothing new (${ids.length} matched, all seen)`);
-    return { processed: 0, failed: 0, skipped: 0 };
+    return { matched: ids.length, processed: 0, failed: 0, skipped: 0 };
   }
 
   const batch = pending.slice(0, CONSTANTS.MAX_EMAILS_PER_TICK);
@@ -81,6 +85,6 @@ export async function watchEmails({ force = false } = {}) {
   const skipped = pending.length - done.length;
   logger.info(`watchEmails: done — ${done.length - failed} ok, ${failed} failed, ${skipped} queued for next tick`);
 
-  return { processed: done.length - failed, failed, skipped };
+  return { matched: ids.length, processed: done.length - failed, failed, skipped };
 }
 

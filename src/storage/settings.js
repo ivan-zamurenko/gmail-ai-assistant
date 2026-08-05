@@ -18,6 +18,7 @@ const KEY = CONSTANTS.STORAGE_SETTINGS_KEY;
  * @property {boolean} draftMode       - true = create draft, false = send immediately
  * @property {number}  pollIntervalMin - How often to check for new emails (minutes)
  * @property {string}  language        - Preferred reply language (ISO 639-1)
+ * @property {string}  gmailQuery      - Gmail search syntax selecting which emails to answer
  */
 
 /** @type {Settings} */
@@ -26,6 +27,7 @@ const DEFAULTS = {
   draftMode:       true,
   pollIntervalMin: CONSTANTS.DEFAULT_POLL_INTERVAL_MIN,
   language:        'en',
+  gmailQuery:      CONSTANTS.GMAIL_SEARCH_QUERY,
 };
 
 /**

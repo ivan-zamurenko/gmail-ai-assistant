@@ -46,7 +46,7 @@ export async function processEmail(messageId) {
   logger.info('processEmail: ✓ reply generated');
 
   // Step 5 — Save as a Gmail draft (does NOT send automatically)
-  const { draftId } = await createDraft(email.id, replyText);
+  const { draftId } = await createDraft(email, replyText);
   logger.info(`processEmail: ✓ draft saved — draftId=${draftId}`);
 
   return { draftId };

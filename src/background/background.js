@@ -40,8 +40,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'RUN_NOW') {
     initConfig()
-      .then(() => watchEmails())
-      .then(() => sendResponse({ ok: true }))
+      // force: the user pressed the button, so honour it even when
+      // auto-process is switched off.
+      .then(() => watchEmails({ force: true }))
+      .then((result) => sendResponse({ ok: true, result }))
       .catch((err) => {
         logger.error('background: RUN_NOW failed', err);
         sendResponse({ ok: false, error: err.message });

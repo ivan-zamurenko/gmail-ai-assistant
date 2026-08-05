@@ -1,17 +1,17 @@
 /**
- * ai/gemini.js  (was openai.js)
- * ==============================
+ * ai/gemini.js
+ * ============
  * Low-level wrapper for the Google Gemini API.
- * All Gemini HTTP calls go through this file.
+ * All Gemini text HTTP calls go through this file.
  *
- * Model: gemini-2.0-flash  (free tier: 1500 req/day)
- * Docs:  https://ai.google.dev/gemini-api/docs
+ * Docs: https://ai.google.dev/gemini-api/docs
  */
 
 import { loadConfig } from '../config/config.js';
+import { CONSTANTS }  from '../utils/constants.js';
 
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const MODEL       = 'gemini-2.0-flash';
+const GEMINI_BASE = CONSTANTS.GEMINI_BASE_URL;
+const MODEL       = CONSTANTS.GEMINI_TEXT_MODEL;
 
 /**
  * Sends a text prompt to Gemini and returns the response text.

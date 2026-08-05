@@ -23,11 +23,12 @@
 
 import { extractConsignmentNumber } from './labelParser.js';
 import { delay }                   from '../utils/delay.js';
+import { CONSTANTS }               from '../utils/constants.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const DRIVE_API  = 'https://www.googleapis.com/drive/v3';
-const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
+const GEMINI_API = `${CONSTANTS.GEMINI_BASE_URL}/${CONSTANTS.GEMINI_VISION_MODEL}:generateContent`;
 
 // ── Drive helpers ──────────────────────────────────────────────────────────────
 

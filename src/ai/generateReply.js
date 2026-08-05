@@ -8,7 +8,7 @@
  */
 
 import { buildPrompt }   from './buildPrompt.js';
-import { gemini }        from './openai.js';
+import { gemini }        from './gemini.js';
 import { validateReply } from './validateReply.js';
 import { logger }        from '../utils/logger.js';
 

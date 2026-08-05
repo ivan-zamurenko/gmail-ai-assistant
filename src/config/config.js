@@ -10,7 +10,7 @@
  *   await initConfig();
  *
  *   // In any module that needs config:
- *   const { openaiApiKey } = await loadConfig();
+ *   const { geminiApiKey } = await loadConfig();
  *
  * Note: Service workers do not persist module-level state between invocations,
  * so each wakeup must call initConfig() or loadConfig() before using any key.

@@ -9,6 +9,7 @@
 import { loadConfig }                         from '../config/config.js';
 import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
 import { scanDriveLabels, saveToSamples }    from '../depot/driveScanner.js';
+import { depotMain }                          from '../depot/depotScript.js';
 import { setStatus }                          from './statusHelper.js';
 
 export function initDepotFlow({

@@ -1,0 +1,77 @@
+/**
+ * build.js
+ * ========
+ * Bundles the extension into dist/ using esbuild.
+ *
+ * Why a bundler is needed:
+ *   Chrome cannot resolve bare module specifiers (`import x from 'pkg'`).
+ *   esbuild inlines npm dependencies so the browser only ever sees real files.
+ *
+ * Directory layout is preserved (outbase: '.'), so src/background/background.js
+ * lands at dist/src/background/background.js — meaning manifest.json paths stay
+ * valid and can be copied verbatim.
+ *
+ * Usage:
+ *   npm run build        one-off build
+ *   npm run watch        rebuild on file change
+ *
+ * Load the extension in Chrome from the dist/ folder, not the repo root.
+ * The "key" field in manifest.json pins the extension ID, so OAuth keeps working.
+ */
+
+import * as esbuild from 'esbuild';
+import { cp, rm, mkdir } from 'node:fs/promises';
+
+const watch = process.argv.includes('--watch');
+
+// Every JS execution context Chrome loads independently needs its own entry point.
+const ENTRY_POINTS = [
+  'src/background/background.js',
+  'src/popup/popup.js',
+];
+
+// Copied as-is — not JavaScript, nothing to bundle.
+const STATIC_FILES = [
+  'manifest.json',
+  'assets',
+  'src/popup/popup.html',
+  'src/popup/popup.css',
+];
+
+async function copyStatic() {
+  for (const path of STATIC_FILES) {
+    await cp(path, `dist/${path}`, { recursive: true });
+  }
+}
+
+const config = {
+  entryPoints: ENTRY_POINTS,
+  outbase:  '.',
+  outdir:   'dist',
+  bundle:   true,
+  format:   'esm',
+  target:   'chrome120',
+  platform: 'browser',
+  sourcemap: watch ? 'inline' : false,
+  minify:    !watch,
+  logLevel:  'info',
+};
+
+await rm('dist', { recursive: true, force: true });
+await mkdir('dist', { recursive: true });
+
+if (watch) {
+  const ctx = await esbuild.context({
+    ...config,
+    plugins: [{
+      name: 'copy-static',
+      setup: (b) => b.onEnd(copyStatic),
+    }],
+  });
+  await ctx.watch();
+  console.log('watching for changes… (Ctrl+C to stop)');
+} else {
+  await esbuild.build(config);
+  await copyStatic();
+  console.log('build complete → dist/');
+}

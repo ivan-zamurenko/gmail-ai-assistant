@@ -10,21 +10,21 @@
 import { getAuthToken } from '../auth/getAuthToken.js';
 import { request }      from '../utils/request.js';
 import { logger }       from '../utils/logger.js';
+import { CONSTANTS }    from '../utils/constants.js';
 
 /**
  * @typedef {Object} Email
- * @property {string} id       - Gmail message ID
- * @property {string} subject  - Subject line
- * @property {string} from     - "From" header (e.g. "John Doe <john@example.com>")
- * @property {string} body     - Plain-text body (decoded from base64)
- * @property {string} date     - ISO 8601 date string
+ * @property {string} id              - Gmail message ID
+ * @property {string} threadId        - Gmail thread ID (used to keep replies together)
+ * @property {string} messageIdHeader - RFC 2822 Message-ID, for In-Reply-To/References
+ * @property {string} subject         - Subject line
+ * @property {string} from            - "From" header (e.g. "John Doe <john@example.com>")
+ * @property {string} body            - Plain-text body (decoded from base64)
+ * @property {string} date            - ISO 8601 date string
  */
 
 /**
  * Fetches and decodes the full email content for a given message ID.
- *
- * TODO: implement using Gmail API — GET /gmail/v1/users/me/messages/{id}
- *       decode base64url-encoded body parts from payload.parts[].body.data
  *
  * @param {string} messageId
  * @returns {Promise<Email>}
@@ -33,7 +33,7 @@ export async function readEmail(messageId) {
   logger.info(`readEmail: fetching message ${messageId}`);
 
   const token = await getAuthToken();
-  const url   = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`;
+  const url   = `${CONSTANTS.GMAIL_API_BASE}/messages/${messageId}?format=full`;
   const raw   = await request.get(url, { headers: { Authorization: `Bearer ${token}` } });
 
   return parseGmailMessage(raw);
@@ -56,11 +56,13 @@ function parseGmailMessage(raw) {
     headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? '';
 
   return {
-    id:      raw.id,
-    subject: getHeader('Subject'),
-    from:    getHeader('From'),
-    date:    getHeader('Date'),
-    body:    extractBody(raw.payload),
+    id:              raw.id,
+    threadId:        raw.threadId,
+    messageIdHeader: getHeader('Message-ID'),
+    subject:         getHeader('Subject'),
+    from:            getHeader('From'),
+    date:            getHeader('Date'),
+    body:            extractBody(raw.payload),
   };
 }
 

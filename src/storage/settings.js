@@ -15,7 +15,6 @@ const KEY = CONSTANTS.STORAGE_SETTINGS_KEY;
 /**
  * @typedef {Object} Settings
  * @property {boolean} autoProcess     - Auto-process emails without user confirmation
- * @property {boolean} draftMode       - true = create draft, false = send immediately
  * @property {number}  pollIntervalMin - How often to check for new emails (minutes)
  * @property {string}  language        - Preferred reply language (ISO 639-1)
  * @property {string}  gmailQuery      - Gmail search syntax selecting which emails to answer
@@ -24,7 +23,6 @@ const KEY = CONSTANTS.STORAGE_SETTINGS_KEY;
 /** @type {Settings} */
 const DEFAULTS = {
   autoProcess:     false,
-  draftMode:       true,
   pollIntervalMin: CONSTANTS.DEFAULT_POLL_INTERVAL_MIN,
   language:        'en',
   gmailQuery:      CONSTANTS.GMAIL_SEARCH_QUERY,

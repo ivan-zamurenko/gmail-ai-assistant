@@ -28,7 +28,6 @@ const gmailStatusDot    = document.getElementById('gmailStatusDot');
 const gmailStatusLabel  = document.getElementById('gmailStatusLabel');
 const gmailMessage      = document.getElementById('gmailMessage');
 const autoProcessToggle = document.getElementById('autoProcess');
-const draftModeToggle   = document.getElementById('draftMode');
 const gmailQueryInput   = document.getElementById('gmailQuery');
 const runNowBtn         = document.getElementById('runNow');
 
@@ -52,7 +51,7 @@ initDepotFlow({
 
 initGmailFlow({
   gmailStatusDot, gmailStatusLabel, gmailMessage,
-  runNowBtn, autoProcessToggle, draftModeToggle, gmailQueryInput,
+  runNowBtn, autoProcessToggle, gmailQueryInput,
 });
 
 initSettingsFlow({
@@ -66,7 +65,6 @@ initSettingsFlow({
 async function init() {
   const [settings, config] = await Promise.all([getSettings(), loadConfig()]);
   autoProcessToggle.checked = settings.autoProcess;
-  draftModeToggle.checked   = settings.draftMode;
   gmailQueryInput.value     = settings.gmailQuery;
   if (config.geminiApiKey)  geminiKeyInput.value   = config.geminiApiKey;
   if (config.driveFolderId) driveFolderInput.value = config.driveFolderId;

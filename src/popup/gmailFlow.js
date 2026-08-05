@@ -10,7 +10,7 @@ import { setStatus }    from './statusHelper.js';
 
 export function initGmailFlow({
   gmailStatusDot, gmailStatusLabel, gmailMessage,
-  runNowBtn, autoProcessToggle, draftModeToggle, gmailQueryInput,
+  runNowBtn, autoProcessToggle, gmailQueryInput,
 }) {
   function setGmailStatus(state, text, detail) {
     setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, state, text, detail);
@@ -18,10 +18,6 @@ export function initGmailFlow({
 
   autoProcessToggle.addEventListener('change', () =>
     saveSettings({ autoProcess: autoProcessToggle.checked })
-  );
-
-  draftModeToggle.addEventListener('change', () =>
-    saveSettings({ draftMode: draftModeToggle.checked })
   );
 
   gmailQueryInput.addEventListener('input', () =>

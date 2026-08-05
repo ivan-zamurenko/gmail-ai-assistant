@@ -3,9 +3,9 @@
  * ==================
  * Sends an existing draft immediately via the Gmail API.
  *
- * Responsibility: one API call — send the draft.
- * Only called when the user has explicitly enabled auto-send in settings
- * (draftMode: false). Default behaviour is createDraft only.
+ * NOT WIRED UP. processEmail() stops at createDraft, so nothing is ever sent.
+ * Implementing this means adding the setting and the UI control to match —
+ * both were removed because a toggle that changes nothing is worse than none.
  */
 
 import { logger } from '../utils/logger.js';

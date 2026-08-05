@@ -8,8 +8,38 @@
 
 import { watchEmails }  from '../gmail/watchEmails.js';
 import { initConfig }   from '../config/config.js';
+import { setLastRun }   from '../storage/runState.js';
 import { logger }       from '../utils/logger.js';
 import { CONSTANTS }    from '../utils/constants.js';
+
+// Guards against a second run being started while one is still in flight.
+let runInFlight = false;
+
+/**
+ * Runs the Gmail flow to completion, recording progress in storage.
+ * Never rejects — callers are fire-and-forget.
+ *
+ * @param {{ force?: boolean }} [options]
+ */
+async function runGmailFlow({ force = false } = {}) {
+  if (runInFlight) {
+    logger.info('background: run already in progress — ignoring');
+    return;
+  }
+  runInFlight = true;
+
+  try {
+    await setLastRun({ state: 'running' });
+    await initConfig();
+    const result = await watchEmails({ force });
+    await setLastRun({ state: 'done', result });
+  } catch (err) {
+    logger.error('background: gmail run failed', err);
+    await setLastRun({ state: 'error', error: err.message });
+  } finally {
+    runInFlight = false;
+  }
+}
 
 // ── On install / update ──────────────────────────────────────────────────────
 
@@ -29,27 +59,19 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== 'checkEmails') return;
-
-  // Re-init config on every wake-up — service workers don't persist state
-  await initConfig();
-  await watchEmails();
+  await runGmailFlow();
 });
 
 // ── Popup messages ───────────────────────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.type === 'RUN_NOW') {
-    initConfig()
-      // force: the user pressed the button, so honour it even when
-      // auto-process is switched off.
-      .then(() => watchEmails({ force: true }))
-      .then((result) => sendResponse({ ok: true, result }))
-      .catch((err) => {
-        logger.error('background: RUN_NOW failed', err);
-        sendResponse({ ok: false, error: err.message });
-      });
+  if (message.type !== 'RUN_NOW') return;
 
-    // Return true to keep the message channel open for the async response
-    return true;
-  }
+  // Acknowledge at once. The run outlives the popup — any click outside it
+  // destroys the window, and a channel held open for the whole pipeline would
+  // die with it. Progress reaches the popup through runState in storage.
+  // force: the user pressed the button, so honour it even when auto-process
+  // is switched off.
+  runGmailFlow({ force: true });
+  sendResponse({ ok: true });
 });

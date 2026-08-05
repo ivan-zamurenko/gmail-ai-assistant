@@ -5,6 +5,7 @@
  */
 
 import { saveSettings } from '../storage/settings.js';
+import { getLastRun, onLastRunChange } from '../storage/runState.js';
 import { logger }       from '../utils/logger.js';
 import { setStatus }    from './statusHelper.js';
 
@@ -16,6 +17,23 @@ export function initGmailFlow({
     setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, state, text, detail);
   }
 
+  function render(run) {
+    if (!run) return;
+
+    runNowBtn.disabled = run.state === 'running';
+
+    switch (run.state) {
+      case 'running': setGmailStatus('running', 'Working...');                 break;
+      case 'error':   setGmailStatus('error', run.error);                      break;
+      case 'done':    setGmailStatus('done', 'Done ✓', summarise(run.result)); break;
+    }
+  }
+
+  // The worker keeps running while the popup is shut, so pick up both the
+  // state it left behind and any change that lands while the popup is open.
+  getLastRun().then(render);
+  onLastRunChange(render);
+
   autoProcessToggle.addEventListener('change', () =>
     saveSettings({ autoProcess: autoProcessToggle.checked })
   );
@@ -25,19 +43,13 @@ export function initGmailFlow({
   );
 
   runNowBtn.addEventListener('click', async () => {
-    setGmailStatus('running');
+    setGmailStatus('running', 'Starting...');
     runNowBtn.disabled = true;
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'RUN_NOW' });
-      if (response?.ok) {
-        setGmailStatus('done', 'Done ✓', summarise(response.result));
-      } else {
-        setGmailStatus('error', response?.error ?? 'Unknown error');
-      }
+      await chrome.runtime.sendMessage({ type: 'RUN_NOW' });
     } catch (err) {
-      logger.error('popup: gmail run failed', err);
+      logger.error('popup: could not reach the service worker', err);
       setGmailStatus('error', err.message);
-    } finally {
       runNowBtn.disabled = false;
     }
   });

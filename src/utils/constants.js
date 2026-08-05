@@ -11,6 +11,7 @@ export const CONSTANTS = Object.freeze({
   // chrome.storage keys
   STORAGE_SETTINGS_KEY:  'gmail_ai_settings',
   STORAGE_PROCESSED_KEY: 'gmail_ai_processed_ids',
+  STORAGE_LAST_RUN_KEY:  'gmail_ai_last_run',
 
   // Gmail
   GMAIL_API_BASE:     'https://gmail.googleapis.com/gmail/v1/users/me',

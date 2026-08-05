@@ -210,6 +210,16 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
       throw new Error(`Reschedule form not found. Page says: ${preview}`);
     }
 
+    const actionUrl = new URL(form.getAttribute('action') ?? formUrl, window.location.href).href;
+
+    // ── Diagnostic ───────────────────────────────────────────────────────────
+    const allFields = Array.from(form.elements)
+      .filter(el => el.name)
+      .map(el => ({ name: el.name, type: el.type, value: el.value }));
+    console.log(`[reschedule] action: ${actionUrl}`);
+    console.log(`[reschedule] form fields:`, allFields);
+    // ────────────────────────────────────────────────────────────────────────
+
     const body = new URLSearchParams();
     for (const el of form.elements) {
       if (el.name && el.type === 'hidden') body.append(el.name, el.value);
@@ -218,7 +228,8 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     body.set('arrange', '1');
     body.set('arranged-date', tomorrowInput);
 
-    const actionUrl = new URL(form.getAttribute('action') ?? formUrl, window.location.href).href;
+    console.log(`[reschedule] POST body: ${body.toString()}`);
+
     const res = await fetch(actionUrl, {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -236,8 +247,12 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     const ok = resultDoc.querySelector('.panel-success p, #panel-success p, .alert-success p, .success p');
     if (ok) return ok.textContent.trim();
 
-    // No error found — server likely redirected to home page after success (normal Interlink behaviour)
-    return 'Rescheduled';
+    // Neither success nor error found — log response for diagnosis
+    const title = resultDoc.title ?? '(no title)';
+    const preview = responseText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+    console.warn(`[reschedule] unexpected response — title: "${title}"`);
+    console.warn(`[reschedule] response preview: ${preview}`);
+    throw new Error(`Reschedule: server did not confirm. See console for details.`);
   }
 
   // ── Process loop ───────────────────────────────────────────────────────────────

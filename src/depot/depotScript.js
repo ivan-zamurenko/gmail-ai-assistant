@@ -236,13 +236,21 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     console.log(`[reschedule] form fields:`, allFields);
     // ────────────────────────────────────────────────────────────────────────
 
+    // Send what the browser would send on a real click: every enabled named
+    // control, checked radios only, plus the Save button itself — the server
+    // treats a missing btnSave as "form merely opened" and echoes it back.
     const body = new URLSearchParams();
     for (const el of form.elements) {
-      if (el.name && el.type === 'hidden') body.append(el.name, el.value);
+      if (!el.name || el.disabled) continue;
+      if (el.type === 'button' || el.type === 'reset') continue;
+      if (el.type === 'submit' && el.name !== 'btnSave') continue;
+      if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) continue;
+      body.append(el.name, el.value);
     }
     body.set('arranged-by', 'customer');
     body.set('arrange', '1');
     body.set('arranged-date', tomorrowInput);
+    body.set('btnSave', 'Save');
 
     console.log(`[reschedule] POST body: ${body.toString()}`);
 

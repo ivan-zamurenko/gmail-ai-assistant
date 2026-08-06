@@ -6,6 +6,7 @@
 
 import { loadConfig }       from '../config/config.js';
 import { initDepotFlow }    from './depotFlow.js';
+import { initGmailFlow }    from './gmailFlow.js';
 import { initSettingsFlow } from './settingsFlow.js';
 import { setStatus }        from './statusHelper.js';
 
@@ -21,6 +22,11 @@ const scanDriveBtn      = document.getElementById('scanDrive');
 const scanProgress      = document.getElementById('scanProgress');
 const progressFill      = document.getElementById('progressFill');
 const progressLabel     = document.getElementById('progressLabel');
+
+const gmailStatusDot    = document.getElementById('gmailStatusDot');
+const gmailStatusLabel  = document.getElementById('gmailStatusLabel');
+const gmailMessage      = document.getElementById('gmailMessage');
+const checkLabelBtn     = document.getElementById('checkLabel');
 
 const geminiKeyInput    = document.getElementById('geminiApiKey');
 const driveFolderInput  = document.getElementById('driveFolderId');
@@ -38,6 +44,10 @@ initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
   dryRunToggle, testModeToggle, scanCADBtn, scanDriveBtn,
   scanProgress, progressFill, progressLabel,
+});
+
+initGmailFlow({
+  gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn,
 });
 
 initSettingsFlow({

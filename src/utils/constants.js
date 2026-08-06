@@ -11,6 +11,12 @@ export const CONSTANTS = Object.freeze({
   // chrome.storage keys
   STORAGE_SETTINGS_KEY: 'gmail_ai_settings',
 
+  // Gmail — labels act as the work queue
+  GMAIL_API_BASE: 'https://gmail.googleapis.com/gmail/v1/users/me',
+  LABEL_QUEUE:    'AI-Reply',
+  LABEL_DONE:     'AI-Replied',
+  LABEL_FAILED:   'AI-Failed',
+
   // Depot
   // Wildcard host: the depot runs on a named VM (e.g. 22-eolas-vm), and that
   // name changes more often than the domain does.

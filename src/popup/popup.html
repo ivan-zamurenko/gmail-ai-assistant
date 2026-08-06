@@ -52,7 +52,7 @@
     <!-- ── GMAIL: Auto-Reply ────────────────────────── -->
     <details class="section">
       <summary class="section__header">
-        <span class="section__title">Gmail Auto-Reply</span>
+        <span class="section__title">Gmail</span>
         <span class="section__arrow">›</span>
       </summary>
       <div class="section__body">
@@ -60,23 +60,7 @@
           <span class="status__dot" id="gmailStatusDot"></span>
           <span class="status__label" id="gmailStatusLabel">Idle</span>
         </div>
-        <div class="settings">
-          <label class="setting">
-            <span class="setting__label">Auto-process emails</span>
-            <input type="checkbox" id="autoProcess" class="setting__toggle" />
-          </label>
-          <label class="setting">
-            <span class="setting__label">Draft mode — replies are never sent</span>
-            <input type="checkbox" class="setting__toggle" checked disabled />
-          </label>
-        </div>
-        <div class="config">
-          <label class="config__field">
-            <span class="config__label">Gmail search</span>
-            <input type="text" id="gmailQuery" class="config__input" placeholder="is:unread in:inbox newer_than:1d" />
-          </label>
-        </div>
-        <button class="btn btn--primary" id="runNow">Run now</button>
+        <button class="btn btn--primary" id="checkLabel">Check AI-Reply label</button>
         <p class="message" id="gmailMessage" hidden></p>
       </div>
     </details>

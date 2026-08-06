@@ -268,11 +268,12 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     const ok = resultDoc.querySelector('.panel-success p, #panel-success p, .alert-success p, .success p');
     if (ok) return ok.textContent.trim();
 
-    // Neither success nor error found — log response for diagnosis
-    const title = resultDoc.title ?? '(no title)';
-    const preview = responseText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
-    console.warn(`[reschedule] unexpected response — title: "${title}"`);
-    console.warn(`[reschedule] response preview: ${preview}`);
+    // Neither success nor error found — show what the page actually says.
+    // Scripts must go first, or the jQuery boilerplate fills the whole preview.
+    resultDoc.querySelectorAll('script, style').forEach(el => el.remove());
+    const visibleText = (resultDoc.body?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    console.warn(`[reschedule] unexpected response — title: "${resultDoc.title}"`);
+    console.warn(`[reschedule] page text: ${visibleText.slice(0, 500) || '(page has no visible text)'}`);
     throw new Error(`Reschedule: server did not confirm. See console for details.`);
   }
 

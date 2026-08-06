@@ -73,7 +73,9 @@ export function initDepotFlow({
         target: { tabId: tab.id },
         func:   depotMain,
         args:   [{ dryRun: dryRunToggle.checked, mode: 'cad' }],
-        world:  'ISOLATED',
+        // The depot rejects POSTs from an isolated world; MAIN makes them
+        // ordinary page requests, exactly like running the snippet in the console.
+        world:  'MAIN',
       });
       if (!injection.result) throw new Error('Depot script returned no result — check you are on the depot page');
       if (injection.result.__error) throw new Error(injection.result.__error);

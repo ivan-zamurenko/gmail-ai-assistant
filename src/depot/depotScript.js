@@ -236,9 +236,14 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     console.log(`[reschedule] form fields:`, allFields);
     // ────────────────────────────────────────────────────────────────────────
 
+    // Echo every field back exactly as the server filled it — a field we omit
+    // may be stored empty, and the date is the only thing we may change.
     const body = new URLSearchParams();
     for (const el of form.elements) {
-      if (el.name && el.type === 'hidden') body.append(el.name, el.value);
+      if (!el.name || el.disabled) continue;
+      if (el.type === 'submit' || el.type === 'button' || el.type === 'reset') continue;
+      if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) continue;
+      body.append(el.name, el.value);
     }
     body.set('arranged-by', 'customer');
     body.set('arrange', '1');

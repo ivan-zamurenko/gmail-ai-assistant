@@ -4,10 +4,8 @@
  * Thin orchestrator: wires DOM elements to feature modules.
  */
 
-import { getSettings }      from '../storage/settings.js';
 import { loadConfig }       from '../config/config.js';
 import { initDepotFlow }    from './depotFlow.js';
-import { initGmailFlow }    from './gmailFlow.js';
 import { initSettingsFlow } from './settingsFlow.js';
 import { setStatus }        from './statusHelper.js';
 
@@ -23,13 +21,6 @@ const scanDriveBtn      = document.getElementById('scanDrive');
 const scanProgress      = document.getElementById('scanProgress');
 const progressFill      = document.getElementById('progressFill');
 const progressLabel     = document.getElementById('progressLabel');
-
-const gmailStatusDot    = document.getElementById('gmailStatusDot');
-const gmailStatusLabel  = document.getElementById('gmailStatusLabel');
-const gmailMessage      = document.getElementById('gmailMessage');
-const autoProcessToggle = document.getElementById('autoProcess');
-const gmailQueryInput   = document.getElementById('gmailQuery');
-const runNowBtn         = document.getElementById('runNow');
 
 const geminiKeyInput    = document.getElementById('geminiApiKey');
 const driveFolderInput  = document.getElementById('driveFolderId');
@@ -49,11 +40,6 @@ initDepotFlow({
   scanProgress, progressFill, progressLabel,
 });
 
-initGmailFlow({
-  gmailStatusDot, gmailStatusLabel, gmailMessage,
-  runNowBtn, autoProcessToggle, gmailQueryInput,
-});
-
 initSettingsFlow({
   geminiKeyInput, driveFolderInput, browseDriveBtn,
   driveFolderPicker, saveSettingsBtn,
@@ -63,9 +49,7 @@ initSettingsFlow({
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function init() {
-  const [settings, config] = await Promise.all([getSettings(), loadConfig()]);
-  autoProcessToggle.checked = settings.autoProcess;
-  gmailQueryInput.value     = settings.gmailQuery;
+  const config = await loadConfig();
   if (config.geminiApiKey)  geminiKeyInput.value   = config.geminiApiKey;
   if (config.driveFolderId) driveFolderInput.value = config.driveFolderId;
 }

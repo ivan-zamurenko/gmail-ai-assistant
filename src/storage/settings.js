@@ -14,18 +14,12 @@ const KEY = CONSTANTS.STORAGE_SETTINGS_KEY;
 
 /**
  * @typedef {Object} Settings
- * @property {boolean} autoProcess     - Auto-process emails without user confirmation
- * @property {number}  pollIntervalMin - How often to check for new emails (minutes)
- * @property {string}  language        - Preferred reply language (ISO 639-1)
- * @property {string}  gmailQuery      - Gmail search syntax selecting which emails to answer
+ * @property {string} language - Preferred reply language (ISO 639-1)
  */
 
 /** @type {Settings} */
 const DEFAULTS = {
-  autoProcess:     false,
-  pollIntervalMin: CONSTANTS.DEFAULT_POLL_INTERVAL_MIN,
-  language:        'en',
-  gmailQuery:      CONSTANTS.GMAIL_SEARCH_QUERY,
+  language: 'en',
 };
 
 /**

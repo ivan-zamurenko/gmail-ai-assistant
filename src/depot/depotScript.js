@@ -253,9 +253,15 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
       if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) continue;
       body.append(el.name, el.value);
     }
+    // Overrides mirror a real Save recorded from the depot UI: the hidden
+    // `action` field carries the verb, and the page leaves arranged-cancel out
+    // unless you pick "Cancel delivery".
+    body.set('action', 'Save');
     body.set('arranged-by', 'customer');
     body.set('arrange', '1');
     body.set('arranged-date', tomorrowInput);
+    body.set('btnSave', 'Save');
+    body.delete('arranged-cancel');
 
     console.log(`[reschedule] POST body: ${body.toString()}`);
 

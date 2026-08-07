@@ -139,9 +139,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
   }
 
   async function fetchPendingList() {
-    const url = getPendingListUrl();
-    console.log(`[pending list] ${url}`);
-    const rows = parseRows(await fetchDoc(url));
+    const rows = parseRows(await fetchDoc(getPendingListUrl()));
     console.log(`[pending list] ${rows.length} row(s) parsed`);
     return rows;
   }
@@ -228,21 +226,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
     const actionUrl = new URL(form.getAttribute('action') ?? formUrl, window.location.href).href;
 
-    // ── Diagnostic ───────────────────────────────────────────────────────────
-    const allFields = Array.from(form.elements)
-      .filter(el => el.name)
-      .map(el => ({ name: el.name, type: el.type, value: el.value, disabled: el.disabled }));
-    console.log(`[reschedule] action: ${actionUrl} | method: ${form.getAttribute('method')}`);
-    console.log(`[reschedule] form fields:`, allFields);
-    // The hidden `action` field arrives empty; the page's own scripts fill it on submit.
-    for (const s of formDoc.querySelectorAll('script')) {
-      for (const line of (s.textContent ?? '').split('\n')) {
-        if (/action\s*(\.value)?\s*=|btnSave|\.submit\s*\(/i.test(line)) {
-          console.log(`[reschedule] script: ${line.trim()}`);
-        }
-      }
-    }
-    // ────────────────────────────────────────────────────────────────────────
 
     // Echo every field back exactly as the server filled it — a field we omit
     // may be stored empty, and the date is the only thing we may change.
@@ -262,8 +245,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     body.set('arranged-date', tomorrowInput);
     body.set('btnSave', 'Save');
     body.delete('arranged-cancel');
-
-    console.log(`[reschedule] POST body: ${body.toString()}`);
 
     const res = await fetch(actionUrl, {
       method: 'POST', credentials: 'include',
@@ -313,9 +294,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
         console.log(`[${pkg.consNumber}] ${status} → ${action} | ${reason}`);
 
         if (action === 'CHANGE_DATE') {
-          console.log(`[${pkg.consNumber}] → logCall...`);
           await logCall(pkg.consId, consDoc);
-          console.log(`[${pkg.consNumber}] → submitReschedule (date: ${tomorrowInput})...`);
           const msg = await submitReschedule(pkg.consId, tomorrowInput);
           console.log(`[${pkg.consNumber}] ✅ ${msg}`);
           changed++;

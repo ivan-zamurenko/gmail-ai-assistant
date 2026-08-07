@@ -231,9 +231,17 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     // ── Diagnostic ───────────────────────────────────────────────────────────
     const allFields = Array.from(form.elements)
       .filter(el => el.name)
-      .map(el => ({ name: el.name, type: el.type, value: el.value }));
-    console.log(`[reschedule] action: ${actionUrl}`);
+      .map(el => ({ name: el.name, type: el.type, value: el.value, disabled: el.disabled }));
+    console.log(`[reschedule] action: ${actionUrl} | method: ${form.getAttribute('method')}`);
     console.log(`[reschedule] form fields:`, allFields);
+    // The hidden `action` field arrives empty; the page's own scripts fill it on submit.
+    for (const s of formDoc.querySelectorAll('script')) {
+      for (const line of (s.textContent ?? '').split('\n')) {
+        if (/action\s*(\.value)?\s*=|btnSave|\.submit\s*\(/i.test(line)) {
+          console.log(`[reschedule] script: ${line.trim()}`);
+        }
+      }
+    }
     // ────────────────────────────────────────────────────────────────────────
 
     // Echo every field back exactly as the server filled it — a field we omit

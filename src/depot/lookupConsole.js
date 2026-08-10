@@ -1,41 +1,38 @@
-// Paste the built dist/console/lookup.js into the depot tab's console to try
-// the real module by hand — no duplicated snippet to drift out of sync.
+// Paste the built dist/console/lookupConsole.js into the depot tab's console to
+// try the real module by hand — no duplicated snippet to drift out of sync.
 import { depotLookup } from './lookup.js';
 
-window.depotLookup = depotLookup;
+const dash = (v) => v || '—';
 
-/** Shows what quick search actually answers, so response parsing is observed, not guessed. */
-window.depotQuickSearchRaw = async (number) => {
-  const form = document.getElementById('ConQSearchForm');
-  const res = await fetch(form.action, {
-    method:      'POST',
-    credentials: 'include',
-    headers:     { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body:        new URLSearchParams({ 'con-quick-search': number }).toString(),
-  });
+function show(result) {
+  if (!result.ok) {
+    console.log(`%c✖ ${result.query}%c  ${result.reason}`, 'color:#e55;font-weight:bold', 'color:#999');
+    return;
+  }
 
-  const html = await res.text();
-  const doc  = new DOMParser().parseFromString(html, 'text/html');
-  const rows = Array.from(doc.querySelectorAll('tr'));
-  doc.querySelectorAll('script, style').forEach((el) => el.remove());
+  const scan = result.lastScan;
+  const { address } = result;
+  const place = [...address.lines, address.town, address.county, address.postCode]
+    .filter(Boolean).join(', ');
 
-  return {
-    httpStatus:   res.status,
-    finalUrl:     res.url,
-    redirected:   res.redirected,
-    htmlLength:   html.length,
-    isDetailPage: !!doc.getElementById('hiddenConsBarcodeValue'),
-    heading:      doc.querySelector('h1')?.textContent.replace(/\s+/g, ' ').trim(),
-    tableIds:     Array.from(doc.querySelectorAll('table')).map((t) => t.id || '(no id)'),
-    rowCount:     rows.length,
-    // The row markup is exactly what we failed to recognise, so show it verbatim.
-    firstRows:    rows.slice(0, 4).map((tr) => tr.innerHTML.replace(/\s+/g, ' ').trim().slice(0, 400)),
-    linkHrefs:    Array.from(doc.querySelectorAll('a[href]'))
-      .map((a) => a.getAttribute('href'))
-      .filter((h) => /chooseItem|ConsId|Consignment/i.test(h))
-      .slice(0, 10),
-    visibleText:  (doc.body?.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 600),
-  };
+  console.groupCollapsed(
+    `%c${result.consNumber}%c  ${result.status}%c  ${scan.type} ${scan.date} ${scan.time}`,
+    'font-weight:bold', 'color:#0a0;font-weight:bold', 'color:#888',
+  );
+  console.log(`last scan   ${scan.type} — ${scan.date} ${scan.time}  (depot ${dash(scan.depot)}, route ${dash(scan.route)})`);
+  console.log(`signed by   ${dash(scan.signature)}${scan.notes ? `  ·  ${scan.notes}` : ''}`);
+  console.log(`consignee   ${dash(address.contact)}${address.company ? `, ${address.company}` : ''}`);
+  console.log(`address     ${dash(place)}`);
+  console.log(`depot       ${dash(address.depot)}`);
+  console.log(`arranged    ${dash(result.arrangedDate)}  ·  ${result.scanCount} scans  ·  searched as "${result.query}"`);
+  console.groupEnd();
+}
+
+/** Accepts numbers as separate arguments so the console call stays short. */
+window.lookup = async (...numbers) => {
+  const results = await depotLookup(numbers.flat().map(String));
+  results.forEach(show);
+  return results;
 };
 
-console.log('Ready. Try:  await depotQuickSearchRaw("131787155")');
+console.log('Ready. Try:  await lookup("131787155", "633582029")');

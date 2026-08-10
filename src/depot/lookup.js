@@ -44,12 +44,14 @@ export async function depotLookup(numbers) {
     return toDoc(await res.text());
   }
 
+  /** Search results link straight to the detail page — unlike the CAD list, which uses chooseItem(). */
   function parseHitList(doc) {
-    return Array.from(doc.querySelectorAll('tbody tr')).flatMap((tr) => {
-      const link = tr.querySelectorAll('td')[1]?.querySelector('a');
-      const m = (link?.getAttribute('href') ?? '').match(/chooseItem\('([^']+)'/);
-      return m ? [{ consId: m[1], consNumber: text(link) }] : [];
-    });
+    const hits = new Map();
+    for (const a of doc.querySelectorAll('#MAINTABLE a[href*="woConsignmentDetails.p"]')) {
+      const consId = new URLSearchParams(a.getAttribute('href').split('?')[1]).get('ConsId');
+      if (consId && !hits.has(consId)) hits.set(consId, { consId, consNumber: text(a) });
+    }
+    return Array.from(hits.values());
   }
 
   function fetchConsignment(consId) {

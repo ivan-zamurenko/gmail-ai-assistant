@@ -57,6 +57,18 @@ const config = {
   logLevel:  'info',
 };
 
+// Console helpers are pasted by hand, so they must not be minified or use
+// `export` — the console rejects both.
+const consoleConfig = {
+  ...config,
+  entryPoints: ['src/depot/lookupConsole.js'],
+  outdir:      'dist/console',
+  outbase:     'src/depot',
+  format:      'iife',
+  minify:      false,
+  sourcemap:   false,
+};
+
 await rm('dist', { recursive: true, force: true });
 await mkdir('dist', { recursive: true });
 
@@ -72,6 +84,7 @@ if (watch) {
   console.log('watching for changes… (Ctrl+C to stop)');
 } else {
   await esbuild.build(config);
+  await esbuild.build(consoleConfig);
   await copyStatic();
   console.log('build complete → dist/');
 }

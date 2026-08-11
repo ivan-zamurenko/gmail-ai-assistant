@@ -141,7 +141,9 @@ export async function depotLookup(numbers) {
     const confirm    = readBlock(detail, 'Confirmation / Notification / Delivery Details');
 
     const scans = parseScans(await fetchDoc(scanUrl(consNumber)));
-    if (!scans.length) return { query, ok: false, reason: 'no scans' };
+    // The parcel exists even with no scans, so callers that only need identity
+    // (label renaming) still get the number back.
+    if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber };
 
     return {
       query,

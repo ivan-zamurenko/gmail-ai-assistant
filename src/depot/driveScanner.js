@@ -1,59 +1,49 @@
 /**
  * src/depot/driveScanner.js
  * =========================
- * Two-step workflow for processing parcel label photos from Google Drive:
+ * Reads the barcode on every label photo in a Drive folder, then files each
+ * photo under YYYY/MM with a name built from the parcel it belongs to.
  *
- *   Step 1 — scanDriveLabels():  OCR every photo via Gemini Vision.
- *                                Returns [{ id, name, consNumber }].
- *                                Does NOT touch files yet.
+ *   scanDriveLabels() — download and decode. Touches nothing.
+ *   fileLabels()      — move and rename, once the depot has confirmed the numbers.
  *
- *   Step 2 — organizeLabels():   After depot processing, move each photo
- *                                into a status-named subfolder and rename it
- *                                to DD-MM-YY_<consId>.<ext>.
- *
- * Folder structure inside the root Drive folder:
- *   Done/          — rescheduled successfully
- *   GOODS HELD/    — skipped (GH without qualifying note)
- *   RETURNED/      — skipped (returned parcel)
- *   Not Found/     — consignment not in depot pending list
- *   Error/         — processing error
- *
+ * Runs in the popup: decoding needs a canvas and a service worker has no DOM.
  * Requires the Drive folder to be shared with the signed-in account as Editor.
  */
 
-import { extractConsignmentNumber } from './labelParser.js';
-import { delay }                   from '../utils/delay.js';
-import { CONSTANTS }               from '../utils/constants.js';
+import { loadImage, readBarcodes } from './barcode.js';
+import { pickConsignment }         from './labelBarcode.js';
+import { buildLabelName, dateOf, makeUnique } from './labelName.js';
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
+const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
-const DRIVE_API  = 'https://www.googleapis.com/drive/v3';
-const GEMINI_API = `${CONSTANTS.GEMINI_BASE_URL}/${CONSTANTS.GEMINI_VISION_MODEL}:generateContent`;
+// A file we named before. Matches 2026-08-07_132999608-p08-2.jpg and friends.
+const ALREADY_NAMED = /^\d{4}-\d{2}-\d{2}_(\d{9}(-p\d{2})?|unknown-\d+)(-\d+)?\.[a-z0-9]+$/i;
+const UNKNOWN_INDEX = /_unknown-(\d+)/;
 
-// ── Drive helpers ──────────────────────────────────────────────────────────────
+// ── Drive ─────────────────────────────────────────────────────────────────────
 
-// Accepts full Drive URL or plain folder ID.
+// Accepts a full Drive URL or a plain folder ID.
 function parseFolderId(input) {
   const match = input.match(/\/folders\/([a-zA-Z0-9_-]+)/);
   return match ? match[1] : input.trim();
 }
 
 async function driveGet(path, token) {
-  const res = await fetch(`${DRIVE_API}/${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await fetch(`${DRIVE_API}/${path}`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`Drive API ${res.status}: GET ${path}`);
   return res.json();
 }
 
-async function listPhotos(folderId, token) {
-  const q = `'${folderId}' in parents and mimeType contains 'image/' and trashed=false`;
+async function listFiles(query, fields, token) {
   const files = [];
   let pageToken = '';
 
   do {
-    const url = `files?q=${encodeURIComponent(q)}&fields=nextPageToken,files(id,name,mimeType)&pageSize=200` +
-      (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
+    const url = `files?q=${encodeURIComponent(query)}`
+      + `&fields=nextPageToken,files(${fields})&pageSize=200`
+      + (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
     const data = await driveGet(url, token);
     files.push(...(data.files ?? []));
     pageToken = data.nextPageToken ?? '';
@@ -62,293 +52,174 @@ async function listPhotos(folderId, token) {
   return files;
 }
 
-async function downloadAsBase64(fileId, mimeType, token) {
+function listPhotos(folderId, token) {
+  return listFiles(
+    `'${folderId}' in parents and mimeType contains 'image/' and trashed=false`,
+    'id,name,createdTime',
+    token
+  );
+}
+
+async function downloadAsDataUrl(fileId, token) {
   const res = await fetch(`${DRIVE_API}/files/${fileId}?alt=media`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Failed to download file ${fileId}: HTTP ${res.status}`);
+
   const blob = await res.blob();
   return new Promise((resolve, reject) => {
-    const reader    = new FileReader();
-    reader.onload  = () => resolve({ base64: reader.result.split(',')[1], mimeType: blob.type || mimeType });
+    const reader   = new FileReader();
+    reader.onload  = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
 }
 
-// ── Folder management ──────────────────────────────────────────────────────────
+async function getOrCreateFolder(name, parentId, token) {
+  const found = await listFiles(
+    `name='${name}' and '${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
+    'id',
+    token
+  );
+  if (found.length) return found[0].id;
 
-// Gets or creates a named subfolder inside parentId. Returns the folder ID.
-async function getOrCreateSubfolder(name, parentId, token) {
-  const q = `name='${name}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-  const data = await driveGet(`files?q=${encodeURIComponent(q)}&fields=files(id)`, token);
-  if (data.files?.length > 0) return data.files[0].id;
-
-  const res = await fetch(`${DRIVE_API}/files`, {
+  const res = await fetch(`${DRIVE_API}/files?fields=id`, {
     method:  'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] }),
+    body:    JSON.stringify({ name, mimeType: FOLDER_MIME, parents: [parentId] }),
   });
   if (!res.ok) throw new Error(`Failed to create folder "${name}": HTTP ${res.status}`);
   return (await res.json()).id;
 }
 
-// Moves a file to a new parent and renames it — single PATCH request.
-async function moveAndRename(fileId, fromId, toId, newName, token) {
+// Drive moves and renames in the same request, so filing a photo costs one call.
+async function moveAndRename(fileId, fromId, toId, name, token) {
   const res = await fetch(
     `${DRIVE_API}/files/${fileId}?addParents=${toId}&removeParents=${fromId}&fields=id`,
     {
       method:  'PATCH',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ name: newName }),
+      body:    JSON.stringify({ name }),
     }
   );
-  if (!res.ok) throw new Error(`Failed to move/rename file ${fileId}: HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to file ${fileId}: HTTP ${res.status}`);
 }
-
-// ── DriveOrganizer ────────────────────────────────────────────────────────────
 
 /**
- * Manages subfolder creation under a root folder.
- * Caches folder IDs in memory so each subfolder is only looked up once,
- * even when many photos share the same destination.
+ * Resolves root/YYYY/MM, creating what is missing. Reads the names already in
+ * the month so a rerun continues the unknown numbering instead of restarting
+ * it, and so two photos of one parcel never collide.
  */
-class DriveOrganizer {
-  /**
-   * @param {string} rootFolderId - Parent folder where subfolders are created
-   * @param {string} token        - Google OAuth access token
-   */
-  constructor(rootFolderId, token) {
-    this.rootFolderId = rootFolderId;
-    this.token        = token;
-    this._cache       = new Map(); // folderName → folderId
-  }
+function monthFolders(rootId, token) {
+  const cache = new Map();
 
-  // Returns the ID of a named subfolder, creating it if needed.
-  async getFolder(name) {
-    if (this._cache.has(name)) return this._cache.get(name);
-    const id = await getOrCreateSubfolder(name, this.rootFolderId, this.token);
-    this._cache.set(name, id);
-    return id;
-  }
+  return async function forDate(date) {
+    const year  = date.slice(0, 4);
+    const month = date.slice(5, 7);
+    const key   = `${year}/${month}`;
+    if (cache.has(key)) return cache.get(key);
 
-  // Moves a file from the root folder into the named subfolder with a new name.
-  async placeFile(fileId, folderName, newName) {
-    const folderId = await this.getFolder(folderName);
-    await moveAndRename(fileId, this.rootFolderId, folderId, newName, this.token);
-  }
-}
+    const yearId   = await getOrCreateFolder(year, rootId, token);
+    const monthId  = await getOrCreateFolder(month, yearId, token);
+    const names    = (await listFiles(`'${monthId}' in parents and trashed=false`, 'name', token))
+      .map((file) => file.name);
+    const unknowns = names.map((name) => name.match(UNKNOWN_INDEX)?.[1]).filter(Boolean).map(Number);
 
-// ── Gemini Vision ──────────────────────────────────────────────────────────────
-// Parses the retryDelay field from a Gemini 429 response body.
-// Returns milliseconds to wait, with a 1s buffer.
-function parseRetryDelay(body) {
-  const retryInfo = body?.error?.details?.find(d => d['@type']?.includes('RetryInfo'));
-  const raw       = retryInfo?.retryDelay ?? '30s';
-  const seconds   = parseFloat(raw);
-  return (isNaN(seconds) ? 30 : Math.ceil(seconds)) * 1000 + 1000;
-}
-
-// Downscales an image to max 1024px wide before sending to Gemini.
-// Reduces token count ~10x for high-res phone photos → lower cost.
-function resizeImage(base64, mimeType) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const MAX = 1024;
-      if (img.width <= MAX) { resolve({ base64, mimeType }); return; }
-      const scale  = MAX / img.width;
-      const canvas = document.createElement('canvas');
-      canvas.width  = MAX;
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' });
+    const entry = {
+      id:      monthId,
+      path:    key,
+      taken:   new Set(names),
+      unknown: unknowns.length ? Math.max(...unknowns) : 0,
     };
-    img.src = `data:${mimeType};base64,${base64}`;
-  });
-}
-
-async function readLabelNumber(base64, mimeType, geminiKey) {
-  const res = await fetch(`${GEMINI_API}?key=${geminiKey}`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{
-        parts: [
-          { inline_data: { mime_type: mimeType, data: base64 } },
-          {
-            text: [
-              'The label in this image may be rotated or appear sideways — read it in any orientation.',
-              'Find the CONSIGNMENT number on this DPD parcel label.',
-              'Look for the large tracking number printed on the label, typically in format: XXXX XXXX XXXX XX X (4-digit prefix, then digits, then a check letter or digit).',
-              'Examples of this format: "1597 6797 5473 04 B" or "0511 2998 7189 42 8" or "1550 5955 0587 77 B".',
-              'ALSO look for a field labeled "Consignment" — the number next to it.',
-              'IMPORTANT: If the consignment field shows "NUMBER PARCEL_COUNT" like "131129496 1", return ONLY the number before the space.',
-              'Remove all spaces from the number before returning.',
-              'If the format is XXXXX/X/X like "040111977/0/1", return it exactly with slashes.',
-              'Return ONLY the number. No labels. No extra text.',
-            ].join(' '),
-          },
-        ],
-      }],
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    if (res.status === 429) {
-      const err = new Error(`Gemini API 429: rate limited`);
-      err.retryAfterMs = parseRetryDelay(body);
-      throw err;
-    }
-    throw new Error(`Gemini API ${res.status}: ${JSON.stringify(body)}`);
-  }
-  const data = await res.json();
-  return data.candidates[0].content.parts[0].text.trim();
-}
-
-// ── Utils ──────────────────────────────────────────────────────────────────────
-
-// Date string in DD-MM-YY format (matches depot system date format).
-function todayStr() {
-  const d   = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${String(d.getFullYear()).slice(-2)}`;
-}
-
-// Maps photo + depot result to the Drive subfolder name.
-// Depot result is not consulted yet — the Not Found/Error folders in the
-// header comment are still to be implemented.
-function folderForResult(photo, _depotResult) {
-  if (!photo.consNumber) return 'Unknown';   // OCR couldn't read the label
-  return 'Complete';                          // number was identified
+    cache.set(key, entry);
+    return entry;
+  };
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────
 
 /**
- * Step 1: OCR all label photos in the Drive folder.
- * Returns photo metadata + parsed consignment numbers.
- * Does NOT move any files — call organizeLabels() after depot processing.
+ * Reads the barcode on every photo sitting directly in the folder. Files nothing.
  *
  * @param {string} folderInput - Drive folder ID or full Drive URL
- * @param {string} geminiKey   - Gemini API key
  * @param {string} token       - Google OAuth access token
  * @param {(current: number, total: number, state: string) => void} [onProgress]
- * @param {boolean} [testMode] - when true, scans only the first photo (saves API quota during dev)
- * @returns {Promise<Array<{ id: string, name: string, consNumber: string|null, error: string|null }>>}
+ * @param {boolean} [testMode] - when true, reads only the first photo
+ * @returns {Promise<Array<{ id, name, date, number: string|null, parcel: number,
+ *                           contested: boolean, error: string|null }>>}
  */
-export async function scanDriveLabels(folderInput, geminiKey, token, onProgress, testMode = false) {
-  const folderId = parseFolderId(folderInput);
-  let   photos   = await listPhotos(folderId, token);
-  if (testMode && photos.length > 1) {
-    console.info(`[scan] Test Mode ON — scanning 1 of ${photos.length} photo(s)`);
-    photos = photos.slice(0, 1);
-  }
-  const result   = [];
+export async function scanDriveLabels(folderInput, token, onProgress, testMode = false) {
+  const all     = await listPhotos(parseFolderId(folderInput), token);
+  const photos  = testMode ? all.slice(0, 1) : all;
+  const results = [];
 
   for (let i = 0; i < photos.length; i++) {
     const photo = photos[i];
-    console.group(`[scan] ${i + 1}/${photos.length} ${photo.name}`);
+    const base  = { id: photo.id, name: photo.name, date: dateOf(photo.createdTime) };
+
     try {
-      console.log('↓ downloading...');
       onProgress?.(i + 1, photos.length, 'downloading');
-      const { base64, mimeType } = await downloadAsBase64(photo.id, photo.mimeType, token);
-      console.log(`↓ downloaded (${mimeType}), resizing...`);
-      const resized = await resizeImage(base64, mimeType);
-      console.log(`↓ resized to max 1024px`);
+      const image = await loadImage(await downloadAsDataUrl(photo.id, token));
 
-      let raw;
-      try {
-        console.log('→ sending to Gemini...');
-        onProgress?.(i + 1, photos.length, 'scanning');
-        raw = await readLabelNumber(resized.base64, resized.mimeType, geminiKey);
-      } catch (err) {
-        if (!err.retryAfterMs) throw err;
-        const waitSec = Math.ceil(err.retryAfterMs / 1000);
-        console.warn(`rate limited — waiting ${waitSec}s...`);
-        onProgress?.(i + 1, photos.length, `waiting ${waitSec}s`);
-        await delay(err.retryAfterMs);
-        console.log('→ retrying Gemini...');
-        raw = await readLabelNumber(base64, mimeType, geminiKey);
-      }
+      onProgress?.(i + 1, photos.length, 'reading');
+      const pick = pickConsignment(readBarcodes(image));
 
-      console.log(`← Gemini raw: "${raw}"`);
-      const consNumber = extractConsignmentNumber(raw);
-      if (consNumber) {
-        console.log(`✓ consignment: ${consNumber}`);
-      } else {
-        console.warn(`✗ not identified`);
-      }
-      onProgress?.(i + 1, photos.length, 'done');
-      result.push({ id: photo.id, name: photo.name, consNumber: consNumber ?? null, error: null });
+      results.push({
+        ...base,
+        number:    pick?.number ?? null,
+        parcel:    pick?.parcel ?? 1,
+        contested: pick?.contested ?? false,
+        error:     null,
+      });
     } catch (err) {
-      console.error(`✗ error: ${err.message}`);
-      onProgress?.(i + 1, photos.length, 'error');
-      result.push({ id: photo.id, name: photo.name, consNumber: null, error: err.message });
-    } finally {
-      console.groupEnd();
+      results.push({ ...base, number: null, parcel: 1, contested: false, error: err.message });
     }
   }
 
-  return result;
+  return results;
 }
 
 /**
- * Step 2: Organise scanned label photos into status-based subfolders.
- * Called after depot processing with the per-parcel results.
+ * Moves each photo into YYYY/MM and names it after its parcel. A number the
+ * depot did not confirm is treated as unread: a wrong name is invisible
+ * afterwards, an "unknown" one is not.
  *
- * Each photo is moved out of the root folder and renamed to:
- *   DD-MM-YY_<consId>.<ext>
- *
- * @param {Array<{ id, name, consNumber }>} photos       - from scanDriveLabels
- * @param {Array<{ consNumber, consId, status, action }>} depotResults - from depotMain
- * @param {string} folderInput - Drive folder ID or URL
- * @param {string} token       - Google OAuth access token
+ * @param {Array} photos          - from scanDriveLabels
+ * @param {Set<string>} confirmed - consignment numbers found in the depot
+ * @param {string} folderInput    - Drive folder ID or full Drive URL
+ * @param {string} token          - Google OAuth access token
+ * @returns {Promise<Array<{ from: string, to: string|null, error: string|null }>>}
  */
-export async function organizeLabels(photos, depotResults, folderInput, token) {
-  const folderId  = parseFolderId(folderInput);
-  const organizer = new DriveOrganizer(folderId, token);
-  const date      = todayStr();
+export async function fileLabels(photos, confirmed, folderInput, token) {
+  const rootId   = parseFolderId(folderInput);
+  const folderOf = monthFolders(rootId, token);
+  const filed    = [];
 
   for (const photo of photos) {
     try {
-      const folder  = folderForResult(photo);
-      const ext     = photo.name.split('.').pop() || 'jpg';
-      const fileId  = photo.consNumber ?? photo.id;
-      const newName = `${date}_${fileId}.${ext}`;
+      const folder = await folderOf(photo.date);
+      let   name   = photo.name;
 
-      await organizer.placeFile(photo.id, folder, newName);
-      console.log(`[organize] ${photo.name} → ${folder}/${newName}`);
+      if (!ALREADY_NAMED.test(name)) {
+        const known = photo.number && confirmed.has(photo.number);
+        if (!known) folder.unknown += 1;
+        name = buildLabelName({
+          date:         photo.date,
+          number:       known ? photo.number : undefined,
+          parcel:       photo.parcel,
+          unknownIndex: folder.unknown,
+          originalName: photo.name,
+        });
+      }
+
+      name = makeUnique(name, folder.taken);
+      await moveAndRename(photo.id, rootId, folder.id, name, token);
+      folder.taken.add(name);
+      filed.push({ from: photo.name, to: `${folder.path}/${name}`, error: null });
     } catch (err) {
-      console.error(`[organize] ${photo.name}: ${err.message}`);
+      filed.push({ from: photo.name, to: null, error: err.message });
     }
   }
-}
 
-/**
- * Saves all scanned label photos to a Samples/ subfolder for training data.
- * Identified photos are renamed to {consNumber}_{date}.{ext}.
- * Unidentified photos are renamed to unknown_{date}_{originalName}.
- *
- * @param {Array<{ id, name, consNumber }>} photos  - from scanDriveLabels
- * @param {string} folderInput - Drive folder ID or URL
- * @param {string} token       - Google OAuth access token
- */
-export async function saveToSamples(photos, folderInput, token) {
-  const folderId  = parseFolderId(folderInput);
-  const organizer = new DriveOrganizer(folderId, token);
-  const date      = todayStr();
-
-  for (const photo of photos) {
-    try {
-      const ext     = photo.name.split('.').pop() || 'jpg';
-      const newName = photo.consNumber
-        ? `${photo.consNumber}_${date}.${ext}`
-        : `unknown_${date}_${photo.name}`;
-      await organizer.placeFile(photo.id, 'Samples', newName);
-      console.log(`[samples] ${photo.name} → Samples/${newName}`);
-    } catch (err) {
-      console.error(`[samples] ${photo.name}: ${err.message}`);
-    }
-  }
+  return filed;
 }

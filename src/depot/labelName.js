@@ -6,7 +6,7 @@
  *   2026-08-07_132999608.jpg        one parcel
  *   2026-08-07_132999608-p08.jpg    parcel 8 of a multi-parcel consignment
  *   2026-08-07_132999608-p08-2.jpg  a second photo of that same parcel
- *   2026-08-07_unknown-01.jpg       barcode unreadable
+ *   2026-08-07_unknown-001.jpg      barcode unreadable
  *
  * The date is ISO so the folder sorts chronologically — the old DD-MM-YY put
  * 01-09-26 before 31-08-26.
@@ -27,7 +27,7 @@ function pad(value, width) {
 export function buildLabelName(label) {
   const stem = label.number
     ? label.number + (label.parcel > 1 ? `-p${pad(label.parcel, 2)}` : '')
-    : `unknown-${pad(label.unknownIndex, 2)}`;
+    : `unknown-${pad(label.unknownIndex, 3)}`;
 
   return `${label.date}_${stem}${extensionOf(label.originalName)}`;
 }

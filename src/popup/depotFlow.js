@@ -3,14 +3,15 @@
  * ==================
  * Handles all depot-related flows:
  *   - Scan CAD List (Future Dates)
- *   - Scan Drive Labels (OCR → depot → organise)
+ *   - Scan Drive Labels (barcode → depot → file under YYYY/MM)
  */
 
 import { loadConfig }                         from '../config/config.js';
 import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
-import { scanDriveLabels, saveToSamples }    from '../depot/driveScanner.js';
-import { depotMain }                          from '../depot/depotScript.js';
-import { setStatus }                          from './statusHelper.js';
+import { scanDriveLabels, fileLabels }         from '../depot/driveScanner.js';
+import { depotLookup }                         from '../depot/lookup.js';
+import { depotMain }                           from '../depot/depotScript.js';
+import { setStatus }                           from './statusHelper.js';
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
@@ -43,10 +44,7 @@ export function initDepotFlow({
   function showProgress(current, total, state = '') {
     scanProgress.hidden = false;
     progressFill.style.width = `${Math.round((current / total) * 100)}%`;
-    const stateLabel = state === 'downloading' ? 'Downloading'
-                     : state === 'scanning'    ? 'Scanning'
-                     : state.startsWith('waiting') ? state
-                     : `Scanning`;
+    const stateLabel = state === 'downloading' ? 'Downloading' : 'Reading';
     progressLabel.textContent = `${stateLabel} ${current} of ${total}`;
   }
 
@@ -89,24 +87,44 @@ export function initDepotFlow({
 
   // ── Scan Drive Labels ───────────────────────────────────────────────────────
 
+  // Asks the depot which of these numbers really exist. Reuses the same lookup
+  // the email flow runs, so there is one definition of "this parcel is ours".
+  async function confirmNumbers(numbers) {
+    if (!numbers.length) return new Set();
+
+    const tab = await getActiveTab();
+    const [injection] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func:   depotLookup,
+      args:   [numbers],
+      world:  'MAIN',
+    });
+    if (!injection.result) throw new Error('Depot lookup returned nothing — check you are on the depot page');
+
+    console.group(`🔍 Depot lookup — ${numbers.length} number(s)`);
+    injection.result.forEach(r => console.log(`  ${r.query}: ${r.ok ? 'ok' : r.reason}`));
+    console.groupEnd();
+
+    return new Set(injection.result.map(r => r.consNumber).filter(Boolean));
+  }
+
   scanDriveBtn.addEventListener('click', async () => {
-    setDepotStatus('running', 'Keep this window open — scanning labels...');
+    setDepotStatus('running', 'Keep this window open — reading labels...');
     setDepotButtons(true);
     try {
       const config = await loadConfig();
-      if (!config.geminiApiKey)  throw new Error('Gemini API Key not set in Settings');
       if (!config.driveFolderId) throw new Error('Drive Folder ID not set in Settings');
 
-      let token = await getAuthToken();
+      let token  = await getAuthToken();
       let photos;
       try {
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, testModeToggle.checked);
+        photos = await scanDriveLabels(config.driveFolderId, token, showProgress, testModeToggle.checked);
       } catch (err) {
         if (!err.message.includes('403')) throw err;
         // Cached token is stale (missing Drive scope) — remove and retry with fresh one
         await removeCachedAuthToken(token);
-        token = await getAuthToken({ interactive: true });
-        photos = await scanDriveLabels(config.driveFolderId, config.geminiApiKey, token, showProgress, testModeToggle.checked);
+        token  = await getAuthToken({ interactive: true });
+        photos = await scanDriveLabels(config.driveFolderId, token, showProgress, testModeToggle.checked);
       }
 
       if (photos.length === 0) {
@@ -114,39 +132,36 @@ export function initDepotFlow({
         return;
       }
 
-      const identified = photos.filter(p => p.consNumber);
-      const unknown    = photos.filter(p => !p.consNumber);
+      const numbers = [...new Set(photos.map(p => p.number).filter(Boolean))];
 
-      // ── Console output ──────────────────────────────────────────────────────
+      setDepotStatus('running', `Read ${numbers.length} number(s) — checking the depot...`);
+      const confirmed = await confirmNumbers(numbers);
+
       console.group(`📦 Scan Drive Labels — ${photos.length} photo(s)`);
-      if (identified.length) {
-        console.group(`✅ Identified (${identified.length})`);
-        identified.forEach(p => console.log(`  ${p.consNumber}  ←  ${p.name}`));
-        console.groupEnd();
-      }
-      if (unknown.length) {
-        console.group(`❓ Not identified (${unknown.length})`);
-        unknown.forEach(p => console.log(`  ${p.name}${p.error ? `  [error: ${p.error}]` : ''}`));
-        console.groupEnd();
-      }
+      photos.forEach(p => console.log(
+        `  ${p.number && confirmed.has(p.number) ? p.number : '—'.padEnd(9)}  ←  ${p.name}`
+        + (p.contested ? '  [contested]' : '')
+        + (p.error ? `  [error: ${p.error}]` : '')
+      ));
       console.groupEnd();
-      // ───────────────────────────────────────────────────────────────────────
 
-      if (identified.length === 0) {
-        if (!dryRunToggle.checked) {
-          setDepotStatus('running', 'No numbers identified — saving to Samples...');
-          await saveToSamples(photos, config.driveFolderId, token);
-        }
-        setDepotStatus('done', `Scanned ${photos.length} — 0 identified. Check console.`);
+      if (dryRunToggle.checked) {
+        setDepotStatus('done', `Dry run: ${confirmed.size}/${numbers.length} confirmed — see console`);
         return;
       }
 
-      if (!dryRunToggle.checked) {
-        setDepotStatus('running', 'Saving to Samples...');
-        await saveToSamples(photos, config.driveFolderId, token);
-      }
+      setDepotStatus('running', 'Filing photos...');
+      const filed  = await fileLabels(photos, confirmed, config.driveFolderId, token);
+      const failed = filed.filter(r => r.error);
 
-      setDepotStatus('done', `${identified.length}/${photos.length} identified — see console`);
+      console.group(`🗂️ Filed ${filed.length - failed.length}/${photos.length}`);
+      filed.forEach(r => console.log(`  ${r.from} → ${r.to ?? `FAILED: ${r.error}`}`));
+      console.groupEnd();
+
+      setDepotStatus('done',
+        `Filed ${filed.length - failed.length}/${photos.length}`
+        + (failed.length ? ` | Errors: ${failed.length}` : '')
+      );
     } catch (err) {
       setDepotStatus('error', err.message);
     } finally {

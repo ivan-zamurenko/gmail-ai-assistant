@@ -34,6 +34,7 @@ const images = fs.readdirSync(LABELS)
   .sort()
   .map((name) => ({
     name,
+    date: fs.statSync(path.join(LABELS, name)).mtime.toISOString().slice(0, 10),
     src: `data:${MIME[path.extname(name).toLowerCase()]};base64,${fs.readFileSync(path.join(LABELS, name)).toString('base64')}`,
   }));
 

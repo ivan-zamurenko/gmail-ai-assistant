@@ -1,20 +1,27 @@
 import { loadImage, readBarcodes } from '../../src/depot/barcode.js';
 import { pickConsignment } from '../../src/depot/labelBarcode.js';
+import { buildLabelName, makeUnique } from '../../src/depot/labelName.js';
 
 window.runAll = async () => {
   const rows = [];
+  const taken = new Set();
+  let unknownIndex = 0;
 
-  for (const { name, src } of window.LABELS) {
-    const started = performance.now();
-    const img   = await loadImage(src);
-    const codes = readBarcodes(img);
+  for (const { name, src, date } of window.LABELS) {
+    const img  = await loadImage(src);
+    const pick = pickConsignment(readBarcodes(img));
 
-    rows.push({
-      name,
-      ms: Math.round(performance.now() - started),
-      texts: codes.map((c) => `${c.format} x${c.reads} ${c.text.slice(0, 60)}`),
-      pick: pickConsignment(codes),
-    });
+    if (!pick) unknownIndex += 1;
+    const newName = makeUnique(buildLabelName({
+      date,
+      number: pick ? pick.number : undefined,
+      parcel: pick ? pick.parcel : undefined,
+      unknownIndex,
+      originalName: name,
+    }), taken);
+    taken.add(newName);
+
+    rows.push({ name, newName, pick });
   }
 
   return rows;

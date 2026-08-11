@@ -20,17 +20,23 @@
  * looks like a different consignment.
  */
 
-const CODE128 = /^%[A-Z\d]{7}\d{4}(\d{9})\d/;
+const CODE128 = /^%[A-Z\d]{7}\d{4}(\d{9})(\d)/;
+const PDF417_ROUTING = /^%\d{4}(\d{9})(\d{1,2})$/;
 const PDF417_CONSIGNMENT = 4;
 
-export function consignmentFromBarcode(text) {
+/** @returns {{ number: string, parcel: number } | null} */
+export function parseBarcode(text) {
   if (text.includes(';')) {
-    const field = text.split(';')[PDF417_CONSIGNMENT];
-    return /^\d{9}$/.test(field) ? field : null;
+    const fields = text.split(';');
+    const number = fields[PDF417_CONSIGNMENT];
+    if (!/^\d{9}$/.test(number)) return null;
+
+    const routing = PDF417_ROUTING.exec(fields[0]);
+    return { number, parcel: routing && routing[1] === number ? Number(routing[2]) : 1 };
   }
 
   const match = CODE128.exec(text);
-  return match ? match[1] : null;
+  return match ? { number: match[1], parcel: Number(match[2]) } : null;
 }
 
 /**
@@ -42,19 +48,19 @@ export function consignmentFromBarcode(text) {
  * because its record carries the number in plain text alongside the address.
  *
  * @param {{ text: string, format: string, reads: number }[]} codes
- * @returns {{ number: string, format: string, reads: number, contested: boolean } | null}
+ * @returns {{ number: string, parcel: number, format: string, reads: number, contested: boolean } | null}
  */
 export function pickConsignment(codes) {
   const byNumber = new Map();
 
   for (const code of codes) {
-    const number = consignmentFromBarcode(code.text);
-    if (!number) continue;
+    const parsed = parseBarcode(code.text);
+    if (!parsed) continue;
 
-    const entry = byNumber.get(number) || { number, format: code.format, reads: 0 };
+    const entry = byNumber.get(parsed.number) || { ...parsed, format: code.format, reads: 0 };
     entry.reads += code.reads;
     if (code.format === 'PDF_417') entry.format = 'PDF_417';
-    byNumber.set(number, entry);
+    byNumber.set(parsed.number, entry);
   }
 
   const ranked = Array.from(byNumber.values()).sort((a, b) => {

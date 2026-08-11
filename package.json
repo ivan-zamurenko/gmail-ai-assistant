@@ -7,12 +7,14 @@
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
-    
     "lint": "eslint \"src/**/*.js\"",
     "lint:fix": "eslint \"src/**/*.js\" --fix"
   },
   "devDependencies": {
     "esbuild": "^0.28.1",
     "eslint": "^9.0.0"
+  },
+  "dependencies": {
+    "@zxing/library": "^0.23.0"
   }
 }

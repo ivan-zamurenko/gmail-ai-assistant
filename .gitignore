@@ -8,6 +8,9 @@ dist/
 .env.local
 .env.*.local
 
+# Private — local runtime config (API key, Drive folder, author contacts)
+src/config/local.js
+
 # Private — label photos (real parcel data, not for public repo)
 labels_example/
 

@@ -4,11 +4,9 @@
  * Thin orchestrator: wires DOM elements to feature modules.
  */
 
-import { loadConfig }       from '../config/config.js';
 import { initDepotFlow }    from './depotFlow.js';
 import { initGmailFlow }    from './gmailFlow.js';
-import { initSettingsFlow } from './settingsFlow.js';
-import { setStatus }        from './statusHelper.js';
+import { getContact }       from '../config/config.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
@@ -29,17 +27,7 @@ const gmailStatusLabel  = document.getElementById('gmailStatusLabel');
 const gmailMessage      = document.getElementById('gmailMessage');
 const checkLabelBtn     = document.getElementById('checkLabel');
 
-const geminiKeyInput    = document.getElementById('geminiApiKey');
-const driveFolderInput  = document.getElementById('driveFolderId');
-const browseDriveBtn    = document.getElementById('browseDrive');
-const driveFolderPicker = document.getElementById('driveFolderPicker');
-const saveSettingsBtn   = document.getElementById('saveSettings');
-
 // ── Feature modules ───────────────────────────────────────────────────────────
-
-function setDepotStatus(state, text) {
-  setStatus(depotStatusDot, depotStatusLabel, depotMessage, state, text);
-}
 
 initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
@@ -51,19 +39,18 @@ initGmailFlow({
   gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn,
 });
 
-initSettingsFlow({
-  geminiKeyInput, driveFolderInput, browseDriveBtn,
-  driveFolderPicker, saveSettingsBtn,
-  onBrowseError: (msg) => setDepotStatus('error', msg),
-});
+// ── Footer: author details, kept in the gitignored local config ───────────────
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+const contact = getContact();
+document.getElementById('footerBrand').textContent = contact.brand;
 
-async function init() {
-  const config = await loadConfig();
-  if (config.geminiApiKey)  geminiKeyInput.value   = config.geminiApiKey;
-  if (config.driveFolderId) driveFolderInput.value = config.driveFolderId;
-}
+const footerEmail = document.getElementById('footerEmail');
+footerEmail.textContent = contact.email;
+footerEmail.href = `mailto:${contact.email}`;
+
+const footerPhone = document.getElementById('footerPhone');
+footerPhone.textContent = contact.phone;
+footerPhone.href = `tel:${contact.phone.replace(/\s/g, '')}`;
 
 // ── Accordion: one section open at a time ─────────────────────────────────────
 
@@ -75,6 +62,4 @@ document.querySelectorAll('details.section').forEach(detail => {
     if (!isOpen) detail.open = true;
   });
 });
-
-init();
 

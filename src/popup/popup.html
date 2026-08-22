@@ -66,32 +66,13 @@
       </div>
     </details>
 
-    <!-- ── SETTINGS ─────────────────────────────────── -->
-    <details class="section">
-      <summary class="section__header">
-        <span class="section__title">Settings</span>
-        <span class="section__arrow">›</span>
-      </summary>
-      <div class="section__body">
-        <div class="config">
-          <label class="config__field">
-            <span class="config__label">Gemini API Key <a href="https://aistudio.google.com/app/apikey" target="_blank" class="config__link">Get key ↗</a></span>
-            <input type="password" id="geminiApiKey" class="config__input" placeholder="AIzaSy..." />
-          </label>
-          <label class="config__field">
-            <span class="config__label">Drive Folder</span>
-            <div class="config__row">
-              <input type="text" id="driveFolderId" class="config__input" placeholder="Paste link or browse →" />
-              <button class="btn btn--icon" id="browseDrive" title="Browse Drive folders">📁</button>
-            </div>
-            <select id="driveFolderPicker" class="config__picker" hidden size="5"></select>
-          </label>
-        </div>
-        <button class="btn btn--primary" id="saveSettings">Save</button>
-      </div>
-    </details>
-
   </main>
+
+  <footer class="footer">
+    <span class="footer__brand" id="footerBrand"></span>
+    <a class="footer__contact" id="footerEmail"></a>
+    <a class="footer__contact" id="footerPhone"></a>
+  </footer>
 
   <script type="module" src="popup.js"></script>
 </body>

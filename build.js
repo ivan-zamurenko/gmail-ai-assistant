@@ -20,7 +20,7 @@
  */
 
 import * as esbuild from 'esbuild';
-import { cp, rm, mkdir } from 'node:fs/promises';
+import { cp, rm, mkdir, readFile, writeFile } from 'node:fs/promises';
 
 const watch = process.argv.includes('--watch');
 
@@ -32,16 +32,23 @@ const ENTRY_POINTS = [
 
 // Copied as-is — not JavaScript, nothing to bundle.
 const STATIC_FILES = [
-  'manifest.json',
   'assets',
   'src/popup/popup.html',
   'src/popup/popup.css',
 ];
 
+// The repo root is a loadable extension too, and loading it by mistake kills the
+// popup silently on the first bare import. Only the built copy gets the real name.
+const SOURCE_MARKER = ' (SOURCE — load dist/ instead)';
+
 async function copyStatic() {
   for (const path of STATIC_FILES) {
     await cp(path, `dist/${path}`, { recursive: true });
   }
+
+  const manifest = JSON.parse(await readFile('manifest.json', 'utf8'));
+  manifest.name = manifest.name.replace(SOURCE_MARKER, '');
+  await writeFile('dist/manifest.json', JSON.stringify(manifest, null, 2));
 }
 
 const config = {
@@ -61,7 +68,7 @@ const config = {
 // `export` — the console rejects both.
 const consoleConfig = {
   ...config,
-  entryPoints: ['src/depot/lookupConsole.js'],
+  entryPoints: ['src/depot/lookupConsole.js', 'src/depot/futureDateConsole.js'],
   outdir:      'dist/console',
   outbase:     'src/depot',
   format:      'iife',

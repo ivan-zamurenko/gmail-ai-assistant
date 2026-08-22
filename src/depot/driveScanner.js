@@ -1,11 +1,12 @@
 /**
  * src/depot/driveScanner.js
  * =========================
- * Reads the barcode on every label photo in a Drive folder, then files each
- * photo under YYYY/MM with a name built from the parcel it belongs to.
+ * Reads the barcode on a label photo and files it under YYYY/MM named after
+ * the parcel it belongs to.
  *
- *   scanDriveLabels() — download and decode. Touches nothing.
- *   fileLabels()      — move and rename, once the depot has confirmed the numbers.
+ * One photo is carried all the way through before the next one starts, so
+ * closing the popup costs at most the photo in flight. A filed photo leaves
+ * the inbox folder, which is what makes a rerun pick up where this left off.
  *
  * Runs in the popup: decoding needs a canvas and a service worker has no DOM.
  * Requires the Drive folder to be shared with the signed-in account as Editor.
@@ -50,14 +51,6 @@ async function listFiles(query, fields, token) {
   } while (pageToken);
 
   return files;
-}
-
-function listPhotos(folderId, token) {
-  return listFiles(
-    `'${folderId}' in parents and mimeType contains 'image/' and trashed=false`,
-    'id,name,createdTime',
-    token
-  );
 }
 
 async function downloadAsDataUrl(fileId, token) {
@@ -139,87 +132,84 @@ function monthFolders(rootId, token) {
 // ── Exports ───────────────────────────────────────────────────────────────────
 
 /**
- * Reads the barcode on every photo sitting directly in the folder. Files nothing.
+ * Reads, checks and files every photo sitting directly in the folder.
  *
- * @param {string} folderInput - Drive folder ID or full Drive URL
- * @param {string} token       - Google OAuth access token
- * @param {(current: number, total: number, state: string) => void} [onProgress]
- * @param {boolean} [testMode] - when true, reads only the first photo
- * @returns {Promise<Array<{ id, name, date, number: string|null, parcel: number,
+ * @param {object} options
+ * @param {string}   options.folderInput - Drive folder ID or full Drive URL
+ * @param {string}   options.token       - Google OAuth access token
+ * @param {(number: string) => Promise<boolean>} options.verify
+ *        decides whether a number is a real parcel; a number it rejects is
+ *        treated as unread, because a wrongly named file is invisible
+ *        afterwards and an "unknown" one is not
+ * @param {boolean}  [options.dryRun]    - work out every name but move nothing
+ * @param {(current: number, total: number, state: string, entry?: object) => void} [options.onProgress]
+ *        states: listing, downloading, reading, checking, filing, done
+ * @returns {Promise<Array<{ from, to: string|null, number: string|null,
  *                           contested: boolean, error: string|null }>>}
  */
-export async function scanDriveLabels(folderInput, token, onProgress, testMode = false) {
-  const all     = await listPhotos(parseFolderId(folderInput), token);
-  const photos  = testMode ? all.slice(0, 1) : all;
-  const results = [];
+export async function processLabels({ folderInput, token, verify, dryRun, onProgress }) {
+  const rootId = parseFolderId(folderInput);
+
+  onProgress?.(0, 1, 'listing');
+  const photos   = await listFiles(
+    `'${rootId}' in parents and mimeType contains 'image/' and trashed=false`,
+    'id,name,createdTime',
+    token
+  );
+  const folderOf = monthFolders(rootId, token);
+  const results  = [];
 
   for (let i = 0; i < photos.length; i++) {
     const photo = photos[i];
-    const base  = { id: photo.id, name: photo.name, date: dateOf(photo.createdTime) };
+    const step  = (state, entry) => onProgress?.(i + 1, photos.length, state, entry);
+    const done  = (entry) => { results.push(entry); step('done', entry); };
 
     try {
-      onProgress?.(i + 1, photos.length, 'downloading');
+      step('downloading');
       const image = await loadImage(await downloadAsDataUrl(photo.id, token));
 
-      onProgress?.(i + 1, photos.length, 'reading');
+      step('reading');
       const pick = pickConsignment(readBarcodes(image));
 
-      results.push({
-        ...base,
-        number:    pick?.number ?? null,
-        parcel:    pick?.parcel ?? 1,
-        contested: pick?.contested ?? false,
-        error:     null,
-      });
-    } catch (err) {
-      results.push({ ...base, number: null, parcel: 1, contested: false, error: err.message });
-    }
-  }
+      step('checking');
+      const known = pick ? await verify(pick.number) : false;
 
-  return results;
-}
-
-/**
- * Moves each photo into YYYY/MM and names it after its parcel. A number the
- * depot did not confirm is treated as unread: a wrong name is invisible
- * afterwards, an "unknown" one is not.
- *
- * @param {Array} photos          - from scanDriveLabels
- * @param {Set<string>} confirmed - consignment numbers found in the depot
- * @param {string} folderInput    - Drive folder ID or full Drive URL
- * @param {string} token          - Google OAuth access token
- * @returns {Promise<Array<{ from: string, to: string|null, error: string|null }>>}
- */
-export async function fileLabels(photos, confirmed, folderInput, token) {
-  const rootId   = parseFolderId(folderInput);
-  const folderOf = monthFolders(rootId, token);
-  const filed    = [];
-
-  for (const photo of photos) {
-    try {
-      const folder = await folderOf(photo.date);
+      const date   = dateOf(photo.createdTime);
+      const folder = await folderOf(date);
       let   name   = photo.name;
 
       if (!ALREADY_NAMED.test(name)) {
-        const known = photo.number && confirmed.has(photo.number);
         if (!known) folder.unknown += 1;
         name = buildLabelName({
-          date:         photo.date,
-          number:       known ? photo.number : undefined,
-          parcel:       photo.parcel,
+          date,
+          number:       known ? pick.number : undefined,
+          parcel:       pick?.parcel ?? 1,
           unknownIndex: folder.unknown,
           originalName: photo.name,
         });
       }
-
       name = makeUnique(name, folder.taken);
-      await moveAndRename(photo.id, rootId, folder.id, name, token);
+
+      if (!dryRun) {
+        step('filing');
+        await moveAndRename(photo.id, rootId, folder.id, name, token);
+      }
       folder.taken.add(name);
-      filed.push({ from: photo.name, to: `${folder.path}/${name}`, error: null });
+
+      done({
+        from:      photo.name,
+        to:        `${folder.path}/${name}`,
+        number:    known ? pick.number : null,
+        contested: pick?.contested ?? false,
+        error:     null,
+      });
     } catch (err) {
-      filed.push({ from: photo.name, to: null, error: err.message });
+      // A depot that stopped answering would rename every remaining photo to
+      // unknown, so stop and keep what is already filed.
+      if (err.fatal) throw err;
+      done({ from: photo.name, to: null, number: null, contested: false, error: err.message });
     }
   }
 
-  return filed;
+  return results;
 }

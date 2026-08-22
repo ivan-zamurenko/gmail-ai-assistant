@@ -16,12 +16,13 @@ const depotStatusDot    = document.getElementById('depotStatusDot');
 const depotStatusLabel  = document.getElementById('depotStatusLabel');
 const depotMessage      = document.getElementById('depotMessage');
 const dryRunToggle      = document.getElementById('dryRun');
-const testModeToggle    = document.getElementById('testMode');
+const verifyDepotToggle = document.getElementById('verifyDepot');
 const scanCADBtn        = document.getElementById('scanCAD');
 const scanDriveBtn      = document.getElementById('scanDrive');
 const scanProgress      = document.getElementById('scanProgress');
 const progressFill      = document.getElementById('progressFill');
 const progressLabel     = document.getElementById('progressLabel');
+const depotLogEl        = document.getElementById('depotLog');
 
 const gmailStatusDot    = document.getElementById('gmailStatusDot');
 const gmailStatusLabel  = document.getElementById('gmailStatusLabel');
@@ -42,8 +43,8 @@ function setDepotStatus(state, text) {
 
 initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, testModeToggle, scanCADBtn, scanDriveBtn,
-  scanProgress, progressFill, progressLabel,
+  dryRunToggle, verifyDepotToggle, scanCADBtn, scanDriveBtn,
+  scanProgress, progressFill, progressLabel, depotLogEl,
 });
 
 initGmailFlow({

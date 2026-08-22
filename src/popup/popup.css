@@ -6,8 +6,17 @@
   padding: 0;
 }
 
+/* A class that sets `display` outranks the browser's own rule for [hidden],
+   so hidden panels stayed on screen. */
+[hidden] { display: none !important; }
+
 body {
   width: 320px;
+  /* Chrome caps a popup at 600px and scrolls the whole page past that,
+     which drags the header off screen. Scroll the sections instead. */
+  max-height: 580px;
+  display: flex;
+  flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
   font-size: 14px;
   color: #1a1a1a;
@@ -23,6 +32,7 @@ body {
   gap: 10px;
   padding: 14px 16px;
   background: #2c2c2e;
+  flex-shrink: 0;
 }
 
 .header__icon {
@@ -51,8 +61,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
+.main::-webkit-scrollbar { width: 8px; }
+.main::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.18);
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-clip: content-box;
+}
 /* ─── Accordion (details/summary) ─────────────────── */
 
 .section {
@@ -60,6 +80,7 @@ body {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  flex-shrink: 0;
 }
 
 .section__header {
@@ -361,3 +382,37 @@ details[open] > .section__header .section__arrow {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ─── Log ─────────────────────────────────────────── */
+
+.log {
+  margin-top: 8px;
+  max-height: 128px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f7f7f9;
+  border: 1px solid #ececf0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.log::-webkit-scrollbar { width: 8px; }
+.log::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.16);
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-clip: content-box;
+}
+
+.log__line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.log__line--info { color: #8e8e93; }
+.log__line--ok   { color: #1a7f37; }
+.log__line--warn { color: #9a6700; }
+.log__line--fail { color: #dc1928; }

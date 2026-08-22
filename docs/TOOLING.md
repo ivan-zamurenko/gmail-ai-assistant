@@ -199,8 +199,8 @@ async function readBarcode(imageDataUrl) {
 ```
 
 Найважливіше: результат далі йде в **уже існуючу** функцію
-[extractConsignmentNumber()](../src/depot/labelParser.js) — вона вже вміє
-розбирати всі 4 формати DPD. Тобто інтеграція чіпає лише крок отримання
+[parseBarcode()](../src/depot/labelBarcode.js) — вона розбирає штрих-кодовий
+вміст (PDF417 / Code128). Тобто інтеграція чіпає лише крок отримання
 рядка, а логіка розбору не змінюється.
 
 ### 9. QuaggaJS 🔴 — НЕ потрібен
@@ -275,7 +275,7 @@ await worker.terminate();
 | Квадрат знизу зліва | **DataMatrix** | дублює дані посилки |
 
 QR-коду на етикетці немає. Consignment `05112998718942` вже коректно
-обробляється наявним [labelParser.js](../src/depot/labelParser.js) (Type 3b).
+обробляється наявним [labelBarcode.js](../src/depot/labelBarcode.js).
 
 Етикетка на фото **перевернута на 180°** і зім'ята. DataMatrix стійкий до
 повороту за побудовою, Code128 декодери пробують обидва напрямки — тож ZXing
@@ -306,7 +306,7 @@ QR-коду на етикетці немає. Consignment `05112998718942` вж�
         ↓ не зчиталось
    Gemini Vision                 ← наявний fallback, уже працює
         ↓
-   extractConsignmentNumber()    ← без змін
+   parseBarcode()                ← без змін
 ```
 
 Gemini лишається другим кроком, а не першим: декодер або зчитав код точно,

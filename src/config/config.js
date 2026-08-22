@@ -6,14 +6,11 @@
  *
  * Usage pattern:
  *
- *   // In background.js (service worker startup):
- *   await initConfig();
- *
  *   // In any module that needs config:
  *   const { geminiApiKey } = await loadConfig();
  *
  * Note: Service workers do not persist module-level state between invocations,
- * so each wakeup must call initConfig() or loadConfig() before using any key.
+ * so each wakeup must call loadConfig() before using any key.
  */
 
 /**
@@ -23,9 +20,6 @@
  * @property {string} carrierApiKey  - Auth key for the carrier API
  * @property {string} driveFolderId  - Google Drive folder ID containing label photos
  */
-
-/** @type {Config|null} */
-let _cache = null;
 
 /**
  * Reads all config keys from chrome.storage.local.
@@ -47,27 +41,4 @@ export function loadConfig() {
       }
     );
   });
-}
-
-/**
- * Loads config and stores it in module cache.
- * Call once at the start of each service worker invocation.
- *
- * @returns {Promise<void>}
- */
-export async function initConfig() {
-  _cache = await loadConfig();
-}
-
-/**
- * Returns the cached config synchronously.
- * Throws if initConfig() was not called first.
- *
- * @returns {Config}
- */
-export function getConfig() {
-  if (!_cache) {
-    throw new Error('getConfig(): initConfig() must be called before getConfig()');
-  }
-  return _cache;
 }

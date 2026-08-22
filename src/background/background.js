@@ -6,10 +6,8 @@
  * No business logic lives here — everything is delegated to modules.
  */
 
-import { initConfig } from '../config/config.js';
-import { logger }     from '../utils/logger.js';
+import { logger } from '../utils/logger.js';
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(() => {
   logger.info('background: extension installed / updated');
-  await initConfig();
 });

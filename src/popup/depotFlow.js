@@ -6,18 +6,41 @@
  *   - Scan Drive Labels (barcode → depot → file under YYYY/MM)
  */
 
-import { loadConfig }                         from '../config/config.js';
+import { loadConfig }                          from '../config/config.js';
 import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
-import { scanDriveLabels, fileLabels }         from '../depot/driveScanner.js';
+import { processLabels }                       from '../depot/driveScanner.js';
 import { depotLookup }                         from '../depot/lookup.js';
 import { depotMain }                           from '../depot/depotScript.js';
+import { createLog }                           from './logView.js';
 import { setStatus }                           from './statusHelper.js';
+
+const STATE_LABELS = {
+  listing:     'Listing',
+  downloading: 'Downloading',
+  reading:     'Reading',
+  checking:    'Checking',
+  filing:      'Filing',
+};
+
+// "0 matches" is the depot answering; any other failure means it is not.
+const ANSWERED = /^\d+ matches$/;
+
+// A number that cannot exist — any answer to it proves the depot is alive.
+const DEPOT_PROBE = '000000000';
+
+function fatal(message) {
+  const err = new Error(message);
+  err.fatal = true;
+  return err;
+}
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, testModeToggle, scanCADBtn, scanDriveBtn,
-  scanProgress, progressFill, progressLabel,
+  dryRunToggle, verifyDepotToggle, scanCADBtn, scanDriveBtn,
+  scanProgress, progressFill, progressLabel, depotLogEl,
 }) {
+  const log = createLog(depotLogEl);
+
   // ── Internal helpers ────────────────────────────────────────────────────────
 
   function setDepotStatus(state, text) {
@@ -41,17 +64,30 @@ export function initDepotFlow({
     }
   }
 
-  function showProgress(current, total, state = '') {
-    scanProgress.hidden = false;
-    progressFill.style.width = `${Math.round((current / total) * 100)}%`;
-    const stateLabel = state === 'downloading' ? 'Downloading' : 'Reading';
-    progressLabel.textContent = `${stateLabel} ${current} of ${total}`;
-  }
-
   function hideProgress() {
     scanProgress.hidden = true;
     progressFill.style.width = '0%';
     progressLabel.textContent = '';
+  }
+
+  // Photos go past too fast to follow one by one, so the log keeps only the
+  // outcome of each: where it ended up, or why it did not.
+  function onScanProgress(current, total, state, entry) {
+    scanProgress.hidden = false;
+    const percent = Math.round((current / total) * 100);
+    progressFill.style.width = `${percent}%`;
+    progressLabel.textContent = state === 'listing'
+      ? 'Listing photos...'
+      : `${STATE_LABELS[state] ?? 'Working'} ${current} of ${total} · ${percent}%`;
+
+    if (state !== 'done') return;
+
+    const prefix = `${current}/${total}`;
+    const name   = entry.to?.split('/').pop();
+    if (entry.error)          log.fail(`${prefix} ✗ ${entry.from} — ${entry.error}`);
+    else if (!entry.number)   log.warn(`${prefix} ? ${name}`);
+    else if (entry.contested) log.warn(`${prefix} ✓ ${name} (contested)`);
+    else                      log.ok(`${prefix} ✓ ${name}`);
   }
 
   async function getActiveTab() {
@@ -87,83 +123,99 @@ export function initDepotFlow({
 
   // ── Scan Drive Labels ───────────────────────────────────────────────────────
 
-  // Asks the depot which of these numbers really exist. Reuses the same lookup
+  // Asks the depot whether a number is a real parcel. Reuses the same lookup
   // the email flow runs, so there is one definition of "this parcel is ours".
-  async function confirmNumbers(numbers) {
-    if (!numbers.length) return new Set();
+  // A consignment of ten parcels repeats one number ten times, hence the cache.
+  function depotVerifier() {
+    const seen = new Map();
 
-    const tab = await getActiveTab();
-    const [injection] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func:   depotLookup,
-      args:   [numbers],
-      world:  'MAIN',
-    });
-    if (!injection.result) throw new Error('Depot lookup returned nothing — check you are on the depot page');
+    return async function verify(number) {
+      if (!verifyDepotToggle.checked) return true;
+      if (seen.has(number)) return seen.get(number);
 
-    console.group(`🔍 Depot lookup — ${numbers.length} number(s)`);
-    injection.result.forEach(r => console.log(`  ${r.query}: ${r.ok ? 'ok' : r.reason}`));
-    console.groupEnd();
+      const tab = await getActiveTab();
+      let injection;
+      try {
+        [injection] = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func:   depotLookup,
+          args:   [[number]],
+          world:  'MAIN',
+        });
+      } catch (err) {
+        throw fatal(`Cannot reach the depot tab — ${err.message}`);
+      }
+      if (!injection?.result) throw fatal('Depot lookup returned nothing — open the depot page in the active tab');
 
-    return new Set(injection.result.map(r => r.consNumber).filter(Boolean));
+      const [result] = injection.result;
+      if (!result.consNumber && !ANSWERED.test(result.reason ?? '')) {
+        throw fatal(`Depot is not responding — ${result.reason}`);
+      }
+
+      const found = Boolean(result.consNumber);
+      if (!found && number !== DEPOT_PROBE) log.warn(`  ${number} — ${result.reason}`);
+      seen.set(number, found);
+      return found;
+    };
   }
 
   scanDriveBtn.addEventListener('click', async () => {
-    setDepotStatus('running', 'Keep this window open — reading labels...');
+    const dryRun = dryRunToggle.checked;
+    log.start(dryRun ? 'Dry run — nothing will be moved' : 'Listing photos in Drive...');
+    if (!verifyDepotToggle.checked) log.warn('Depot check off — trusting the barcodes');
+    setDepotStatus('running', 'Keep this window open — processing labels...');
     setDepotButtons(true);
+
     try {
       const config = await loadConfig();
       if (!config.driveFolderId) throw new Error('Drive Folder ID not set in Settings');
 
-      let token  = await getAuthToken();
-      let photos;
+      // Fail before touching Drive rather than halfway through the folder.
+      const verify = depotVerifier();
+      if (verifyDepotToggle.checked) {
+        log.info('Checking depot connection...');
+        await verify(DEPOT_PROBE);
+        log.ok('Depot is responding');
+      }
+
+      const run = (token) => processLabels({
+        folderInput: config.driveFolderId,
+        token,
+        verify,
+        dryRun,
+        onProgress:  onScanProgress,
+      });
+
+      let token   = await getAuthToken();
+      let results;
       try {
-        photos = await scanDriveLabels(config.driveFolderId, token, showProgress, testModeToggle.checked);
+        results = await run(token);
       } catch (err) {
         if (!err.message.includes('403')) throw err;
         // Cached token is stale (missing Drive scope) — remove and retry with fresh one
         await removeCachedAuthToken(token);
-        token  = await getAuthToken({ interactive: true });
-        photos = await scanDriveLabels(config.driveFolderId, token, showProgress, testModeToggle.checked);
+        token   = await getAuthToken({ interactive: true });
+        results = await run(token);
       }
 
-      if (photos.length === 0) {
+      if (results.length === 0) {
+        log.warn('No label photos found');
         setDepotStatus('done', 'No label photos found in Drive folder');
         return;
       }
 
-      const numbers = [...new Set(photos.map(p => p.number).filter(Boolean))];
-
-      setDepotStatus('running', `Read ${numbers.length} number(s) — checking the depot...`);
-      const confirmed = await confirmNumbers(numbers);
-
-      console.group(`📦 Scan Drive Labels — ${photos.length} photo(s)`);
-      photos.forEach(p => console.log(
-        `  ${p.number && confirmed.has(p.number) ? p.number : '—'.padEnd(9)}  ←  ${p.name}`
-        + (p.contested ? '  [contested]' : '')
-        + (p.error ? `  [error: ${p.error}]` : '')
-      ));
-      console.groupEnd();
-
-      if (dryRunToggle.checked) {
-        setDepotStatus('done', `Dry run: ${confirmed.size}/${numbers.length} confirmed — see console`);
-        return;
-      }
-
-      setDepotStatus('running', 'Filing photos...');
-      const filed  = await fileLabels(photos, confirmed, config.driveFolderId, token);
-      const failed = filed.filter(r => r.error);
-
-      console.group(`🗂️ Filed ${filed.length - failed.length}/${photos.length}`);
-      filed.forEach(r => console.log(`  ${r.from} → ${r.to ?? `FAILED: ${r.error}`}`));
-      console.groupEnd();
+      const failed = results.filter(r => r.error).length;
+      const read   = results.filter(r => r.number).length;
+      log.info(`${dryRun ? 'Would file' : 'Filed'} ${results.length - failed} of ${results.length} — read ${read}`);
 
       setDepotStatus('done',
-        `Filed ${filed.length - failed.length}/${photos.length}`
-        + (failed.length ? ` | Errors: ${failed.length}` : '')
+        `${dryRun ? 'Dry run' : 'Filed'} ${results.length - failed}/${results.length} — read ${read}`
+        + (failed ? ` | Errors: ${failed}` : '')
       );
     } catch (err) {
-      setDepotStatus('error', err.message);
+      const message = err.fatal ? `Stopped — ${err.message}` : err.message;
+      log.fail(message);
+      setDepotStatus('error', message);
     } finally {
       hideProgress();
       setDepotButtons(false);

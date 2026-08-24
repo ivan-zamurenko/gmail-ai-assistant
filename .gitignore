@@ -11,6 +11,10 @@ dist/
 # Private — local runtime config (API key, Drive folder, author contacts)
 src/config/local.js
 
+# Private — Discord bot secrets (token, Firebase service account)
+bot/config/local.js
+bot/config/serviceAccount.json
+
 # Private — label photos (real parcel data, not for public repo)
 labels_example/
 

@@ -115,8 +115,8 @@
 
 ### Порядок слайсів (тонкими вертикальними зрізами)
 1. **Слайс 0 — скелет бота** ✅ (готово: 3 команди реєструються, черга Firestore).
-2. **Слайс TODO — `/todo`** — бот ↔ Firestore, БЕЗ розширення й депо. Найпростіший,
-   дає всю систему «живою» першим. (Sofia)
+2. **Слайс TODO — `/todo`** ✅ (готово: `add/list/done/clear`, окрема колекція
+   `todos` у Firestore, персональний список на юзера). (Sofia)
 3. **Слайс 1 — `/find`** — слухач у розширенні + depot lookup (read-only). (Ravi, Marek)
 4. **Слайс 2 — `/reschedule`** — спершу лише dry-run; live після діагностики CAD-бага. (Marek, Priya)
 5. **Слайс 3 — `/check_barcodes`** — потребує `chrome.offscreen` для ZXing DOM. (Marek)

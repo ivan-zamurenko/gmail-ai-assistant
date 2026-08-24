@@ -10,29 +10,10 @@
  * The bot authenticates with a Firebase service account (full trust). The
  * extension side will use its own scoped credentials.
  */
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-import admin from 'firebase-admin';
-
-import { loadConfig } from '../config/config.js';
+import { db, admin } from './firebase.js';
 import { STATUS, TASKS_COLLECTION } from './contract.js';
-
-const cfg = loadConfig();
-
-const BOT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const serviceAccount = JSON.parse(
-  readFileSync(resolve(BOT_ROOT, cfg.firebase.serviceAccountPath), 'utf8'),
-);
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  projectId:  cfg.firebase.projectId,
-});
-
-const db = admin.firestore();
 
 /**
  * Drops a task on the queue and resolves with the extension's result document.

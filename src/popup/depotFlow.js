@@ -36,7 +36,7 @@ function fatal(message) {
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, verifyDepotToggle, scanCADBtn, scanDriveBtn,
+  dryRunToggle, scanCADBtn, scanDriveBtn,
   scanProgress, progressFill, progressLabel, depotLogEl,
 }) {
   const log = createLog(depotLogEl);
@@ -130,7 +130,6 @@ export function initDepotFlow({
     const seen = new Map();
 
     return async function verify(number) {
-      if (!verifyDepotToggle.checked) return true;
       if (seen.has(number)) return seen.get(number);
 
       const tab = await getActiveTab();
@@ -159,10 +158,42 @@ export function initDepotFlow({
     };
   }
 
+  // The labels find the parcels; this hands their consignment numbers to the
+  // same depot reschedule the CAD list runs. dryRun only logs what would move.
+  async function rescheduleFound(results, dryRun) {
+    const numbers = [...new Set(results.filter(r => r.number).map(r => r.number))];
+    if (numbers.length === 0) return '';
+
+    log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${numbers.length} parcel(s) to tomorrow...`);
+
+    const tab = await getActiveTab();
+    const [injection] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func:   depotMain,
+      args:   [{ dryRun, mode: 'labels', consNumbers: numbers }],
+      world:  'MAIN',
+    });
+
+    const res = injection?.result;
+    if (!res || res.__error) {
+      log.fail(`Reschedule: ${res?.__error ?? 'depot script returned nothing'}`);
+      return ' | Reschedule failed';
+    }
+    if (res.dryRun) {
+      log.info(`Dry run — ${res.count} parcel(s) would be rescheduled`);
+      return ` | Would reschedule ${res.count}`;
+    }
+    if (res.warning) {
+      log.warn(res.warning);
+      return ' | Reschedule: none matched';
+    }
+    log.info(`Reschedule — Changed: ${res.changed} | Skipped: ${res.skipped} | Errors: ${res.errors}`);
+    return ` | Rescheduled ${res.changed}`;
+  }
+
   scanDriveBtn.addEventListener('click', async () => {
     const dryRun = dryRunToggle.checked;
-    log.start(dryRun ? 'Dry run — nothing will be moved' : 'Listing photos in Drive...');
-    if (!verifyDepotToggle.checked) log.warn('Depot check off — trusting the barcodes');
+    log.start(dryRun ? 'Dry run — nothing will be moved or rescheduled' : 'Listing photos in Drive...');
     setDepotStatus('running', 'Keep this window open — processing labels...');
     setDepotButtons(true);
 
@@ -172,11 +203,9 @@ export function initDepotFlow({
 
       // Fail before touching Drive rather than halfway through the folder.
       const verify = depotVerifier();
-      if (verifyDepotToggle.checked) {
-        log.info('Checking depot connection...');
-        await verify(DEPOT_PROBE);
-        log.ok('Depot is responding');
-      }
+      log.info('Checking depot connection...');
+      await verify(DEPOT_PROBE);
+      log.ok('Depot is responding');
 
       const run = (token) => processLabels({
         folderInput: config.driveFolderId,
@@ -208,9 +237,12 @@ export function initDepotFlow({
       const read   = results.filter(r => r.number).length;
       log.info(`${dryRun ? 'Would file' : 'Filed'} ${results.length - failed} of ${results.length} — read ${read}`);
 
+      const reschedule = await rescheduleFound(results, dryRun);
+
       setDepotStatus('done',
         `${dryRun ? 'Dry run' : 'Filed'} ${results.length - failed}/${results.length} — read ${read}`
         + (failed ? ` | Errors: ${failed}` : '')
+        + reschedule
       );
     } catch (err) {
       const message = err.fatal ? `Stopped — ${err.message}` : err.message;

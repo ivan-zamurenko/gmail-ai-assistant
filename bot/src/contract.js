@@ -7,9 +7,14 @@
  */
 
 export const COMMANDS = {
-  FIND:           'find',
-  RESCHEDULE:     'reschedule',
-  CHECK_BARCODES: 'check_barcodes',
+  RESCHEDULE:  'reschedule',
+};
+
+// Sub-modes of /reschedule, carried in task.args.mode.
+export const RESCHEDULE_MODE = {
+  ALL:      'all',      // scan CAD list, reschedule every future-dated parcel
+  PARCEL:   'parcel',   // reschedule one consignment to a given date
+  BARCODES: 'barcodes', // scan Drive labels, reschedule the parcels found
 };
 
 export const STATUS = {

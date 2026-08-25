@@ -10,7 +10,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 
 import { loadConfig }     from '../config/config.js';
 import { enqueueAndWait } from './queue.js';
-import { STATUS }         from './contract.js';
+import { RESCHEDULE_MODE, STATUS } from './contract.js';
 import { addTodo, listTodos, markDone, clearDone, renderList } from './todo.js';
 
 const cfg = loadConfig();
@@ -64,12 +64,27 @@ async function handleTodo(interaction) {
   }
 }
 
-/** Depot commands (/find, /reschedule, /check_barcodes) — routed through the queue. */
+/** Depot commands (/reschedule) — routed through the queue to the extension. */
 async function handleDepotCommand(interaction) {
   const command = interaction.commandName;
-  const args = command === 'find'
-    ? { query: interaction.options.getString('query') }
-    : { dryRun: interaction.options.getBoolean('dry_run') ?? true };
+
+  const mode   = interaction.options.getSubcommand();      // all | parcel | barcodes
+  const dryRun = interaction.options.getBoolean('dry_run') ?? true;
+
+  let args;
+  if (mode === RESCHEDULE_MODE.PARCEL) {
+    const conId   = interaction.options.getString('con_id');
+    const newDate = interaction.options.getString('new_date');
+
+    const dateError = validateFutureWorkday(newDate);
+    if (dateError) {
+      await interaction.reply({ content: `⚠️ ${dateError}`, flags: MessageFlags.Ephemeral });
+      return;
+    }
+    args = { mode, conId, newDate, dryRun };
+  } else {
+    args = { mode, dryRun };
+  }
 
   // The depot round-trip is slower than Discord's 3-second reply window.
   await interaction.deferReply();
@@ -87,6 +102,25 @@ async function handleDepotCommand(interaction) {
   } catch (err) {
     await interaction.editReply(`⚠️ ${err.message}`);
   }
+}
+
+/** Returns an error message if the date is not a valid future weekday, else null. */
+function validateFutureWorkday(dateStr) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return 'Дата має бути у форматі YYYY-MM-DD (напр. 2026-08-28)';
+  }
+
+  const date = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return 'Некоректна дата';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (date <= today) return 'Дата має бути пізніше за сьогодні';
+
+  const day = date.getDay(); // 0 = неділя, 6 = субота
+  if (day === 0 || day === 6) return 'Дата не може бути суботою чи неділею';
+
+  return null;
 }
 
 client.login(cfg.discordToken);

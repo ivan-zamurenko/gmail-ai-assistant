@@ -6,28 +6,34 @@
  */
 import { SlashCommandBuilder } from 'discord.js';
 
+const dryRunOption = (o) =>
+  o.setName('dry_run')
+   .setDescription('true = лише показати, нічого не змінювати (за замовч. true)');
+
 export const commands = [
   new SlashCommandBuilder()
-    .setName('find')
-    .setDescription('Знайти посилку в депо за номером, reference або адресою')
-    .addStringOption(o =>
-      o.setName('query')
-       .setDescription('Номер посилки / reference / частина адреси')
-       .setRequired(true)),
-
-  new SlashCommandBuilder()
     .setName('reschedule')
-    .setDescription('Перенести CAD-посилки на наступний робочий день')
-    .addBooleanOption(o =>
-      o.setName('dry_run')
-       .setDescription('true = лише показати, нічого не змінювати (за замовч. true)')),
-
-  new SlashCommandBuilder()
-    .setName('check_barcodes')
-    .setDescription('Зчитати штрихкоди лейблів з Drive і звірити в депо')
-    .addBooleanOption(o =>
-      o.setName('dry_run')
-       .setDescription('true = лише показати, нічого не рухати (за замовч. true)')),
+    .setDescription('Перенести посилки на майбутню дату')
+    .addSubcommand(s =>
+      s.setName('all')
+       .setDescription('Знайти всі CAD-посилки з майбутньою датою і перенести')
+       .addBooleanOption(dryRunOption))
+    .addSubcommand(s =>
+      s.setName('parcel')
+       .setDescription('Перенести одну посилку на задану дату')
+       .addStringOption(o =>
+         o.setName('con_id')
+          .setDescription('Номер посилки (consignment)')
+          .setRequired(true))
+       .addStringOption(o =>
+         o.setName('new_date')
+          .setDescription('Дата YYYY-MM-DD — майбутня, не субота й не неділя')
+          .setRequired(true))
+       .addBooleanOption(dryRunOption))
+    .addSubcommand(s =>
+      s.setName('barcodes')
+       .setDescription('Зчитати лейбли з Drive і перенести знайдені посилки')
+       .addBooleanOption(dryRunOption)),
 
   new SlashCommandBuilder()
     .setName('todo')

@@ -21,6 +21,9 @@ client.once(Events.ClientReady, (c) => {
   console.log(`✅ Bot online as ${c.user.tag}`);
 });
 
+// A stray API error must never take the whole bot down.
+client.on(Events.Error, (err) => console.error('Client error:', err));
+
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -38,28 +41,27 @@ async function handleTodo(interaction) {
   const sub    = interaction.options.getSubcommand();
   const userId = interaction.user.id;
 
+  // Defer first: a cold Firestore call can exceed Discord's 3-second reply window.
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
   try {
     if (sub === 'add') {
       const text = interaction.options.getString('text');
       await addTodo(userId, text);
-      await reply(interaction, `✅ Додано: ${text}`);
+      await interaction.editReply(`✅ Додано: ${text}`);
     } else if (sub === 'list') {
-      await reply(interaction, renderList(await listTodos(userId)));
+      await interaction.editReply(renderList(await listTodos(userId)));
     } else if (sub === 'done') {
       const number = interaction.options.getInteger('number');
       const todo   = await markDone(userId, number);
-      await reply(interaction, todo ? `✅ Виконано: ${todo.text}` : `⚠️ Немає задачі №${number}`);
+      await interaction.editReply(todo ? `✅ Виконано: ${todo.text}` : `⚠️ Немає задачі №${number}`);
     } else if (sub === 'clear') {
       const count = await clearDone(userId);
-      await reply(interaction, `🧹 Прибрано виконаних: ${count}`);
+      await interaction.editReply(`🧹 Прибрано виконаних: ${count}`);
     }
   } catch (err) {
-    await reply(interaction, `⚠️ ${err.message}`);
+    await interaction.editReply(`⚠️ ${err.message}`);
   }
-}
-
-function reply(interaction, content) {
-  return interaction.reply({ content, flags: MessageFlags.Ephemeral });
 }
 
 /** Depot commands (/find, /reschedule, /check_barcodes) — routed through the queue. */

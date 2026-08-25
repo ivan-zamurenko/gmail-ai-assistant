@@ -19,9 +19,9 @@ const serviceAccount = JSON.parse(
   readFileSync(resolve(BOT_ROOT, cfg.firebase.serviceAccountPath), 'utf8'),
 );
 
+// projectId is read from serviceAccount.json by cert() — no need to repeat it.
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  projectId:  cfg.firebase.projectId,
 });
 
 export const db = admin.firestore();

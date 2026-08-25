@@ -15,8 +15,8 @@ export function loadConfig() {
       throw new Error(`Config "${key}" not set — fill bot/config/local.js (copy from local.example.js)`);
     }
   }
-  if (!LOCAL.firebase?.projectId || LOCAL.firebase.projectId.startsWith('your-')) {
-    throw new Error('Config "firebase.projectId" not set — fill bot/config/local.js');
+  if (!LOCAL.firebase?.serviceAccountPath) {
+    throw new Error('Config "firebase.serviceAccountPath" not set — fill bot/config/local.js');
   }
   return LOCAL;
 }

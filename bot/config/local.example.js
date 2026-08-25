@@ -18,8 +18,8 @@ export const LOCAL = {
   // ── Firebase (the shared task queue) ─────────────────────────────────────
   // Firebase console → Project settings → Service accounts →
   //   "Generate new private key" → save the JSON as bot/config/serviceAccount.json
+  // The project id is read from that file automatically — nothing else to set.
   firebase: {
-    projectId:          'your-firebase-project-id',
     serviceAccountPath: 'config/serviceAccount.json',
   },
 };

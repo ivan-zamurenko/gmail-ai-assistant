@@ -28,6 +28,8 @@ export default [
         URLSearchParams: 'readonly',
         setTimeout:      'readonly',
         clearTimeout:    'readonly',
+        setInterval:     'readonly',
+        clearInterval:   'readonly',
         document:        'readonly',
         window:          'readonly',
         Image:           'readonly',

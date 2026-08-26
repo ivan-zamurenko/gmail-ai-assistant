@@ -54,16 +54,23 @@ function summarize(res, dryRun) {
 }
 
 /**
- * Runs depotMain in the first depot tab that accepts injection. A tab whose
- * frame is an error page (unreachable host, dropped session) still matches by
- * URL but throws on inject, so we try the next matching tab before giving up.
+ * Runs depotMain across the open depot tabs and returns the first real result.
+ *
+ * A tab can match by URL yet be the wrong one: its frame may be an error page
+ * (throws on inject), or it may be a depot page that is not the dashboard
+ * (depotMain returns "Pending trigger link not found"). The popup avoids this
+ * by running on the tab the user is looking at; the queue has no active tab,
+ * so it tries each depot tab until one actually carries the pending list.
  */
 async function injectDepot(args) {
   const tabs = await findDepotTabs();
   if (!tabs.length) return { reason: 'Відкрий вкладку депо й залогінься' };
 
-  let lastErr = null;
+  const WRONG_PAGE = /trigger link not found|correct depot page/i;
+  let lastReason = null;
+
   for (const tab of tabs) {
+    let res;
     try {
       const [injection] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -73,22 +80,32 @@ async function injectDepot(args) {
         // ordinary page requests, exactly like running the snippet in the console.
         world:  'MAIN',
       });
-      return { result: injection?.result };
+      res = injection?.result;
     } catch (err) {
-      lastErr = err;
+      lastReason = /error page/i.test(err.message)
+        ? 'Депо-вкладка показує помилку — онови її (F5), перевір мережу депо й залогінься'
+        : `Не дістатися депо-вкладки — ${err.message}`;
+      continue;
     }
+
+    if (!res) {
+      lastReason = 'Депо-скрипт не повернув результат — ти на сторінці депо?';
+      continue;
+    }
+    if (res.__error) {
+      lastReason = res.__error;
+      if (WRONG_PAGE.test(res.__error)) continue; // another tab may be the dashboard
+      return { reason: res.__error };             // a genuine depot error — stop
+    }
+    return { result: res };
   }
-  if (/error page/i.test(lastErr?.message ?? '')) {
-    return { reason: 'Депо-вкладка показує помилку — онови її (F5), перевір мережу депо й залогінься' };
-  }
-  return { reason: `Не дістатися депо-вкладки — ${lastErr?.message}` };
+
+  return { reason: lastReason ?? 'Не знайдено робочої вкладки депо' };
 }
 
 async function runCad(dryRun) {
   const { result: res, reason } = await injectDepot({ dryRun, mode: 'cad' });
-  if (reason)        return error(reason);
-  if (!res)          return error('Депо-скрипт не повернув результат — ти на сторінці депо?');
-  if (res.__error)   return error(res.__error);
+  if (reason) return error(reason);
   return done(summarize(res, dryRun), detailsFor(res, dryRun));
 }
 

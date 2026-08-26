@@ -28,6 +28,7 @@ const watch = process.argv.includes('--watch');
 const ENTRY_POINTS = [
   'src/background/background.js',
   'src/popup/popup.js',
+  'src/offscreen/offscreen.js',
 ];
 
 // Copied as-is — not JavaScript, nothing to bundle.
@@ -35,6 +36,7 @@ const STATIC_FILES = [
   'assets',
   'src/popup/popup.html',
   'src/popup/popup.css',
+  'src/offscreen/offscreen.html',
 ];
 
 // The repo root is a loadable extension too, and loading it by mistake kills the

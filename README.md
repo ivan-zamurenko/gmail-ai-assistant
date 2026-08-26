@@ -1,52 +1,73 @@
 <div align="center">
   <img src="assets/icon128.png" width="80" alt="DPD Assistance">
   <h1>DPD Assistance</h1>
-  <p><strong>Chrome Extension · Logistics Automation · AI-Powered</strong></p>
+  <p><strong>Chrome Extension + Discord Bot · Logistics Automation · Computer Vision · AI</strong></p>
 
   ![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-MV3-blue?logo=googlechrome)
-  ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o%20Vision-412991?logo=openai)
-  ![Google Drive](https://img.shields.io/badge/Google%20Drive-API-34A853?logo=googledrive)
-  ![Gmail](https://img.shields.io/badge/Gmail-API-EA4335?logo=gmail)
+  ![Gemini](https://img.shields.io/badge/Google%20Gemini-Flash%20Vision-8E75B2?logo=googlegemini)
+  ![ZXing](https://img.shields.io/badge/ZXing-PDF417%20%2F%20Code128-000000)
+  ![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase)
+  ![Discord](https://img.shields.io/badge/Discord.js-Bot-5865F2?logo=discord&logoColor=white)
 </div>
 
 ---
 
-A Chrome Extension that automates repetitive logistics tasks at a DPD Ireland parcel depot — built to replace manual processes that previously took hours of clicking.
+Automation toolkit for a **DPD Ireland parcel depot**, built around a real operational problem: the internal system has no batch tools, so every parcel reschedule is a separate sequence of clicks. This project replaces hours of manual clicking with one action — from the browser **or** from Discord.
+
+It is a small **distributed system**: a Chrome MV3 extension does the work inside the live depot session, and a Discord bot drives it remotely. The two halves never call each other directly — they communicate through a shared Firestore task queue, so either side can be updated independently without breaking the other.
+
+---
+
+## Engineering Highlights
+
+- **Two-process architecture over a shared queue.** Discord bot (Node) and Chrome extension (browser) exchange tasks via Firestore. A versioned contract keeps them decoupled; a version skew degrades gracefully instead of crashing.
+- **Real-world computer vision.** Reads DPD labels from hand-held phone photos using **ZXing** (PDF417 + Code128 + DataMatrix), with a crop/rotation strategy tuned on 76 real images to reach **~88 %** read accuracy — plus a **Gemini Vision** fallback.
+- **Works within MV3's hard limits.** The depot session lives in the tab URL (not cookies), so a service worker can't reach it alone; work is dispatched into the live tab via `executeScript` in the **MAIN world** (the depot rejects POSTs from an isolated world). The queue is polled with `chrome.alarms` because MV3 kills idle workers.
+- **Secrets never ship.** The extension carries no service account; it authenticates to Firestore with **anonymous Firebase Auth** and is fenced off by security rules. All keys live in gitignored config, accessed through a single config facade.
+- **Domain-correct logic.** Next-working-day calculation skips weekends and Irish bank holidays; delivery truth is read from scanning history, not the (often stale) arranged date.
+- **Modular by default.** UI orchestrates, services hold business rules, adapters hide providers (Drive / Gmail / Gemini / Firestore) — swapping a provider touches one module. Bundled with **esbuild**, linted with **ESLint 9** flat config.
+
+---
 
 ## What It Does
 
-### Reschedule Future-Dated Parcels
+### 1 · Reschedule future-dated parcels
+Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews every change before anything is written.
 
-Depot staff regularly receive parcels with future delivery dates that need to be manually rescheduled one by one in the depot management system. This extension automates that entire flow:
+### 2 · Scan parcel labels from Google Drive
+Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (ZXing, with Gemini Vision fallback), normalises the 9-digit consignment number across DPD's label formats, verifies it in the depot, reschedules the matches, and files processed photos under `YYYY/MM`.
 
-1. Opens the pending parcels list
-2. Identifies which parcels have future dates (CAD-scanned)
-3. Fetches each consignment detail
-4. Calculates the next valid working day (skipping weekends + Irish bank holidays)
-5. Submits the reschedule — all in one click
-
-**Dry Run mode** lets you preview changes before committing anything.
-
-### Scan Parcel Labels from Google Drive
-
-When drivers photograph parcel labels and upload them to a shared Google Drive folder, the extension:
-
-1. Lists all photos in the configured folder
-2. Downloads each image and sends it to **GPT-4o Vision** for OCR
-3. Parses the consignment number from 3 different DPD label formats:
-   - Plain 9-digit number (e.g. `123456789`)
-   - Slash format (e.g. `0123456789/0/1` → `123456789`)
-   - 15-character barcode (e.g. `051112345678942` → `12345678942`)
-4. Looks up each consignment in the depot system and reschedules
-5. Moves processed label photos to a `Done` subfolder automatically
-
-> **Real label example used during development:**
+> **Real label used during development:**
 >
 > ![DPD Label](labels_example/label_example.png)
 
-### Gmail Auto-Reply *(in progress)*
+### 3 · Control from Discord
+A Discord bot exposes the same actions remotely and returns a **console-style per-parcel report** right in the channel:
 
-Automatically reads incoming customer emails, extracts order/tracking data, queries the carrier API for shipment status, and generates a contextual reply using OpenAI — either as a draft or sent directly.
+```
+/reschedule all       [dry_run]   → scan CAD list
+/reschedule parcel    con_id new_date [dry_run]
+/reschedule barcodes  [dry_run]   → scan Drive labels
+/todo add|list|done|clear         → operator to-do list
+```
+
+### 4 · Gmail auto-reply *(in progress)*
+Reads a queued customer email, grounds the answer in live depot data (status, delivery date, address), and prepares a reply as a draft first — automation gated behind human review.
+
+---
+
+## System Architecture
+
+```mermaid
+flowchart LR
+    U[Operator] -->|slash command| B[Discord Bot<br/>Node · discord.js]
+    B -->|enqueue task| F[(Firestore<br/>task queue)]
+    SW[Extension Service Worker<br/>chrome.alarms poll] -->|claim| F
+    SW -->|executeScript MAIN| T[Live Depot Tab<br/>wsInterlink]
+    T -->|per-parcel result| SW
+    SW -->|write status + details| F
+    F -->|onSnapshot| B -->|reply| U
+```
 
 ---
 
@@ -54,63 +75,71 @@ Automatically reads incoming customer emails, extracts order/tracking data, quer
 
 | Layer | Technology |
 |---|---|
-| Extension | Chrome MV3, `chrome.scripting`, `chrome.identity` |
-| AI / OCR | OpenAI GPT-4o Vision |
-| Auth | OAuth 2.0 via `chrome.identity.getAuthToken` |
-| Storage | Google Drive API v3 |
-| Email | Gmail API (readonly + compose) |
-| UI | Vanilla JS, CSS (Apple-inspired design) |
+| Extension | Chrome MV3, `chrome.scripting` (MAIN world), `chrome.alarms`, `chrome.identity` |
+| Bot | Node.js, `discord.js` |
+| Queue | Firebase Firestore (REST + anonymous Auth from the extension, Admin SDK from the bot) |
+| Vision / OCR | `@zxing/library` (PDF417 · Code128 · DataMatrix) + Google Gemini Flash Vision |
+| Google APIs | Drive v3, Gmail, OAuth 2.0 via `chrome.identity` |
+| Build / Quality | esbuild bundling, ESLint 9 flat config |
+| UI | Vanilla JS + CSS (Apple-inspired) |
 
 ---
 
-## Architecture
+## Project Structure
 
 ```
-src/
-├── depot/
-│   ├── depotScript.js      # Self-contained script injected into depot tab
-│   ├── labelParser.js      # OCR number → clean consignment number
-│   └── driveScanner.js     # Drive API + GPT-4o Vision pipeline
-├── popup/                  # Extension UI (accordion, toggles, status)
-├── gmail/                  # Gmail read/draft/send
-├── ai/                     # OpenAI prompt builder + reply validator
-├── auth/                   # OAuth token helper
-├── config/                 # Centralised config facade
-└── workflow/               # Email processing orchestrator
+src/                     # Chrome extension
+├── background/          # Service worker — event wiring only
+├── queue/               # Firestore listener: contract · adapter · executor
+├── depot/               # Injected depot scripts, barcode + lookup logic
+├── gmail/               # Gmail labels as a work queue
+├── popup/               # UI (thin orchestrator + feature flows)
+├── auth/  · config/  · utils/
+bot/                     # Discord bot
+└── src/                 # commands · queue · Firestore · todo
 ```
 
-The depot script runs **inside the depot tab's page context** using `chrome.scripting.executeScript({ func, args })` — it reuses the existing session cookies, so no credentials need to be stored in the extension.
+Each half is independently deployable: update the bot **or** the extension without touching the other, unless the shared queue contract itself changes.
 
 ---
 
-## Planned Features
+## Roadmap
 
-- **Gmail Auto-Reply** — full end-to-end: read email → query carrier API → generate reply → send/draft
-- **Configurable carrier adapters** — swap DPD for any other carrier API without changing business logic
-- **Notification system** — Chrome notifications when batches complete or errors occur
-- **Processing history** — local log of all rescheduled consignments with timestamps
-- **Multi-depot support** — run against different depot accounts from the same popup
+| Status | Milestone | Notes |
+|:---:|---|---|
+| ✅ | Reschedule future-dated parcels | CAD scan, dry-run, Irish-holiday aware |
+| ✅ | Drive label scanning | ZXing + Gemini, ~88 % on real photos, auto-filing |
+| ✅ | Discord bot + Firestore queue | `/reschedule`, `/todo`, distributed contract |
+| ✅ | Extension queue listener | service-worker poll → depot tab → result |
+| ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |
+| 🚧 | `/reschedule parcel` executor | reschedule one consignment to a chosen date |
+| 🚧 | Gmail auto-reply | depot-grounded drafts, human-in-the-loop |
+| 📋 | Delivery verification | delivered-vs-expected → mini-report in Discord |
+| 📋 | Carrier adapter layer | swap DPD for another carrier without touching logic |
+| 📋 | Processing history | timestamped audit log of every reschedule |
 
 ---
 
 ## Setup
 
-1. Clone this repo
-2. Open `chrome://extensions` → Enable **Developer mode** → **Load unpacked** → select the project folder
-3. Open the extension popup → **Settings**
-4. Enter your OpenAI API key and Google Drive folder ID (or paste the full Drive URL)
-5. Ensure the Drive folder is shared with your Google account as **Editor**
+**Extension**
+1. `npm install` → `npm run build` (bundles to `dist/`)
+2. `chrome://extensions` → **Developer mode** → **Load unpacked** → select `dist/`
+3. Copy `src/config/local.example.js` → `local.js`; add Gemini key, Drive folder, and Firebase web config (`apiKey`, `projectId`)
 
-> OAuth consent is handled automatically via the signed-in Chrome profile — no manual token setup needed.
+**Bot**
+1. `cd bot && npm install`
+2. Copy `config/local.example.js` → `local.js`; add the Discord token and Firebase service account
+3. `npm start`
+
+> OAuth consent is handled by the signed-in Chrome profile — no manual token setup. All secrets stay in gitignored `local.js`.
 
 ---
 
 ## Why I Built This
 
-I work at a DPD Ireland parcel depot. The internal management system has no batch-processing tools — every reschedule is a separate sequence of clicks. I built this extension to automate the repetitive parts so the team can focus on actual logistics work.
-
-It's also a personal project to explore Chrome Extension architecture, OAuth flows, and practical applications of vision AI on real-world document images.
+I work at a DPD Ireland depot. The management system has no batch tooling, so I built one — and used it as a testbed for production-shaped problems: MV3 constraints, OAuth, a distributed queue with a clean contract, and applied computer vision on genuinely messy real-world images.
 
 ---
 
-*Built with Chrome MV3 · OpenAI · Google APIs*
+*Chrome MV3 · Discord.js · Firebase · ZXing · Google Gemini · Google APIs*

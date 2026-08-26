@@ -35,8 +35,8 @@ function block(lines) {
 }
 
 /** The same per-parcel detail the depot console shows, rendered for Discord. */
-function detailsFor(res, dryRun) {
-  if (dryRun) {
+function detailsFor(res) {
+  if (res.dryRun) {
     const lines = (res.packages ?? []).map((p) => `${String(p.consNumber).padEnd(11)} ${p.consId}`);
     return lines.length ? block(lines) : undefined;
   }
@@ -47,9 +47,11 @@ function detailsFor(res, dryRun) {
 }
 
 /** Mirrors the popup's showDepotResult, condensed to one Discord line. */
-function summarize(res, dryRun) {
-  if (dryRun)      return `Dry run: оброблено б ${res.count} посилок(и)`;
+function summarize(res) {
+  // Order matters: an empty scan returns a warning with no count, so it must be
+  // checked before the dry-run line that reads res.count.
   if (res.warning) return res.warning;
+  if (res.dryRun)  return `Dry run: оброблено б ${res.count} посилок(и)`;
   return `Готово — Змінено: ${res.changed} | Пропущено: ${res.skipped} | Помилки: ${res.errors}`;
 }
 
@@ -106,7 +108,7 @@ async function injectDepot(args) {
 async function runCad(dryRun) {
   const { result: res, reason } = await injectDepot({ dryRun, mode: 'cad' });
   if (reason) return error(reason);
-  return done(summarize(res, dryRun), detailsFor(res, dryRun));
+  return done(summarize(res), detailsFor(res));
 }
 
 /** @returns {Promise<{status: string, summary: string}>} */

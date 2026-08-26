@@ -4,15 +4,17 @@
  * Turns a queue task into a depot action and back into a one-line result.
  *
  * This is the only place on the extension side that knows depot verbs. It reuses
- * the exact same depotMain the popup buttons run, so "reschedule" means one thing
- * across the whole extension.
+ * the exact same depotMain and depotLookup the popup runs, so "reschedule" and
+ * "find" mean one thing across the whole extension.
  *
- * Slice 1 wires only /reschedule all (CAD scan). The other modes answer honestly
- * that they are not connected yet, rather than failing in some obscure way.
+ * Wired so far: /reschedule all (CAD scan) and /find (one consignment). The
+ * other reschedule modes answer honestly that they are not connected yet,
+ * rather than failing in some obscure way.
  */
 
 import { depotMain }       from '../depot/depotScript.js';
-import { RESCHEDULE_MODE, STATUS } from './contract.js';
+import { depotLookup }     from '../depot/lookup.js';
+import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { CONSTANTS }       from '../utils/constants.js';
 
 const done  = (summary, details) => ({ status: STATUS.DONE,  summary, details });
@@ -56,19 +58,21 @@ function summarize(res) {
 }
 
 /**
- * Runs depotMain across the open depot tabs and returns the first real result.
+ * Runs an injected depot function across the open depot tabs and returns the
+ * first real result.
  *
  * A tab can match by URL yet be the wrong one: its frame may be an error page
- * (throws on inject), or it may be a depot page that is not the dashboard
- * (depotMain returns "Pending trigger link not found"). The popup avoids this
- * by running on the tab the user is looking at; the queue has no active tab,
- * so it tries each depot tab until one actually carries the pending list.
+ * (throws on inject), or it may be a depot page that is not the one we need
+ * (the depot script says so). The popup avoids this by running on the tab the
+ * user is looking at; the queue has no active tab, so it tries each depot tab
+ * until one actually answers. `classify` turns a raw result into a verdict:
+ * `{ ok, value }` to accept, `{ wrongPage, reason }` to try the next tab, or
+ * `{ reason }` for a genuine depot error that should stop the search.
  */
-async function injectDepot(args) {
+async function runInDepotTabs(func, args, classify) {
   const tabs = await findDepotTabs();
   if (!tabs.length) return { reason: 'Відкрий вкладку депо й залогінься' };
 
-  const WRONG_PAGE = /trigger link not found|correct depot page/i;
   let lastReason = null;
 
   for (const tab of tabs) {
@@ -76,8 +80,8 @@ async function injectDepot(args) {
     try {
       const [injection] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func:   depotMain,
-        args:   [args],
+        func,
+        args,
         // The depot rejects POSTs from an isolated world; MAIN makes them
         // ordinary page requests, exactly like running the snippet in the console.
         world:  'MAIN',
@@ -90,20 +94,40 @@ async function injectDepot(args) {
       continue;
     }
 
-    if (!res) {
-      lastReason = 'Депо-скрипт не повернув результат — ти на сторінці депо?';
-      continue;
-    }
-    if (res.__error) {
-      lastReason = res.__error;
-      if (WRONG_PAGE.test(res.__error)) continue; // another tab may be the dashboard
-      return { reason: res.__error };             // a genuine depot error — stop
-    }
-    return { result: res };
+    const verdict = classify(res);
+    if (verdict.wrongPage) { lastReason = verdict.reason; continue; }
+    return verdict.ok ? { result: verdict.value } : { reason: verdict.reason };
   }
 
   return { reason: lastReason ?? 'Не знайдено робочої вкладки депо' };
 }
+
+// depotMain reports a wrong page through __error; only these mean "try elsewhere".
+const WRONG_PAGE = /trigger link not found|correct depot page/i;
+
+function classifyDepot(res) {
+  if (!res) return { wrongPage: true, reason: 'Депо-скрипт не повернув результат — ти на сторінці депо?' };
+  if (res.__error) {
+    return WRONG_PAGE.test(res.__error)
+      ? { wrongPage: true, reason: res.__error }
+      : { ok: false, reason: res.__error };
+  }
+  return { ok: true, value: res };
+}
+
+// depotLookup returns one result per query; only a missing search box means the
+// tab is wrong. "0 matches" / "no scans" are honest answers, not wrong pages.
+function classifyLookup(res) {
+  if (!Array.isArray(res) || !res.length) {
+    return { wrongPage: true, reason: 'Депо-пошук нічого не повернув — ти на сторінці депо?' };
+  }
+  const [r] = res;
+  if (!r.ok && /depot page/i.test(r.reason ?? '')) return { wrongPage: true, reason: r.reason };
+  return { ok: true, value: r };
+}
+
+const injectDepot   = (args)  => runInDepotTabs(depotMain,   [args],           classifyDepot);
+const injectLookup  = (conId) => runInDepotTabs(depotLookup, [[String(conId)]], classifyLookup);
 
 async function runCad(dryRun) {
   const { result: res, reason } = await injectDepot({ dryRun, mode: 'cad' });
@@ -111,10 +135,61 @@ async function runCad(dryRun) {
   return done(summarize(res), detailsFor(res));
 }
 
+// ── Find one consignment ───────────────────────────────────────────────────────
+
+/** Turns a lookup miss into a plain-English one-liner for Discord. */
+function findFailure(res) {
+  const who = res.consNumber || res.query;
+  if (/no scans/i.test(res.reason))       return `${who} — no scans yet (parcel hasn't moved)`;
+  if (/^\d+ matches$/i.test(res.reason)) {
+    const [n] = res.reason.split(' ');
+    return Number(n) === 0
+      ? `${who} — not found`
+      : `${who} — ambiguous: ${n} matches, use the full number`;
+  }
+  return `${who} — ${res.reason}`;
+}
+
+/** The same fields the depot console prints, laid out for a Discord code block. */
+function findDetails(res) {
+  const s = res.lastScan;
+  const a = res.address;
+  const place     = [...a.lines, a.town, a.county, a.postCode].filter(Boolean).join(', ');
+  const consignee = [a.contact, a.company].filter(Boolean).join(', ');
+  const scanLoc   = [s.depot && `depot ${s.depot}`, s.route && `route ${s.route}`].filter(Boolean).join(', ');
+
+  const rows = [
+    ['Status',    res.status],
+    ['Last scan', `${s.type} — ${s.date} ${s.time}${scanLoc ? `  (${scanLoc})` : ''}`],
+    ['Signed by', [s.signature, s.notes].filter(Boolean).join('  ·  ')],
+    ['Consignee', consignee],
+    ['Address',   place],
+    ['Depot',     a.depot],
+    ['Arranged',  [res.arrangedDate, `${res.scanCount} scans`].filter(Boolean).join('  ·  ')],
+  ];
+
+  return rows
+    .filter(([, value]) => value && value.trim())
+    .map(([label, value]) => `${`${label}:`.padEnd(11)} ${value}`)
+    .join('\n');
+}
+
+async function runFind(args) {
+  const conId = args?.conId;
+  if (!conId) return error('Не вказано номер посилки');
+
+  const { result: res, reason } = await injectLookup(conId);
+  if (reason)  return error(reason);
+  if (!res.ok) return error(findFailure(res));
+
+  return done(`${res.consNumber} — ${res.status}`, findDetails(res));
+}
+
 /** @returns {Promise<{status: string, summary: string}>} */
 export async function executeTask(task) {
-  const { mode, dryRun = true } = task.args ?? {};
+  if (task.command === COMMANDS.FIND) return runFind(task.args);
 
+  const { mode, dryRun = true } = task.args ?? {};
   if (mode === RESCHEDULE_MODE.ALL) return runCad(dryRun);
 
   return error(`Режим "${mode}" ще не під'єднано в розширенні`);

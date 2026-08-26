@@ -8,6 +8,7 @@
 
 export const COMMANDS = Object.freeze({
   RESCHEDULE: 'reschedule',
+  FIND:       'find',
 });
 
 // Sub-modes of /reschedule, carried in task.args.mode.

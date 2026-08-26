@@ -10,7 +10,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 
 import { loadConfig }     from '../config/config.js';
 import { enqueueAndWait } from './queue.js';
-import { RESCHEDULE_MODE, STATUS } from './contract.js';
+import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { addTodo, listTodos, markDone, clearDone, renderList } from './todo.js';
 
 const cfg = loadConfig();
@@ -30,6 +30,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // /todo lives entirely in the bot + Firestore — no depot round-trip.
   if (interaction.commandName === 'todo') {
     await handleTodo(interaction);
+    return;
+  }
+
+  if (interaction.commandName === COMMANDS.FIND) {
+    await handleFind(interaction);
     return;
   }
 
@@ -97,13 +102,38 @@ async function handleDepotCommand(interaction) {
       channelId:   interaction.channelId,
     });
 
-    const icon    = result.status === STATUS.ERROR ? '❌' : '✅';
-    const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
-    const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
-    await interaction.editReply(`${icon} ${summary}${details}`);
+    await replyWithResult(interaction, result);
   } catch (err) {
     await interaction.editReply(`⚠️ ${err.message}`);
   }
+}
+
+/** Looks up one consignment and shows its latest status — read-only, no date. */
+async function handleFind(interaction) {
+  const conId = interaction.options.getString('con_id');
+
+  await interaction.deferReply();
+
+  try {
+    const result = await enqueueAndWait({
+      command:     COMMANDS.FIND,
+      args:        { conId },
+      requestedBy: interaction.user.tag,
+      channelId:   interaction.channelId,
+    });
+
+    await replyWithResult(interaction, result);
+  } catch (err) {
+    await interaction.editReply(`⚠️ ${err.message}`);
+  }
+}
+
+/** One place that turns an extension result into the Discord reply. */
+async function replyWithResult(interaction, result) {
+  const icon    = result.status === STATUS.ERROR ? '❌' : '✅';
+  const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
+  const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
+  await interaction.editReply(`${icon} ${summary}${details}`);
 }
 
 /** Returns an error message if the date is not a valid future weekday, else null. */

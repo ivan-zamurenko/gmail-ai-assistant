@@ -36,6 +36,14 @@ export const commands = [
        .addBooleanOption(dryRunOption)),
 
   new SlashCommandBuilder()
+    .setName('find')
+    .setDescription('Знайти посилку і показати її останній статус')
+    .addStringOption(o =>
+      o.setName('con_id')
+       .setDescription('Номер посилки (consignment)')
+       .setRequired(true)),
+
+  new SlashCommandBuilder()
     .setName('todo')
     .setDescription('Особистий список задач на день')
     .addSubcommand(s =>

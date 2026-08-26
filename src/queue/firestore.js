@@ -168,22 +168,27 @@ export async function claimNextTask() {
  * Writes the outcome back onto the task document. The bot's onSnapshot treats
  * any non-pending status as final, so this is what ends the round-trip.
  */
-export async function writeResult(id, { status, summary }) {
+export async function writeResult(id, { status, summary, details }) {
   const { projectId } = firebase();
 
-  const url = `${documentsUrl(projectId)}/${TASKS_COLLECTION}/${id}` +
-    '?updateMask.fieldPaths=status&updateMask.fieldPaths=summary&updateMask.fieldPaths=completedAt';
+  const fields = {
+    status:      stringField(status),
+    summary:     stringField(summary ?? ''),
+    completedAt: timestampField(new Date().toISOString()),
+  };
+  const mask = ['status', 'summary', 'completedAt'];
+  if (details) {
+    fields.details = stringField(details);
+    mask.push('details');
+  }
+
+  const url = `${documentsUrl(projectId)}/${TASKS_COLLECTION}/${id}?` +
+    mask.map((f) => `updateMask.fieldPaths=${f}`).join('&');
 
   const res = await authed(url, {
     method:  'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      fields: {
-        status:      stringField(status),
-        summary:     stringField(summary ?? ''),
-        completedAt: timestampField(new Date().toISOString()),
-      },
-    }),
+    body:    JSON.stringify({ fields }),
   });
   if (!res.ok) throw new Error(`Firestore write HTTP ${res.status}`);
 }

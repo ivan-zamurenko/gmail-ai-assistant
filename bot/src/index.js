@@ -97,8 +97,10 @@ async function handleDepotCommand(interaction) {
       channelId:   interaction.channelId,
     });
 
+    const icon    = result.status === STATUS.ERROR ? '❌' : '✅';
     const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
-    await interaction.editReply(`${result.status === STATUS.ERROR ? '❌' : '✅'} ${summary}`);
+    const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
+    await interaction.editReply(`${icon} ${summary}${details}`);
   } catch (err) {
     await interaction.editReply(`⚠️ ${err.message}`);
   }

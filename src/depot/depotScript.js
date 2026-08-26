@@ -344,7 +344,11 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     if (dryRun) {
       console.table(packages.map(({ consNumber, consId }) => ({ consNumber, consId })));
       console.log(`DRY RUN — ${packages.length} parcel(s) would be processed.`);
-      return { dryRun: true, count: packages.length };
+      return {
+        dryRun: true,
+        count:  packages.length,
+        packages: packages.map(({ consNumber, consId }) => ({ consNumber, consId })),
+      };
     }
 
     const result = await processPackages(packages, todayShort, tomorrowInput);

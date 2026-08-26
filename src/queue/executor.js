@@ -22,9 +22,8 @@ const error = (summary)          => ({ status: STATUS.ERROR, summary });
 const MAX_DETAIL_LINES = 25;
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
 
-async function findDepotTab() {
-  const tabs = await chrome.tabs.query({ url: CONSTANTS.DEPOT_URL_PATTERN });
-  return tabs[0] ?? null;
+async function findDepotTabs() {
+  return chrome.tabs.query({ url: CONSTANTS.DEPOT_URL_PATTERN });
 }
 
 /** Trims a line list to fit Discord and notes how many were hidden. */
@@ -54,25 +53,40 @@ function summarize(res, dryRun) {
   return `Готово — Змінено: ${res.changed} | Пропущено: ${res.skipped} | Помилки: ${res.errors}`;
 }
 
-async function runCad(dryRun) {
-  const tab = await findDepotTab();
-  if (!tab) return error('Відкрий вкладку депо й залогінься');
+/**
+ * Runs depotMain in the first depot tab that accepts injection. A tab whose
+ * frame is an error page (unreachable host, dropped session) still matches by
+ * URL but throws on inject, so we try the next matching tab before giving up.
+ */
+async function injectDepot(args) {
+  const tabs = await findDepotTabs();
+  if (!tabs.length) return { reason: 'Відкрий вкладку депо й залогінься' };
 
-  let injection;
-  try {
-    [injection] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func:   depotMain,
-      args:   [{ dryRun, mode: 'cad' }],
-      // The depot rejects POSTs from an isolated world; MAIN makes them
-      // ordinary page requests, exactly like running the snippet in the console.
-      world:  'MAIN',
-    });
-  } catch (err) {
-    return error(`Не дістатися депо-вкладки — ${err.message}`);
+  let lastErr = null;
+  for (const tab of tabs) {
+    try {
+      const [injection] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func:   depotMain,
+        args:   [args],
+        // The depot rejects POSTs from an isolated world; MAIN makes them
+        // ordinary page requests, exactly like running the snippet in the console.
+        world:  'MAIN',
+      });
+      return { result: injection?.result };
+    } catch (err) {
+      lastErr = err;
+    }
   }
+  if (/error page/i.test(lastErr?.message ?? '')) {
+    return { reason: 'Депо-вкладка показує помилку — онови її (F5), перевір мережу депо й залогінься' };
+  }
+  return { reason: `Не дістатися депо-вкладки — ${lastErr?.message}` };
+}
 
-  const res = injection?.result;
+async function runCad(dryRun) {
+  const { result: res, reason } = await injectDepot({ dryRun, mode: 'cad' });
+  if (reason)        return error(reason);
   if (!res)          return error('Депо-скрипт не повернув результат — ти на сторінці депо?');
   if (res.__error)   return error(res.__error);
   return done(summarize(res, dryRun), detailsFor(res, dryRun));

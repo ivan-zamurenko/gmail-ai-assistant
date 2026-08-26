@@ -130,6 +130,12 @@ const timestampField = (d) => ({ timestampValue: d });
 /**
  * Returns the oldest pending task, or null when the queue is empty.
  * Decoded into a plain object: { id, command, args, ... }.
+ *
+ * The query filters on `status` only. Ordering by `createdAt` is done here
+ * rather than in Firestore because an equality filter on one field combined
+ * with an orderBy on another would require a manual composite index. The
+ * pending queue is tiny (tasks are consumed on sight), so sorting the handful
+ * of rows client-side is both simpler and index-free.
  */
 export async function claimNextTask() {
   const { projectId } = firebase();
@@ -147,21 +153,21 @@ export async function claimNextTask() {
             value: stringField('pending'),
           },
         },
-        orderBy: [{ field: { fieldPath: 'createdAt' }, direction: 'ASCENDING' }],
-        limit:   1,
       },
     }),
   });
   if (!res.ok) throw new Error(`Firestore query HTTP ${res.status}`);
 
   const rows = await res.json();
-  const doc  = rows.find((row) => row.document)?.document;
-  if (!doc) return null;
+  const tasks = rows
+    .filter((row) => row.document)
+    .map((row) => ({
+      id: row.document.name.split('/').pop(),
+      ...decodeFields(row.document.fields ?? {}),
+    }))
+    .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
 
-  return {
-    id: doc.name.split('/').pop(),
-    ...decodeFields(doc.fields ?? {}),
-  };
+  return tasks[0] ?? null;
 }
 
 /**

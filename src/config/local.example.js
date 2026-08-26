@@ -3,6 +3,13 @@
 export const LOCAL = {
   geminiApiKey:  '',
   driveFolderId: '',
+  // Shared task queue with the Discord bot. Firebase console → Project settings →
+  // General → Your apps → Web app config. apiKey is a public identifier, not a
+  // secret — the tasks collection is protected by Firebase security rules.
+  firebase: {
+    apiKey:    '',
+    projectId: '',
+  },
   contact: {
     brand: 'Powered by You',
     email: '',

@@ -133,7 +133,8 @@ async function replyWithResult(interaction, result) {
   const icon    = result.status === STATUS.ERROR ? '❌' : '✅';
   const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
   const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
-  await interaction.editReply(`${icon} ${summary}${details}`);
+  const link    = result.link ? `\n📍 ${result.link}` : '';
+  await interaction.editReply(`${icon} ${summary}${details}${link}`);
 }
 
 /** Returns an error message if the date is not a valid future weekday, else null. */

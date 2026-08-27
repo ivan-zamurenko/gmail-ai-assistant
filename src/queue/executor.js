@@ -155,7 +155,8 @@ function findDetails(res) {
   const s = res.lastScan;
   const a = res.address;
   const place     = [...a.lines, a.town, a.county, a.postCode].filter(Boolean).join(', ');
-  const consignee = [a.contact, a.company].filter(Boolean).join(', ');
+  // Contact and company are often the same person; show the name once.
+  const consignee = [...new Set([a.contact, a.company].filter(Boolean))].join(', ');
   const scanLoc   = [s.depot && `depot ${s.depot}`, s.route && `route ${s.route}`].filter(Boolean).join(', ');
 
   const rows = [
@@ -164,7 +165,9 @@ function findDetails(res) {
     ['Signed by', [s.signature, s.notes].filter(Boolean).join('  ·  ')],
     ['Consignee', consignee],
     ['Address',   place],
+    ['Post code', a.postCode],
     ['Depot',     a.depot],
+    ['GPS',       res.drop && `${res.drop.lat}, ${res.drop.lng}  (${res.drop.type})`],
     ['Arranged',  [res.arrangedDate, `${res.scanCount} scans`].filter(Boolean).join('  ·  ')],
   ];
 
@@ -172,6 +175,29 @@ function findDetails(res) {
     .filter(([, value]) => value && value.trim())
     .map(([label, value]) => `${`${label}:`.padEnd(11)} ${value}`)
     .join('\n');
+}
+
+// Eircode: 3-char routing key + 4-char unique id. The unique id never uses
+// B G I J L O Q S U Z, so placeholders like ZZZZ fail this on their own.
+const EIRCODE = /^[AC-FHKNPRTV-Y][0-9][0-9W][0-9AC-FHKNPRTV-Y]{4}$/;
+
+const normEircode = (pc) => {
+  const s = (pc || '').replace(/\s+/g, '').toUpperCase();
+  return EIRCODE.test(s) ? s : null;
+};
+
+/**
+ * A Google Maps link for the drop point. With a valid Eircode it becomes a
+ * directions link, so one click shows the gap between where the parcel was left
+ * and where it was addressed — Google resolves the Eircode, we geocode nothing.
+ */
+function mapLink(res) {
+  if (!res.drop) return null;
+  const { lat, lng } = res.drop;
+  const eircode = normEircode(res.address.postCode);
+  return eircode
+    ? `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${eircode}`
+    : `https://www.google.com/maps?q=${lat},${lng}`;
 }
 
 async function runFind(args) {
@@ -182,7 +208,10 @@ async function runFind(args) {
   if (reason)  return error(reason);
   if (!res.ok) return error(findFailure(res));
 
-  return done(`${res.consNumber} — ${res.status}`, findDetails(res));
+  const result = done(`${res.consNumber} — ${res.status}`, findDetails(res));
+  const link   = mapLink(res);
+  if (link) result.link = link;
+  return result;
 }
 
 /** @returns {Promise<{status: string, summary: string}>} */

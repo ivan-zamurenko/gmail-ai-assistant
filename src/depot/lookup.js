@@ -110,8 +110,19 @@ export async function depotLookup(numbers) {
         time,
         notes:     tds[10].getAttribute('title')?.trim() || text(tds[10]),
         signature: text(tds[11]),
+        coords:    coordsFromRow(tr),
       }];
     });
+  }
+
+  /** The Map column links to OpenStreetMap with the scan's GPS in the query. */
+  function coordsFromRow(tr) {
+    const link = tr.querySelector('a[href*="openstreetmap.org"]');
+    if (!link) return null;
+    const p   = new URLSearchParams(link.getAttribute('href').split('?')[1] ?? '');
+    const lat = Number(p.get('mlat'));
+    const lng = Number(p.get('mlon'));
+    return Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng) ? { lat, lng } : null;
   }
 
   /** Dates are DD/MM/YYYY, so sorting them as strings would put 10/08 before 07/08. */
@@ -145,6 +156,11 @@ export async function depotLookup(numbers) {
     // (label renaming) still get the number back.
     if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber };
 
+    // Only field scans (delivery, carding, failed attempt) carry GPS; the most
+    // recent of those is where the parcel physically ended up.
+    const located = scans.filter((s) => s.coords);
+    const drop    = located.length ? latest(located) : null;
+
     return {
       query,
       ok:           true,
@@ -153,6 +169,7 @@ export async function depotLookup(numbers) {
       arrangedDate: pick(confirm, 'Arranged Delivery Date'),
       lastScan:     latest(scans),
       scanCount:    scans.length,
+      drop:         drop && { ...drop.coords, type: drop.type, date: drop.date, time: drop.time },
       address: {
         contact:  pick(delivery, 'Contact'),
         company:  pick(delivery, 'Company Name'),

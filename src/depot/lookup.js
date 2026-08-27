@@ -106,6 +106,8 @@ export async function depotLookup(numbers) {
         depot:  text(tds[2]),
         // CSS clips the visible text, the title attribute carries the full wording.
         type:      tds[3].getAttribute('title')?.trim() || text(tds[3]),
+        // One consignment can hold several parcels; each scan names which one.
+        parcel:    text(tds[7]),
         date,
         time,
         notes:     tds[10].getAttribute('title')?.trim() || text(tds[10]),
@@ -169,6 +171,7 @@ export async function depotLookup(numbers) {
       arrangedDate: pick(confirm, 'Arranged Delivery Date'),
       lastScan:     latest(scans),
       scanCount:    scans.length,
+      scans,
       drop:         drop && { ...drop.coords, type: drop.type, date: drop.date, time: drop.time },
       address: {
         contact:  pick(delivery, 'Contact'),

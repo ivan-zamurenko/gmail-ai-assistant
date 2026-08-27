@@ -48,8 +48,11 @@ A Discord bot exposes the same actions remotely and returns a **console-style pe
 /reschedule all       [dry_run]   → scan CAD list
 /reschedule parcel    con_id new_date [dry_run]
 /reschedule barcodes  [dry_run]   → scan Drive labels
+/find        con_id               → live parcel status + route map
 /todo add|list|done|clear         → operator to-do list
 ```
+
+`/find` looks up any consignment live and returns a rich card: status colour, full scan history, the straight-line distance between where the parcel was last scanned and its **Eircode** (resolved via Google Geocoding — Eircodes are proprietary, so OSM can't), and a route map. For a **multi-parcel** consignment it groups the scans per parcel and shows a `(delivered/total)` count with a per-parcel breakdown — so you can see at a glance that parcel 1 is delivered while parcel 2 is still at the depot.
 
 ### 4 · Gmail auto-reply *(in progress)*
 Reads a queued customer email, grounds the answer in live depot data (status, delivery date, address), and prepares a reply as a draft first — automation gated behind human review.
@@ -79,7 +82,7 @@ flowchart LR
 | Bot | Node.js, `discord.js` |
 | Queue | Firebase Firestore (REST + anonymous Auth from the extension, Admin SDK from the bot) |
 | Vision / OCR | `@zxing/library` (PDF417 · Code128 · DataMatrix) + Google Gemini Flash Vision |
-| Google APIs | Drive v3, Gmail, OAuth 2.0 via `chrome.identity` |
+| Google APIs | Drive v3, Gmail, OAuth 2.0 via `chrome.identity`; Geocoding + Maps Static (bot side) |
 | Build / Quality | esbuild bundling, ESLint 9 flat config |
 | UI | Vanilla JS + CSS (Apple-inspired) |
 
@@ -112,6 +115,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 | ✅ | Discord bot + Firestore queue | `/reschedule`, `/todo`, distributed contract |
 | ✅ | Extension queue listener | service-worker poll → depot tab → result |
 | ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |
+| ✅ | `/find` live parcel lookup | status, Eircode distance, route map, multi-parcel `(x/n)` |
 | 🚧 | `/reschedule parcel` executor | reschedule one consignment to a chosen date |
 | 🚧 | Gmail auto-reply | depot-grounded drafts, human-in-the-loop |
 | 📋 | Delivery verification | delivered-vs-expected → mini-report in Discord |

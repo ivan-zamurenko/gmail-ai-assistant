@@ -11,6 +11,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { loadConfig }     from '../config/config.js';
 import { enqueueAndWait } from './queue.js';
 import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
+import { buildParcelEmbed } from './render.js';
 import { addTodo, listTodos, markDone, clearDone, renderList } from './todo.js';
 
 const cfg = loadConfig();
@@ -114,6 +115,7 @@ async function handleFind(interaction) {
 
   await interaction.deferReply();
 
+  const t0 = Date.now();
   try {
     const result = await enqueueAndWait({
       command:     COMMANDS.FIND,
@@ -121,8 +123,16 @@ async function handleFind(interaction) {
       requestedBy: interaction.user.tag,
       channelId:   interaction.channelId,
     });
+    const t1 = Date.now();
+    console.log(`[find ${conId}] extension: ${((t1 - t0) / 1000).toFixed(1)}s`);
 
-    await replyWithResult(interaction, result);
+    if (result.parcel) {
+      const payload = await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey);
+      console.log(`[find ${conId}] geo+map+render: ${((Date.now() - t1) / 1000).toFixed(1)}s`);
+      await interaction.editReply(payload);
+    } else {
+      await replyWithResult(interaction, result);
+    }
   } catch (err) {
     await interaction.editReply(`⚠️ ${err.message}`);
   }
@@ -133,8 +143,7 @@ async function replyWithResult(interaction, result) {
   const icon    = result.status === STATUS.ERROR ? '❌' : '✅';
   const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
   const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
-  const link    = result.link ? `\n📍 ${result.link}` : '';
-  await interaction.editReply(`${icon} ${summary}${details}${link}`);
+  await interaction.editReply(`${icon} ${summary}${details}`);
 }
 
 /** Returns an error message if the date is not a valid future weekday, else null. */

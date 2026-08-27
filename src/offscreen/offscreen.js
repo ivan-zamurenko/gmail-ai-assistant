@@ -28,9 +28,10 @@ import { STATUS, TASKS_COLLECTION } from '../queue/contract.js';
 // twice while its result is still being written.
 const inFlight = new Set();
 
-async function writeResult(db, id, { status, summary, details }) {
+async function writeResult(db, id, { status, summary, details, parcel }) {
   const fields = { status, summary: summary ?? '', completedAt: serverTimestamp() };
   if (details) fields.details = details;
+  if (parcel)  fields.parcel  = parcel;
   await updateDoc(doc(db, TASKS_COLLECTION, id), fields);
 }
 

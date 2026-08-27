@@ -22,4 +22,11 @@ export const LOCAL = {
   firebase: {
     serviceAccountPath: 'config/serviceAccount.json',
   },
+
+  // ── Google Maps (optional) ───────────────────────────────────────────────
+  // Only Google resolves Irish Eircodes → coordinates. Without this, /find
+  // still works but skips the Eircode-to-scan distance line.
+  // Google Cloud console → APIs & Services → Credentials → Create API key,
+  // then enable "Geocoding API" + "Maps Static API". Free within the monthly credit.
+  googleMapsApiKey: '',
 };

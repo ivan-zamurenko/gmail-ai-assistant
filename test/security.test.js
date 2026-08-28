@@ -43,10 +43,11 @@ test('a minimized parcel still renders without customer identity fields', async 
     address:    { town: 'Dublin', county: 'Dublin', postCode: 'D01AB12' },
     scans: [{
       parcel: '1', type: 'Received', date: '28/08/2026', time: '12:00:00',
-      route: 'cad', notes: 'Bay: A1',
+      route: 'cad', bay: '32', sequence: '5',
     }],
   };
   const output = await buildParcelEmbed(parcel, '');
   assert.equal(output.embeds.length, 2);
   assert.equal(output.files.length, 0);
+  assert.match(output.embeds[1].toJSON().description, /B32\/#5/);
 });

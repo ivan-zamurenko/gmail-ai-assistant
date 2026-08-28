@@ -175,22 +175,25 @@ async function runFind(args) {
 
   // Only operational fields needed by the Discord card cross Firestore. Customer
   // name, street lines, signature, arbitrary notes and depot metadata stay local.
-  const noteSummary = (notes = '') => {
-    const kept = [];
-    const bay = /Bay:\s*(\S+)/i.exec(notes)?.[1];
-    const onward = /Onward BC:\s*([^/\s]+)/i.exec(notes)?.[1];
-    if (bay) kept.push(`Bay: ${bay}`);
-    if (onward) kept.push(`Onward BC: ${onward}`);
-    return kept.join(' | ');
+  const operationalValue = (value) => {
+    const clean = String(value ?? '').trim();
+    return /^[A-Za-z0-9][A-Za-z0-9 ._/-]{0,23}$/.test(clean) ? clean : '';
   };
-  const scans = res.scans.map((scan) => ({
-    parcel: scan.parcel,
-    type:   scan.type,
-    date:   scan.date,
-    time:   scan.time,
-    route:  scan.route,
-    notes:  noteSummary(scan.notes),
-  }));
+  const scans = res.scans.map((scan) => {
+    const bay      = operationalValue(scan.bay);
+    const sequence = operationalValue(scan.sequence);
+    const onwardBc = operationalValue(scan.onwardBc);
+    return {
+      parcel: scan.parcel,
+      type:   scan.type,
+      date:   scan.date,
+      time:   scan.time,
+      route:  scan.route,
+      ...(bay && { bay }),
+      ...(sequence && { sequence }),
+      ...(onwardBc && { onwardBc }),
+    };
+  });
   const parcel = {
     query:      res.query,
     consNumber: res.consNumber,

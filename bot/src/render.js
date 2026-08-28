@@ -55,14 +55,17 @@ const isDelivered = (s) => /delivered/i.test(s?.type || '');
 
 /** A redirected parcel gets a new onward barcode, tucked in the scan's notes tooltip. */
 function onwardBc(scan) {
+  if (scan?.onwardBc) return scan.onwardBc;
   const m = /Onward BC:\s*([^/\s]+)/i.exec(scan?.notes || '');
   return m ? m[1] : null;
 }
 
-/** The CAD scan tucks the storage bay into its notes tooltip — where the parcel sits in depot. */
-function bayOf(scan) {
-  const m = /Bay:\s*(\S+)/i.exec(scan?.notes || '');
-  return m ? `Bay ${m[1]}` : '';
+/** CAD location: bay plus its physical sequence within that bay. */
+function cadLocation(scan) {
+  const notes = scan?.notes || ''; // compatibility with tasks created before structured fields
+  const bay = scan?.bay || /Bay:\s*([^,|]+)/i.exec(notes)?.[1]?.trim();
+  const sequence = scan?.sequence || /Sequence:\s*([^,|]+)/i.exec(notes)?.[1]?.trim();
+  return [bay && `B${bay}`, sequence && `#${sequence}`].filter(Boolean).join('/');
 }
 
 /** One consignment holds several parcels — return each parcel's latest scan, ordered 1..n. */
@@ -91,21 +94,21 @@ function parcelsBlock(parcels) {
   return '```ansi\n' + lines.join('\n') + '\n```';
 }
 
-/** Newest first: bay (where it sits in depot), status, date/time, then who scanned (route). */
+/** Newest first: CAD bay/sequence, parcel, status, date/time, then route. */
 function historyBlock(scans, showParcel) {
   const rows = [...scans].reverse().slice(0, MAX_HISTORY);
   const sw = rows.length ? Math.max(...rows.map((s) => s.type.length)) : 0;
   const rw = rows.length ? Math.max(...rows.map((s) => (s.route || '').length)) : 0;
-  const bw = rows.length ? Math.max(...rows.map((s) => bayOf(s).length)) : 0;
+  const lw = rows.length ? Math.max(...rows.map((s) => cadLocation(s).length)) : 0;
 
   const lines = rows.map((s) => {
-    const bay    = bw ? `${bayOf(s).padEnd(bw)}  ` : '';
+    const location = lw ? `${cadLocation(s).padEnd(lw)}  ` : '';
     const tag    = showParcel ? `P${s.parcel} ` : '';
     const label  = s.type.padEnd(sw);
     const route  = (s.route || '').padEnd(rw);
     const bc     = onwardBc(s);
     const onward = bc ? `  →${bc}` : '';
-    return `${bay}${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}  ${route}${onward}`;
+    return `${location}${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}  ${route}${onward}`;
   });
 
   const hidden = scans.length - lines.length;

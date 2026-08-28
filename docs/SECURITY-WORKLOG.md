@@ -105,3 +105,6 @@ into this log.
 - Prepared the reviewed remediation as a dedicated Git snapshot on the local
   `codex` branch. The unrelated untracked EVE guide files remain excluded, and
   ignored local credentials/configuration remain outside version control.
+- Added structured CAD location fields for the Discord scan history: only the
+  operational Bay and Sequence values cross Firestore. The raw depot tooltip,
+  Service value, and other arbitrary notes remain local to the extension.

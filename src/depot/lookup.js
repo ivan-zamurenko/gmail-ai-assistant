@@ -95,12 +95,19 @@ export async function depotLookup(numbers) {
       `&ConsBarcode=${encodeURIComponent(consNumber)}&UID=${encodeURIComponent(uid)}`;
   }
 
+  /** Operational values hidden in the scan tooltip, e.g. Bay: 32, Sequence: 5. */
+  function scanNoteField(notes, label) {
+    const match = new RegExp(`(?:^|[,|]\\s*)${label}:\\s*([^,|]+)`, 'i').exec(notes);
+    return match?.[1]?.trim() ?? '';
+  }
+
   function parseScans(doc) {
     return Array.from(doc.querySelectorAll('#MAINTABLE tbody tr')).flatMap((tr) => {
       const tds = tr.querySelectorAll('td');
       if (tds.length < 12) return [];
 
       const [date = '', time = ''] = text(tds[4]).split(' ');
+      const notes = tds[10].getAttribute('title')?.trim() || text(tds[10]);
       return [{
         route:  text(tds[1]),
         depot:  text(tds[2]),
@@ -110,7 +117,10 @@ export async function depotLookup(numbers) {
         parcel:    text(tds[7]),
         date,
         time,
-        notes:     tds[10].getAttribute('title')?.trim() || text(tds[10]),
+        notes,
+        bay:        scanNoteField(notes, 'Bay'),
+        sequence:   scanNoteField(notes, 'Sequence'),
+        onwardBc:   scanNoteField(notes, 'Onward BC'),
         signature: text(tds[11]),
         coords:    coordsFromRow(tr),
       }];

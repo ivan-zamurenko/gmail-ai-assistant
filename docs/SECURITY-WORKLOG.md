@@ -108,3 +108,10 @@ into this log.
 - Added structured CAD location fields for the Discord scan history: only the
   operational Bay and Sequence values cross Firestore. The raw depot tooltip,
   Service value, and other arbitrary notes remain local to the extension.
+- Configured the private, gitignored bot settings with the extension executor
+  UID and confirmed the bot reached its online state. The UID value was not
+  written to this journal, staged, committed, or pushed.
+- During a structural inspection of the private bot config, an existing Google
+  Maps API key was inadvertently included in local tool output. It was not
+  committed or pushed, but it must be treated as exposed in this session and
+  rotated in Google Cloud; the replacement must remain only in private config.

@@ -19,10 +19,14 @@ export const RESCHEDULE_MODE = Object.freeze({
 });
 
 export const STATUS = Object.freeze({
-  PENDING: 'pending',
-  DONE:    'done',
-  ERROR:   'error',
+  PENDING:   'pending',
+  CLAIMED:   'claimed',
+  DONE:      'done',
+  ERROR:     'error',
+  CANCELLED: 'cancelled',
 });
+
+export const TASK_SCHEMA_VERSION = 1;
 
 // Firestore collection that carries tasks in both directions.
 export const TASKS_COLLECTION = 'tasks';

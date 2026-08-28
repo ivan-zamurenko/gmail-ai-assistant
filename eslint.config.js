@@ -54,6 +54,30 @@ export default [
     },
   },
   {
+    files: ['bot/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: {
+        Buffer:       'readonly',
+        console:      'readonly',
+        fetch:        'readonly',
+        process:      'readonly',
+        setTimeout:   'readonly',
+        clearTimeout: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // Discord ANSI code blocks intentionally strip the ESC control byte.
+      'no-control-regex': 'off',
+    },
+  },
+  {
+    files: ['test/**/*.js'],
+    languageOptions: { ecmaVersion: 2023, sourceType: 'module' },
+  },
+  {
     // Build tooling runs in Node, not in the browser.
     files: ['build.js'],
     languageOptions: {

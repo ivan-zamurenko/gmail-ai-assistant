@@ -21,6 +21,9 @@ export const LOCAL = {
   // The project id is read from that file automatically — nothing else to set.
   firebase: {
     serviceAccountPath: 'config/serviceAccount.json',
+    // Stable anonymous Firebase UID printed by the extension's offscreen console.
+    // This binds queue tasks to this one Chrome profile without a separate login.
+    executorUid: 'YOUR_EXTENSION_EXECUTOR_UID',
   },
 
   // ── Google Maps (optional) ───────────────────────────────────────────────

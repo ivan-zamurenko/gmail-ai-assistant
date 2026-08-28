@@ -51,10 +51,13 @@ export function haversineKm(a, b) {
 export async function mapImage(drop, addr, apiKey) {
   if (!apiKey || !drop || !addr) return null;
 
+  // Under 300 m the two pins overlap and hide the whole map — shrink them.
+  const size = haversineKm(drop, addr) < 0.3 ? 'small' : 'mid';
+
   const url = 'https://maps.googleapis.com/maps/api/staticmap'
     + '?size=640x400&scale=2'
-    + `&markers=size:mid|color:red|label:S|${drop.lat},${drop.lng}`
-    + `&markers=size:mid|color:blue|label:D|${addr.lat},${addr.lng}`
+    + `&markers=size:${size}|color:red|label:S|${drop.lat},${drop.lng}`
+    + `&markers=size:${size}|color:blue|label:D|${addr.lat},${addr.lng}`
     + `&path=color:0x1a73e8ff|weight:4|${drop.lat},${drop.lng}|${addr.lat},${addr.lng}`
     + `&key=${apiKey}`;
 

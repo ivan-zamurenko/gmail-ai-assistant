@@ -18,5 +18,8 @@ export function loadConfig() {
   if (!LOCAL.firebase?.serviceAccountPath) {
     throw new Error('Config "firebase.serviceAccountPath" not set — fill bot/config/local.js');
   }
+  if (!LOCAL.firebase?.executorUid || LOCAL.firebase.executorUid.startsWith('YOUR_')) {
+    throw new Error('Config "firebase.executorUid" not set — copy the UID printed by the extension');
+  }
   return LOCAL;
 }

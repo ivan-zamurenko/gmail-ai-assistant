@@ -1,0 +1,65 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /tasks/{taskId} {
+      function assignedExecutor() {
+        return request.auth != null
+          && resource.data.executorUid == request.auth.uid;
+      }
+
+      function changedOnly(fields) {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+      }
+
+      // The Admin SDK creates and removes tasks. The browser can only see tasks
+      // explicitly assigned to its stable Firebase UID.
+      allow read: if assignedExecutor();
+      allow create, delete: if false;
+
+      // pending -> claimed, but only before the bot's short claim deadline.
+      allow update: if assignedExecutor()
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'claimed'
+        && request.time < resource.data.expiresAt
+        && changedOnly(['status', 'claimedAt']);
+
+      // An expired task may be closed without executing it.
+      allow update: if assignedExecutor()
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'cancelled'
+        && request.time >= resource.data.expiresAt
+        && changedOnly(['status', 'summary', 'completedAt']);
+
+      // A claimed executor may return only bounded result fields; command,
+      // arguments, actor, executor and timestamps remain immutable.
+      allow update: if assignedExecutor()
+        && resource.data.status == 'claimed'
+        && request.resource.data.status in ['done', 'error']
+        && request.resource.data.summary is string
+        && request.resource.data.summary.size() <= 500
+        && (!('details' in request.resource.data)
+          || (request.resource.data.details is string
+            && request.resource.data.details.size() <= 2000))
+        && (!('execMs' in request.resource.data)
+          || (request.resource.data.execMs is int
+            && request.resource.data.execMs >= 0
+            && request.resource.data.execMs <= 900000))
+        && (!('parcel' in request.resource.data)
+          || request.resource.data.parcel is map)
+        && changedOnly([
+          'status', 'summary', 'details', 'parcel', 'execMs', 'completedAt'
+        ]);
+    }
+
+    // todos are bot-only. The Firebase Admin SDK uses IAM and bypasses these
+    // client rules; browser clients receive no access.
+    match /todos/{todoId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

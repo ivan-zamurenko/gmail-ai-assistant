@@ -6,13 +6,16 @@
  *
  *   npm start
  */
-import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
+import {
+  Client, Events, GatewayIntentBits, MessageFlags, PermissionFlagsBits,
+} from 'discord.js';
 
 import { loadConfig }     from '../config/config.js';
 import { enqueueAndWait } from './queue.js';
 import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { buildParcelEmbed } from './render.js';
 import { addTodo, listTodos, markDone, clearDone, renderList } from './todo.js';
+import { safeErrorMessage } from './errors.js';
 
 const cfg = loadConfig();
 
@@ -27,6 +30,19 @@ client.on(Events.Error, (err) => console.error('Client error:', err));
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
+
+  // Commands are guild-scoped at registration, but keep a runtime gate too: it
+  // protects us if registration changes or an interaction is ever misrouted.
+  if (interaction.guildId !== cfg.guildId) {
+    await interaction.reply({ content: '⛔ This bot is not enabled here.', flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const touchesDepot = interaction.commandName !== 'todo';
+  if (touchesDepot && !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+    await interaction.reply({ content: '⛔ Depot commands require Administrator permission.', flags: MessageFlags.Ephemeral });
+    return;
+  }
 
   // /todo lives entirely in the bot + Firestore — no depot round-trip.
   if (interaction.commandName === 'todo') {
@@ -66,7 +82,7 @@ async function handleTodo(interaction) {
       await interaction.editReply(`🧹 Прибрано виконаних: ${count}`);
     }
   } catch (err) {
-    await interaction.editReply(`⚠️ ${err.message}`);
+    await interaction.editReply(`⚠️ ${safeErrorMessage(err)}`);
   }
 }
 
@@ -76,6 +92,15 @@ async function handleDepotCommand(interaction) {
 
   const mode   = interaction.options.getSubcommand();      // all | parcel | barcodes
   const dryRun = interaction.options.getBoolean('dry_run') ?? true;
+  const confirmLive = interaction.options.getBoolean('confirm_live') ?? false;
+
+  if (!dryRun && !confirmLive) {
+    await interaction.reply({
+      content: '⚠️ Live-зміна потребує `confirm_live:true`. Спочатку виконай dry run.',
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
 
   let args;
   if (mode === RESCHEDULE_MODE.PARCEL) {
@@ -93,19 +118,18 @@ async function handleDepotCommand(interaction) {
   }
 
   // The depot round-trip is slower than Discord's 3-second reply window.
-  await interaction.deferReply();
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     const result = await enqueueAndWait({
       command,
       args,
-      requestedBy: interaction.user.tag,
-      channelId:   interaction.channelId,
+      requestedBy: interaction.user.id,
     });
 
     await replyWithResult(interaction, result);
   } catch (err) {
-    await interaction.editReply(`⚠️ ${err.message}`);
+    await interaction.editReply(`⚠️ ${safeErrorMessage(err)}`);
   }
 }
 
@@ -113,28 +137,44 @@ async function handleDepotCommand(interaction) {
 async function handleFind(interaction) {
   const conId = interaction.options.getString('con_id');
 
-  await interaction.deferReply();
+  if (!/^\d{9}(?:\d{5})?$/.test(conId)) {
+    await interaction.reply({
+      content: '⚠️ Номер посилки має містити 9 або 14 цифр.',
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const t0 = Date.now();
   try {
     const result = await enqueueAndWait({
       command:     COMMANDS.FIND,
       args:        { conId },
-      requestedBy: interaction.user.tag,
-      channelId:   interaction.channelId,
+      requestedBy: interaction.user.id,
     });
     const t1 = Date.now();
-    console.log(`[find ${conId}] extension: ${((t1 - t0) / 1000).toFixed(1)}s`);
+    // Split the round trip: queue pickup (listener asleep?) vs depot work itself.
+    const totalMs  = t1 - t0;
+    const execMs   = result.execMs ?? 0;
+    const pickupMs = totalMs - execMs;
+    const logRef = `…${conId.slice(-4)}`;
+    console.log(`[find ${logRef}] extension: ${(totalMs / 1000).toFixed(1)}s`
+      + ` (pickup ${(pickupMs / 1000).toFixed(1)}s + depot ${(execMs / 1000).toFixed(1)}s)`);
 
     if (result.parcel) {
+      const tm = result.parcel.timing;
+      if (tm) console.log(`[find ${logRef}] depot phases: search ${tm.search}ms + detail ${tm.detail}ms + scans ${tm.scans}ms`);
+      if (result.parcel._diag) console.log(`[find ${logRef}] tabs:`, JSON.stringify(result.parcel._diag));
       const payload = await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey);
-      console.log(`[find ${conId}] geo+map+render: ${((Date.now() - t1) / 1000).toFixed(1)}s`);
+      console.log(`[find ${logRef}] geo+map+render: ${((Date.now() - t1) / 1000).toFixed(1)}s`);
       await interaction.editReply(payload);
     } else {
       await replyWithResult(interaction, result);
     }
   } catch (err) {
-    await interaction.editReply(`⚠️ ${err.message}`);
+    await interaction.editReply(`⚠️ ${safeErrorMessage(err)}`);
   }
 }
 
@@ -154,6 +194,10 @@ function validateFutureWorkday(dateStr) {
 
   const date = new Date(`${dateStr}T00:00:00`);
   if (Number.isNaN(date.getTime())) return 'Некоректна дата';
+  const [year, month, dayOfMonth] = dateStr.split('-').map(Number);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== dayOfMonth) {
+    return 'Некоректна календарна дата';
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

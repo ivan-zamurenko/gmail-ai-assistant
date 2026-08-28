@@ -13,6 +13,7 @@ import { depotLookup }                         from '../depot/lookup.js';
 import { depotMain }                           from '../depot/depotScript.js';
 import { createLog }                           from './logView.js';
 import { setStatus }                           from './statusHelper.js';
+import { CONSTANTS }                           from '../utils/constants.js';
 
 const STATE_LABELS = {
   listing:     'Listing',
@@ -90,19 +91,33 @@ export function initDepotFlow({
     else                      log.ok(`${prefix} ✓ ${name}`);
   }
 
-  async function getActiveTab() {
+  async function getActiveDepotTab() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab) throw new Error('No active tab found');
+    let url;
+    try {
+      url = new URL(tab.url);
+    } catch {
+      throw new Error('Open the depot page in the active tab first');
+    }
+    const isDepot = url.protocol === 'http:'
+      && url.hostname.toLowerCase().endsWith('.interlink.local');
+    if (!isDepot) {
+      throw new Error(`Active tab is not a depot page (${CONSTANTS.DEPOT_URL_PATTERN})`);
+    }
     return tab;
   }
 
   // ── Scan CAD List ───────────────────────────────────────────────────────────
 
   scanCADBtn.addEventListener('click', async () => {
+    if (!dryRunToggle.checked && !window.confirm(
+      'LIVE MODE: dates will be changed in the depot. Continue?',
+    )) return;
     setDepotStatus('running', 'Scanning CAD list...');
     setDepotButtons(true);
     try {
-      const tab = await getActiveTab();
+      const tab = await getActiveDepotTab();
       const [injection] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func:   depotMain,
@@ -132,7 +147,7 @@ export function initDepotFlow({
     return async function verify(number) {
       if (seen.has(number)) return seen.get(number);
 
-      const tab = await getActiveTab();
+      const tab = await getActiveDepotTab();
       let injection;
       try {
         [injection] = await chrome.scripting.executeScript({
@@ -166,7 +181,7 @@ export function initDepotFlow({
 
     log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${numbers.length} parcel(s) to tomorrow...`);
 
-    const tab = await getActiveTab();
+    const tab = await getActiveDepotTab();
     const [injection] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func:   depotMain,
@@ -193,6 +208,9 @@ export function initDepotFlow({
 
   scanDriveBtn.addEventListener('click', async () => {
     const dryRun = dryRunToggle.checked;
+    if (!dryRun && !window.confirm(
+      'LIVE MODE: photos will be moved and parcel dates may change. Continue?',
+    )) return;
     log.start(dryRun ? 'Dry run — nothing will be moved or rescheduled' : 'Listing photos in Drive...');
     setDepotStatus('running', 'Keep this window open — processing labels...');
     setDepotButtons(true);

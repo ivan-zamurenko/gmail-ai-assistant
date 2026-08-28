@@ -19,9 +19,9 @@ const COLOR = {
 
 function colorFor(status) {
   const s = (status || '').toLowerCase();
-  if (s.includes('delivered'))                        return COLOR.delivered;
-  if (/card|fail|refus|return|held/.test(s))          return COLOR.problem;
-  if (/transit|out for|collect|received|scan/.test(s)) return COLOR.transit;
+  if (s.includes('delivered'))                          return COLOR.delivered;
+  if (/card|fail|refus|return|held|redirect/.test(s))   return COLOR.problem;
+  if (/transit|out for|collect|received|scan/.test(s))  return COLOR.transit;
   return COLOR.other;
 }
 
@@ -33,8 +33,8 @@ function shortDate(date) {
   return day && month ? `${day} ${MONTHS[Number(month) - 1] ?? month}` : (date || '');
 }
 
-/** "13:06:54" → "13:06" — seconds add noise. */
-const hhmm = (time) => (time || '').slice(0, 5);
+/** Keep the full clock — seconds tell two scans in the same minute apart. */
+const hms = (time) => (time || '').slice(0, 8);
 
 const MAX_HISTORY = 12;
 
@@ -53,6 +53,18 @@ function stamp({ date, time }) {
 
 const isDelivered = (s) => /delivered/i.test(s?.type || '');
 
+/** A redirected parcel gets a new onward barcode, tucked in the scan's notes tooltip. */
+function onwardBc(scan) {
+  const m = /Onward BC:\s*([^/\s]+)/i.exec(scan?.notes || '');
+  return m ? m[1] : null;
+}
+
+/** The CAD scan tucks the storage bay into its notes tooltip — where the parcel sits in depot. */
+function bayOf(scan) {
+  const m = /Bay:\s*(\S+)/i.exec(scan?.notes || '');
+  return m ? `Bay ${m[1]}` : '';
+}
+
 /** One consignment holds several parcels — return each parcel's latest scan, ordered 1..n. */
 function byParcel(scans) {
   const latest = new Map();
@@ -70,23 +82,30 @@ function byParcel(scans) {
 function parcelsBlock(parcels) {
   const width = Math.max(...parcels.map((p) => p.lastScan.type.length));
   const lines = parcels.map((p) => {
-    const dot = isDelivered(p.lastScan) ? `${GREEN}●` : `${YELLOW}●`;
+    const dot    = isDelivered(p.lastScan) ? `${GREEN}●` : `${YELLOW}●`;
+    const bc     = onwardBc(p.lastScan);
+    const onward = bc ? `  →${bc}` : '';
     return `${dot}${RESET} Parcel ${p.parcel}  ${p.lastScan.type.padEnd(width)}`
-      + `  ${CYAN}${hhmm(p.lastScan.time)}${RESET}`;
+      + `  ${CYAN}${hms(p.lastScan.time)}${RESET}${onward}`;
   });
   return '```ansi\n' + lines.join('\n') + '\n```';
 }
 
-/** Newest first: status on the left, the time right-aligned in its own column. */
+/** Newest first: bay (where it sits in depot), status, date/time, then who scanned (route). */
 function historyBlock(scans, showParcel) {
-  const rows  = [...scans].reverse().slice(0, MAX_HISTORY);
-  const width = rows.length ? Math.max(...rows.map((s) => s.type.length)) : 0;
+  const rows = [...scans].reverse().slice(0, MAX_HISTORY);
+  const sw = rows.length ? Math.max(...rows.map((s) => s.type.length)) : 0;
+  const rw = rows.length ? Math.max(...rows.map((s) => (s.route || '').length)) : 0;
+  const bw = rows.length ? Math.max(...rows.map((s) => bayOf(s).length)) : 0;
 
   const lines = rows.map((s) => {
-    const tag   = showParcel ? `P${s.parcel} ` : '';
-    const label = s.type.padEnd(width);
-    const route = s.route ? `  ${s.route}` : '';
-    return `${tag}${label}  ${CYAN}${shortDate(s.date)} ${hhmm(s.time)}${RESET}${route}`;
+    const bay    = bw ? `${bayOf(s).padEnd(bw)}  ` : '';
+    const tag    = showParcel ? `P${s.parcel} ` : '';
+    const label  = s.type.padEnd(sw);
+    const route  = (s.route || '').padEnd(rw);
+    const bc     = onwardBc(s);
+    const onward = bc ? `  →${bc}` : '';
+    return `${bay}${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}  ${route}${onward}`;
   });
 
   const hidden = scans.length - lines.length;
@@ -96,25 +115,43 @@ function historyBlock(scans, showParcel) {
 }
 
 /** Status bold, time yellow — needs an ANSI code block, plain text has no colour. */
-function lastEventLine(s) {
-  const head = `${BOLD}${s.type}${RESET} at ${YELLOW}${hhmm(s.time)}${RESET}`
+function lastEventLine(s, minWidth = 0) {
+  const head = `${BOLD}${s.type}${RESET} at ${YELLOW}${hms(s.time)}${RESET}`
     + `${s.route ? ` by route ${s.route}` : ''}`;
-  const signed = s.signature ? `\n-> Signed to ${s.signature} <-` : '';
-  return '```ansi\n' + head + signed + '\n```';
+  const bc    = onwardBc(s);
+  const extra = bc ? `\n-> Onward BC ${bc} <-` : '';
+  // Pad the last line to the history width so the main card matches the taller one.
+  const lines = (head + extra).split('\n');
+  const last  = lines[lines.length - 1].replace(/\u001b\[[0-9;]*m/g, '').length;
+  lines[lines.length - 1] += ' '.repeat(Math.max(0, minWidth - last));
+  return '```ansi\n' + lines.join('\n') + '\n```';
 }
 
-const place = (a) => [...a.lines, a.town, a.county].filter(Boolean).join(', ');
+const place = (a) => [a.town, a.county].filter(Boolean).join(', ');
+
+/** Visible width of a code block's widest line, ignoring fences and ANSI colours. */
+function blockWidth(block) {
+  return Math.max(0, ...block.split('\n')
+    .filter((l) => !l.startsWith('```'))
+    .map((l) => l.replace(/\u001b\[[0-9;]*m/g, '').length));
+}
 
 export async function buildParcelEmbed(parcel, apiKey) {
-  const a         = parcel.address;
-  const consignee = [...new Set([a.contact, a.company].filter(Boolean))].join(', ');
-  const s         = parcel.lastScan;
+  const a = parcel.address;
 
-  // Per-parcel view: how many of the consignment's parcels have actually landed.
-  const parcels   = byParcel(parcel.scans);
-  const delivered = parcels.filter((p) => isDelivered(p.lastScan)).length;
-  const multi     = parcels.length > 1;
-  const count     = multi ? ` (${delivered}/${parcels.length})` : '';
+  // Parcel "0" is a consignment-level event (order received), not a physical box.
+  const numbered  = parcel.scans.filter((sc) => Number(sc.parcel) >= 1);
+  const scans     = numbered.length ? numbered : parcel.scans;
+  // The honest current status is the latest real scan — the detail page goes stale
+  // (still says "Delivered" after a later redirect).
+  const s         = scans.reduce((x, y) => (stamp(y) >= stamp(x) ? y : x));
+
+  // Per-parcel view: how many parcels share the headline status (Delivered 1/2,
+  // Redirected 2/2 …) — that count is what makes multi-parcel tracking honest.
+  const parcels  = byParcel(scans);
+  const multi    = parcels.length > 1;
+  const matching = parcels.filter((p) => p.lastScan.type === s.type).length;
+  const count    = multi ? ` (${matching}/${parcels.length})` : '';
 
   // Resolve the Eircode once — the same point feeds both the distance and the map.
   const eircode = normEircode(a.postCode);
@@ -134,25 +171,26 @@ export async function buildParcelEmbed(parcel, apiKey) {
       + `&origin=${parcel.drop.lat},${parcel.drop.lng}&destination=${dest})`);
   }
 
+  // Match the two cards: stretch the main card's Last event to the history width.
+  const historyStr = historyBlock(scans, multi);
+
   const fields = [
-    { name: 'Consignee', value: consignee || '—', inline: true },
     { name: 'Post code', value: a.postCode || '—', inline: true },
-    { name: 'Address',   value: place(a) || '—' },
+    { name: 'Area',      value: place(a) || '—', inline: true },
   ];
   if (multi) {
-    fields.push({ name: `Parcels (${delivered}/${parcels.length} delivered)`, value: parcelsBlock(parcels) });
+    fields.push({ name: 'Parcels', value: parcelsBlock(parcels) });
   }
   fields.push(
-    { name: '\u200b',    value: '────────────────────' }, // divider before the event
-    { name: 'Last event', value: lastEventLine(s) },
+    { name: 'Last event', value: lastEventLine(s, blockWidth(historyStr)) },
   );
 
   const mainEmbed = new EmbedBuilder()
-    .setColor(colorFor(parcel.status))
-    .setTitle(`📦 ${parcel.consNumber} — ${parcel.status}${count}`)
+    .setColor(colorFor(s.type))
+    .setTitle(`📦 ${parcel.consNumber} — ${s.type}${count}`)
     .setDescription(desc.join('\n\n') || null)
     .addFields(...fields)
-    .setFooter({ text: `searched as ${parcel.query}` });
+    .setFooter({ text: `searched as …${String(parcel.query).slice(-4)}` });
 
   // A picture of how far the scan (S) sits from the address (D).
   const files = [];
@@ -166,9 +204,9 @@ export async function buildParcelEmbed(parcel, apiKey) {
 
   // Its own embed so it renders below the map image.
   const historyEmbed = new EmbedBuilder()
-    .setColor(colorFor(parcel.status))
-    .setTitle(`History (${parcel.scanCount})`)
-    .setDescription(historyBlock(parcel.scans, multi));
+    .setColor(colorFor(s.type))
+    .setTitle(`History (${scans.length})`)
+    .setDescription(historyStr);
 
   return { embeds: [mainEmbed, historyEmbed], files };
 }

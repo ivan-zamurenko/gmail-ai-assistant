@@ -24,7 +24,7 @@ export async function depotLookup(numbers) {
 
   async function fetchDoc(url) {
     const res = await fetch(url, { credentials: 'include' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+    if (!res.ok) throw new Error(`Depot page returned HTTP ${res.status}`);
     return toDoc(await res.text());
   }
 
@@ -138,7 +138,9 @@ export async function depotLookup(numbers) {
   // ── One consignment ──────────────────────────────────────────────────────────
 
   async function lookupOne(query) {
+    const t0 = Date.now();
     const searched = await quickSearch(query);
+    const t1 = Date.now();
     let detail = searched;
 
     if (!searched.getElementById('hiddenConsBarcodeValue')) {
@@ -148,12 +150,14 @@ export async function depotLookup(numbers) {
       if (hits.length !== 1) return { query, ok: false, reason: `${hits.length} matches` };
       detail = await fetchConsignment(hits[0].consId);
     }
+    const t2 = Date.now();
 
     const consNumber = detail.getElementById('hiddenConsBarcodeValue')?.value ?? '';
     const delivery   = readBlock(detail, 'Delivery Address');
     const confirm    = readBlock(detail, 'Confirmation / Notification / Delivery Details');
 
     const scans = parseScans(await fetchDoc(scanUrl(consNumber)));
+    const t3 = Date.now();
     // The parcel exists even with no scans, so callers that only need identity
     // (label renaming) still get the number back.
     if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber };
@@ -172,6 +176,7 @@ export async function depotLookup(numbers) {
       lastScan:     latest(scans),
       scanCount:    scans.length,
       scans,
+      timing:       { search: t1 - t0, detail: t2 - t1, scans: t3 - t2 },
       drop:         drop && { ...drop.coords, type: drop.type, date: drop.date, time: drop.time },
       address: {
         contact:  pick(delivery, 'Contact'),

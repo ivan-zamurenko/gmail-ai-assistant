@@ -4,20 +4,26 @@
  * Slash-command definitions. Kept separate from the runtime so the register
  * script and the bot share one source of truth for names and options.
  */
-import { SlashCommandBuilder } from 'discord.js';
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 
 const dryRunOption = (o) =>
   o.setName('dry_run')
    .setDescription('true = лише показати, нічого не змінювати (за замовч. true)');
 
+const liveConfirmationOption = (o) =>
+  o.setName('confirm_live')
+   .setDescription('Обовʼязково true для live-зміни');
+
 export const commands = [
   new SlashCommandBuilder()
     .setName('reschedule')
     .setDescription('Перенести посилки на майбутню дату')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand(s =>
       s.setName('all')
        .setDescription('Знайти всі CAD-посилки з майбутньою датою і перенести')
-       .addBooleanOption(dryRunOption))
+       .addBooleanOption(dryRunOption)
+       .addBooleanOption(liveConfirmationOption))
     .addSubcommand(s =>
       s.setName('parcel')
        .setDescription('Перенести одну посилку на задану дату')
@@ -29,15 +35,18 @@ export const commands = [
          o.setName('new_date')
           .setDescription('Дата YYYY-MM-DD — майбутня, не субота й не неділя')
           .setRequired(true))
-       .addBooleanOption(dryRunOption))
+       .addBooleanOption(dryRunOption)
+       .addBooleanOption(liveConfirmationOption))
     .addSubcommand(s =>
       s.setName('barcodes')
        .setDescription('Зчитати лейбли з Drive і перенести знайдені посилки')
-       .addBooleanOption(dryRunOption)),
+       .addBooleanOption(dryRunOption)
+       .addBooleanOption(liveConfirmationOption)),
 
   new SlashCommandBuilder()
     .setName('find')
     .setDescription('Знайти посилку і показати її останній статус')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption(o =>
       o.setName('con_id')
        .setDescription('Номер посилки (consignment)')

@@ -59,6 +59,6 @@ test('the private parcel card renders full recipient details and CAD location', 
   assert.equal(main.fields.find((field) => field.name === 'Mobile').value, '0871234567');
   assert.equal(main.fields.find((field) => field.name === 'Eircode').value, 'D01AB12');
   assert.match(main.fields.find((field) => field.name === 'Address').value, /1 Main Street/);
-  assert.match(history.description, /12:00:00.*cad.*Bay: 32, Seq: 5/);
+  assert.match(history.description, /12:00:00.*cad.*Bay:32 Seq:5/);
   assert.doesNotMatch(history.description, /B32\/#5/);
 });

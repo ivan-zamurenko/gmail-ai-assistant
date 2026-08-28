@@ -65,7 +65,7 @@ function cadLocation(scan) {
   const notes = scan?.notes || ''; // compatibility with tasks created before structured fields
   const bay = scan?.bay || /Bay:\s*([^,|]+)/i.exec(notes)?.[1]?.trim();
   const sequence = scan?.sequence || /Sequence:\s*([^,|]+)/i.exec(notes)?.[1]?.trim();
-  return [bay && `Bay: ${bay}`, sequence && `Seq: ${sequence}`].filter(Boolean).join(', ');
+  return [bay && `Bay:${bay}`, sequence && `Seq:${sequence}`].filter(Boolean).join(' ');
 }
 
 /** One consignment holds several parcels — return each parcel's latest scan, ordered 1..n. */
@@ -108,8 +108,8 @@ function historyBlock(scans, showParcel) {
     const route  = (s.route || '').padEnd(rw);
     const bc     = onwardBc(s);
     const onward = bc ? `  →${bc}` : '';
-    return `${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}  ${route}`
-      + `${location ? `  ${location.padEnd(lw)}` : ''}${onward}`;
+    return `${tag}${label} ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET} ${route}`
+      + `${location ? ` ${location.padEnd(lw)}` : ''}${onward}`;
   });
 
   const hidden = scans.length - lines.length;

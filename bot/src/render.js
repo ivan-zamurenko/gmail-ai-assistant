@@ -65,7 +65,7 @@ function cadLocation(scan) {
   const notes = scan?.notes || ''; // compatibility with tasks created before structured fields
   const bay = scan?.bay || /Bay:\s*([^,|]+)/i.exec(notes)?.[1]?.trim();
   const sequence = scan?.sequence || /Sequence:\s*([^,|]+)/i.exec(notes)?.[1]?.trim();
-  return [bay && `B${bay}`, sequence && `#${sequence}`].filter(Boolean).join('/');
+  return [bay && `Bay: ${bay}`, sequence && `Seq: ${sequence}`].filter(Boolean).join(', ');
 }
 
 /** One consignment holds several parcels — return each parcel's latest scan, ordered 1..n. */
@@ -94,7 +94,7 @@ function parcelsBlock(parcels) {
   return '```ansi\n' + lines.join('\n') + '\n```';
 }
 
-/** Newest first: CAD bay/sequence, parcel, status, date/time, then route. */
+/** Newest first: parcel, status, date/time, CAD bay/sequence, then route. */
 function historyBlock(scans, showParcel) {
   const rows = [...scans].reverse().slice(0, MAX_HISTORY);
   const sw = rows.length ? Math.max(...rows.map((s) => s.type.length)) : 0;
@@ -102,13 +102,13 @@ function historyBlock(scans, showParcel) {
   const lw = rows.length ? Math.max(...rows.map((s) => cadLocation(s).length)) : 0;
 
   const lines = rows.map((s) => {
-    const location = lw ? `${cadLocation(s).padEnd(lw)}  ` : '';
+    const location = lw ? `  ${cadLocation(s).padEnd(lw)}` : '';
     const tag    = showParcel ? `P${s.parcel} ` : '';
     const label  = s.type.padEnd(sw);
     const route  = (s.route || '').padEnd(rw);
     const bc     = onwardBc(s);
     const onward = bc ? `  →${bc}` : '';
-    return `${location}${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}  ${route}${onward}`;
+    return `${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}${location}  ${route}${onward}`;
   });
 
   const hidden = scans.length - lines.length;
@@ -122,15 +122,16 @@ function lastEventLine(s, minWidth = 0) {
   const head = `${BOLD}${s.type}${RESET} at ${YELLOW}${hms(s.time)}${RESET}`
     + `${s.route ? ` by route ${s.route}` : ''}`;
   const bc    = onwardBc(s);
-  const extra = bc ? `\n-> Onward BC ${bc} <-` : '';
+  const signed = s.signature ? `\n-> Signed to ${s.signature} <-` : '';
+  const onward = bc ? `\n-> Onward BC ${bc} <-` : '';
   // Pad the last line to the history width so the main card matches the taller one.
-  const lines = (head + extra).split('\n');
+  const lines = (head + signed + onward).split('\n');
   const last  = lines[lines.length - 1].replace(/\u001b\[[0-9;]*m/g, '').length;
   lines[lines.length - 1] += ' '.repeat(Math.max(0, minWidth - last));
   return '```ansi\n' + lines.join('\n') + '\n```';
 }
 
-const place = (a) => [a.town, a.county].filter(Boolean).join(', ');
+const place = (a) => [...(a.lines ?? []), a.town, a.county].filter(Boolean).join(', ');
 
 /** Visible width of a code block's widest line, ignoring fences and ANSI colours. */
 function blockWidth(block) {
@@ -141,6 +142,7 @@ function blockWidth(block) {
 
 export async function buildParcelEmbed(parcel, apiKey) {
   const a = parcel.address;
+  const consignee = [...new Set([a.contact, a.company].filter(Boolean))].join(', ');
 
   // Parcel "0" is a consignment-level event (order received), not a physical box.
   const numbered  = parcel.scans.filter((sc) => Number(sc.parcel) >= 1);
@@ -178,9 +180,18 @@ export async function buildParcelEmbed(parcel, apiKey) {
   const historyStr = historyBlock(scans, multi);
 
   const fields = [
-    { name: 'Post code', value: a.postCode || '—', inline: true },
-    { name: 'Area',      value: place(a) || '—', inline: true },
+    { name: 'Recipient', value: consignee || '—' },
+    { name: 'Mobile',    value: a.mobile || '—', inline: true },
+    { name: 'Eircode',   value: a.postCode || '—', inline: true },
+    { name: 'Address',   value: place(a) || '—' },
   ];
+  if (a.email) fields.push({ name: 'Email', value: a.email });
+  if (a.depot || parcel.arrangedDate) {
+    fields.push(
+      { name: 'Delivery depot', value: a.depot || '—', inline: true },
+      { name: 'Arranged date', value: parcel.arrangedDate || '—', inline: true },
+    );
+  }
   if (multi) {
     fields.push({ name: 'Parcels', value: parcelsBlock(parcels) });
   }
@@ -193,7 +204,7 @@ export async function buildParcelEmbed(parcel, apiKey) {
     .setTitle(`📦 ${parcel.consNumber} — ${s.type}${count}`)
     .setDescription(desc.join('\n\n') || null)
     .addFields(...fields)
-    .setFooter({ text: `searched as …${String(parcel.query).slice(-4)}` });
+    .setFooter({ text: `searched as ${parcel.query}` });
 
   // A picture of how far the scan (S) sits from the address (D).
   const files = [];

@@ -173,12 +173,21 @@ async function runFind(args) {
   if (reason)  return error(reason);
   if (!res.ok) return error(findFailure(res));
 
-  // Only operational fields needed by the Discord card cross Firestore. Customer
-  // name, street lines, signature, arbitrary notes and depot metadata stay local.
+  // /find is an administrator-only, ephemeral operational card. Keep the payload
+  // structured and bounded; arbitrary depot notes still stay inside the extension.
   const operationalValue = (value) => {
     const clean = String(value ?? '').trim();
     return /^[A-Za-z0-9][A-Za-z0-9 ._/-]{0,23}$/.test(clean) ? clean : '';
   };
+  const textValue = (value, max = 200) => Array.from(String(value ?? ''))
+    .map((char) => {
+      const code = char.charCodeAt(0);
+      return code < 32 || code === 127 ? ' ' : char;
+    })
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
   const scans = res.scans.map((scan) => {
     const bay      = operationalValue(scan.bay);
     const sequence = operationalValue(scan.sequence);
@@ -189,6 +198,7 @@ async function runFind(args) {
       date:   scan.date,
       time:   scan.time,
       route:  scan.route,
+      ...(scan.signature && { signature: textValue(scan.signature, 80) }),
       ...(bay && { bay }),
       ...(sequence && { sequence }),
       ...(onwardBc && { onwardBc }),
@@ -197,14 +207,21 @@ async function runFind(args) {
   const parcel = {
     query:      res.query,
     consNumber: res.consNumber,
+    arrangedDate: res.arrangedDate,
     scans,
     drop:       res.drop,
     timing:     res.timing,
     _diag:      res._diag,
     address: {
-      town:     res.address.town,
-      county:   res.address.county,
-      postCode: res.address.postCode,
+      contact:  textValue(res.address.contact),
+      company:  textValue(res.address.company),
+      lines:    (res.address.lines ?? []).map((line) => textValue(line)).filter(Boolean),
+      town:     textValue(res.address.town),
+      county:   textValue(res.address.county),
+      postCode: textValue(res.address.postCode, 16),
+      depot:    textValue(res.address.depot, 80),
+      mobile:   textValue(res.address.mobile, 80),
+      email:    textValue(res.address.email, 160),
     },
   };
   return { status: STATUS.DONE, parcel };

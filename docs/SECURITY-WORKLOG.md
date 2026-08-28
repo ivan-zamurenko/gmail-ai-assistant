@@ -123,3 +123,10 @@ into this log.
   identity. Two confirmed older duplicate processes were stopped with SIGTERM;
   the newest configured process was preserved and rechecked as the sole running
   bot instance. This removed the interaction acknowledgment race.
+- Restored the full administrator-only `/find` parcel card at the owner's
+  explicit request: recipient, company, mobile/telephone, email when available,
+  full delivery address, Eircode, delivery depot, arranged date, and signature.
+  Responses remain ephemeral; arbitrary scan notes and session data remain
+  excluded. Documented that these cards must not be copied to public locations.
+- Replaced the compact CAD marker with an aligned scan-history column formatted
+  as `Bay: <number>, Seq: <sequence>` immediately to the right of scan time.

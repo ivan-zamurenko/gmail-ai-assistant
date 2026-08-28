@@ -27,6 +27,11 @@ an unbound bot must not create depot tasks that every anonymous client can read.
 also checked against the configured guild at runtime. Re-run `npm run register`
 inside `bot/` after changing command permissions.
 
+`/find` intentionally returns the full operational parcel card, including
+recipient contact details and address. Its reply must remain ephemeral and
+administrator-only. Do not copy these cards into public channels, logs, issues,
+screenshots, or source control.
+
 ## Local secret files
 
 Restrict the local files after creating them:

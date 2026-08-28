@@ -77,6 +77,9 @@ export async function depotLookup(numbers) {
 
   const pick = (rows, label) => rows.find((r) => r.label === label)?.value ?? '';
 
+  /** Depot versions use slightly different labels for phone and email fields. */
+  const pickMatching = (rows, pattern) => rows.find((r) => pattern.test(r.label))?.value ?? '';
+
   /** The second address line sits in its own row under an empty label. */
   function addressLines(rows) {
     const start = rows.findIndex((r) => r.label === 'Address');
@@ -165,6 +168,7 @@ export async function depotLookup(numbers) {
     const consNumber = detail.getElementById('hiddenConsBarcodeValue')?.value ?? '';
     const delivery   = readBlock(detail, 'Delivery Address');
     const confirm    = readBlock(detail, 'Confirmation / Notification / Delivery Details');
+    const contact    = [...delivery, ...confirm];
 
     const scans = parseScans(await fetchDoc(scanUrl(consNumber)));
     const t3 = Date.now();
@@ -196,6 +200,8 @@ export async function depotLookup(numbers) {
         county:   pick(delivery, 'County'),
         postCode: pick(delivery, 'Post Code'),
         depot:    pick(delivery, 'Delivery Depot'),
+        mobile:   pickMatching(contact, /mobile|telephone|phone/i),
+        email:    pickMatching(contact, /e-?mail/i),
       },
     };
   }

@@ -115,3 +115,11 @@ into this log.
   Maps API key was inadvertently included in local tool output. It was not
   committed or pushed, but it must be treated as exposed in this session and
   rotated in Google Cloud; the replacement must remain only in private config.
+- Diagnosed the reported bot/extension timeout with a PII-free queue health
+  probe. The extension claimed the task and returned the expected controlled
+  unknown-command result, confirming that executor UID, Firestore, offscreen,
+  and service-worker messaging were connected.
+- Found three simultaneous local Discord bot processes using the same bot
+  identity. Two confirmed older duplicate processes were stopped with SIGTERM;
+  the newest configured process was preserved and rechecked as the sole running
+  bot instance. This removed the interaction acknowledgment race.

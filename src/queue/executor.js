@@ -14,8 +14,11 @@
 
 import { depotMain }       from '../depot/depotScript.js';
 import { depotLookup }     from '../depot/lookup.js';
-import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
+import {
+  COMMANDS, RESCHEDULE_MODE, STATUS, TASK_SCHEMA_VERSION,
+} from './contract.js';
 import { CONSTANTS }       from '../utils/constants.js';
+import { safeErrorMessage } from '../utils/errors.js';
 
 const done  = (summary, details) => ({ status: STATUS.DONE,  summary, details });
 const error = (summary)          => ({ status: STATUS.ERROR, summary });
@@ -25,7 +28,13 @@ const MAX_DETAIL_LINES = 25;
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
 
 async function findDepotTabs() {
-  return chrome.tabs.query({ url: CONSTANTS.DEPOT_URL_PATTERN });
+  const tabs = await chrome.tabs.query({ url: CONSTANTS.DEPOT_URL_PATTERN });
+  // Chrome's Memory Saver discards idle background tabs; waking a discarded depot
+  // tab forces a full page reload (10–40s), which is the bulk of a slow /find.
+  // Pinning them keeps the renderer alive so later tasks inject instantly.
+  await Promise.all(tabs.map((t) =>
+    chrome.tabs.update(t.id, { autoDiscardable: false }).catch(() => {})));
+  return tabs;
 }
 
 /** Trims a line list to fit Discord and notes how many were hidden. */
@@ -74,9 +83,11 @@ async function runInDepotTabs(func, args, classify) {
   if (!tabs.length) return { reason: 'Відкрий вкладку депо й залогінься' };
 
   let lastReason = null;
+  const diag = []; // per-tab inject cost — a discarded/frozen tab is slow to wake
 
   for (const tab of tabs) {
     let res;
+    const ti = Date.now();
     try {
       const [injection] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -88,14 +99,18 @@ async function runInDepotTabs(func, args, classify) {
       });
       res = injection?.result;
     } catch (err) {
-      lastReason = /error page/i.test(err.message)
+      const safeMessage = safeErrorMessage(err);
+      diag.push({ id: tab.id, discarded: tab.discarded, ms: Date.now() - ti, err: safeMessage });
+      lastReason = /error page/i.test(safeMessage)
         ? 'Депо-вкладка показує помилку — онови її (F5), перевір мережу депо й залогінься'
-        : `Не дістатися депо-вкладки — ${err.message}`;
+        : `Не дістатися депо-вкладки — ${safeMessage}`;
       continue;
     }
+    diag.push({ id: tab.id, discarded: tab.discarded, ms: Date.now() - ti });
 
     const verdict = classify(res);
     if (verdict.wrongPage) { lastReason = verdict.reason; continue; }
+    if (verdict.ok && verdict.value && typeof verdict.value === 'object') verdict.value._diag = diag;
     return verdict.ok ? { result: verdict.value } : { reason: verdict.reason };
   }
 
@@ -158,15 +173,60 @@ async function runFind(args) {
   if (reason)  return error(reason);
   if (!res.ok) return error(findFailure(res));
 
-  // The bot owns presentation (embed, distance, map link); ship it the raw parcel.
-  return { status: STATUS.DONE, parcel: res };
+  // Only operational fields needed by the Discord card cross Firestore. Customer
+  // name, street lines, signature, arbitrary notes and depot metadata stay local.
+  const noteSummary = (notes = '') => {
+    const kept = [];
+    const bay = /Bay:\s*(\S+)/i.exec(notes)?.[1];
+    const onward = /Onward BC:\s*([^/\s]+)/i.exec(notes)?.[1];
+    if (bay) kept.push(`Bay: ${bay}`);
+    if (onward) kept.push(`Onward BC: ${onward}`);
+    return kept.join(' | ');
+  };
+  const scans = res.scans.map((scan) => ({
+    parcel: scan.parcel,
+    type:   scan.type,
+    date:   scan.date,
+    time:   scan.time,
+    route:  scan.route,
+    notes:  noteSummary(scan.notes),
+  }));
+  const parcel = {
+    query:      res.query,
+    consNumber: res.consNumber,
+    scans,
+    drop:       res.drop,
+    timing:     res.timing,
+    _diag:      res._diag,
+    address: {
+      town:     res.address.town,
+      county:   res.address.county,
+      postCode: res.address.postCode,
+    },
+  };
+  return { status: STATUS.DONE, parcel };
 }
 
 /** @returns {Promise<{status: string, summary: string}>} */
 export async function executeTask(task) {
-  if (task.command === COMMANDS.FIND) return runFind(task.args);
+  if (!task || task.schemaVersion !== TASK_SCHEMA_VERSION) {
+    return error('Непідтримувана версія queue task');
+  }
+
+  if (task.command === COMMANDS.FIND) {
+    const conId = task.args?.conId;
+    if (typeof conId !== 'string' || !/^\d{9}(?:\d{5})?$/.test(conId)) {
+      return error('Некоректний номер посилки');
+    }
+    return runFind(task.args);
+  }
+
+  if (task.command !== COMMANDS.RESCHEDULE) {
+    return error('Невідома queue command');
+  }
 
   const { mode, dryRun = true } = task.args ?? {};
+  if (typeof dryRun !== 'boolean') return error('Некоректне значення dryRun');
   if (mode === RESCHEDULE_MODE.ALL) return runCad(dryRun);
 
   return error(`Режим "${mode}" ще не під'єднано в розширенні`);

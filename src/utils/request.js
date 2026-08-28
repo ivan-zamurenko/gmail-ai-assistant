@@ -23,7 +23,7 @@ export const request = {
       headers: { 'Content-Type': 'application/json', ...options.headers },
     });
     if (!res.ok) {
-      throw new Error(`request.get → HTTP ${res.status} ${res.statusText}: ${url}`);
+      throw new Error(`request.get → HTTP ${res.status} ${res.statusText}`);
     }
     return res.json();
   },
@@ -40,7 +40,7 @@ export const request = {
       body:    JSON.stringify(options.body ?? {}),
     });
     if (!res.ok) {
-      throw new Error(`request.post → HTTP ${res.status} ${res.statusText}: ${url}`);
+      throw new Error(`request.post → HTTP ${res.status} ${res.statusText}`);
     }
     return res.json();
   },

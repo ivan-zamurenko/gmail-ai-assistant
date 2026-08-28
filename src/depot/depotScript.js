@@ -91,7 +91,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
   async function fetchDoc(url) {
     const res = await fetch(url, { credentials: 'include' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+    if (!res.ok) throw new Error(`Depot page returned HTTP ${res.status}`);
     return new DOMParser().parseFromString(await res.text(), 'text/html');
   }
 
@@ -251,7 +251,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString(),
     });
-    if (!res.ok) throw new Error(`Reschedule POST returned HTTP ${res.status}: ${actionUrl}`);
+    if (!res.ok) throw new Error(`Reschedule POST returned HTTP ${res.status}`);
 
     const responseText = await res.text();
     const resultDoc = new DOMParser().parseFromString(responseText, 'text/html');
@@ -273,7 +273,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     resultDoc.querySelectorAll('script, style').forEach(el => el.remove());
     const visibleText = (resultDoc.body?.textContent ?? '').replace(/\s+/g, ' ').trim();
     console.warn(`[reschedule] arranged-date came back as "${savedDate}", asked for "${tomorrowInput}"`);
-    console.warn(`[reschedule] page text: ${visibleText.slice(0, 500) || '(page has no visible text)'}`);
+    console.warn(`[reschedule] unconfirmed response text length: ${visibleText.length}`);
     throw new Error(`Reschedule: server did not confirm. See console for details.`);
   }
 

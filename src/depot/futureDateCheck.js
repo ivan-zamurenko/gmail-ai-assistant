@@ -36,7 +36,7 @@ export async function futureDateCheck(barcodes) {
 
   async function fetchDoc(url) {
     const res = await fetch(url, { credentials: 'include' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+    if (!res.ok) throw new Error(`Depot page returned HTTP ${res.status}`);
     return toDoc(await res.text());
   }
 

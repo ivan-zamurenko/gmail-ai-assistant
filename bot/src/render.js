@@ -94,7 +94,7 @@ function parcelsBlock(parcels) {
   return '```ansi\n' + lines.join('\n') + '\n```';
 }
 
-/** Newest first: parcel, status, date/time, CAD bay/sequence, then route. */
+/** Newest first: parcel, status, date/time, route, then CAD location at far right. */
 function historyBlock(scans, showParcel) {
   const rows = [...scans].reverse().slice(0, MAX_HISTORY);
   const sw = rows.length ? Math.max(...rows.map((s) => s.type.length)) : 0;
@@ -102,13 +102,14 @@ function historyBlock(scans, showParcel) {
   const lw = rows.length ? Math.max(...rows.map((s) => cadLocation(s).length)) : 0;
 
   const lines = rows.map((s) => {
-    const location = lw ? `  ${cadLocation(s).padEnd(lw)}` : '';
+    const location = cadLocation(s);
     const tag    = showParcel ? `P${s.parcel} ` : '';
     const label  = s.type.padEnd(sw);
     const route  = (s.route || '').padEnd(rw);
     const bc     = onwardBc(s);
     const onward = bc ? `  →${bc}` : '';
-    return `${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}${location}  ${route}${onward}`;
+    return `${tag}${label}  ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET}  ${route}`
+      + `${location ? `  ${location.padEnd(lw)}` : ''}${onward}`;
   });
 
   const hidden = scans.length - lines.length;

@@ -14,6 +14,14 @@ test('Code128 keeps the parcel digit separate from the consignment number', () =
   });
 });
 
+test('Code128 rejects an incomplete consignment number', () => {
+  // The consignment section has only eight digits. Its following parcel digit
+  // must not be shifted into the consignment to manufacture a valid result.
+  const barcode = ['%0000000', '0000', '12345678', '2'].join('');
+
+  assert.equal(parseBarcode(barcode), null);
+});
+
 test('PDF417 reads a confirmed anonymized DPD record', () => {
   // An actual locally decoded record had 31 fields. Only the anonymized prefix
   // needed by parseBarcode is retained here: routing is % + prefix + number + parcel.

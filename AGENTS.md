@@ -13,7 +13,8 @@ Before changing the project, read and follow:
 3. `README.md` — current product surface and architecture overview.
 4. Relevant decisions in `docs/TOOLING.md` for tools, libraries, Gmail, OCR,
    barcode, AI, or MV3 work.
-5. `docs/SECURITY-WORKLOG.md` before security-related work.
+5. `docs/TESTING.md` before adding, changing, or reorganizing tests.
+6. `docs/SECURITY-WORKLOG.md` before security-related work.
 
 If documentation conflicts with the working code, diagnose the difference and
 report it. Do not silently invent a new architecture. Newer explicit owner
@@ -97,6 +98,8 @@ The owner makes the final product and trade-off decision.
   `npm run lint`, `npm test`, `npm run build`, and `git diff --check`.
 - Add or update a regression test for behavior changes when technically
   possible. Passing lint/build alone is not proof of domain correctness.
+- Keep `docs/TESTING.md` current when a test adds a new protected risk, testing
+  level, fixture source, or coverage boundary.
 - Commit one logical change at a time in `codex` and push it so the open PR stays
   current. Do not merge into `main` without explicit owner authorization.
 - Preserve unrelated user work and untracked files. In particular, do not add,

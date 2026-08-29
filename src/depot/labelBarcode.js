@@ -36,6 +36,7 @@ export function parseBarcode(text) {
     return { number, parcel: routing ? Number(routing[2]) : 1 };
   }
 
+  if (text.length !== 28) return null;
   const match = CODE128.exec(text);
   return match ? { number: match[1], parcel: Number(match[2]) } : null;
 }

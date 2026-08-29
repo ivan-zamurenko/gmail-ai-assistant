@@ -141,3 +141,10 @@ into this log.
 - Replaced the unverified PDF417 test data and historical source-code examples
   with anonymized values that preserve the confirmed field lengths and routing
   layout. The private source photo remains ignored and outside version control.
+- Ran a read-only local barcode audit across 69 owner-provided label images in
+  `labels_example/`. The 68 newly supplied private photos are gitignored; the
+  pre-existing tracked `label_example.png` was not modified and remains known
+  privacy debt. The audit used numeric in-memory file IDs and reported aggregate
+  format/parser statistics only; filenames, barcode payloads, tracking numbers,
+  and customer PII were not logged or newly committed. Temporary audit code,
+  browser profile, and localhost server were removed after completion.

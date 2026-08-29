@@ -14,12 +14,13 @@ test('Code128 keeps the parcel digit separate from the consignment number', () =
   });
 });
 
-test('Code128 rejects an incomplete consignment number', () => {
-  // The consignment section has only eight digits. Its following parcel digit
-  // must not be shifted into the consignment to manufacture a valid result.
-  const barcode = ['%0000000', '0000', '12345678', '2'].join('');
+test('Code128 requires the confirmed 28-character DPD layout', () => {
+  // All 53 Code128 records in the private label audit were exactly 28
+  // characters. Reject truncated or extended payloads instead of parsing a prefix.
+  const barcode = '%000000000001234567892000000';
 
-  assert.equal(parseBarcode(barcode), null);
+  assert.equal(parseBarcode(barcode.slice(0, -1)), null);
+  assert.equal(parseBarcode(`${barcode}0`), null);
 });
 
 test('PDF417 reads a confirmed anonymized DPD record', () => {

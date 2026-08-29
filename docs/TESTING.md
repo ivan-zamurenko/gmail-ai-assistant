@@ -97,13 +97,12 @@ test/
 - Використовує синтетичний Code128 payload із підтвердженою структурою.
 - Не перевіряє зчитування пікселів камерою або checksum самого barcode.
 
-**Code128 rejects an incomplete consignment number**
+**Code128 requires the confirmed 28-character DPD layout**
 
-- Перевіряє payload, у якому consignment має 8 цифр замість обов'язкових 9.
-- Очікує `null`, щоб наступна parcel-цифра не зсунулася в consignment і не
-  утворила правдоподібний, але неправильний номер.
-- Використовує синтетичний обрізаний Code128 без customer-даних.
-- Не перевіряє checksum або причину, з якої decoder повернув неповний рядок.
+- Перевіряє рядки на один символ коротші й довші за підтверджені 28 символів.
+- Очікує `null`, щоб parser не приймав лише валідний префікс довшого payload.
+- Межа підтверджена всіма 53 Code128 records у приватному label-аудиті.
+- Не перевіряє checksum: його перевіряє ZXing до виклику `parseBarcode()`.
 
 **PDF417 reads a confirmed anonymized DPD record**
 
@@ -152,6 +151,28 @@ test/
   Firestore, Discord або користувацьке повідомлення.
 - Всі значення синтетичні; справжні URL, токени й ключі в тестах заборонені.
 - Не перевіряє кожну можливу форму секрету або сторонні library stack traces.
+
+## Private label audit — 2026-08-29
+
+Read-only batch перевірив **69 локальних фото** тим самим browser ZXing-шляхом,
+який використовує extension. 68 доданих приватних фото ігноруються Git; один
+старий `label_example.png` уже відстежувався до аудиту й залишається окремим
+відомим privacy-debt. Назви файлів у batch-звіті, barcode payloads, tracking
+numbers і customer PII не виводилися та не додавалися до Git.
+
+- 69 фото оброблено без processing errors;
+- 66 дали parseable consignment, 3 залишилися unreadable;
+- знайдено 58 унікальних consignments; contested image — 0;
+- усі 53 Code128 records мали рівно 28 символів і успішно парсилися;
+- серед PDF417 decode-кандидатів: 58 parsed і 15 rejected;
+- виявлено 10 routing contradictions, які тепер fail-closed повертають `null`;
+- виявлено 7 PDF417 без розпізнаного routing, тому fallback `parcel: 1` не
+  видаляємо без окремої звірки з альтернативним barcode на тих самих фото;
+- audit виявив, що ZXing adapter фактично скидає `POSSIBLE_FORMATS` hints через
+  виклик `decode()` замість `decodeWithState()`; це окрема наступна задача.
+
+Аудит підтверджує структури для regression-тестів, але не замінює E2E перевірку
+Drive/depot workflow на корпоративному ПК.
 
 ## Рівні тестування
 

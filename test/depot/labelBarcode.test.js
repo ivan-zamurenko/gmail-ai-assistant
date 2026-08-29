@@ -31,3 +31,9 @@ test('PDF417 reads a confirmed anonymized DPD record', () => {
     parcel: 1,
   });
 });
+
+test('PDF417 rejects a damaged consignment field', () => {
+  const barcode = '%00001234567891;0000A0;AAAAAAAAAAA;000000;12345;00/00/00';
+
+  assert.equal(parseBarcode(barcode), null);
+});

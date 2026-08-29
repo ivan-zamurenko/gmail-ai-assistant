@@ -130,3 +130,6 @@ into this log.
   excluded. Documented that these cards must not be copied to public locations.
 - Replaced the compact CAD marker with an aligned scan-history column formatted
   as `Bay: <number>, Seq: <sequence>` immediately to the right of scan time.
+- Reorganized tests by module and replaced the barcode regression fixture with
+  an explicitly synthetic consignment/parcel example; no real tracking data was
+  added to the test suite.

@@ -41,3 +41,11 @@ test('PDF417 rejects a damaged consignment field', () => {
 
   assert.equal(parseBarcode(barcode), null);
 });
+
+test('PDF417 rejects contradictory consignment numbers', () => {
+  // Both embedded numbers look valid alone, but they identify different
+  // consignments. Ambiguity must stop processing instead of choosing either one.
+  const barcode = '%00001234567891;0000A0;AAAAAAAAAAA;000000;987654321;00/00/00';
+
+  assert.equal(parseBarcode(barcode), null);
+});

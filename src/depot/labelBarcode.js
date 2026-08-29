@@ -32,7 +32,8 @@ export function parseBarcode(text) {
     if (!/^\d{9}$/.test(number)) return null;
 
     const routing = PDF417_ROUTING.exec(fields[0]);
-    return { number, parcel: routing && routing[1] === number ? Number(routing[2]) : 1 };
+    if (routing && routing[1] !== number) return null;
+    return { number, parcel: routing ? Number(routing[2]) : 1 };
   }
 
   const match = CODE128.exec(text);

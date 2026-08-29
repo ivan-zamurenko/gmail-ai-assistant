@@ -11,3 +11,12 @@ test('Code128 keeps the parcel digit separate from the consignment number', () =
     parcel: 2,
   });
 });
+
+test('PDF417 reads the consignment and physical parcel number', () => {
+  const decoded = parseBarcode('%00001234567892;service;recipient;reference;123456789;tail');
+
+  assert.deepEqual(decoded, {
+    number: '123456789',
+    parcel: 2,
+  });
+});

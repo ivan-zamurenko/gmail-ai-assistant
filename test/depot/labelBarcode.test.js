@@ -12,11 +12,22 @@ test('Code128 keeps the parcel digit separate from the consignment number', () =
   });
 });
 
-test('PDF417 reads the consignment and physical parcel number', () => {
-  const decoded = parseBarcode('%00001234567892;service;recipient;reference;123456789;tail');
+test('PDF417 reads a confirmed anonymized DPD record', () => {
+  // An actual locally decoded record had 31 fields. Only the anonymized prefix
+  // needed by parseBarcode is retained here: routing is % + prefix + number + parcel.
+  const barcode = [
+    '%00001234567891',
+    '0000A0',
+    'AAAAAAAAAAA',
+    '000000',
+    '123456789',
+    '00/00/00',
+  ].join(';');
 
-  assert.deepEqual(decoded, {
+  const parsed = parseBarcode(barcode);
+
+  assert.deepEqual(parsed, {
     number: '123456789',
-    parcel: 2,
+    parcel: 1,
   });
 });

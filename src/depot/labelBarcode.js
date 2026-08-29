@@ -5,19 +5,19 @@
  *
  * Both formats were verified against 76 real label photos.
  *
- *   PDF417 — the big block, a semicolon record:
- *     %14131330823531;39L5;TOOLING & ENGINEERING DIST;1447952/01RK;133082353;…
- *                                                                  ^ field 4
+ *   PDF417 — the big block, a semicolon record (anonymized):
+ *     %00001234567891;0000A0;AAAAAAAAAAA;000000;123456789;…
+ *                                                  ^ field 4
  *
  *   Code128 — the routing strip, always 28 characters:
- *     % 0077160 1530 132811559 2 101372
+ *     % 0000000 0000 123456789 1 000000
  *       └─dest─┘└rte┘└──cons──┘│ └tail┘
  *                              └ parcel number
  *
- * The two agree: one parcel gave PDF417 field 4 "132811559" and Code128 offset
- * 12..21 "132811559". Parcels of one consignment differ only in the parcel
- * digit, so it must be dropped — otherwise every parcel of a ten-box shipment
- * looks like a different consignment.
+ * Verified matching labels carry the same nine-digit consignment in PDF417
+ * field 4 and Code128 offset 12..21. Parcels of one consignment differ only in
+ * the parcel digit, so it must be kept separate — otherwise every parcel of a
+ * ten-box shipment looks like a different consignment.
  */
 
 const CODE128 = /^%[A-Z\d]{7}\d{4}(\d{9})(\d)/;

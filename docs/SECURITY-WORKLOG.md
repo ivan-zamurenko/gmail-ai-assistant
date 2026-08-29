@@ -133,3 +133,11 @@ into this log.
 - Reorganized tests by module and replaced the barcode regression fixture with
   an explicitly synthetic consignment/parcel example; no real tracking data was
   added to the test suite.
+- Locally decoded one owner-provided label photo from the gitignored
+  `labels_example/` directory using the same browser ZXing path as the extension.
+  No raw barcode payload or customer field was printed, logged, committed, or
+  sent to an external decoder. The safe structural report confirmed PDF417, a
+  31-field record, matching nine-digit consignment positions, and parcel 1.
+- Replaced the unverified PDF417 test data and historical source-code examples
+  with anonymized values that preserve the confirmed field lengths and routing
+  layout. The private source photo remains ignored and outside version control.

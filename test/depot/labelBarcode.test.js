@@ -4,9 +4,11 @@ import assert from 'node:assert/strict';
 import { parseBarcode } from '../../src/depot/labelBarcode.js';
 
 test('Code128 keeps the parcel digit separate from the consignment number', () => {
-  const decoded = parseBarcode('%000000000001234567892000000');
+  // Layout: % + 7-character destination + 4-digit route +
+  // 9-digit consignment + physical parcel number + trailing routing data.
+  const parsed = parseBarcode('%000000000001234567892000000');
 
-  assert.deepEqual(decoded, {
+  assert.deepEqual(parsed, {
     number: '123456789',
     parcel: 2,
   });
@@ -33,6 +35,8 @@ test('PDF417 reads a confirmed anonymized DPD record', () => {
 });
 
 test('PDF417 rejects a damaged consignment field', () => {
+  // Routing still looks valid, but canonical field 4 is only five digits.
+  // Reject the whole record instead of trusting one contradictory section.
   const barcode = '%00001234567891;0000A0;AAAAAAAAAAA;000000;12345;00/00/00';
 
   assert.equal(parseBarcode(barcode), null);

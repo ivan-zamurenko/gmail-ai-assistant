@@ -7,7 +7,7 @@ function fakeText(textContent = '') {
   return { textContent };
 }
 
-async function runReschedule(mode, { status = 'PENDING' } = {}) {
+async function runReschedule(mode, { status = 'PENDING', notes = '' } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch']) {
     original.set(key, {
@@ -40,11 +40,16 @@ async function runReschedule(mode, { status = 'PENDING' } = {}) {
       },
     },
     detail: {
-      querySelectorAll: (selector) => selector === 'h1 b'
-        ? [fakeText('Consignment'), fakeText(status)]
-        : [],
+      querySelectorAll(selector) {
+        if (selector === 'h1 b') return [fakeText('Consignment'), fakeText(status)];
+        if (selector === 'script' && notes) {
+          return [fakeText("$('#ConsignmentsNotes').load('/notes')")];
+        }
+        return [];
+      },
       getElementById: () => null,
     },
+    notes: { body: fakeText(notes) },
     form: {
       querySelector: (selector) => selector === 'form'
         ? { getAttribute: () => '/save', elements: [] }
@@ -82,6 +87,7 @@ async function runReschedule(mode, { status = 'PENDING' } = {}) {
       pendingReads += 1;
       body = 'pending';
     } else if (String(url).includes('woConsignmentDetails.p')) body = 'detail';
+    else if (String(url).endsWith('/notes')) body = 'notes';
     else if (String(url).includes('woRearrangeConsignment.p')) {
       rescheduleReads += 1;
       body = 'form';
@@ -179,4 +185,20 @@ test('GOODS HELD without qualifying notes never reaches reschedule', async () =>
   });
   assert.equal(labels.pendingReads, 0);
   assert.equal(labels.rescheduleReads, 0);
+});
+
+test('GOODS HELD with today qualifying note reaches reschedule once', async () => {
+  const now = new Date();
+  const pad = (number) => String(number).padStart(2, '0');
+  const today = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${String(now.getFullYear()).slice(-2)}`;
+  const labels = await runReschedule('labels', {
+    status: 'GOODS HELD',
+    notes: `Del. date changed FROM 01/01/20 TO ${today}`,
+  });
+
+  assert.equal(labels.result.changed, 1);
+  assert.equal(labels.result.skipped, 0);
+  assert.equal(labels.result.errors, 0);
+  assert.equal(labels.result.results[0].action, 'CHANGE_DATE');
+  assert.equal(labels.rescheduleReads, 1);
 });

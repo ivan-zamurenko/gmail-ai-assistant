@@ -224,3 +224,6 @@ into this log.
 - Added a fail-safe synthetic regression for GOODS HELD without qualifying
   notes. It proves the target is skipped before the reschedule form is opened;
   no live request, real identifier, session value, or customer data was used.
+- Added the complementary synthetic GOODS HELD regression: a qualifying note
+  dated to the test's local current day reaches the shared reschedule path
+  exactly once. No live depot request, real note, identifier, or PII was used.

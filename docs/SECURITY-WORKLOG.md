@@ -221,3 +221,6 @@ into this log.
   the same PENDING classification and reschedule path while only CAD reads
   Pending List. All depot documents, request values, and identifiers are fake;
   no live depot action, session, tracking number, or customer data was used.
+- Added a fail-safe synthetic regression for GOODS HELD without qualifying
+  notes. It proves the target is skipped before the reschedule form is opened;
+  no live request, real identifier, session value, or customer data was used.

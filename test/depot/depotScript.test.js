@@ -7,7 +7,7 @@ function fakeText(textContent = '') {
   return { textContent };
 }
 
-async function runPendingReschedule(mode) {
+async function runReschedule(mode, { status = 'PENDING' } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch']) {
     original.set(key, {
@@ -19,6 +19,7 @@ async function runPendingReschedule(mode) {
     ['log', 'table', 'warn', 'error'].map((key) => [key, globalThis.console[key]]),
   );
   let pendingReads = 0;
+  let rescheduleReads = 0;
 
   const link = {
     textContent: '123456789',
@@ -40,7 +41,7 @@ async function runPendingReschedule(mode) {
     },
     detail: {
       querySelectorAll: (selector) => selector === 'h1 b'
-        ? [fakeText('Consignment'), fakeText('PENDING')]
+        ? [fakeText('Consignment'), fakeText(status)]
         : [],
       getElementById: () => null,
     },
@@ -81,7 +82,10 @@ async function runPendingReschedule(mode) {
       pendingReads += 1;
       body = 'pending';
     } else if (String(url).includes('woConsignmentDetails.p')) body = 'detail';
-    else if (String(url).includes('woRearrangeConsignment.p')) body = 'form';
+    else if (String(url).includes('woRearrangeConsignment.p')) {
+      rescheduleReads += 1;
+      body = 'form';
+    }
     else throw new Error(`Unexpected synthetic request: ${url}`);
     return { ok: true, status: 200, text: async () => body };
   };
@@ -95,7 +99,7 @@ async function runPendingReschedule(mode) {
         ? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }]
         : [],
     });
-    return { result, pendingReads };
+    return { result, pendingReads, rescheduleReads };
   } finally {
     for (const [key, state] of original) {
       if (state.exists) globalThis[key] = state.value;
@@ -139,8 +143,8 @@ test('label dry-run uses exact verified targets without reading Pending List', a
 });
 
 test('CAD and label targets share the same PENDING reschedule rules', async () => {
-  const cad = await runPendingReschedule('cad');
-  const labels = await runPendingReschedule('labels');
+  const cad = await runReschedule('cad');
+  const labels = await runReschedule('labels');
   const expected = {
     changed: 1,
     skipped: 0,
@@ -157,4 +161,22 @@ test('CAD and label targets share the same PENDING reschedule rules', async () =
   assert.deepEqual(labels.result, expected);
   assert.equal(cad.pendingReads, 1);
   assert.equal(labels.pendingReads, 0);
+});
+
+test('GOODS HELD without qualifying notes never reaches reschedule', async () => {
+  const labels = await runReschedule('labels', { status: 'GOODS HELD' });
+
+  assert.deepEqual(labels.result, {
+    changed: 0,
+    skipped: 1,
+    errors: 0,
+    results: [{
+      consNumber: '123456789',
+      consId: '7654321',
+      status: 'GOODS HELD',
+      action: 'SKIP',
+    }],
+  });
+  assert.equal(labels.pendingReads, 0);
+  assert.equal(labels.rescheduleReads, 0);
 });

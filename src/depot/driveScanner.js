@@ -13,7 +13,7 @@
  */
 
 import { loadImage, readBarcodes } from './barcode.js';
-import { pickConsignment }         from './labelBarcode.js';
+import { acceptUncontestedConsignment, pickConsignment } from './labelBarcode.js';
 import { buildLabelName, dateOf, makeUnique } from './labelName.js';
 
 const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
@@ -169,7 +169,8 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
       const image = await loadImage(await downloadAsDataUrl(photo.id, token));
 
       step('reading');
-      const pick = pickConsignment(readBarcodes(image));
+      const candidate = pickConsignment(readBarcodes(image));
+      const pick = acceptUncontestedConsignment(candidate);
 
       step('checking');
       const known = pick ? await verify(pick.number) : false;
@@ -200,7 +201,7 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
         from:      photo.name,
         to:        `${folder.path}/${name}`,
         number:    known ? pick.number : null,
-        contested: pick?.contested ?? false,
+        contested: candidate?.contested ?? false,
         error:     null,
       });
     } catch (err) {

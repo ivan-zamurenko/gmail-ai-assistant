@@ -94,3 +94,11 @@ export function pickConsignment(codes) {
     contested: ranked.length > 1,
   };
 }
+
+/**
+ * Converts a diagnostic barcode candidate into a value safe for depot lookup.
+ * A contested photo remains reportable, but cannot select either consignment.
+ */
+export function acceptUncontestedConsignment(pick) {
+  return pick && !pick.contested ? pick : null;
+}

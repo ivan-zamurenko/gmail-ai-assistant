@@ -174,3 +174,8 @@ into this log.
   five earlier aggregate candidates were parser-rejected rather than fallbacks.
   Updated selection so an assumed PDF417 parcel one cannot overwrite an exact
   Code128 parcel, without committing any filename, barcode, or customer data.
+- Added a fail-closed boundary between diagnostic barcode ranking and Drive
+  filing. A photo containing more than one parsed consignment is now reported
+  as contested but cannot send either candidate to depot verification or rename
+  the file under a guessed parcel number; it follows the existing unknown path.
+  Added a regression test using two fully synthetic Code128 payloads.

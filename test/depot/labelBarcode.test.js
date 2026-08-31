@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseBarcode, pickConsignment } from '../../src/depot/labelBarcode.js';
+import {
+  acceptUncontestedConsignment,
+  parseBarcode,
+  pickConsignment,
+} from '../../src/depot/labelBarcode.js';
 
 test('Code128 keeps the parcel digit separate from the consignment number', () => {
   // Layout: % + 7-character destination + 4-digit route +
@@ -110,4 +114,22 @@ test('PDF417 fallback cannot overwrite an exact Code128 parcel', () => {
       contested: false,
     });
   }
+});
+
+test('contested barcode numbers cannot select a depot lookup target', () => {
+  const candidate = pickConsignment([
+    {
+      text: '%000000000001234567891000000',
+      format: 'CODE_128',
+      reads: 4,
+    },
+    {
+      text: '%000000000009876543212000000',
+      format: 'CODE_128',
+      reads: 1,
+    },
+  ]);
+
+  assert.equal(candidate.contested, true);
+  assert.equal(acceptUncontestedConsignment(candidate), null);
 });

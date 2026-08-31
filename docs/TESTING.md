@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **21 автоматизований тест у 9 файлах**. Усі вони працюють
+Поточна базова лінія: **22 автоматизовані тести у 9 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -241,6 +241,14 @@ test/
 - Planned name додається у shared `taken`, тому кілька фото в одному preview
   отримають ті самі collision-safe назви, що й у live mode.
 - Provider ports є fake-функціями; DOM, OAuth, Drive і depot session не потрібні.
+
+**Depot-rejected barcode is filed under the next unknown name**
+
+- Дає batch валідний синтетичний Code128, але fake depot verifier повертає false.
+- Перевіряє, що live move отримує `unknown-008`, а не decoded consignment filename.
+- Result не експонує відхилений номер (`number: null`) і зберігає шлях для
+  ручного пошуку фотографії оператором.
+- Реальний depot і Drive не викликаються; move та verify є контрольованими ports.
 
 ### `test/queue/executor.test.js`
 

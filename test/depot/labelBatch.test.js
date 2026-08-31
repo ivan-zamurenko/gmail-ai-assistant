@@ -40,3 +40,49 @@ test('dry-run label batch plans a verified file without moving it', async () => 
   }]);
   assert.equal(folder.taken.has('2026-08-31_123456789-p02.jpg'), true);
 });
+
+test('depot-rejected barcode is filed under the next unknown name', async () => {
+  const verified = [];
+  const moves = [];
+  const folder = {
+    id: 'synthetic-month',
+    path: '2026/08',
+    taken: new Set(['2026-08-30_unknown-007.jpg']),
+    unknown: 7,
+  };
+  const photo = {
+    id: 'synthetic-photo',
+    name: 'DRIVER-PHOTO.JPG',
+    createdTime: '2026-08-31T12:00:00.000Z',
+  };
+
+  const results = await processLabelBatch({
+    photos: [photo],
+    dryRun: false,
+    verify: async (number) => {
+      verified.push(number);
+      return false;
+    },
+    loadPhoto: async () => ({ synthetic: true }),
+    readCodes: () => [{
+      text: '%000000000001234567892000000',
+      format: 'CODE_128',
+      reads: 3,
+    }],
+    folderFor: async () => folder,
+    movePhoto: async (...args) => moves.push(args),
+  });
+
+  assert.deepEqual(verified, ['123456789']);
+  assert.equal(moves.length, 1);
+  assert.equal(moves[0][0], photo);
+  assert.equal(moves[0][1], folder);
+  assert.equal(moves[0][2], '2026-08-31_unknown-008.jpg');
+  assert.deepEqual(results, [{
+    from: 'DRIVER-PHOTO.JPG',
+    to: '2026/08/2026-08-31_unknown-008.jpg',
+    number: null,
+    contested: false,
+    error: null,
+  }]);
+});

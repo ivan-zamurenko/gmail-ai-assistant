@@ -196,3 +196,7 @@ into this log.
   a full dry-run regression through barcode selection, verification, naming and
   reporting. The injected move port remained uncalled while the planned result
   stayed complete; all fixtures and provider ports were synthetic.
+- Added a live-path regression for a structurally valid barcode rejected by the
+  depot verifier. The batch now has evidence that it files such a photo under
+  the next unknown name and does not expose or use the rejected consignment in
+  its result. All identifiers and provider ports in the test are synthetic.

@@ -227,3 +227,6 @@ into this log.
 - Added the complementary synthetic GOODS HELD regression: a qualifying note
   dated to the test's local current day reaches the shared reschedule path
   exactly once. No live depot request, real note, identifier, or PII was used.
+- Added a synthetic-clock regression proving a Friday reschedule submits the
+  following Monday in the outbound arranged-date field. The request is fully
+  intercepted locally; no live depot, session value, identifier, or PII is used.

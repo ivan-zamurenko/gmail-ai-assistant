@@ -7,9 +7,9 @@ function fakeText(textContent = '') {
   return { textContent };
 }
 
-async function runReschedule(mode, { status = 'PENDING', notes = '' } = {}) {
+async function runReschedule(mode, { status = 'PENDING', notes = '', now = null } = {}) {
   const original = new Map();
-  for (const key of ['window', 'document', 'DOMParser', 'fetch']) {
+  for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
     original.set(key, {
       exists: Object.hasOwn(globalThis, key),
       value: globalThis[key],
@@ -20,6 +20,7 @@ async function runReschedule(mode, { status = 'PENDING', notes = '' } = {}) {
   );
   let pendingReads = 0;
   let rescheduleReads = 0;
+  let saveBody = '';
 
   const link = {
     textContent: '123456789',
@@ -80,9 +81,20 @@ async function runReschedule(mode, { status = 'PENDING', notes = '' } = {}) {
       return documents[name];
     }
   };
+  if (now) {
+    const RealDate = original.get('Date').value;
+    globalThis.Date = class extends RealDate {
+      constructor(...args) {
+        super(...(args.length ? args : [now]));
+      }
+    };
+  }
   globalThis.fetch = async (url, options = {}) => {
     let body;
-    if (options.method === 'POST' && String(url).endsWith('/save')) body = 'saved';
+    if (options.method === 'POST' && String(url).endsWith('/save')) {
+      saveBody = options.body;
+      body = 'saved';
+    }
     else if (String(url).includes('woConsignmentList.p')) {
       pendingReads += 1;
       body = 'pending';
@@ -105,7 +117,7 @@ async function runReschedule(mode, { status = 'PENDING', notes = '' } = {}) {
         ? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }]
         : [],
     });
-    return { result, pendingReads, rescheduleReads };
+    return { result, pendingReads, rescheduleReads, saveBody };
   } finally {
     for (const [key, state] of original) {
       if (state.exists) globalThis[key] = state.value;
@@ -201,4 +213,14 @@ test('GOODS HELD with today qualifying note reaches reschedule once', async () =
   assert.equal(labels.result.errors, 0);
   assert.equal(labels.result.results[0].action, 'CHANGE_DATE');
   assert.equal(labels.rescheduleReads, 1);
+});
+
+test('Friday reschedule submits the following Monday', async () => {
+  const labels = await runReschedule('labels', {
+    now: '2026-08-28T12:00:00',
+  });
+  const submitted = new globalThis.URLSearchParams(labels.saveBody);
+
+  assert.equal(labels.result.changed, 1);
+  assert.equal(submitted.get('arranged-date'), '31/08/2026');
 });

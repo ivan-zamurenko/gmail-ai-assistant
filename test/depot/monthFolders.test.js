@@ -76,3 +76,36 @@ test('live folder planning creates the hierarchy and resumes unknown numbering',
     '2026-08-31_123456789.jpg',
   ]));
 });
+
+test('month folder state is reused for every photo in the same batch month', async () => {
+  const calls = [];
+  const folderFor = createMonthFolderResolver({
+    rootId: 'synthetic-root',
+    dryRun: false,
+    findFolder: async (name, parentId) => {
+      calls.push(['find', name, parentId]);
+      return name === '2026' ? 'year-id' : 'month-id';
+    },
+    createFolder: async () => {
+      throw new Error('Existing folders must not be recreated');
+    },
+    listNames: async (parentId) => {
+      calls.push(['list', parentId]);
+      return ['2026-08-30_unknown-004.jpg'];
+    },
+  });
+
+  const first = await folderFor('2026-08-30');
+  first.unknown += 1;
+  first.taken.add('2026-08-31_unknown-005.jpg');
+  const second = await folderFor('2026-08-31');
+
+  assert.equal(second, first);
+  assert.equal(second.unknown, 5);
+  assert.equal(second.taken.has('2026-08-31_unknown-005.jpg'), true);
+  assert.deepEqual(calls, [
+    ['find', '2026', 'synthetic-root'],
+    ['find', '08', 'year-id'],
+    ['list', 'month-id'],
+  ]);
+});

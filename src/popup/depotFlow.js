@@ -144,8 +144,8 @@ export function initDepotFlow({
   function depotVerifier() {
     const seen = new Map();
 
-    return async function verify(number) {
-      if (seen.has(number)) return seen.get(number);
+    async function verify(number) {
+      if (seen.has(number)) return Boolean(seen.get(number).consNumber);
 
       const tab = await getActiveDepotTab();
       let injection;
@@ -168,24 +168,44 @@ export function initDepotFlow({
 
       const found = Boolean(result.consNumber);
       if (!found && number !== DEPOT_PROBE) log.warn(`  ${number} — ${result.reason}`);
-      seen.set(number, found);
+      seen.set(number, result);
       return found;
-    };
+    }
+
+    function targetsFor(numbers) {
+      const targets = [];
+      let unresolved = 0;
+      for (const number of numbers) {
+        const result = seen.get(number);
+        if (!result?.consNumber || !result.consId) {
+          unresolved += 1;
+          continue;
+        }
+        targets.push({ consNumber: number, consId: result.consId, type: 'PopUp' });
+      }
+      return { targets, unresolved };
+    }
+
+    return { verify, targetsFor };
   }
 
-  // The labels find the parcels; this hands their consignment numbers to the
-  // same depot reschedule the CAD list runs. dryRun only logs what would move.
-  async function rescheduleFound(results, dryRun) {
+  // Label verification already resolved exact depot targets. Reschedule those
+  // directly; a driver-scanned parcel can be PENDING without being in Pending List.
+  async function rescheduleFound(results, dryRun, targetsFor) {
     const numbers = [...new Set(results.filter(r => r.number).map(r => r.number))];
     if (numbers.length === 0) return '';
 
-    log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${numbers.length} parcel(s) to tomorrow...`);
+    const { targets, unresolved } = targetsFor(numbers);
+    if (unresolved) log.warn(`${unresolved} verified parcel(s) had no exact depot target`);
+    if (targets.length === 0) return ' | Reschedule: no exact targets';
+
+    log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${targets.length} parcel(s) to tomorrow...`);
 
     const tab = await getActiveDepotTab();
     const [injection] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func:   depotMain,
-      args:   [{ dryRun, mode: 'labels', consNumbers: numbers }],
+      args:   [{ dryRun, mode: 'labels', targets }],
       world:  'MAIN',
     });
 
@@ -220,15 +240,15 @@ export function initDepotFlow({
       if (!config.driveFolderId) throw new Error('Drive Folder ID is missing from local configuration');
 
       // Fail before touching Drive rather than halfway through the folder.
-      const verify = depotVerifier();
+      const depot = depotVerifier();
       log.info('Checking depot connection...');
-      await verify(DEPOT_PROBE);
+      await depot.verify(DEPOT_PROBE);
       log.ok('Depot is responding');
 
       const run = (token) => processLabels({
         folderInput: config.driveFolderId,
         token,
-        verify,
+        verify: depot.verify,
         dryRun,
         onProgress:  onScanProgress,
       });
@@ -255,7 +275,7 @@ export function initDepotFlow({
       const read   = results.filter(r => r.number).length;
       log.info(`${dryRun ? 'Would file' : 'Filed'} ${results.length - failed} of ${results.length} — read ${read}`);
 
-      const reschedule = await rescheduleFound(results, dryRun);
+      const reschedule = await rescheduleFound(results, dryRun, depot.targetsFor);
 
       setDepotStatus('done',
         `${dryRun ? 'Dry run' : 'Filed'} ${results.length - failed}/${results.length} — read ${read}`

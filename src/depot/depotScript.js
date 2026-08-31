@@ -6,12 +6,12 @@
  *
  * Modes:
  *   'cad'    — reads the pending list, processes only CAD-scanned parcels
- *   'labels' — receives consignment numbers from Drive label photos, looks them up
+ *   'labels' — receives exact targets resolved from Drive label photos
  *
- * @param {{ dryRun?: boolean, mode?: 'cad'|'labels', consNumbers?: string[] }} options
+ * @param {{ dryRun?: boolean, mode?: 'cad'|'labels', targets?: Array<{consNumber, consId, type}> }} options
  * @returns {{ dryRun?, count?, changed?, skipped?, errors?, results?, warning?, __error? }}
  */
-export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] } = {}) {
+export async function depotMain({ dryRun = true, mode = 'cad', targets = [] } = {}) {
 
   // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -320,22 +320,26 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'} | ${new Date().toLocaleTimeString()}`);
 
     const { todayShort, tomorrowInput } = getDates();
-    const allRows = await fetchPendingList();
-    const consSet = new Set(consNumbers);
-
+    const allRows = mode === 'cad' ? await fetchPendingList() : [];
+    const exactTargets = Array.isArray(targets) ? targets : [];
     const packages = mode === 'cad'
       ? allRows.filter(r => r.route === 'cad')
-      : allRows.filter(r => consSet.has(r.consNumber) || consSet.has(r.consId));
+      : Array.from(new Map(exactTargets.flatMap((target) => {
+        const consNumber = String(target?.consNumber ?? '').trim();
+        const consId = String(target?.consId ?? '').trim();
+        if (!/^\d{9}$/.test(consNumber) || !/^\d+$/.test(consId)) return [];
+        return [[consId, { consNumber, consId, type: 'PopUp' }]];
+      })).values());
 
     if (packages.length === 0) {
       let warning;
-      if (allRows.length === 0) {
+      if (mode === 'labels') {
+        warning = 'No exact verified label targets were supplied.';
+      } else if (allRows.length === 0) {
         warning = 'Pending list came back empty — the list page did not load or its layout changed.';
       } else if (mode === 'cad') {
         const routes = [...new Set(allRows.map(r => r.route))].filter(Boolean);
         warning = `No CAD parcels among ${allRows.length} pending. Routes seen: ${routes.join(', ') || '(all blank)'}`;
-      } else {
-        warning = `None of the scanned numbers found in the pending list: ${consNumbers.join(', ')}`;
       }
       console.warn(`⚠️ ${warning}`);
       return { changed: 0, skipped: 0, errors: 0, warning };

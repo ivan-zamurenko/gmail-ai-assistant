@@ -54,6 +54,21 @@ export async function depotLookup(numbers) {
     return Array.from(hits.values());
   }
 
+  /** Detail responses expose ConsId differently across depot page variants. */
+  function consIdFromDetail(doc) {
+    const hidden = doc.getElementById('hiddenConsIdValue')?.value
+      || doc.querySelector('input[name="ConsId" i]')?.value;
+    if (hidden) return hidden;
+
+    for (const el of doc.querySelectorAll('[href*="ConsId="], [action*="ConsId="]')) {
+      const raw = el.getAttribute('href') || el.getAttribute('action') || '';
+      const query = raw.split('?')[1];
+      const consId = query ? new URLSearchParams(query).get('ConsId') : '';
+      if (consId) return consId;
+    }
+    return '';
+  }
+
   function fetchConsignment(consId) {
     const { session, uid } = sessionParams();
     return fetchDoc(`${CONS_URL}?session=${encodeURIComponent(session)}&Mode=CS` +
@@ -155,14 +170,17 @@ export async function depotLookup(numbers) {
     const searched = await quickSearch(query);
     const t1 = Date.now();
     let detail = searched;
+    let consId = consIdFromDetail(searched);
 
     if (!searched.getElementById('hiddenConsBarcodeValue')) {
       const hits = parseHitList(searched);
       // Quick search matches substrings, so two hits mean we cannot tell which
       // parcel the customer meant — that is a case for a human, not a template.
       if (hits.length !== 1) return { query, ok: false, reason: `${hits.length} matches` };
+      consId = hits[0].consId;
       detail = await fetchConsignment(hits[0].consId);
     }
+    if (!consId) consId = consIdFromDetail(detail);
     const t2 = Date.now();
 
     const consNumber = detail.getElementById('hiddenConsBarcodeValue')?.value ?? '';
@@ -174,7 +192,7 @@ export async function depotLookup(numbers) {
     const t3 = Date.now();
     // The parcel exists even with no scans, so callers that only need identity
     // (label renaming) still get the number back.
-    if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber };
+    if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber, consId };
 
     // Only field scans (delivery, carding, failed attempt) carry GPS; the most
     // recent of those is where the parcel physically ended up.
@@ -185,6 +203,7 @@ export async function depotLookup(numbers) {
       query,
       ok:           true,
       consNumber,
+      consId,
       status:       text(detail.querySelectorAll('h1 b')[1]),
       arrangedDate: pick(confirm, 'Arranged Delivery Date'),
       lastScan:     latest(scans),

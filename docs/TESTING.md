@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **24 автоматизовані тести у 9 файлах**. Усі вони працюють
+Поточна базова лінія: **25 автоматизованих тестів у 10 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -57,6 +57,7 @@ test/
 │   └── render.test.js       Discord parcel-card presentation
 ├── depot/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
+│   ├── depotScript.test.js   Direct label reschedule target boundary
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
 │   ├── labelName.test.js     Drive label filename rules
@@ -267,6 +268,17 @@ test/
 - Захищає від двох крайнощів: один поганий файл не валить batch, але недоступний
   depot не перетворює всі наступні фото на помилкові `unknown-*`.
 - Помилки, barcode та provider ports повністю синтетичні.
+
+### `test/depot/depotScript.test.js`
+
+**Label dry-run uses exact verified targets without reading Pending List**
+
+- Передає direct target із synthetic consignment та внутрішнім `consId` у
+  `depotMain(mode: labels)` і очікує dry-run package без DOM.
+- Node test не має `document` або depot page: будь-яка спроба відкрити Pending
+  List завершила б тест помилкою.
+- Дублікат того самого `consId` обробляється один раз.
+- Не виконує live reschedule POST; це окремий manual E2E крок.
 
 ### `test/queue/executor.test.js`
 

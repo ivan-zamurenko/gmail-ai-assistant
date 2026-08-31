@@ -212,3 +212,8 @@ into this log.
   configuration and rebuilt the extension locally. The folder identifier was
   not copied into tracked source, documentation, tests, logs, or the Git index;
   the stale popup error now points to local configuration instead of Settings.
+- Replaced the label reschedule dependency on Pending List with exact targets
+  already resolved by the authenticated depot lookup. The lookup now retains
+  internal ConsId locally, label mode validates and deduplicates targets, and
+  its dry-run no longer reads Pending List. Added a fully synthetic no-DOM test;
+  no real consignment, ConsId, session value, or customer data was committed.

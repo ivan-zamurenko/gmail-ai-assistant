@@ -233,3 +233,6 @@ into this log.
 - Added a synthetic-clock regression proving the outbound arranged date skips
   an Irish bank holiday. The Save request is intercepted locally and contains
   no live depot value, real identifier, session data, or customer information.
+- Added a synthetic HTTP-failure regression proving a rejected reschedule Save
+  is counted as an error and never as changed. The write is intercepted locally;
+  no live depot endpoint, identifier, session value, or customer data is used.

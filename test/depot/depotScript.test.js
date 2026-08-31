@@ -7,7 +7,12 @@ function fakeText(textContent = '') {
   return { textContent };
 }
 
-async function runReschedule(mode, { status = 'PENDING', notes = '', now = null } = {}) {
+async function runReschedule(mode, {
+  status = 'PENDING',
+  notes = '',
+  now = null,
+  saveStatus = 200,
+} = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
     original.set(key, {
@@ -20,6 +25,7 @@ async function runReschedule(mode, { status = 'PENDING', notes = '', now = null 
   );
   let pendingReads = 0;
   let rescheduleReads = 0;
+  let saveWrites = 0;
   let saveBody = '';
 
   const link = {
@@ -91,8 +97,11 @@ async function runReschedule(mode, { status = 'PENDING', notes = '', now = null 
   }
   globalThis.fetch = async (url, options = {}) => {
     let body;
+    let responseStatus = 200;
     if (options.method === 'POST' && String(url).endsWith('/save')) {
+      saveWrites += 1;
       saveBody = options.body;
+      responseStatus = saveStatus;
       body = 'saved';
     }
     else if (String(url).includes('woConsignmentList.p')) {
@@ -105,7 +114,11 @@ async function runReschedule(mode, { status = 'PENDING', notes = '', now = null 
       body = 'form';
     }
     else throw new Error(`Unexpected synthetic request: ${url}`);
-    return { ok: true, status: 200, text: async () => body };
+    return {
+      ok: responseStatus >= 200 && responseStatus < 300,
+      status: responseStatus,
+      text: async () => body,
+    };
   };
   for (const key of consoleMethods.keys()) globalThis.console[key] = () => {};
 
@@ -117,7 +130,7 @@ async function runReschedule(mode, { status = 'PENDING', notes = '', now = null 
         ? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }]
         : [],
     });
-    return { result, pendingReads, rescheduleReads, saveBody };
+    return { result, pendingReads, rescheduleReads, saveWrites, saveBody };
   } finally {
     for (const [key, state] of original) {
       if (state.exists) globalThis[key] = state.value;
@@ -233,4 +246,13 @@ test('reschedule skips an Irish bank holiday', async () => {
 
   assert.equal(labels.result.changed, 1);
   assert.equal(submitted.get('arranged-date'), '18/03/2026');
+});
+
+test('failed reschedule POST is reported as an error, never changed', async () => {
+  const labels = await runReschedule('labels', { saveStatus: 500 });
+
+  assert.equal(labels.saveWrites, 1);
+  assert.equal(labels.result.changed, 0);
+  assert.equal(labels.result.errors, 1);
+  assert.equal(labels.result.results[0].action, 'ERROR');
 });

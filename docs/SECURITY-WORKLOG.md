@@ -158,3 +158,9 @@ into this log.
   unobserved. One aggregate parcel-zero result was flagged for separate review.
   No filenames, payloads, tracking numbers, or customer fields were logged, and
   the temporary localhost audit environment was removed again.
+- Repeated the local audit with original filenames visible only in the owner's
+  private local report, as explicitly requested, to locate the parcel-zero
+  result. The diagnosis confirmed a two-digit parcel whose Code128 suffix was
+  zero and whose PDF417 routing carried the complete parcel number. Fixed the
+  PII-free selection rule and regression test without committing the filename,
+  barcode payload, consignment, or customer data.

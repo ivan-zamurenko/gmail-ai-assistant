@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseBarcode } from '../../src/depot/labelBarcode.js';
+import { parseBarcode, pickConsignment } from '../../src/depot/labelBarcode.js';
 
 test('Code128 keeps the parcel digit separate from the consignment number', () => {
   // Layout: % + 7-character destination + 4-digit route +
@@ -15,7 +15,7 @@ test('Code128 keeps the parcel digit separate from the consignment number', () =
 });
 
 test('Code128 requires the confirmed 28-character DPD layout', () => {
-  // All 53 Code128 records in the private label audit were exactly 28
+  // All 64 DPD Code128 records in the private label audit were exactly 28
   // characters. Reject truncated or extended payloads instead of parsing a prefix.
   const barcode = '%000000000001234567892000000';
 
@@ -57,4 +57,29 @@ test('PDF417 rejects contradictory consignment numbers', () => {
   const barcode = '%00001234567891;0000A0;AAAAAAAAAAA;000000;987654321;00/00/00';
 
   assert.equal(parseBarcode(barcode), null);
+});
+
+test('PDF417 restores the full parcel number when Code128 wraps parcel 10 to 0', () => {
+  // Code128 carries one parcel digit, while PDF417 routing can carry two.
+  // Both synthetic candidates identify the same consignment and physical parcel.
+  const picked = pickConsignment([
+    {
+      text: '%000000000001234567890000000',
+      format: 'CODE_128',
+      reads: 5,
+    },
+    {
+      text: '%000012345678910;0000A0;AAAAAAAAAAA;000000;123456789;00/00/00',
+      format: 'PDF_417',
+      reads: 10,
+    },
+  ]);
+
+  assert.deepEqual(picked, {
+    number: '123456789',
+    parcel: 10,
+    format: 'PDF_417',
+    reads: 15,
+    contested: false,
+  });
 });

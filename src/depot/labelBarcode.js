@@ -3,7 +3,7 @@
  * =========================
  * Turns decoded DPD barcodes into a consignment number.
  *
- * Both formats were verified against 76 real label photos.
+ * Both formats were verified against owner-provided real label photos.
  *
  *   PDF417 — the big block, a semicolon record (anonymized):
  *     %00001234567891;0000A0;AAAAAAAAAAA;000000;123456789;…
@@ -61,7 +61,13 @@ export function pickConsignment(codes) {
 
     const entry = byNumber.get(parsed.number) || { ...parsed, format: code.format, reads: 0 };
     entry.reads += code.reads;
-    if (code.format === 'PDF_417') entry.format = 'PDF_417';
+    if (code.format === 'PDF_417') {
+      // Code128 has only one parcel digit, so parcel 10 is encoded there as 0.
+      // PDF417 carries the complete routing parcel and is authoritative when
+      // both barcodes identify the same consignment.
+      entry.format = 'PDF_417';
+      entry.parcel = parsed.parcel;
+    }
     byNumber.set(parsed.number, entry);
   }
 

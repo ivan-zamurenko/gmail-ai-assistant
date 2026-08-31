@@ -188,3 +188,7 @@ into this log.
   new exact-parcel boundary. All 69 were parsed and safely accepted, with zero
   rejected results. Original filenames remained available only in the temporary
   local report; the audit environment was removed and no label data was committed.
+- Found that Drive label dry-run skipped photo moves but could still create
+  missing YYYY/MM folders. Extracted folder planning behind explicit adapter
+  callbacks and made missing folders virtual during dry-run, so no create/write
+  callback can run. Added a synthetic regression test with no token or Drive data.

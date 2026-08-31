@@ -15,13 +15,13 @@
 import { loadImage, readBarcodes } from './barcode.js';
 import { acceptExactConsignment, pickConsignment } from './labelBarcode.js';
 import { buildLabelName, dateOf, makeUnique } from './labelName.js';
+import { createMonthFolderResolver } from './monthFolders.js';
 
 const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
 // A file we named before. Matches 2026-08-07_132999608-p08-2.jpg and friends.
 const ALREADY_NAMED = /^\d{4}-\d{2}-\d{2}_(\d{9}(-p\d{2})?|unknown-\d+)(-\d+)?\.[a-z0-9]+$/i;
-const UNKNOWN_INDEX = /_unknown-(\d+)/;
 
 // ── Drive ─────────────────────────────────────────────────────────────────────
 
@@ -68,14 +68,16 @@ async function downloadAsDataUrl(fileId, token) {
   });
 }
 
-async function getOrCreateFolder(name, parentId, token) {
+async function findFolder(name, parentId, token) {
   const found = await listFiles(
     `name='${name}' and '${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
     'id',
     token
   );
-  if (found.length) return found[0].id;
+  return found[0]?.id ?? null;
+}
 
+async function createFolder(name, parentId, token) {
   const res = await fetch(`${DRIVE_API}/files?fields=id`, {
     method:  'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -96,37 +98,6 @@ async function moveAndRename(fileId, fromId, toId, name, token) {
     }
   );
   if (!res.ok) throw new Error(`Failed to file ${fileId}: HTTP ${res.status}`);
-}
-
-/**
- * Resolves root/YYYY/MM, creating what is missing. Reads the names already in
- * the month so a rerun continues the unknown numbering instead of restarting
- * it, and so two photos of one parcel never collide.
- */
-function monthFolders(rootId, token) {
-  const cache = new Map();
-
-  return async function forDate(date) {
-    const year  = date.slice(0, 4);
-    const month = date.slice(5, 7);
-    const key   = `${year}/${month}`;
-    if (cache.has(key)) return cache.get(key);
-
-    const yearId   = await getOrCreateFolder(year, rootId, token);
-    const monthId  = await getOrCreateFolder(month, yearId, token);
-    const names    = (await listFiles(`'${monthId}' in parents and trashed=false`, 'name', token))
-      .map((file) => file.name);
-    const unknowns = names.map((name) => name.match(UNKNOWN_INDEX)?.[1]).filter(Boolean).map(Number);
-
-    const entry = {
-      id:      monthId,
-      path:    key,
-      taken:   new Set(names),
-      unknown: unknowns.length ? Math.max(...unknowns) : 0,
-    };
-    cache.set(key, entry);
-    return entry;
-  };
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────
@@ -156,7 +127,15 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
     'id,name,createdTime',
     token
   );
-  const folderOf = monthFolders(rootId, token);
+  const folderOf = createMonthFolderResolver({
+    rootId,
+    dryRun,
+    findFolder: (name, parentId) => findFolder(name, parentId, token),
+    createFolder: (name, parentId) => createFolder(name, parentId, token),
+    listNames: async (parentId) => (
+      await listFiles(`'${parentId}' in parents and trashed=false`, 'name', token)
+    ).map((file) => file.name),
+  });
   const results  = [];
 
   for (let i = 0; i < photos.length; i++) {

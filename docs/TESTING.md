@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **17 автоматизованих тестів у 7 файлах**. Усі вони працюють
+Поточна базова лінія: **18 автоматизованих тестів у 8 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -58,7 +58,8 @@ test/
 ├── depot/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
-│   └── labelName.test.js     Drive label filename rules
+│   ├── labelName.test.js     Drive label filename rules
+│   └── monthFolders.test.js  Drive folder planning and dry-run safety
 ├── queue/
 │   └── executor.test.js     Queue validation and command boundary
 └── utils/
@@ -201,6 +202,16 @@ test/
 - Очікує наступну вільну назву `-3`, щоб Drive move/rename не створив колізію.
 - Також перевіряє, що справді вільна назва залишається без зайвого суфікса.
 - Використовує лише `Set` синтетичних назв і не звертається до Drive API.
+
+### `test/depot/monthFolders.test.js`
+
+**Dry-run folder planning never creates missing Drive folders**
+
+- Імітує відсутню річну папку та записує виклики fake Drive adapter functions.
+- Очікує лише read-only `find`; `createFolder` і `listNames` не викликаються.
+- Повертає віртуальний шлях `YYYY/MM`, щоб preview усе одно показував майбутню
+  назву без будь-якого запису в Drive.
+- Не перевіряє OAuth або HTTP; тест захищає доменну оркестрацію dry-run.
 
 ### `test/queue/executor.test.js`
 

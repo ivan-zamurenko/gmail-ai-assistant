@@ -230,3 +230,6 @@ into this log.
 - Added a synthetic-clock regression proving a Friday reschedule submits the
   following Monday in the outbound arranged-date field. The request is fully
   intercepted locally; no live depot, session value, identifier, or PII is used.
+- Added a synthetic-clock regression proving the outbound arranged date skips
+  an Irish bank holiday. The Save request is intercepted locally and contains
+  no live depot value, real identifier, session data, or customer information.

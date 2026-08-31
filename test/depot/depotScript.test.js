@@ -224,3 +224,13 @@ test('Friday reschedule submits the following Monday', async () => {
   assert.equal(labels.result.changed, 1);
   assert.equal(submitted.get('arranged-date'), '31/08/2026');
 });
+
+test('reschedule skips an Irish bank holiday', async () => {
+  const labels = await runReschedule('labels', {
+    now: '2026-03-16T12:00:00',
+  });
+  const submitted = new globalThis.URLSearchParams(labels.saveBody);
+
+  assert.equal(labels.result.changed, 1);
+  assert.equal(submitted.get('arranged-date'), '18/03/2026');
+});

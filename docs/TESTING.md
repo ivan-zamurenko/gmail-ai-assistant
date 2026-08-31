@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **15 автоматизованих тестів у 6 файлах**. Усі вони працюють
+Поточна базова лінія: **16 автоматизованих тестів у 7 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -57,7 +57,8 @@ test/
 │   └── render.test.js       Discord parcel-card presentation
 ├── depot/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
-│   └── labelBarcode.test.js  DPD barcode domain parsing
+│   ├── labelBarcode.test.js  DPD barcode domain parsing
+│   └── labelName.test.js     Drive label filename rules
 ├── queue/
 │   └── executor.test.js     Queue validation and command boundary
 └── utils/
@@ -183,6 +184,16 @@ test/
 - У production такий файл отримує `unknown-*`, а contested marker зберігається
   для оператора; сильніший за кількістю reads candidate не обирається мовчки.
 - Не тестує Drive API move/rename; тест захищає чисте доменне рішення перед ним.
+
+### `test/depot/labelName.test.js`
+
+**Label filenames preserve the exact physical parcel number**
+
+- Перевіряє узгоджений filename contract для parcel `1`, `2` і `10`.
+- Parcel `1` не має зайвого суфікса, `2` стає `-p02`, а двозначний `10` не
+  обрізається до `0` і стає `-p10`.
+- Використовує синтетичний consignment та перевіряє нормалізацію `.JPG` → `.jpg`.
+- Не звертається до Drive і не перейменовує реальний файл.
 
 ### `test/queue/executor.test.js`
 

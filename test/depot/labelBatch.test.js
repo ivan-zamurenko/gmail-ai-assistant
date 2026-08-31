@@ -135,3 +135,80 @@ test('verified live label is moved once with its exact parcel filename', async (
   }]);
   assert.equal(folder.taken.has('2026-08-31_123456789-p10.jpg'), true);
 });
+
+test('batch contains photo failures but stops immediately on a fatal depot failure', async () => {
+  const photos = [
+    {
+      id: 'bad-photo',
+      name: 'BAD-PHOTO.JPG',
+      createdTime: '2026-08-31T12:00:00.000Z',
+    },
+    {
+      id: 'good-photo',
+      name: 'GOOD-PHOTO.JPG',
+      createdTime: '2026-08-31T12:01:00.000Z',
+    },
+  ];
+  const folder = {
+    id: null,
+    path: '2026/08',
+    taken: new Set(),
+    unknown: 0,
+  };
+  const code = {
+    text: '%000000000001234567892000000',
+    format: 'CODE_128',
+    reads: 3,
+  };
+
+  const continued = await processLabelBatch({
+    photos,
+    dryRun: true,
+    verify: async () => true,
+    loadPhoto: async (photo) => {
+      if (photo.id === 'bad-photo') throw new Error('Synthetic unreadable image');
+      return { synthetic: true };
+    },
+    readCodes: () => [code],
+    folderFor: async () => folder,
+    movePhoto: async () => {
+      throw new Error('Dry-run must not move photos');
+    },
+  });
+
+  assert.deepEqual(continued, [
+    {
+      from: 'BAD-PHOTO.JPG',
+      to: null,
+      number: null,
+      contested: false,
+      error: 'Synthetic unreadable image',
+    },
+    {
+      from: 'GOOD-PHOTO.JPG',
+      to: '2026/08/2026-08-31_123456789-p02.jpg',
+      number: '123456789',
+      contested: false,
+      error: null,
+    },
+  ]);
+
+  const fatal = Object.assign(new Error('Synthetic depot unavailable'), { fatal: true });
+  let loaded = 0;
+  await assert.rejects(
+    processLabelBatch({
+      photos,
+      dryRun: true,
+      verify: async () => { throw fatal; },
+      loadPhoto: async () => {
+        loaded += 1;
+        return { synthetic: true };
+      },
+      readCodes: () => [code],
+      folderFor: async () => folder,
+      movePhoto: async () => {},
+    }),
+    (error) => error === fatal,
+  );
+  assert.equal(loaded, 1);
+});

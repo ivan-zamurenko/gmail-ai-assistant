@@ -204,3 +204,7 @@ into this log.
   Code128/PDF417 candidates for a two-digit parcel now prove that the batch calls
   its move port exactly once with the verified consignment and exact parcel
   filename, while using no real Drive, depot session, or customer data.
+- Added the final label-batch failure-boundary regression. A normal per-photo
+  failure is contained and the next photo continues, while a synthetic fatal
+  depot failure is rethrown before the second photo loads. This prevents a depot
+  outage from silently filing the remaining batch as unknown.

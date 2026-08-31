@@ -83,3 +83,31 @@ test('PDF417 restores the full parcel number when Code128 wraps parcel 10 to 0',
     contested: false,
   });
 });
+
+test('PDF417 fallback cannot overwrite an exact Code128 parcel', () => {
+  // This PDF417 has a valid canonical consignment but no recognized routing,
+  // so parseBarcode falls back to parcel 1. Code128 remains the exact source.
+  const code128 = {
+    text: '%000000000001234567892000000',
+    format: 'CODE_128',
+    reads: 3,
+  };
+  const pdf417WithoutRouting = {
+    text: 'UNROUTED;0000A0;AAAAAAAAAAA;000000;123456789;00/00/00',
+    format: 'PDF_417',
+    reads: 2,
+  };
+
+  for (const candidates of [
+    [code128, pdf417WithoutRouting],
+    [pdf417WithoutRouting, code128],
+  ]) {
+    assert.deepEqual(pickConsignment(candidates), {
+      number: '123456789',
+      parcel: 2,
+      format: 'PDF_417',
+      reads: 5,
+      contested: false,
+    });
+  }
+});

@@ -168,3 +168,9 @@ into this log.
   of the 69-image private set returned only PDF417 and Code128. Added a PII-free
   supported-format contract test and corrected documentation that had inferred
   DataMatrix from a label's appearance without decoded evidence.
+- Audited PDF417 candidates without recognized routing using original filenames
+  only in the owner's temporary local report. Two parseable candidates came
+  from one image and its matching Code128 independently confirmed parcel one;
+  five earlier aggregate candidates were parser-rejected rather than fallbacks.
+  Updated selection so an assumed PDF417 parcel one cannot overwrite an exact
+  Code128 parcel, without committing any filename, barcode, or customer data.

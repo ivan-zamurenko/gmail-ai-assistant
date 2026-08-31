@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **12 автоматизованих тестів у 6 файлах**. Усі вони працюють
+Поточна базова лінія: **13 автоматизованих тестів у 6 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -158,6 +158,16 @@ test/
 - Захищає Scanning History і depot lookup від показу `parcel 0` замість `10`.
 - Обидва barcode payloads синтетичні; ім'я та дані реального файла не збережені.
 
+**PDF417 fallback cannot overwrite an exact Code128 parcel**
+
+- Відтворює PDF417 із валідним consignment, але без розпізнаного routing, поруч
+  із Code128 для parcel `2` того самого consignment.
+- Перевіряє обидва порядки candidates, щоб результат не залежав від першого
+  успішно декодованого crop/rotation.
+- PDF417 залишається preferred format, але його припущення `parcel 1` не
+  перекриває точний Code128 parcel `2`.
+- Не скасовує fallback `1`, коли жодного точного parcel-джерела взагалі немає.
+
 ### `test/queue/executor.test.js`
 
 **Invalid or unversioned tasks cannot reach a depot command**
@@ -206,8 +216,11 @@ Read-only batch перевірив **69 локальних фото** тим с�
 - один сторонній 12-символьний Code128 candidate відхилено exact-length parser;
 - серед PDF417 candidates: 61 parsed і 16 rejected;
 - 11 routing contradictions fail-closed повернули `null`;
-- 7 PDF417 не мали розпізнаного routing, тому fallback `parcel: 1` не видаляємо
-  без звірки з альтернативним barcode на тих самих фото;
+- 2 parseable PDF417 candidates без routing походили з одного фото; matching
+  Code128 на ньому підтвердив parcel `1`. Ще 5 раніше порахованих candidates
+  були відхилені parser і не є fallback-випадками;
+- PDF417 fallback `1` не має права перекривати точний Code128 parcel; якщо
+  точного parcel-джерела немає зовсім, старий fallback поки залишається;
 - локальна діагностика встановила, що `parcel: 0` був parcel `10`: одноцифровий
   Code128 candidate з'явився раніше, а preferred PDF417 не оновлював parcel;
 - regression test тепер вимагає, щоб повний PDF417 parcel `10` замінював

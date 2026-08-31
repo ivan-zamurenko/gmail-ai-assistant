@@ -208,3 +208,7 @@ into this log.
   failure is contained and the next photo continues, while a synthetic fatal
   depot failure is rethrown before the second photo loads. This prevents a depot
   outage from silently filing the remaining batch as unknown.
+- Added the owner-provided Drive folder link only to the gitignored local
+  configuration and rebuilt the extension locally. The folder identifier was
+  not copied into tracked source, documentation, tests, logs, or the Git index;
+  the stale popup error now points to local configuration instead of Settings.

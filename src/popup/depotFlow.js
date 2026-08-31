@@ -217,7 +217,7 @@ export function initDepotFlow({
 
     try {
       const config = await loadConfig();
-      if (!config.driveFolderId) throw new Error('Drive Folder ID not set in Settings');
+      if (!config.driveFolderId) throw new Error('Drive Folder ID is missing from local configuration');
 
       // Fail before touching Drive rather than halfway through the folder.
       const verify = depotVerifier();

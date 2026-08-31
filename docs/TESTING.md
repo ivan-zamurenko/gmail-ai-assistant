@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **9 автоматизованих тестів у 5 файлах**. Усі вони працюють
+Поточна базова лінія: **10 автоматизованих тестів у 6 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -56,7 +56,8 @@ test/
 │   ├── commands.test.js     Discord command contract
 │   └── render.test.js       Discord parcel-card presentation
 ├── depot/
-│   └── labelBarcode.test.js DPD barcode domain parsing
+│   ├── barcodeReader.test.js ZXing reader-state adapter
+│   └── labelBarcode.test.js  DPD barcode domain parsing
 ├── queue/
 │   └── executor.test.js     Queue validation and command boundary
 └── utils/
@@ -88,6 +89,17 @@ test/
 - Використовує повністю синтетичну людину, адресу й consignment.
 - Не перевіряє реальну Discord-відповідь, ephemeral visibility або route-map API.
 
+### `test/depot/barcodeReader.test.js`
+
+**Barcode windows preserve the configured ZXing reader state**
+
+- Перевіряє, що кожен crop/rotation проходить через `decodeWithState()` після
+  одноразового `setHints()`, а `reset()` викликається після спроби.
+- Захищає дозволений список PDF417/Code128/DataMatrix від скидання до всіх ZXing
+  formats і прибирає сторонні ITF, Code39 та Micro QR candidates.
+- Використовує мінімальний fake reader; DOM, canvas і приватні фото не потрібні.
+- Не доводить реальну image accuracy — це перевіряє private label audit.
+
 ### `test/depot/labelBarcode.test.js`
 
 **Code128 keeps the parcel digit separate from the consignment number**
@@ -101,7 +113,7 @@ test/
 
 - Перевіряє рядки на один символ коротші й довші за підтверджені 28 символів.
 - Очікує `null`, щоб parser не приймав лише валідний префікс довшого payload.
-- Межа підтверджена всіма 53 Code128 records у приватному label-аудиті.
+- Межа підтверджена 64 DPD Code128 records у повторному приватному label-аудиті.
 - Не перевіряє checksum: його перевіряє ZXing до виклику `parseBarcode()`.
 
 **PDF417 reads a confirmed anonymized DPD record**
@@ -152,7 +164,7 @@ test/
 - Всі значення синтетичні; справжні URL, токени й ключі в тестах заборонені.
 - Не перевіряє кожну можливу форму секрету або сторонні library stack traces.
 
-## Private label audit — 2026-08-29
+## Private label audits — 2026-08-29 / 2026-08-31
 
 Read-only batch перевірив **69 локальних фото** тим самим browser ZXing-шляхом,
 який використовує extension. 68 доданих приватних фото ігноруються Git; один
@@ -160,16 +172,29 @@ Read-only batch перевірив **69 локальних фото** тим с�
 відомим privacy-debt. Назви файлів у batch-звіті, barcode payloads, tracking
 numbers і customer PII не виводилися та не додавалися до Git.
 
-- 69 фото оброблено без processing errors;
-- 66 дали parseable consignment, 3 залишилися unreadable;
-- знайдено 58 унікальних consignments; contested image — 0;
-- усі 53 Code128 records мали рівно 28 символів і успішно парсилися;
-- серед PDF417 decode-кандидатів: 58 parsed і 15 rejected;
-- виявлено 10 routing contradictions, які тепер fail-closed повертають `null`;
-- виявлено 7 PDF417 без розпізнаного routing, тому fallback `parcel: 1` не
-  видаляємо без окремої звірки з альтернативним barcode на тих самих фото;
-- audit виявив, що ZXing adapter фактично скидає `POSSIBLE_FORMATS` hints через
-  виклик `decode()` замість `decodeWithState()`; це окрема наступна задача.
+| Метрика | До виправлення `decode()` | Після `decodeWithState()` |
+|---|---:|---:|
+| Оброблено фото | 69 | 69 |
+| Parseable consignment | 66 | 69 |
+| Unreadable | 3 | 0 |
+| Унікальні consignments | 58 | 61 |
+| Processing errors | 0 | 0 |
+| Contested images | 0 | 0 |
+| Сторонні decoded formats | Micro QR, ITF, Code39 | немає |
+| DataMatrix | 0 | 0 |
+
+Підтверджена база після виправлення:
+
+- decoder повернув лише PDF417 і Code128;
+- 64 повні DPD Code128 records мали рівно 28 символів і успішно парсилися;
+- один сторонній 12-символьний Code128 candidate відхилено exact-length parser;
+- серед PDF417 candidates: 61 parsed і 16 rejected;
+- 11 routing contradictions fail-closed повернули `null`;
+- 7 PDF417 не мали розпізнаного routing, тому fallback `parcel: 1` не видаляємо
+  без звірки з альтернативним barcode на тих самих фото;
+- один фінальний pick повернув `parcel: 0`; це підозрілий окремий сценарій для
+  наступного безпечного розслідування;
+- DataMatrix не підтвердився жодним із 69 фото.
 
 Аудит підтверджує структури для regression-тестів, але не замінює E2E перевірку
 Drive/depot workflow на корпоративному ПК.

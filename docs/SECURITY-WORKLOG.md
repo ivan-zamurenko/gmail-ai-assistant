@@ -148,3 +148,13 @@ into this log.
   format/parser statistics only; filenames, barcode payloads, tracking numbers,
   and customer PII were not logged or newly committed. Temporary audit code,
   browser profile, and localhost server were removed after completion.
+- Replaced the ZXing adapter's state-clearing `decode()` call with
+  `decodeWithState()` so the configured PDF417/Code128/DataMatrix allowlist is
+  preserved across image windows. Added a PII-free regression test using a fake
+  reader; no private label data was added to the automated test suite.
+- Repeated the same read-only 69-image audit after the reader-state fix. All 69
+  images produced a parseable consignment with no processing error or contested
+  result; only PDF417 and Code128 were returned, while DataMatrix remained
+  unobserved. One aggregate parcel-zero result was flagged for separate review.
+  No filenames, payloads, tracking numbers, or customer fields were logged, and
+  the temporary localhost audit environment was removed again.

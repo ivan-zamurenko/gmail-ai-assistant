@@ -16,6 +16,7 @@ import {
   HybridBinarizer,
   MultiFormatReader,
 } from '@zxing/library';
+import { decodeWithConfiguredReader } from './barcodeReader.js';
 
 // PDF417 is the big block on Irish labels and carries the whole consignment
 // record; Code128 is the routing strip and carries the number alone.
@@ -74,13 +75,7 @@ function drawWindow(img, inset, degrees) {
 
 function decodeCanvas(canvas, reader) {
   const bitmap = new BinaryBitmap(new HybridBinarizer(new HTMLCanvasElementLuminanceSource(canvas)));
-  try {
-    return reader.decode(bitmap);
-  } catch {
-    return null;
-  } finally {
-    reader.reset();
-  }
+  return decodeWithConfiguredReader(bitmap, reader);
 }
 
 export function loadImage(src) {

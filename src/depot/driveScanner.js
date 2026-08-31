@@ -13,15 +13,11 @@
  */
 
 import { loadImage, readBarcodes } from './barcode.js';
-import { acceptExactConsignment, pickConsignment } from './labelBarcode.js';
-import { buildLabelName, dateOf, makeUnique } from './labelName.js';
+import { processLabelBatch } from './labelBatch.js';
 import { createMonthFolderResolver } from './monthFolders.js';
 
 const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
-
-// A file we named before. Matches 2026-08-07_132999608-p08-2.jpg and friends.
-const ALREADY_NAMED = /^\d{4}-\d{2}-\d{2}_(\d{9}(-p\d{2})?|unknown-\d+)(-\d+)?\.[a-z0-9]+$/i;
 
 // ── Drive ─────────────────────────────────────────────────────────────────────
 
@@ -127,7 +123,7 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
     'id,name,createdTime',
     token
   );
-  const folderOf = createMonthFolderResolver({
+  const folderFor = createMonthFolderResolver({
     rootId,
     dryRun,
     findFolder: (name, parentId) => findFolder(name, parentId, token),
@@ -136,60 +132,17 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
       await listFiles(`'${parentId}' in parents and trashed=false`, 'name', token)
     ).map((file) => file.name),
   });
-  const results  = [];
 
-  for (let i = 0; i < photos.length; i++) {
-    const photo = photos[i];
-    const step  = (state, entry) => onProgress?.(i + 1, photos.length, state, entry);
-    const done  = (entry) => { results.push(entry); step('done', entry); };
-
-    try {
-      step('downloading');
-      const image = await loadImage(await downloadAsDataUrl(photo.id, token));
-
-      step('reading');
-      const candidate = pickConsignment(readBarcodes(image));
-      const pick = acceptExactConsignment(candidate);
-
-      step('checking');
-      const known = pick ? await verify(pick.number) : false;
-
-      const date   = dateOf(photo.createdTime);
-      const folder = await folderOf(date);
-      let   name   = photo.name;
-
-      if (!ALREADY_NAMED.test(name)) {
-        if (!known) folder.unknown += 1;
-        name = buildLabelName({
-          date,
-          number:       known ? pick.number : undefined,
-          parcel:       pick?.parcel,
-          unknownIndex: folder.unknown,
-          originalName: photo.name,
-        });
-      }
-      name = makeUnique(name, folder.taken);
-
-      if (!dryRun) {
-        step('filing');
-        await moveAndRename(photo.id, rootId, folder.id, name, token);
-      }
-      folder.taken.add(name);
-
-      done({
-        from:      photo.name,
-        to:        `${folder.path}/${name}`,
-        number:    known ? pick.number : null,
-        contested: candidate?.contested ?? false,
-        error:     null,
-      });
-    } catch (err) {
-      // A depot that stopped answering would rename every remaining photo to
-      // unknown, so stop and keep what is already filed.
-      if (err.fatal) throw err;
-      done({ from: photo.name, to: null, number: null, contested: false, error: err.message });
-    }
-  }
-
-  return results;
+  return processLabelBatch({
+    photos,
+    verify,
+    dryRun,
+    onProgress,
+    loadPhoto: async (photo) => loadImage(await downloadAsDataUrl(photo.id, token)),
+    readCodes: readBarcodes,
+    folderFor,
+    movePhoto: (photo, folder, name) => (
+      moveAndRename(photo.id, rootId, folder.id, name, token)
+    ),
+  });
 }

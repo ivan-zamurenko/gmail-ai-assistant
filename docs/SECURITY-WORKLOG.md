@@ -192,3 +192,7 @@ into this log.
   missing YYYY/MM folders. Extracted folder planning behind explicit adapter
   callbacks and made missing folders virtual during dry-run, so no create/write
   callback can run. Added a synthetic regression test with no token or Drive data.
+- Extracted the label batch orchestration from the Drive/ZXing adapter and added
+  a full dry-run regression through barcode selection, verification, naming and
+  reporting. The injected move port remained uncalled while the planned result
+  stayed complete; all fixtures and provider ports were synthetic.

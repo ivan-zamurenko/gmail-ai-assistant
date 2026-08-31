@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **20 автоматизованих тестів у 8 файлах**. Усі вони працюють
+Поточна базова лінія: **21 автоматизований тест у 9 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -57,6 +57,7 @@ test/
 │   └── render.test.js       Discord parcel-card presentation
 ├── depot/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
+│   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
 │   ├── labelName.test.js     Drive label filename rules
 │   └── monthFolders.test.js  Drive folder planning and dry-run safety
@@ -229,6 +230,17 @@ test/
 - Drive `find/list` callbacks виконуються лише один раз для всього місяця;
   `createFolder` для вже наявних папок заборонений fake-функцією.
 - Не перевіряє cache між окремими запусками — він навмисно живе один batch.
+
+### `test/depot/labelBatch.test.js`
+
+**Dry-run label batch plans a verified file without moving it**
+
+- Проганяє одну синтетичну фотографію через повний batch flow: load, barcode
+  selection, depot verification, filename planning і result reporting.
+- Очікує правильний planned path із parcel `2`, але `movePhoto` має 0 викликів.
+- Planned name додається у shared `taken`, тому кілька фото в одному preview
+  отримають ті самі collision-safe назви, що й у live mode.
+- Provider ports є fake-функціями; DOM, OAuth, Drive і depot session не потрібні.
 
 ### `test/queue/executor.test.js`
 

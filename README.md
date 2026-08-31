@@ -21,7 +21,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 ## Engineering Highlights
 
 - **Two-process architecture over a shared queue.** Discord bot (Node) and Chrome extension (browser) exchange tasks via Firestore. A versioned contract keeps them decoupled; a version skew degrades gracefully instead of crashing.
-- **Real-world computer vision.** Reads DPD labels from hand-held phone photos using **ZXing** (PDF417 + Code128 + DataMatrix), with a crop/rotation strategy tuned on 76 real images to reach **~88 %** read accuracy — plus a **Gemini Vision** fallback.
+- **Real-world computer vision.** Reads DPD labels from hand-held phone photos using **ZXing** (PDF417 + Code128), with a crop/rotation strategy validated on the current private 69-photo set (**69/69 parseable** in the latest audit) — plus a **Gemini Vision** fallback.
 - **Works within MV3's hard limits.** The depot session lives in the tab URL (not cookies), so a service worker can't reach it alone; work is dispatched into the live tab via `executeScript` in the **MAIN world** (the depot rejects POSTs from an isolated world). The queue is polled with `chrome.alarms` because MV3 kills idle workers.
 - **Secrets never ship.** The extension carries no service account; it authenticates to Firestore with **anonymous Firebase Auth** and is fenced off by security rules. All keys live in gitignored config, accessed through a single config facade.
 - **Domain-correct logic.** Next-working-day calculation skips weekends and Irish bank holidays; delivery truth is read from scanning history, not the (often stale) arranged date.
@@ -81,7 +81,7 @@ flowchart LR
 | Extension | Chrome MV3, `chrome.scripting` (MAIN world), `chrome.alarms`, `chrome.identity` |
 | Bot | Node.js, `discord.js` |
 | Queue | Firebase Firestore (REST + anonymous Auth from the extension, Admin SDK from the bot) |
-| Vision / OCR | `@zxing/library` (PDF417 · Code128 · DataMatrix) + Google Gemini Flash Vision |
+| Vision / OCR | `@zxing/library` (PDF417 · Code128) + Google Gemini Flash Vision |
 | Google APIs | Drive v3, Gmail, OAuth 2.0 via `chrome.identity`; Geocoding + Maps Static (bot side) |
 | Build / Quality | esbuild bundling, ESLint 9 flat config |
 | UI | Vanilla JS + CSS (Apple-inspired) |
@@ -111,7 +111,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 | Status | Milestone | Notes |
 |:---:|---|---|
 | ✅ | Reschedule future-dated parcels | CAD scan, dry-run, Irish-holiday aware |
-| ✅ | Drive label scanning | ZXing + Gemini, ~88 % on real photos, auto-filing |
+| ✅ | Drive label scanning | ZXing + Gemini, 69/69 on the current private validation set, auto-filing |
 | ✅ | Discord bot + Firestore queue | `/reschedule`, `/todo`, distributed contract |
 | ✅ | Extension queue listener | service-worker poll → depot tab → result |
 | ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |

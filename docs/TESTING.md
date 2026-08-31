@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **11 автоматизованих тестів у 6 файлах**. Усі вони працюють
+Поточна базова лінія: **12 автоматизованих тестів у 6 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -91,11 +91,18 @@ test/
 
 ### `test/depot/barcodeReader.test.js`
 
+**DPD barcode reader enables only formats confirmed by the label audit**
+
+- Фіксує production allowlist як PDF417 + Code128.
+- Не дозволяє непідтвердженому DataMatrix або загальному ZXing format-набору
+  непомітно повернутися в decoder.
+- Контракт ізольований від DOM і ZXing adapter, тому тест працює у звичайному Node.
+
 **Barcode windows preserve the configured ZXing reader state**
 
 - Перевіряє, що кожен crop/rotation проходить через `decodeWithState()` після
   одноразового `setHints()`, а `reset()` викликається після спроби.
-- Захищає дозволений список PDF417/Code128/DataMatrix від скидання до всіх ZXing
+- Захищає дозволений список PDF417/Code128 від скидання до всіх ZXing
   formats і прибирає сторонні ITF, Code39 та Micro QR candidates.
 - Використовує мінімальний fake reader; DOM, canvas і приватні фото не потрібні.
 - Не доводить реальну image accuracy — це перевіряє private label audit.
@@ -206,6 +213,8 @@ Read-only batch перевірив **69 локальних фото** тим с�
 - regression test тепер вимагає, щоб повний PDF417 parcel `10` замінював
   однозначний Code128 суфікс `0` для того самого consignment;
 - DataMatrix не підтвердився жодним із 69 фото.
+- Тому DataMatrix видалено з production allowlist; повернути його можна лише з
+  новим реальним label-прикладом і regression evidence.
 
 Аудит підтверджує структури для regression-тестів, але не замінює E2E перевірку
 Drive/depot workflow на корпоративному ПК.

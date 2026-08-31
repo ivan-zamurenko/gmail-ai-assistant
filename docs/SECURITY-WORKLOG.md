@@ -164,3 +164,7 @@ into this log.
   zero and whose PDF417 routing carried the complete parcel number. Fixed the
   PII-free selection rule and regression test without committing the filename,
   barcode payload, consignment, or customer data.
+- Removed DataMatrix from the production ZXing allowlist after two local audits
+  of the 69-image private set returned only PDF417 and Code128. Added a PII-free
+  supported-format contract test and corrected documentation that had inferred
+  DataMatrix from a label's appearance without decoded evidence.

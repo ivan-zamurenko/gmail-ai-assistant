@@ -13,7 +13,7 @@
  */
 
 import { loadImage, readBarcodes } from './barcode.js';
-import { acceptUncontestedConsignment, pickConsignment } from './labelBarcode.js';
+import { acceptExactConsignment, pickConsignment } from './labelBarcode.js';
 import { buildLabelName, dateOf, makeUnique } from './labelName.js';
 
 const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
@@ -170,7 +170,7 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
 
       step('reading');
       const candidate = pickConsignment(readBarcodes(image));
-      const pick = acceptUncontestedConsignment(candidate);
+      const pick = acceptExactConsignment(candidate);
 
       step('checking');
       const known = pick ? await verify(pick.number) : false;
@@ -184,7 +184,7 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
         name = buildLabelName({
           date,
           number:       known ? pick.number : undefined,
-          parcel:       pick?.parcel ?? 1,
+          parcel:       pick?.parcel,
           unknownIndex: folder.unknown,
           originalName: photo.name,
         });

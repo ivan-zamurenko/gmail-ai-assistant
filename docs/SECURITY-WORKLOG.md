@@ -179,3 +179,12 @@ into this log.
   as contested but cannot send either candidate to depot verification or rename
   the file under a guessed parcel number; it follows the existing unknown path.
   Added a regression test using two fully synthetic Code128 payloads.
+- Removed the implicit parcel-one assumption from PDF417 records without
+  recognized routing. The parser now preserves the consignment diagnostically
+  with an unknown parcel, while the filing boundary requires an exact positive
+  parcel from PDF417 routing or matching Code128 before depot verification.
+  Added a synthetic regression test; no label content or identifier was stored.
+- Re-ran all 69 private label images through the production barcode ranking and
+  new exact-parcel boundary. All 69 were parsed and safely accepted, with zero
+  rejected results. Original filenames remained available only in the temporary
+  local report; the audit environment was removed and no label data was committed.

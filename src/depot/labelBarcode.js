@@ -24,7 +24,7 @@ const CODE128 = /^%[A-Z\d]{7}\d{4}(\d{9})(\d)/;
 const PDF417_ROUTING = /^%\d{4}(\d{9})(\d{1,2})$/;
 const PDF417_CONSIGNMENT = 4;
 
-/** @returns {{ number: string, parcel: number } | null} */
+/** @returns {{ number: string, parcel: number|null } | null} */
 export function parseBarcode(text) {
   if (text.includes(';')) {
     const fields = text.split(';');
@@ -33,7 +33,7 @@ export function parseBarcode(text) {
 
     const routing = PDF417_ROUTING.exec(fields[0]);
     if (routing && routing[1] !== number) return null;
-    return { number, parcel: routing ? Number(routing[2]) : 1 };
+    return { number, parcel: routing ? Number(routing[2]) : null };
   }
 
   if (text.length !== 28) return null;
@@ -50,7 +50,7 @@ export function parseBarcode(text) {
  * because its record carries the number in plain text alongside the address.
  *
  * @param {{ text: string, format: string, reads: number }[]} codes
- * @returns {{ number: string, parcel: number, format: string, reads: number, contested: boolean } | null}
+ * @returns {{ number: string, parcel: number|null, format: string, reads: number, contested: boolean } | null}
  */
 export function pickConsignment(codes) {
   const byNumber = new Map();
@@ -73,7 +73,7 @@ export function pickConsignment(codes) {
     if (code.format === 'PDF_417') {
       // Code128 has only one parcel digit, so parcel 10 is encoded there as 0.
       // PDF417 is authoritative only when its routing field carries the parcel;
-      // its fallback 1 must not overwrite an exact Code128 parcel.
+      // a missing parcel must not overwrite an exact Code128 parcel.
       entry.format = 'PDF_417';
     }
     if (hasExactParcel && (entry.parcel === null || code.format === 'PDF_417')) {
@@ -90,15 +90,20 @@ export function pickConsignment(codes) {
   if (!ranked.length) return null;
   return {
     ...ranked[0],
-    parcel: ranked[0].parcel ?? 1,
     contested: ranked.length > 1,
   };
 }
 
 /**
  * Converts a diagnostic barcode candidate into a value safe for depot lookup.
- * A contested photo remains reportable, but cannot select either consignment.
+ * Contested or parcel-incomplete photos remain reportable but cannot select a
+ * consignment/parcel target.
  */
-export function acceptUncontestedConsignment(pick) {
-  return pick && !pick.contested ? pick : null;
+export function acceptExactConsignment(pick) {
+  return pick
+    && !pick.contested
+    && Number.isInteger(pick.parcel)
+    && pick.parcel >= 1
+    ? pick
+    : null;
 }

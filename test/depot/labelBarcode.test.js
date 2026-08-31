@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  acceptUncontestedConsignment,
+  acceptExactConsignment,
   parseBarcode,
   pickConsignment,
 } from '../../src/depot/labelBarcode.js';
@@ -88,9 +88,9 @@ test('PDF417 restores the full parcel number when Code128 wraps parcel 10 to 0',
   });
 });
 
-test('PDF417 fallback cannot overwrite an exact Code128 parcel', () => {
+test('PDF417 without routing cannot overwrite an exact Code128 parcel', () => {
   // This PDF417 has a valid canonical consignment but no recognized routing,
-  // so parseBarcode falls back to parcel 1. Code128 remains the exact source.
+  // so its parcel is unknown. Code128 remains the exact parcel source.
   const code128 = {
     text: '%000000000001234567892000000',
     format: 'CODE_128',
@@ -116,6 +116,26 @@ test('PDF417 fallback cannot overwrite an exact Code128 parcel', () => {
   }
 });
 
+test('PDF417 without any exact parcel source cannot select a depot lookup target', () => {
+  const parsed = parseBarcode(
+    'UNROUTED;0000A0;AAAAAAAAAAA;000000;123456789;00/00/00',
+  );
+  const candidate = pickConsignment([
+    {
+      text: 'UNROUTED;0000A0;AAAAAAAAAAA;000000;123456789;00/00/00',
+      format: 'PDF_417',
+      reads: 2,
+    },
+  ]);
+
+  assert.deepEqual(parsed, {
+    number: '123456789',
+    parcel: null,
+  });
+  assert.equal(candidate.parcel, null);
+  assert.equal(acceptExactConsignment(candidate), null);
+});
+
 test('contested barcode numbers cannot select a depot lookup target', () => {
   const candidate = pickConsignment([
     {
@@ -131,5 +151,5 @@ test('contested barcode numbers cannot select a depot lookup target', () => {
   ]);
 
   assert.equal(candidate.contested, true);
-  assert.equal(acceptUncontestedConsignment(candidate), null);
+  assert.equal(acceptExactConsignment(candidate), null);
 });

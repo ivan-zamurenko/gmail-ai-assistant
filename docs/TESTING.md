@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **14 автоматизованих тестів у 6 файлах**. Усі вони працюють
+Поточна базова лінія: **15 автоматизованих тестів у 6 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -158,15 +158,22 @@ test/
 - Захищає Scanning History і depot lookup від показу `parcel 0` замість `10`.
 - Обидва barcode payloads синтетичні; ім'я та дані реального файла не збережені.
 
-**PDF417 fallback cannot overwrite an exact Code128 parcel**
+**PDF417 without routing cannot overwrite an exact Code128 parcel**
 
 - Відтворює PDF417 із валідним consignment, але без розпізнаного routing, поруч
   із Code128 для parcel `2` того самого consignment.
 - Перевіряє обидва порядки candidates, щоб результат не залежав від першого
   успішно декодованого crop/rotation.
-- PDF417 залишається preferred format, але його припущення `parcel 1` не
-  перекриває точний Code128 parcel `2`.
-- Не скасовує fallback `1`, коли жодного точного parcel-джерела взагалі немає.
+- PDF417 залишається preferred format, але його невідомий parcel не перекриває
+  точний Code128 parcel `2`.
+
+**PDF417 without any exact parcel source cannot select a depot lookup target**
+
+- Перевіряє валідний PDF417 consignment без routing і без matching Code128.
+- Parser зберігає номер для діагностики, але повертає `parcel: null`, а safety
+  boundary не допускає candidate до depot `verify()`.
+- У production такий файл іде на наявний шлях `unknown-*`, без вигаданої одиниці.
+- Не змінює випадок, де matching Code128 дає точний parcel.
 
 **Contested barcode numbers cannot select a depot lookup target**
 
@@ -228,8 +235,10 @@ Read-only batch перевірив **69 локальних фото** тим с�
 - 2 parseable PDF417 candidates без routing походили з одного фото; matching
   Code128 на ньому підтвердив parcel `1`. Ще 5 раніше порахованих candidates
   були відхилені parser і не є fallback-випадками;
-- PDF417 fallback `1` не має права перекривати точний Code128 parcel; якщо
-  точного parcel-джерела немає зовсім, старий fallback поки залишається;
+- PDF417 без routing більше не вигадує `parcel: 1`: matching Code128 заповнює
+  parcel, а без точного джерела safety boundary направляє файл у `unknown-*`;
+- повторний production-path audit після цієї зміни: 69 parsed, 69 допущені
+  exact-parcel boundary, 0 відхилених;
 - локальна діагностика встановила, що `parcel: 0` був parcel `10`: одноцифровий
   Code128 candidate з'явився раніше, а preferred PDF417 не оновлював parcel;
 - regression test тепер вимагає, щоб повний PDF417 parcel `10` замінював

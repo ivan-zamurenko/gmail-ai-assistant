@@ -217,3 +217,7 @@ into this log.
   internal ConsId locally, label mode validates and deduplicates targets, and
   its dry-run no longer reads Pending List. Added a fully synthetic no-DOM test;
   no real consignment, ConsId, session value, or customer data was committed.
+- Added a synthetic integration regression proving CAD and label targets share
+  the same PENDING classification and reschedule path while only CAD reads
+  Pending List. All depot documents, request values, and identifiers are fake;
+  no live depot action, session, tracking number, or customer data was used.

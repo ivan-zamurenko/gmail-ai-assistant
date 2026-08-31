@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **22 автоматизовані тести у 9 файлах**. Усі вони працюють
+Поточна базова лінія: **23 автоматизовані тести у 9 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -249,6 +249,14 @@ test/
 - Result не експонує відхилений номер (`number: null`) і зберігає шлях для
   ручного пошуку фотографії оператором.
 - Реальний depot і Drive не викликаються; move та verify є контрольованими ports.
+
+**Verified live label is moved once with its exact parcel filename**
+
+- Проганяє matching Code128/PDF417 для synthetic parcel `10` через live batch.
+- Depot verifier підтверджує consignment, після чого `movePhoto` викликається
+  рівно один раз із місячною папкою та filename `-p10`.
+- Result і shared `taken` отримують ту саму точну назву, яку одержав move-port.
+- Не викликає реальний Drive/depot; тест перевіряє orchestration contract.
 
 ### `test/queue/executor.test.js`
 

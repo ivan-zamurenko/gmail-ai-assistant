@@ -200,3 +200,7 @@ into this log.
   depot verifier. The batch now has evidence that it files such a photo under
   the next unknown name and does not expose or use the rejected consignment in
   its result. All identifiers and provider ports in the test are synthetic.
+- Added the complementary verified live-path regression. Matching synthetic
+  Code128/PDF417 candidates for a two-digit parcel now prove that the batch calls
+  its move port exactly once with the verified consignment and exact parcel
+  filename, while using no real Drive, depot session, or customer data.

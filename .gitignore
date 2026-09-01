@@ -7,6 +7,8 @@ dist/
 .env
 .env.local
 .env.*.local
+firebase-debug.log
+firebase-debug.*.log
 
 # Private — local runtime config (API key, Drive folder, author contacts)
 src/config/local.js

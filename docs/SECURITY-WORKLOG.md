@@ -297,3 +297,9 @@ into this log.
   for large batches; write fields and sizes remain deny-by-default and bounded.
   All automated coverage uses fake ports and synthetic identifiers without live
   Drive, depot, Firebase, Discord, credentials, or customer data.
+- Installed Firebase CLI in the owner's user-local tool directory, authenticated
+  it interactively, and deployed only `firestore.rules` to the explicitly
+  verified `dpd-assistant` project. Added a tracked `.firebaserc` default-project
+  binding to prevent accidental deployment to another Firebase project and
+  ignored local Firebase debug logs. Authentication tokens, account details,
+  debug output, and other credentials were not added to the repository.

@@ -236,3 +236,9 @@ into this log.
 - Added a synthetic HTTP-failure regression proving a rejected reschedule Save
   is counted as an error and never as changed. The write is intercepted locally;
   no live depot endpoint, identifier, session value, or customer data is used.
+
+## 2026-09-01
+
+- Added a fail-closed regression for an HTTP 200 reschedule response that does
+  not confirm the saved date. It is reported as an error rather than changed;
+  all responses and identifiers are synthetic and no live depot or PII is used.

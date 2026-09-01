@@ -12,6 +12,7 @@ async function runReschedule(mode, {
   notes = '',
   now = null,
   saveStatus = 200,
+  saveConfirmation = 'success',
 } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
@@ -65,9 +66,13 @@ async function runReschedule(mode, {
     },
     saved: {
       querySelector(selector) {
-        if (selector.includes('panel-success')) return fakeText('Saved');
+        if (saveConfirmation === 'success' && selector.includes('panel-success')) {
+          return fakeText('Saved');
+        }
         return null;
       },
+      querySelectorAll: () => [],
+      body: fakeText('Synthetic response without confirmation'),
     },
   };
 
@@ -250,6 +255,17 @@ test('reschedule skips an Irish bank holiday', async () => {
 
 test('failed reschedule POST is reported as an error, never changed', async () => {
   const labels = await runReschedule('labels', { saveStatus: 500 });
+
+  assert.equal(labels.saveWrites, 1);
+  assert.equal(labels.result.changed, 0);
+  assert.equal(labels.result.errors, 1);
+  assert.equal(labels.result.results[0].action, 'ERROR');
+});
+
+test('unconfirmed HTTP 200 reschedule is reported as an error', async () => {
+  const labels = await runReschedule('labels', {
+    saveConfirmation: 'none',
+  });
 
   assert.equal(labels.saveWrites, 1);
   assert.equal(labels.result.changed, 0);

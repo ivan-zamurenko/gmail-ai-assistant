@@ -7,11 +7,13 @@
  * Modes:
  *   'cad'    — reads the pending list, processes only CAD-scanned parcels
  *   'labels' — receives exact targets resolved from Drive label photos
+ *   'manual' — receives one exact target and an operator-selected date
  *
- * @param {{ dryRun?: boolean, mode?: 'cad'|'labels', targets?: Array<{consNumber, consId, type}> }} options
+ * @param {{ dryRun?: boolean, mode?: 'cad'|'labels'|'manual', date?: string,
+ *           targets?: Array<{consNumber, consId, type}> }} options
  * @returns {{ dryRun?, count?, changed?, skipped?, errors?, results?, warning?, __error? }}
  */
-export async function depotMain({ dryRun = true, mode = 'cad', targets = [] } = {}) {
+export async function depotMain({ dryRun = true, mode = 'cad', date = '', targets = [] } = {}) {
 
   // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -60,6 +62,24 @@ export async function depotMain({ dryRun = true, mode = 'cad', targets = [] } = 
       todayShort:    toDateKey(today),
       tomorrowInput: `${pad(next.getDate())}/${pad(next.getMonth() + 1)}/${next.getFullYear()}`,
     };
+  }
+
+  function manualDateInput(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
+    if (!match) throw new Error('Manual date must use YYYY-MM-DD');
+
+    const [, yearText, monthText, dayText] = match;
+    const year = Number(yearText), month = Number(monthText), day = Number(dayText);
+    const selected = new Date(year, month - 1, day);
+    if (selected.getFullYear() !== year || selected.getMonth() !== month - 1 || selected.getDate() !== day) {
+      throw new Error('Manual date is not a valid calendar date');
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selected <= today || isNonWorkingDay(selected)) {
+      throw new Error('Manual date must be a future working day');
+    }
+    return `${dayText}/${monthText}/${yearText}`;
   }
 
   // ── Classify ───────────────────────────────────────────────────────────────────
@@ -319,7 +339,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', targets = [] } = 
   try {
     console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'} | ${new Date().toLocaleTimeString()}`);
 
+    if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error(`Unsupported depot mode: ${mode}`);
     const { todayShort, tomorrowInput } = getDates();
+    const arrangedDate = mode === 'manual' ? manualDateInput(date) : tomorrowInput;
     const allRows = mode === 'cad' ? await fetchPendingList() : [];
     const exactTargets = Array.isArray(targets) ? targets : [];
     const packages = mode === 'cad'
@@ -333,7 +355,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', targets = [] } = 
 
     if (packages.length === 0) {
       let warning;
-      if (mode === 'labels') {
+      if (mode === 'manual') {
+        warning = 'No exact verified parcel target was supplied.';
+      } else if (mode === 'labels') {
         warning = 'No exact verified label targets were supplied.';
       } else if (allRows.length === 0) {
         warning = 'Pending list came back empty — the list page did not load or its layout changed.';
@@ -352,10 +376,11 @@ export async function depotMain({ dryRun = true, mode = 'cad', targets = [] } = 
         dryRun: true,
         count:  packages.length,
         packages: packages.map(({ consNumber, consId }) => ({ consNumber, consId })),
+        ...(mode === 'manual' && { date: arrangedDate }),
       };
     }
 
-    const result = await processPackages(packages, todayShort, tomorrowInput);
+    const result = await processPackages(packages, todayShort, arrangedDate);
     console.log(`Done | Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
     return result;
 

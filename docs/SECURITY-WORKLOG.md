@@ -256,3 +256,9 @@ into this log.
   zero lookup marker, and synthetic regressions cover parsing, batch verification,
   filename planning, and acceptance by the exact reschedule boundary. The photo
   and its printed value remain outside source control and test fixtures.
+- Connected the existing administrator-only `/reschedule parcel` queue mode to
+  exact depot lookup and the shared reschedule executor. Added bot and extension
+  validation for consignment, future date, dry-run, exact `ConsId`, working-day
+  constraints, and confirmed Save results. Synthetic tests cover command schema,
+  validation, queue orchestration, and outbound date conversion; no live depot,
+  session value, customer data, or real identifier was used.

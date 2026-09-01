@@ -16,6 +16,7 @@ import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { buildParcelEmbed } from './render.js';
 import { addTodo, listTodos, markDone, clearDone, renderList } from './todo.js';
 import { safeErrorMessage } from './errors.js';
+import { validateConsignmentNumber, validateFutureWorkday } from './validation.js';
 
 const cfg = loadConfig();
 
@@ -107,6 +108,11 @@ async function handleDepotCommand(interaction) {
     const conId   = interaction.options.getString('con_id');
     const newDate = interaction.options.getString('new_date');
 
+    const numberError = validateConsignmentNumber(conId);
+    if (numberError) {
+      await interaction.reply({ content: `⚠️ ${numberError}`, flags: MessageFlags.Ephemeral });
+      return;
+    }
     const dateError = validateFutureWorkday(newDate);
     if (dateError) {
       await interaction.reply({ content: `⚠️ ${dateError}`, flags: MessageFlags.Ephemeral });
@@ -137,9 +143,10 @@ async function handleDepotCommand(interaction) {
 async function handleFind(interaction) {
   const conId = interaction.options.getString('con_id');
 
-  if (!/^\d{9}(?:\d{5})?$/.test(conId)) {
+  const numberError = validateConsignmentNumber(conId);
+  if (numberError) {
     await interaction.reply({
-      content: '⚠️ Номер посилки має містити 9 або 14 цифр.',
+      content: `⚠️ ${numberError}`,
       flags: MessageFlags.Ephemeral,
     });
     return;
@@ -184,29 +191,6 @@ async function replyWithResult(interaction, result) {
   const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
   const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
   await interaction.editReply(`${icon} ${summary}${details}`);
-}
-
-/** Returns an error message if the date is not a valid future weekday, else null. */
-function validateFutureWorkday(dateStr) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return 'Дата має бути у форматі YYYY-MM-DD (напр. 2026-08-28)';
-  }
-
-  const date = new Date(`${dateStr}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return 'Некоректна дата';
-  const [year, month, dayOfMonth] = dateStr.split('-').map(Number);
-  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== dayOfMonth) {
-    return 'Некоректна календарна дата';
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (date <= today) return 'Дата має бути пізніше за сьогодні';
-
-  const day = date.getDay(); // 0 = неділя, 6 = субота
-  if (day === 0 || day === 6) return 'Дата не може бути суботою чи неділею';
-
-  return null;
 }
 
 client.login(cfg.discordToken);

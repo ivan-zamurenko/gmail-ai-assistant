@@ -7,9 +7,8 @@
  * the exact same depotMain and depotLookup the popup runs, so "reschedule" and
  * "find" mean one thing across the whole extension.
  *
- * Wired so far: /reschedule all (CAD scan) and /find (one consignment). The
- * other reschedule modes answer honestly that they are not connected yet,
- * rather than failing in some obscure way.
+ * Wired so far: /reschedule all, /reschedule parcel, and /find. Unsupported
+ * modes answer honestly rather than failing in some obscure way.
  */
 
 import { depotMain }       from '../depot/depotScript.js';
@@ -150,6 +149,39 @@ async function runCad(dryRun) {
   return done(summarize(res), detailsFor(res));
 }
 
+function manualDateError(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '');
+  if (!match) return 'Некоректна дата — використовуй YYYY-MM-DD';
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText), month = Number(monthText), day = Number(dayText);
+  const selected = new Date(year, month - 1, day);
+  if (selected.getFullYear() !== year || selected.getMonth() !== month - 1 || selected.getDate() !== day) {
+    return 'Некоректна календарна дата';
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (selected <= today) return 'Дата має бути пізніше за сьогодні';
+  if (selected.getDay() === 0 || selected.getDay() === 6) return 'Дата не може бути вихідним днем';
+  return null;
+}
+
+async function runParcel({ conId, newDate, dryRun }) {
+  const { result: lookup, reason: lookupReason } = await injectLookup(conId);
+  if (lookupReason) return error(lookupReason);
+  if (!lookup?.consNumber) return error(findFailure(lookup));
+  if (!lookup.consId) return error('Depot lookup не повернув точний внутрішній ConsId');
+
+  const targetNumber = /^0\d{8}$/.test(conId) ? conId : lookup.consNumber;
+  const { result: res, reason } = await injectDepot({
+    dryRun,
+    mode: 'manual',
+    date: newDate,
+    targets: [{ consNumber: targetNumber, consId: lookup.consId, type: 'PopUp' }],
+  });
+  if (reason) return error(reason);
+  return done(`${summarize(res)} | Дата: ${newDate}`, detailsFor(res));
+}
+
 // ── Find one consignment ───────────────────────────────────────────────────────
 
 /** Turns a lookup miss into a plain-English one-liner for Discord. */
@@ -248,6 +280,15 @@ export async function executeTask(task) {
   const { mode, dryRun = true } = task.args ?? {};
   if (typeof dryRun !== 'boolean') return error('Некоректне значення dryRun');
   if (mode === RESCHEDULE_MODE.ALL) return runCad(dryRun);
+  if (mode === RESCHEDULE_MODE.PARCEL) {
+    const { conId, newDate } = task.args ?? {};
+    if (typeof conId !== 'string' || !/^\d{9}(?:\d{5})?$/.test(conId)) {
+      return error('Некоректний номер посилки');
+    }
+    const dateError = manualDateError(newDate);
+    if (dateError) return error(dateError);
+    return runParcel({ conId, newDate, dryRun });
+  }
 
   return error(`Режим "${mode}" ще не під'єднано в розширенні`);
 }

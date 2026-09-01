@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **37 автоматизованих тестів у 11 файлах**. Усі вони працюють
+Поточна базова лінія: **40 автоматизованих тестів у 12 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -54,7 +54,8 @@ git diff --check
 test/
 ├── bot/
 │   ├── commands.test.js     Discord command contract
-│   └── render.test.js       Discord parcel-card presentation
+│   ├── render.test.js       Discord parcel-card presentation
+│   └── validation.test.js   Discord depot-command input validation
 ├── depot/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
 │   ├── depotScript.test.js   Direct label reschedule target boundary
@@ -79,9 +80,20 @@ test/
 **Discord command schema includes the three expected commands**
 
 - Перевіряє, що бот публікує команди `reschedule`, `find` і `todo`.
+- Фіксує manual parcel options: `con_id`, `new_date`, `dry_run`, `confirm_live`.
 - Захищає від випадкового видалення або перейменування команди під час рефакторингу.
 - Fixture не потрібен: тест читає справжній command schema з production-коду.
 - Не перевіряє реєстрацію команд у Discord API або permissions у живому guild.
+
+### `test/bot/validation.test.js`
+
+**Manual reschedule input requires an explicit parcel number and real future date**
+
+- Відхиляє bare 8-digit input, але приймає 9 цифр із legacy marker та звичайні
+  14 цифр.
+- Відхиляє неможливу календарну дату й дату в минулому до створення queue task.
+- Імпортує production validation module без запуску Discord client.
+- Не замінює повторну authoritative validation у extension/depot executor.
 
 ### `test/bot/render.test.js`
 
@@ -354,6 +366,16 @@ test/
 - Окремо захищає holiday branch, яку weekend-сценарій не виконує.
 - Save-запит перехоплюється локально; реальний depot не змінюється.
 
+**Manual reschedule submits the exact operator-selected date**
+
+- Фіксує synthetic clock, передає Discord-style `YYYY-MM-DD` у manual mode і
+  запускає справжній fake-backed live Save path.
+- Перевіряє, що outbound `arranged-date` дорівнює точній вибраній даті у depot
+  format `DD/MM/YYYY`, а не автоматично обчисленому завтра.
+- Manual mode використовує ті самі status classification і Save confirmation,
+  що CAD та labels.
+- Живий depot не викликається.
+
 **Failed reschedule POST is reported as an error, never changed**
 
 - Дає synthetic Save endpoint відповідь HTTP 500 після однієї спроби запису.
@@ -403,6 +425,15 @@ test/
   виконання depot-команди.
 - Використовує синтетичні queue tasks без Firebase і без живої вкладки.
 - Не перевіряє transaction claim, expiry, Firestore rules або мережевий timeout.
+
+**Manual parcel task resolves one exact target before depot dry-run**
+
+- Проганяє production `executeTask()` із synthetic `mode: parcel` task.
+- Очікує рівно два MAIN-world етапи: `depotLookup`, потім `depotMain` у manual
+  mode з одним resolved `ConsId` і вибраною ISO date.
+- Доводить, що command не використовує Pending List і не діє за приблизним
+  збігом.
+- Chrome tabs та injections повністю fake; depot і Firestore не викликаються.
 
 ### `test/utils/errors.test.js`
 

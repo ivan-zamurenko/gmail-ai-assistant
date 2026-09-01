@@ -52,6 +52,11 @@ A Discord bot exposes the same actions remotely and returns a **console-style pe
 /todo add|list|done|clear         → operator to-do list
 ```
 
+`/reschedule parcel` first resolves exactly one consignment, then applies the
+operator-selected future working date. It defaults to dry-run; a live Save also
+requires `dry_run:false` and `confirm_live:true`. Dates use `YYYY-MM-DD` in
+Discord and are converted to the depot's `DD/MM/YYYY` only inside the executor.
+
 `/find` looks up any consignment live and returns a rich card: status colour, full scan history, the straight-line distance between where the parcel was last scanned and its **Eircode** (resolved via Google Geocoding — Eircodes are proprietary, so OSM can't), and a route map. For a **multi-parcel** consignment it groups the scans per parcel and shows a `(delivered/total)` count with a per-parcel breakdown — so you can see at a glance that parcel 1 is delivered while parcel 2 is still at the depot.
 
 Legacy eight-digit numbers require an explicit leading-zero marker in `/find`:
@@ -121,7 +126,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 | ✅ | Extension queue listener | service-worker poll → depot tab → result |
 | ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |
 | ✅ | `/find` live parcel lookup | status, Eircode distance, route map, multi-parcel `(x/n)` |
-| 🚧 | `/reschedule parcel` executor | reschedule one consignment to a chosen date |
+| ✅ | `/reschedule parcel` executor | exact lookup + chosen-date dry-run/live reschedule |
 | 🚧 | Gmail auto-reply | depot-grounded drafts, human-in-the-loop |
 | 📋 | Delivery verification | delivered-vs-expected → mini-report in Discord |
 | 📋 | Carrier adapter layer | swap DPD for another carrier without touching logic |

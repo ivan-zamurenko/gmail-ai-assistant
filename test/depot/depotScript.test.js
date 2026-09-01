@@ -15,6 +15,7 @@ async function runReschedule(mode, {
   saveStatuses = null,
   saveConfirmation = 'success',
   targets = null,
+  requestedDate = '',
 } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
@@ -133,7 +134,8 @@ async function runReschedule(mode, {
     const result = await depotMain({
       dryRun: false,
       mode,
-      targets: mode === 'labels'
+      date: requestedDate,
+      targets: mode !== 'cad'
         ? (targets ?? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }])
         : [],
     });
@@ -283,6 +285,17 @@ test('reschedule skips an Irish bank holiday', async () => {
 
   assert.equal(labels.result.changed, 1);
   assert.equal(submitted.get('arranged-date'), '18/03/2026');
+});
+
+test('manual reschedule submits the exact operator-selected date', async () => {
+  const manual = await runReschedule('manual', {
+    now: '2026-09-01T12:00:00',
+    requestedDate: '2026-09-03',
+  });
+  const submitted = new globalThis.URLSearchParams(manual.saveBody);
+
+  assert.equal(manual.result.changed, 1);
+  assert.equal(submitted.get('arranged-date'), '03/09/2026');
 });
 
 test('failed reschedule POST is reported as an error, never changed', async () => {

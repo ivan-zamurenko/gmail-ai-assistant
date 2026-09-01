@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **32 автоматизовані тести у 10 файлах**. Усі вони працюють
+Поточна базова лінія: **34 автоматизовані тести у 10 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -280,6 +280,14 @@ test/
 - Дублікат того самого `consId` обробляється один раз.
 - Не виконує live reschedule POST; це окремий manual E2E крок.
 
+**Invalid exact label targets are rejected before depot access**
+
+- Передає невалідний consignment і нечисловий внутрішній `ConsId` у label mode.
+- Очікує порожній результат із контрольованим warning до будь-якого DOM або
+  depot-запиту.
+- Захищає exact-target boundary від пошкоджених або підмінених аргументів.
+- У тесті немає реального tracking number, `ConsId`, session або мережі.
+
 **CAD and label targets share the same PENDING reschedule rules**
 
 - Запускає справжній `depotMain()` окремо в CAD і labels mode проти повністю
@@ -342,6 +350,16 @@ test/
 - Захищає від хибного успіху, коли transport спрацював, але depot не підтвердив
   зміну стану.
 - Response повністю локальний; живий depot не викликається.
+
+**One failed parcel does not stop the next parcel in the batch**
+
+- Передає два synthetic exact targets: перший Save повертає HTTP 500, другий —
+  підтверджений success.
+- Очікує два Save-виклики, `errors: 1`, `changed: 1` та результати в початковому
+  порядку: `ERROR`, потім `CHANGE_DATE`.
+- Захищає per-parcel isolation: локальна проблема однієї посилки не втрачає
+  решту batch.
+- Усі відповіді та ідентифікатори синтетичні; живий depot не викликається.
 
 ### `test/queue/executor.test.js`
 

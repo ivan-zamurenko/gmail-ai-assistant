@@ -242,3 +242,7 @@ into this log.
 - Added a fail-closed regression for an HTTP 200 reschedule response that does
   not confirm the saved date. It is reported as an error rather than changed;
   all responses and identifiers are synthetic and no live depot or PII is used.
+- Added exact-target validation coverage proving malformed label targets are
+  rejected before depot access. Added batch-isolation coverage proving one
+  failed parcel does not prevent the next exact target from completing. All
+  requests and identifiers are synthetic; no live depot, session, or PII is used.

@@ -12,7 +12,9 @@ async function runReschedule(mode, {
   notes = '',
   now = null,
   saveStatus = 200,
+  saveStatuses = null,
   saveConfirmation = 'success',
+  targets = null,
 } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
@@ -106,7 +108,7 @@ async function runReschedule(mode, {
     if (options.method === 'POST' && String(url).endsWith('/save')) {
       saveWrites += 1;
       saveBody = options.body;
-      responseStatus = saveStatus;
+      responseStatus = saveStatuses?.[saveWrites - 1] ?? saveStatus;
       body = 'saved';
     }
     else if (String(url).includes('woConsignmentList.p')) {
@@ -132,7 +134,7 @@ async function runReschedule(mode, {
       dryRun: false,
       mode,
       targets: mode === 'labels'
-        ? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }]
+        ? (targets ?? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }])
         : [],
     });
     return { result, pendingReads, rescheduleReads, saveWrites, saveBody };
@@ -174,6 +176,36 @@ test('label dry-run uses exact verified targets without reading Pending List', a
   } finally {
     globalThis.console.log = original.log;
     globalThis.console.table = original.table;
+    globalThis.console.warn = original.warn;
+  }
+});
+
+test('invalid exact label targets are rejected before depot access', async () => {
+  const original = {
+    log: globalThis.console.log,
+    warn: globalThis.console.warn,
+  };
+  globalThis.console.log = () => {};
+  globalThis.console.warn = () => {};
+
+  try {
+    const result = await depotMain({
+      dryRun: true,
+      mode: 'labels',
+      targets: [
+        { consNumber: 'not-nine-digits', consId: '7654321' },
+        { consNumber: '123456789', consId: 'not-numeric' },
+      ],
+    });
+
+    assert.deepEqual(result, {
+      changed: 0,
+      skipped: 0,
+      errors: 0,
+      warning: 'No exact verified label targets were supplied.',
+    });
+  } finally {
+    globalThis.console.log = original.log;
     globalThis.console.warn = original.warn;
   }
 });
@@ -271,4 +303,22 @@ test('unconfirmed HTTP 200 reschedule is reported as an error', async () => {
   assert.equal(labels.result.changed, 0);
   assert.equal(labels.result.errors, 1);
   assert.equal(labels.result.results[0].action, 'ERROR');
+});
+
+test('one failed parcel does not stop the next parcel in the batch', async () => {
+  const labels = await runReschedule('labels', {
+    saveStatuses: [500, 200],
+    targets: [
+      { consNumber: '123456789', consId: '7654321', type: 'PopUp' },
+      { consNumber: '987654321', consId: '1234567', type: 'PopUp' },
+    ],
+  });
+
+  assert.equal(labels.saveWrites, 2);
+  assert.equal(labels.result.changed, 1);
+  assert.equal(labels.result.errors, 1);
+  assert.deepEqual(labels.result.results.map(({ consNumber, action }) => ({ consNumber, action })), [
+    { consNumber: '123456789', action: 'ERROR' },
+    { consNumber: '987654321', action: 'CHANGE_DATE' },
+  ]);
 });

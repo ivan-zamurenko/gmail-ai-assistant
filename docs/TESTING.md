@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **40 автоматизованих тестів у 12 файлах**. Усі вони працюють
+Поточна базова лінія: **41 автоматизований тест у 12 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -288,6 +288,14 @@ test/
   точний physical parcel suffix.
 - Доводить, що коротка картка не стає `unknown` до depot lookup.
 - Drive, depot та owner-provided фото не викликаються і не читаються.
+
+**Consignment without a physical parcel number still reaches depot verification**
+
+- Дає batch однозначний synthetic PDF417 із consignment number, але без routing,
+  з якого не можна надійно визначити physical parcel number.
+- Перевіряє, що consignment усе одно доходить до точного depot verification і
+  планується під filename без `-pNN`; номер parcel є metadata, а не умовою reschedule.
+- Тест працює в dry-run із fake ports і не звертається до Drive або depot.
 
 **Batch contains photo failures but stops immediately on a fatal depot failure**
 

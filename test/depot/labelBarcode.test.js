@@ -126,7 +126,7 @@ test('PDF417 without routing cannot overwrite an exact Code128 parcel', () => {
   }
 });
 
-test('PDF417 without any exact parcel source cannot select a depot lookup target', () => {
+test('PDF417 without a physical parcel number can select its consignment target', () => {
   const parsed = parseBarcode(
     'UNROUTED;0000A0;AAAAAAAAAAA;000000;123456789;00/00/00',
   );
@@ -143,7 +143,7 @@ test('PDF417 without any exact parcel source cannot select a depot lookup target
     parcel: null,
   });
   assert.equal(candidate.parcel, null);
-  assert.equal(acceptExactConsignment(candidate), null);
+  assert.equal(acceptExactConsignment(candidate), candidate);
 });
 
 test('contested barcode numbers cannot select a depot lookup target', () => {

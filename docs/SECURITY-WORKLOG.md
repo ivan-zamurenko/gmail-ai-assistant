@@ -262,3 +262,9 @@ into this log.
   constraints, and confirmed Save results. Synthetic tests cover command schema,
   validation, queue orchestration, and outbound date conversion; no live depot,
   session value, customer data, or real identifier was used.
+- Removed the physical parcel number as a prerequisite for Drive-label
+  rescheduling. An unambiguous consignment now reaches exact authenticated depot
+  verification even when `/1`, `/2`, or routing parcel metadata is unavailable;
+  any parcel number that is decoded remains in the photo filename only. Contested
+  consignment numbers still fail closed. Synthetic parser and batch regressions
+  were used without Drive, depot, customer data, or real identifiers.

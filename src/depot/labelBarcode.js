@@ -106,14 +106,10 @@ export function pickConsignment(codes) {
 
 /**
  * Converts a diagnostic barcode candidate into a value safe for depot lookup.
- * Contested or parcel-incomplete photos remain reportable but cannot select a
- * consignment/parcel target.
+ * The consignment number selects the depot record; the physical parcel number
+ * is optional metadata used only when naming the photo. A contested photo must
+ * still fail closed because it does not identify one exact consignment.
  */
 export function acceptExactConsignment(pick) {
-  return pick
-    && !pick.contested
-    && Number.isInteger(pick.parcel)
-    && pick.parcel >= 1
-    ? pick
-    : null;
+  return pick && !pick.contested ? pick : null;
 }

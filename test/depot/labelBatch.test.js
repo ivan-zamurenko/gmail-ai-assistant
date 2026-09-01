@@ -174,6 +174,48 @@ test('legacy eight-digit card reaches verification with its zero marker', async 
   assert.equal(results[0].number, '012345678');
 });
 
+test('consignment without a physical parcel number still reaches depot verification', async () => {
+  const verified = [];
+  const folder = {
+    id: null,
+    path: '2026/09',
+    taken: new Set(),
+    unknown: 0,
+  };
+
+  const results = await processLabelBatch({
+    photos: [{
+      id: 'synthetic-photo',
+      name: 'DRIVER-PHOTO.JPG',
+      createdTime: '2026-09-01T12:00:00.000Z',
+    }],
+    dryRun: true,
+    verify: async (number) => {
+      verified.push(number);
+      return number === '123456789';
+    },
+    loadPhoto: async () => ({ synthetic: true }),
+    readCodes: () => [{
+      text: 'UNROUTED;0000A0;AAAAAAAAAAA;000000;123456789;00/00/00',
+      format: 'PDF_417',
+      reads: 2,
+    }],
+    folderFor: async () => folder,
+    movePhoto: async () => {
+      throw new Error('Dry-run must not move photos');
+    },
+  });
+
+  assert.deepEqual(verified, ['123456789']);
+  assert.deepEqual(results, [{
+    from: 'DRIVER-PHOTO.JPG',
+    to: '2026/09/2026-09-01_123456789.jpg',
+    number: '123456789',
+    contested: false,
+    error: null,
+  }]);
+});
+
 test('batch contains photo failures but stops immediately on a fatal depot failure', async () => {
   const photos = [
     {

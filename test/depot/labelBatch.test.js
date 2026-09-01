@@ -136,6 +136,44 @@ test('verified live label is moved once with its exact parcel filename', async (
   assert.equal(folder.taken.has('2026-08-31_123456789-p10.jpg'), true);
 });
 
+test('legacy eight-digit card reaches verification with its zero marker', async () => {
+  const verified = [];
+  const moves = [];
+  const folder = {
+    id: 'synthetic-month',
+    path: '2026/09',
+    taken: new Set(),
+    unknown: 0,
+  };
+  const photo = {
+    id: 'synthetic-photo',
+    name: 'DRIVER-PHOTO.JPG',
+    createdTime: '2026-09-01T12:00:00.000Z',
+  };
+
+  const results = await processLabelBatch({
+    photos: [photo],
+    dryRun: false,
+    verify: async (number) => {
+      verified.push(number);
+      return number === '012345678';
+    },
+    loadPhoto: async () => ({ synthetic: true }),
+    readCodes: () => [{
+      text: '12345678/2',
+      format: 'CODE_128',
+      reads: 3,
+    }],
+    folderFor: async () => folder,
+    movePhoto: async (...args) => moves.push(args),
+  });
+
+  assert.deepEqual(verified, ['012345678']);
+  assert.equal(moves.length, 1);
+  assert.equal(moves[0][2], '2026-09-01_012345678-p02.jpg');
+  assert.equal(results[0].number, '012345678');
+});
+
 test('batch contains photo failures but stops immediately on a fatal depot failure', async () => {
   const photos = [
     {

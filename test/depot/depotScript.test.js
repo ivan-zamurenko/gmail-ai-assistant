@@ -162,16 +162,16 @@ test('label dry-run uses exact verified targets without reading Pending List', a
       dryRun: true,
       mode: 'labels',
       targets: [
-        { consNumber: '123456789', consId: '7654321', type: 'PopUp' },
+        { consNumber: '012345678', consId: '7654321', type: 'PopUp' },
         // Duplicate target must not schedule the same internal consignment twice.
-        { consNumber: '123456789', consId: '7654321', type: 'PopUp' },
+        { consNumber: '012345678', consId: '7654321', type: 'PopUp' },
       ],
     });
 
     assert.deepEqual(result, {
       dryRun: true,
       count: 1,
-      packages: [{ consNumber: '123456789', consId: '7654321' }],
+      packages: [{ consNumber: '012345678', consId: '7654321' }],
     });
   } finally {
     globalThis.console.log = original.log;

@@ -14,6 +14,10 @@
  *       └─dest─┘└rte┘└──cons──┘│ └tail┘
  *                              └ parcel number
  *
+ *   Legacy Code128 card — eight-digit consignment + physical parcel:
+ *     12345678/2
+ *     The leading zero is added as an explicit internal lookup marker.
+ *
  * Verified matching labels carry the same nine-digit consignment in PDF417
  * field 4 and Code128 offset 12..21. Parcels of one consignment differ only in
  * the parcel digit, so it must be kept separate — otherwise every parcel of a
@@ -21,11 +25,17 @@
  */
 
 const CODE128 = /^%[A-Z\d]{7}\d{4}(\d{9})(\d)/;
+const LEGACY_CODE128 = /^(\d{8})\/([1-9]\d?)$/;
 const PDF417_ROUTING = /^%\d{4}(\d{9})(\d{1,2})$/;
 const PDF417_CONSIGNMENT = 4;
 
 /** @returns {{ number: string, parcel: number|null } | null} */
 export function parseBarcode(text) {
+  const legacy = LEGACY_CODE128.exec(text);
+  if (legacy) {
+    return { number: `0${legacy[1]}`, parcel: Number(legacy[2]) };
+  }
+
   if (text.includes(';')) {
     const fields = text.split(';');
     const number = fields[PDF417_CONSIGNMENT];

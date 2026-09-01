@@ -251,3 +251,8 @@ into this log.
   is removed only before Quick Search, while ambiguity remains fail-closed. The
   owner-provided reference-card photo and printed number were not copied into
   source, tests, documentation, logs, or Git; the regression is fully synthetic.
+- Extended the Drive label parser with the owner-confirmed legacy Code128 card
+  structure: eight digits plus an explicit physical parcel. The parser adds the
+  zero lookup marker, and synthetic regressions cover parsing, batch verification,
+  filename planning, and acceptance by the exact reschedule boundary. The photo
+  and its printed value remain outside source control and test fixtures.

@@ -35,7 +35,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews every change before anything is written.
 
 ### 2 · Scan parcel labels from Google Drive
-Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (ZXing, with Gemini Vision fallback), normalises the 9-digit consignment number across DPD's label formats, verifies it in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`.
+Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (ZXing, with Gemini Vision fallback), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`.
 
 > **Real label used during development:**
 >

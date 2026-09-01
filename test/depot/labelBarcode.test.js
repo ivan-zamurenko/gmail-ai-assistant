@@ -27,6 +27,16 @@ test('Code128 requires the confirmed 28-character DPD layout', () => {
   assert.equal(parseBarcode(`${barcode}0`), null);
 });
 
+test('legacy Code128 card adds the explicit eight-digit lookup marker', () => {
+  const parsed = parseBarcode('12345678/2');
+
+  assert.deepEqual(parsed, {
+    number: '012345678',
+    parcel: 2,
+  });
+  assert.equal(parseBarcode('12345678'), null);
+});
+
 test('PDF417 reads a confirmed anonymized DPD record', () => {
   // An actual locally decoded record had 31 fields. Only the anonymized prefix
   // needed by parseBarcode is retained here: routing is % + prefix + number + parcel.

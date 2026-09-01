@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **35 автоматизованих тестів у 11 файлах**. Усі вони працюють
+Поточна базова лінія: **37 автоматизованих тестів у 11 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -127,6 +127,14 @@ test/
 - Очікує `null`, щоб parser не приймав лише валідний префікс довшого payload.
 - Межа підтверджена 64 DPD Code128 records у повторному приватному label-аудиті.
 - Не перевіряє checksum: його перевіряє ZXing до виклику `parseBarcode()`.
+
+**Legacy Code128 card adds the explicit eight-digit lookup marker**
+
+- Парсить лише exact synthetic layout `8 digits/positive parcel`.
+- Додає leading-zero marker до consignment, зберігаючи parcel окремо.
+- Ті самі 8 цифр без `/parcel` відхиляються, щоб не розширювати parser випадковим
+  коротким числом.
+- Реальний номер і фото owner-provided картки не входять у test fixture.
 
 **PDF417 reads a confirmed anonymized DPD record**
 
@@ -260,6 +268,15 @@ test/
 - Result і shared `taken` отримують ту саму точну назву, яку одержав move-port.
 - Не викликає реальний Drive/depot; тест перевіряє orchestration contract.
 
+**Legacy eight-digit card reaches verification with its zero marker**
+
+- Проганяє synthetic short Code128 через production barcode selection, exact
+  boundary, depot verifier port, filename planning і live move port.
+- Verifier та result отримують `0 + 8 digits`, а filename зберігає marker і
+  точний physical parcel suffix.
+- Доводить, що коротка картка не стає `unknown` до depot lookup.
+- Drive, depot та owner-provided фото не викликаються і не читаються.
+
 **Batch contains photo failures but stops immediately on a fatal depot failure**
 
 - Перше синтетичне фото падає під час load, отримує власний error-result, а
@@ -279,6 +296,8 @@ test/
 - Node test не має `document` або depot page: будь-яка спроба відкрити Pending
   List завершила б тест помилкою.
 - Дублікат того самого `consId` обробляється один раз.
+- Synthetic leading-zero target приймається як валідний exact marker і не
+  втрачається на межі reschedule.
 - Не виконує live reschedule POST; це окремий manual E2E крок.
 
 **Invalid exact label targets are rejected before depot access**

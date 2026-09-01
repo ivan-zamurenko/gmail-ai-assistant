@@ -62,7 +62,7 @@ export function initDepotFlow({
   async function refreshRetryButton() {
     const targets = await loadRecoveryTargets(chrome.storage.local);
     retryRescheduleBtn.hidden = targets.length === 0;
-    retryRescheduleBtn.textContent = `Retry Failed Reschedules (${targets.length})`;
+    retryRescheduleBtn.textContent = `Retry Today's Errors (${targets.length})`;
     return targets;
   }
 

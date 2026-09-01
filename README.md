@@ -35,7 +35,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews every change before anything is written.
 
 ### 2 · Scan parcel labels from Google Drive
-Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (ZXing, with Gemini Vision fallback), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; failed or indeterminate targets can be retried from the popup without downloading Drive photos or decoding barcodes again.
+Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (ZXing, with Gemini Vision fallback), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; server errors can be retried from the popup or Discord on the same processing day without downloading Drive photos or decoding barcodes again. A previous-day recovery batch expires instead of being moved to a new "tomorrow".
 
 > **Real label used during development:**
 >
@@ -48,6 +48,7 @@ A Discord bot exposes the same actions remotely and returns a **console-style pe
 /reschedule all       [dry_run]   → scan CAD list
 /reschedule parcel    con_id new_date [dry_run]
 /reschedule barcodes  [dry_run]   → scan Drive labels
+/reschedule retry     [dry_run]   → retry today's saved server errors, no Drive scan
 /find        con_id               → live parcel status + route map
 /todo add|list|done|clear         → operator to-do list
 ```

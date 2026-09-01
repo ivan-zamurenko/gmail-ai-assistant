@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **44 автоматизовані тести у 13 файлах**. Усі вони працюють
+Поточна базова лінія: **47 автоматизованих тестів у 13 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -310,11 +310,18 @@ test/
 
 ### `test/depot/rescheduleRecovery.test.js`
 
-**Live targets are persisted and merged without losing an older failed batch**
+**Live targets are persisted and merged without losing a same-day failed batch**
 
 - Додає два synthetic exact targets окремими live batches і дублює один із них.
 - Перевіряє дедуплікацію за внутрішнім `ConsId`, відкидання malformed target та
-  збереження попередньої невдалої черги під час наступного Scan Drive Labels.
+  збереження попередньої невдалої черги під час наступного Scan Drive Labels у
+  той самий processing day.
+
+**A previous-day recovery batch expires instead of moving to a new tomorrow**
+
+- Зберігає synthetic batch із датою попереднього дня та читає його наступного.
+- Очікує порожній список і фізичне видалення storage key до depot execution.
+- Захищає від автоматичного перенесення вчорашніх errors на нову дату.
 
 **Total or indeterminate depot failure keeps every target for retry**
 
@@ -463,6 +470,22 @@ test/
 - Доводить, що command не використовує Pending List і не діє за приблизним
   збігом.
 - Chrome tabs та injections повністю fake; depot і Firestore не викликаються.
+
+**Retry task uses only today's saved exact targets without Drive or barcode lookup**
+
+- Передає production `executeTask()` synthetic `mode: retry` task і актуальний
+  локальний recovery batch.
+- Очікує рівно один `depotMain(mode: labels)` із saved exact target; `depotLookup`,
+  Drive download та barcode reader не викликаються.
+- Dry-run не видаляє recovery batch. Chrome storage, tabs та injection є fake;
+  Firebase, Drive і живий depot не використовуються.
+
+**Retry task deletes a previous-day batch without reaching the depot**
+
+- Запускає production `executeTask(mode: retry)` зі synthetic batch попереднього дня.
+- Очікує відповідь «немає errors», видалення local storage key і нуль звернень до
+  depot tabs — навіть якщо task помилково надіслано з `dryRun:false`.
+- Це наскрізний захист Discord retry від переносу вчорашніх посилок на нове «завтра».
 
 ### `test/utils/errors.test.js`
 

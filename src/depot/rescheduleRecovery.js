@@ -4,10 +4,16 @@
  * Photos are filed before the depot batch runs, so exact targets must survive
  * a popup close, expired depot session, or total batch failure. Only confirmed
  * CHANGE_DATE and intentional SKIP results leave the queue; errors and missing
- * results remain available for an operator-confirmed retry.
+ * results remain available for an operator-confirmed retry on the same
+ * processing day. A later day expires the batch before depot execution.
  */
 
 export const LABEL_RESCHEDULE_RECOVERY_KEY = 'label_reschedule_recovery_v1';
+
+export function recoveryDay(date = new Date()) {
+  const pad = value => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
 
 function normalizeTargets(targets) {
   const unique = new Map();
@@ -33,13 +39,17 @@ export function remainingRecoveryTargets(targets, result) {
   return normalizeTargets(targets).filter(target => !completed.has(target.consId));
 }
 
-export async function loadRecoveryTargets(storage) {
+export async function loadRecoveryTargets(storage, { now = new Date() } = {}) {
   const stored = await storage.get(LABEL_RESCHEDULE_RECOVERY_KEY);
   const batch = stored?.[LABEL_RESCHEDULE_RECOVERY_KEY];
-  return batch?.version === 1 ? normalizeTargets(batch.targets) : [];
+  if (batch?.version !== 2 || batch.runDay !== recoveryDay(now)) {
+    if (batch) await storage.remove(LABEL_RESCHEDULE_RECOVERY_KEY);
+    return [];
+  }
+  return normalizeTargets(batch.targets);
 }
 
-async function replaceRecoveryTargets(storage, targets) {
+async function replaceRecoveryTargets(storage, targets, now) {
   const normalized = normalizeTargets(targets);
   if (normalized.length === 0) {
     await storage.remove(LABEL_RESCHEDULE_RECOVERY_KEY);
@@ -48,20 +58,21 @@ async function replaceRecoveryTargets(storage, targets) {
 
   await storage.set({
     [LABEL_RESCHEDULE_RECOVERY_KEY]: {
-      version: 1,
-      updatedAt: new Date().toISOString(),
+      version: 2,
+      runDay: recoveryDay(now),
+      updatedAt: now.toISOString(),
       targets: normalized,
     },
   });
   return normalized;
 }
 
-export async function addRecoveryTargets(storage, targets) {
-  const existing = await loadRecoveryTargets(storage);
-  return replaceRecoveryTargets(storage, [...existing, ...normalizeTargets(targets)]);
+export async function addRecoveryTargets(storage, targets, { now = new Date() } = {}) {
+  const existing = await loadRecoveryTargets(storage, { now });
+  return replaceRecoveryTargets(storage, [...existing, ...normalizeTargets(targets)], now);
 }
 
-export async function applyRecoveryResult(storage, result) {
-  const existing = await loadRecoveryTargets(storage);
-  return replaceRecoveryTargets(storage, remainingRecoveryTargets(existing, result));
+export async function applyRecoveryResult(storage, result, { now = new Date() } = {}) {
+  const existing = await loadRecoveryTargets(storage, { now });
+  return replaceRecoveryTargets(storage, remainingRecoveryTargets(existing, result), now);
 }

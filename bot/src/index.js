@@ -91,7 +91,7 @@ async function handleTodo(interaction) {
 async function handleDepotCommand(interaction) {
   const command = interaction.commandName;
 
-  const mode   = interaction.options.getSubcommand();      // all | parcel | barcodes
+  const mode   = interaction.options.getSubcommand(); // all | parcel | barcodes | retry
   const dryRun = interaction.options.getBoolean('dry_run') ?? true;
   const confirmLive = interaction.options.getBoolean('confirm_live') ?? false;
 

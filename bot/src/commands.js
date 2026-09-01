@@ -41,6 +41,11 @@ export const commands = [
       s.setName('barcodes')
        .setDescription('Зчитати лейбли з Drive і перенести знайдені посилки')
        .addBooleanOption(dryRunOption)
+       .addBooleanOption(liveConfirmationOption))
+    .addSubcommand(s =>
+      s.setName('retry')
+       .setDescription('Повторити сьогоднішні server errors без скану Drive')
+       .addBooleanOption(dryRunOption)
        .addBooleanOption(liveConfirmationOption)),
 
   new SlashCommandBuilder()

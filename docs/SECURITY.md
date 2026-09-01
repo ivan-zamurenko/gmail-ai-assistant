@@ -58,5 +58,8 @@ The `storage` permission is used for a device-local recovery queue containing
 only exact consignment numbers and internal ConsIds from live Drive-label runs.
 It contains no recipient name, address, phone, email, depot session URL, OAuth
 token, or service credential. Confirmed changes and intentional skips are
-removed; failed or indeterminate entries remain until a confirmed retry resolves
-them. The queue is not synced or sent to Discord/Firestore.
+removed; failed or indeterminate entries remain available only on the processing
+day that created the batch. A later-day read deletes the stale queue so yesterday's
+errors cannot be moved to a newly calculated "tomorrow". Targets are not synced
+or sent to Discord/Firestore; `/reschedule retry` sends only the retry instruction
+through the existing assigned, expiring task contract.

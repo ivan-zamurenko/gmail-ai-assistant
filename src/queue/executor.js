@@ -14,6 +14,10 @@
 import { depotMain }       from '../depot/depotScript.js';
 import { depotLookup }     from '../depot/lookup.js';
 import {
+  applyRecoveryResult,
+  loadRecoveryTargets,
+} from '../depot/rescheduleRecovery.js';
+import {
   COMMANDS, RESCHEDULE_MODE, STATUS, TASK_SCHEMA_VERSION,
 } from './contract.js';
 import { CONSTANTS }       from '../utils/constants.js';
@@ -182,6 +186,23 @@ async function runParcel({ conId, newDate, dryRun }) {
   return done(`${summarize(res)} | Дата: ${newDate}`, detailsFor(res));
 }
 
+async function runRetry(dryRun) {
+  const targets = await loadRecoveryTargets(chrome.storage.local);
+  if (targets.length === 0) {
+    return done('Немає server errors із сьогоднішнього Scan Drive Labels');
+  }
+
+  const { result: res, reason } = await injectDepot({ dryRun, mode: 'labels', targets });
+  if (reason) return error(`${reason} | ${targets.length} посилок залишено для retry`);
+
+  if (dryRun) {
+    return done(`${summarize(res)} | Збережено для retry: ${targets.length}`, detailsFor(res));
+  }
+
+  const remaining = await applyRecoveryResult(chrome.storage.local, res);
+  return done(`${summarize(res)} | Залишилось для retry: ${remaining.length}`, detailsFor(res));
+}
+
 // ── Find one consignment ───────────────────────────────────────────────────────
 
 /** Turns a lookup miss into a plain-English one-liner for Discord. */
@@ -280,6 +301,7 @@ export async function executeTask(task) {
   const { mode, dryRun = true } = task.args ?? {};
   if (typeof dryRun !== 'boolean') return error('Некоректне значення dryRun');
   if (mode === RESCHEDULE_MODE.ALL) return runCad(dryRun);
+  if (mode === RESCHEDULE_MODE.RETRY) return runRetry(dryRun);
   if (mode === RESCHEDULE_MODE.PARCEL) {
     const { conId, newDate } = task.args ?? {};
     if (typeof conId !== 'string' || !/^\d{9}(?:\d{5})?$/.test(conId)) {

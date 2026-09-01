@@ -13,4 +13,8 @@ test('Discord command schema includes the three expected commands', () => {
   assert.deepEqual(parcel.options.map((option) => option.name), [
     'con_id', 'new_date', 'dry_run', 'confirm_live',
   ]);
+  const retry = reschedule.options.find((option) => option.name === 'retry');
+  assert.deepEqual(retry.options.map((option) => option.name), [
+    'dry_run', 'confirm_live',
+  ]);
 });

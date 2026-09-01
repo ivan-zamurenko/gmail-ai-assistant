@@ -277,3 +277,11 @@ into this log.
   internal ConsIds, never recipient PII, depot sessions, OAuth tokens, or secrets,
   and it is not synchronized to Discord or Firestore. Tests use an in-memory fake
   storage adapter and synthetic identifiers only.
+- Corrected recovery lifetime after the owner clarified the operational rule:
+  retry is limited to the processing day that created the batch. The stored
+  record now carries a local `runDay`; a later-day read deletes it before any
+  depot action, preventing yesterday's errors from being moved to a newly
+  calculated date. Added administrator-only `/reschedule retry` over queue schema
+  v2; it sends no target list through Firestore and the extension reads only its
+  same-day local exact targets. Synthetic tests prove expiry and that retry calls
+  `depotMain` without Drive or barcode access; no real identifiers or PII were used.

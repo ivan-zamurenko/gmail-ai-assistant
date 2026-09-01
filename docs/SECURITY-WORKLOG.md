@@ -246,3 +246,8 @@ into this log.
   rejected before depot access. Added batch-isolation coverage proving one
   failed parcel does not prevent the next exact target from completing. All
   requests and identifiers are synthetic; no live depot, session, or PII is used.
+- Added legacy eight-digit lookup normalization inside the depot search method.
+  Bare eight-digit input is rejected; an explicit nine-digit leading-zero marker
+  is removed only before Quick Search, while ambiguity remains fail-closed. The
+  owner-provided reference-card photo and printed number were not copied into
+  source, tests, documentation, logs, or Git; the regression is fully synthetic.

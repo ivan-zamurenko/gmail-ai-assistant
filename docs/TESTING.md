@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **34 автоматизовані тести у 10 файлах**. Усі вони працюють
+Поточна базова лінія: **35 автоматизованих тестів у 11 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -61,6 +61,7 @@ test/
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
 │   ├── labelName.test.js     Drive label filename rules
+│   ├── lookup.test.js        Depot lookup input normalization
 │   └── monthFolders.test.js  Drive folder planning and dry-run safety
 ├── queue/
 │   └── executor.test.js     Queue validation and command boundary
@@ -360,6 +361,18 @@ test/
 - Захищає per-parcel isolation: локальна проблема однієї посилки не втрачає
   решту batch.
 - Усі відповіді та ідентифікатори синтетичні; живий depot не викликається.
+
+### `test/depot/lookup.test.js`
+
+**Lookup requires the zero marker before searching a legacy eight-digit number**
+
+- Передає bare synthetic 8-digit input і доводить, що він відхиляється без
+  жодного Quick Search request.
+- Потім передає той самий synthetic номер із leading-zero marker; production
+  lookup прибирає лише маркер і відправляє в form рівно 8 цифр.
+- Перевіряє реальний POST body `con-quick-search`, а не копію normalization rule.
+- Owner-provided reference-card photo та надрукований на ньому номер не входять
+  у fixture, документацію або Git.
 
 ### `test/queue/executor.test.js`
 

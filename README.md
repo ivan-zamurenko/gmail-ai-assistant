@@ -54,6 +54,11 @@ A Discord bot exposes the same actions remotely and returns a **console-style pe
 
 `/find` looks up any consignment live and returns a rich card: status colour, full scan history, the straight-line distance between where the parcel was last scanned and its **Eircode** (resolved via Google Geocoding — Eircodes are proprietary, so OSM can't), and a route map. For a **multi-parcel** consignment it groups the scans per parcel and shows a `(delivered/total)` count with a per-parcel breakdown — so you can see at a glance that parcel 1 is delivered while parcel 2 is still at the depot.
 
+Legacy eight-digit numbers require an explicit leading-zero marker in `/find`:
+enter `0` followed by all eight digits. Bare eight-digit input is rejected; the
+marker is removed only inside depot Quick Search. Normal 9- and 14-digit numbers
+are searched unchanged, and ambiguous results still stop for manual review.
+
 ### 4 · Gmail auto-reply *(in progress)*
 Reads a queued customer email, grounds the answer in live depot data (status, delivery date, address), and prepares a reply as a draft first — automation gated behind human review.
 

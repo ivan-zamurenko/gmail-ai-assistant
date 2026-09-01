@@ -30,6 +30,17 @@ export async function depotLookup(numbers) {
 
   // ── Finding the consignment ──────────────────────────────────────────────────
 
+  function depotQuery(input) {
+    const raw = String(input ?? '').trim();
+    // A leading zero is an explicit operator marker for a legacy eight-digit
+    // number. Bare eight-digit input stays rejected so a typo cannot broaden
+    // Quick Search to several consignments.
+    if (/^\d{8}$/.test(raw)) {
+      return { raw, error: '8-digit numbers require a leading zero marker' };
+    }
+    return { raw, query: /^0\d{8}$/.test(raw) ? raw.slice(1) : raw };
+  }
+
   async function quickSearch(number) {
     const form = document.getElementById('ConQSearchForm');
     if (!form) throw new Error('Quick search form not found — is this a depot page?');
@@ -165,7 +176,12 @@ export async function depotLookup(numbers) {
 
   // ── One consignment ──────────────────────────────────────────────────────────
 
-  async function lookupOne(query) {
+  async function lookupOne(input) {
+    const normalized = depotQuery(input);
+    if (normalized.error) {
+      return { query: normalized.raw, ok: false, reason: normalized.error };
+    }
+    const query = normalized.query;
     const t0 = Date.now();
     const searched = await quickSearch(query);
     const t1 = Date.now();

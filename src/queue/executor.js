@@ -147,6 +147,22 @@ function classifyLookup(res) {
 const injectDepot   = (args)  => runInDepotTabs(depotMain,   [args],           classifyDepot);
 const injectLookup  = (conId) => runInDepotTabs(depotLookup, [[String(conId)]], classifyLookup);
 
+/** Internal offscreen bridge: exact depot lookup for a decoded label number. */
+export async function lookupLabelTarget(conId) {
+  if (typeof conId !== 'string' || !/^\d{9}$/.test(conId)) {
+    return { reason: 'Некоректний номер лейбла' };
+  }
+  return injectLookup(conId);
+}
+
+/** Internal offscreen bridge: apply the shared label reschedule rules. */
+export async function rescheduleLabelTargets({ dryRun, targets }) {
+  if (typeof dryRun !== 'boolean' || !Array.isArray(targets)) {
+    return { reason: 'Некоректний label reschedule batch' };
+  }
+  return injectDepot({ dryRun, mode: 'labels', targets });
+}
+
 async function runCad(dryRun) {
   const { result: res, reason } = await injectDepot({ dryRun, mode: 'cad' });
   if (reason) return error(reason);

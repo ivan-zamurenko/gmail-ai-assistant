@@ -285,3 +285,15 @@ into this log.
   v2; it sends no target list through Firestore and the extension reads only its
   same-day local exact targets. Synthetic tests prove expiry and that retry calls
   `depotMain` without Drive or barcode access; no real identifiers or PII were used.
+- Connected the existing administrator-only `/reschedule barcodes` command to
+  the production Drive-label workflow in the extension's offscreen DOM context.
+  Popup and Discord now share the same barcode parser, exact-target collector,
+  Drive filing adapter, recovery queue, and depot reschedule function; the
+  background exposes only narrow lookup, reschedule, and non-interactive OAuth
+  bridges required because offscreen documents expose only `chrome.runtime`.
+  Drive photos, OAuth tokens, folder IDs, and filenames remain local. Firestore carries
+  only the command plus a bounded result, which the bot delivers by private DM
+  and then deletes. Extended the claimed-task execution allowance to two hours
+  for large batches; write fields and sizes remain deny-by-default and bounded.
+  All automated coverage uses fake ports and synthetic identifiers without live
+  Drive, depot, Firebase, Discord, credentials, or customer data.

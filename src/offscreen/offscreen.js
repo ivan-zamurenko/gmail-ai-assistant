@@ -6,12 +6,12 @@
  * realtime half of the queue lives here, in a context that stays awake.
  *
  * Responsibility split:
- *   offscreen — watch Firestore (onSnapshot) and write the result back (SDK).
- *   worker    — inject depotMain into the depot tab (chrome.scripting).
- * They talk over a single runtime message: { type: 'execute', task }.
+ *   offscreen — watch Firestore, run DOM/canvas Drive scans, write results.
+ *   worker    — inject lookup/reschedule functions into authenticated depot tabs.
+ * They communicate through narrow runtime messages.
  *
- * The Firebase SDK owns anonymous auth and its own streaming transport, so this
- * side carries no token handling — the SDK refreshes and attaches it for us.
+ * Firebase owns anonymous queue auth. Google OAuth is requested by background
+ * and passed only over the internal runtime bridge for `/reschedule barcodes`.
  */
 
 import { initializeApp }              from 'firebase/app';
@@ -21,9 +21,12 @@ import {
   onSnapshot, doc, runTransaction, serverTimestamp,
 } from 'firebase/firestore';
 
-import { loadConfig }               from '../config/config.js';
-import { STATUS, TASKS_COLLECTION } from '../queue/contract.js';
-import { safeErrorMessage }         from '../utils/errors.js';
+import { loadConfig }         from '../config/config.js';
+import {
+  COMMANDS, RESCHEDULE_MODE, STATUS, TASKS_COLLECTION,
+} from '../queue/contract.js';
+import { executeBarcodeTask } from '../queue/barcodeExecutor.js';
+import { safeErrorMessage }   from '../utils/errors.js';
 
 // One browser profile is the executor. Queue work is deliberately serial because
 // depot writes are not idempotent and concurrent tasks would race the same tab.
@@ -71,7 +74,22 @@ async function handle(db, id) {
   try {
     const task = await claimTask(db, id);
     if (!task) return;
-    const result = await chrome.runtime.sendMessage({ type: 'execute', task });
+    const isBarcodeTask = task.command === COMMANDS.RESCHEDULE
+      && task.args?.mode === RESCHEDULE_MODE.BARCODES;
+    const result = isBarcodeTask
+      ? await executeBarcodeTask(task, {
+        lookup: (number) => chrome.runtime.sendMessage({ type: 'label-lookup', number }),
+        reschedule: (options) => chrome.runtime.sendMessage({ type: 'label-reschedule', options }),
+        getAuthToken: async () => {
+          const response = await chrome.runtime.sendMessage({ type: 'drive-auth-token' });
+          if (response?.reason) throw new Error(response.reason);
+          return response?.token;
+        },
+        removeCachedAuthToken: (token) => chrome.runtime.sendMessage({
+          type: 'drive-remove-token', token,
+        }),
+      })
+      : await chrome.runtime.sendMessage({ type: 'execute', task });
     await writeResult(db, id, { ...result, execMs: Date.now() - started });
   } catch (err) {
     await writeResult(db, id, {

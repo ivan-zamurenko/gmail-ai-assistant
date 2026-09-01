@@ -11,6 +11,7 @@ import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
 import { processLabels }                       from '../depot/driveScanner.js';
 import { depotLookup }                         from '../depot/lookup.js';
 import { depotMain }                           from '../depot/depotScript.js';
+import { createLabelVerifier, DEPOT_PROBE }     from '../depot/labelVerifier.js';
 import {
   addRecoveryTargets,
   applyRecoveryResult,
@@ -27,12 +28,6 @@ const STATE_LABELS = {
   checking:    'Checking',
   filing:      'Filing',
 };
-
-// "0 matches" is the depot answering; any other failure means it is not.
-const ANSWERED = /^\d+ matches$/;
-
-// A number that cannot exist — any answer to it proves the depot is alive.
-const DEPOT_PROBE = '000000000';
 
 function fatal(message) {
   const err = new Error(message);
@@ -155,51 +150,27 @@ export function initDepotFlow({
   // the email flow runs, so there is one definition of "this parcel is ours".
   // A consignment of ten parcels repeats one number ten times, hence the cache.
   function depotVerifier() {
-    const seen = new Map();
-
-    async function verify(number) {
-      if (seen.has(number)) return Boolean(seen.get(number).consNumber);
-
-      const tab = await getActiveDepotTab();
-      let injection;
-      try {
-        [injection] = await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func:   depotLookup,
-          args:   [[number]],
-          world:  'MAIN',
-        });
-      } catch (err) {
-        throw fatal(`Cannot reach the depot tab — ${err.message}`);
-      }
-      if (!injection?.result) throw fatal('Depot lookup returned nothing — open the depot page in the active tab');
-
-      const [result] = injection.result;
-      if (!result.consNumber && !ANSWERED.test(result.reason ?? '')) {
-        throw fatal(`Depot is not responding — ${result.reason}`);
-      }
-
-      const found = Boolean(result.consNumber);
-      if (!found && number !== DEPOT_PROBE) log.warn(`  ${number} — ${result.reason}`);
-      seen.set(number, result);
-      return found;
-    }
-
-    function targetsFor(numbers) {
-      const targets = [];
-      let unresolved = 0;
-      for (const number of numbers) {
-        const result = seen.get(number);
-        if (!result?.consNumber || !result.consId) {
-          unresolved += 1;
-          continue;
+    return createLabelVerifier({
+      lookup: async (number) => {
+        const tab = await getActiveDepotTab();
+        let injection;
+        try {
+          [injection] = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func:   depotLookup,
+            args:   [[number]],
+            world:  'MAIN',
+          });
+        } catch (err) {
+          throw fatal(`Cannot reach the depot tab — ${err.message}`);
         }
-        targets.push({ consNumber: number, consId: result.consId, type: 'PopUp' });
-      }
-      return { targets, unresolved };
-    }
-
-    return { verify, targetsFor };
+        if (!injection?.result) {
+          throw fatal('Depot lookup returned nothing — open the depot page in the active tab');
+        }
+        return injection.result[0];
+      },
+      onRejected: (number, reason) => log.warn(`  ${number} — ${reason}`),
+    });
   }
 
   async function runExactReschedule(targets, dryRun) {

@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **47 автоматизованих тестів у 13 файлах**. Усі вони працюють
+Поточна базова лінія: **51 автоматизований тест у 15 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -62,10 +62,12 @@ test/
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
 │   ├── labelName.test.js     Drive label filename rules
+│   ├── labelVerifier.test.js Shared exact depot target collection
 │   ├── lookup.test.js        Depot lookup input normalization
 │   ├── monthFolders.test.js  Drive folder planning and dry-run safety
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
 ├── queue/
+│   ├── barcodeExecutor.test.js Discord Drive-label orchestration
 │   └── executor.test.js     Queue validation and command boundary
 └── utils/
     └── errors.test.js       Safe outbound error messages
@@ -308,6 +310,21 @@ test/
   depot не перетворює всі наступні фото на помилкові `unknown-*`.
 - Помилки, barcode та provider ports повністю синтетичні.
 
+### `test/depot/labelVerifier.test.js`
+
+**Label verifier caches exact depot targets and deduplicates one consignment**
+
+- Проганяє synthetic depot probe та повторний lookup одного consignment через
+  production collector, спільний для popup і Discord.
+- Очікує один lookup для повтореного номера й один exact `{consNumber, ConsId}`
+  target незалежно від кількості фізичних parcel-фото.
+
+**Label verifier stops the batch when the depot did not give a real answer**
+
+- Повертає response, який не є ні exact match, ні чесним `N matches`.
+- Очікує fatal error, щоб недоступне депо не перетворило весь Drive batch на
+  `unknown` і не продовжило автоматичні дії.
+
 ### `test/depot/rescheduleRecovery.test.js`
 
 **Live targets are persisted and merged without losing a same-day failed batch**
@@ -450,6 +467,22 @@ test/
 - Перевіряє реальний POST body `con-quick-search`, а не копію normalization rule.
 - Owner-provided reference-card photo та надрукований на ньому номер не входять
   у fixture, документацію або Git.
+
+### `test/queue/barcodeExecutor.test.js`
+
+**Discord barcode live scan saves depot errors for same-day retry**
+
+- Проганяє production offscreen orchestration через fake Drive scan, exact lookup,
+  reschedule та local storage ports.
+- Перевіряє, що розпізнаний consignment доходить до `depotMain(mode: labels)`, а
+  parcel-level `ERROR` залишається в same-day recovery batch.
+- Фото, OAuth, Drive, depot, Firestore і Discord повністю synthetic/fake.
+
+**Discord barcode dry run previews the same exact target without local writes**
+
+- Виконує той самий шлях із `dryRun:true` і exact target.
+- Storage ports навмисно кидають помилку при будь-якому зверненні; успішний тест
+  доводить, що preview не створює, не змінює і не очищає recovery state.
 
 ### `test/queue/executor.test.js`
 

@@ -8,7 +8,8 @@
  * closing the popup costs at most the photo in flight. A filed photo leaves
  * the inbox folder, which is what makes a rerun pick up where this left off.
  *
- * Runs in the popup: decoding needs a canvas and a service worker has no DOM.
+ * Runs in a DOM extension context: popup for local use, offscreen document for
+ * Discord jobs. A service worker cannot decode because it has no Image/canvas.
  * Requires the Drive folder to be shared with the signed-in account as Editor.
  */
 

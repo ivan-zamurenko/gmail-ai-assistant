@@ -7,7 +7,12 @@
  */
 
 import { logger }      from '../utils/logger.js';
-import { executeTask } from '../queue/executor.js';
+import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
+import {
+  executeTask,
+  lookupLabelTarget,
+  rescheduleLabelTargets,
+} from '../queue/executor.js';
 import { STATUS }      from '../queue/contract.js';
 import { CONSTANTS }   from '../utils/constants.js';
 import { safeErrorMessage } from '../utils/errors.js';
@@ -64,6 +69,34 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   // The offscreen heartbeat: receiving it keeps the worker awake between tasks.
   if (msg?.type === 'keepalive') { sendResponse({ ok: true }); return; }
+  if (msg?.type === 'label-lookup') {
+    lookupLabelTarget(msg.number).then(sendResponse).catch((err) => {
+      sendResponse({ reason: safeErrorMessage(err) });
+    });
+    return true;
+  }
+  if (msg?.type === 'label-reschedule') {
+    rescheduleLabelTargets(msg.options).then(sendResponse).catch((err) => {
+      sendResponse({ reason: safeErrorMessage(err) });
+    });
+    return true;
+  }
+  if (msg?.type === 'drive-auth-token') {
+    getAuthToken({ interactive: false })
+      .then((token) => sendResponse({ token }))
+      .catch((err) => sendResponse({ reason: safeErrorMessage(err) }));
+    return true;
+  }
+  if (msg?.type === 'drive-remove-token') {
+    if (typeof msg.token !== 'string' || !msg.token) {
+      sendResponse({ reason: 'Invalid cached Drive token' });
+      return;
+    }
+    removeCachedAuthToken(msg.token)
+      .then(() => sendResponse({ ok: true }))
+      .catch((err) => sendResponse({ reason: safeErrorMessage(err) }));
+    return true;
+  }
   if (msg?.type !== 'execute') return;
   executeTask(msg.task)
     .then(sendResponse)

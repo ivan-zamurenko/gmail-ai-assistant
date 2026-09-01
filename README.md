@@ -53,6 +53,12 @@ A Discord bot exposes the same actions remotely and returns a **console-style pe
 /todo add|list|done|clear         → operator to-do list
 ```
 
+`/reschedule barcodes` runs the same Drive adapter, ZXing parser, exact depot
+verification, file naming, recovery queue, and reschedule rules as the popup.
+The offscreen document supplies the DOM/canvas that MV3 service workers lack.
+Long scans acknowledge immediately and send their final private report by DM;
+Google Drive must first be authorized once from the extension popup.
+
 `/reschedule parcel` first resolves exactly one consignment, then applies the
 operator-selected future working date. It defaults to dry-run; a live Save also
 requires `dry_run:false` and `confirm_live:true`. Dates use `YYYY-MM-DD` in
@@ -128,6 +134,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 | ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |
 | ✅ | `/find` live parcel lookup | status, Eircode distance, route map, multi-parcel `(x/n)` |
 | ✅ | `/reschedule parcel` executor | exact lookup + chosen-date dry-run/live reschedule |
+| ✅ | `/reschedule barcodes` executor | offscreen Drive/ZXing scan + private DM result |
 | 🚧 | Gmail auto-reply | depot-grounded drafts, human-in-the-loop |
 | 📋 | Delivery verification | delivered-vs-expected → mini-report in Discord |
 | 📋 | Carrier adapter layer | swap DPD for another carrier without touching logic |

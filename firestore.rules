@@ -44,7 +44,7 @@ service cloud.firestore {
         && (!('execMs' in request.resource.data)
           || (request.resource.data.execMs is int
             && request.resource.data.execMs >= 0
-            && request.resource.data.execMs <= 900000))
+            && request.resource.data.execMs <= 7200000))
         && (!('parcel' in request.resource.data)
           || request.resource.data.parcel is map)
         && changedOnly([

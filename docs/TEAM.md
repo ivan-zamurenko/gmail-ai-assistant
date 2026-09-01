@@ -121,9 +121,10 @@
 1. **Слайс 0 — скелет бота** ✅ (готово: 3 команди реєструються, черга Firestore).
 2. **Слайс TODO — `/todo`** ✅ (готово: `add/list/done/clear`, окрема колекція
    `todos` у Firestore, персональний список на юзера). (Sofia)
-3. **Слайс 1 — `/find`** — слухач у розширенні + depot lookup (read-only). (Ravi, Marek)
-4. **Слайс 2 — `/reschedule`** — спершу лише dry-run; live після діагностики CAD-бага. (Marek, Priya)
-5. **Слайс 3 — `/check_barcodes`** — потребує `chrome.offscreen` для ZXing DOM. (Marek)
+3. **Слайс 1 — `/find`** ✅ — слухач у розширенні + depot lookup (read-only). (Ravi, Marek)
+4. **Слайс 2 — `/reschedule`** ✅ — dry-run, live confirmation і manual date. (Marek, Priya)
+5. **Слайс 3 — `/reschedule barcodes`** ✅ — Drive/ZXing працює у
+   `chrome.offscreen`, depot actions — через вузький background bridge. (Marek)
 6. **Слайс 4 — звірка доставки + імейли** — на базі даних Scanning History. (Viktor, Aria)
 
 ---

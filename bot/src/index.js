@@ -127,12 +127,28 @@ async function handleDepotCommand(interaction) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
-    const result = await enqueueAndWait({
+    const queued = enqueueAndWait({
       command,
       args,
       requestedBy: interaction.user.id,
-    });
+    }, mode === RESCHEDULE_MODE.BARCODES
+      ? { timeoutMs: 2 * 60 * 60_000 }
+      : undefined);
 
+    if (mode === RESCHEDULE_MODE.BARCODES) {
+      await interaction.editReply(
+        `⏳ Scan Drive Labels запущено (${dryRun ? 'DRY RUN' : 'LIVE'}). `
+        + 'Можеш закрити Discord — фінальний звіт прийде в DM '
+        + '(дозволь приватні повідомлення від сервера).',
+      );
+      queued.then(
+        result => interaction.user.send(resultMessage(result)),
+        err => interaction.user.send(`⚠️ Scan Drive Labels: ${safeErrorMessage(err)}`),
+      ).catch((err) => console.error('Barcode result DM failed:', safeErrorMessage(err)));
+      return;
+    }
+
+    const result = await queued;
     await replyWithResult(interaction, result);
   } catch (err) {
     await interaction.editReply(`⚠️ ${safeErrorMessage(err)}`);
@@ -186,11 +202,15 @@ async function handleFind(interaction) {
 }
 
 /** One place that turns an extension result into the Discord reply. */
-async function replyWithResult(interaction, result) {
+function resultMessage(result) {
   const icon    = result.status === STATUS.ERROR ? '❌' : '✅';
   const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
   const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
-  await interaction.editReply(`${icon} ${summary}${details}`);
+  return `${icon} ${summary}${details}`;
+}
+
+async function replyWithResult(interaction, result) {
+  await interaction.editReply(resultMessage(result));
 }
 
 client.login(cfg.discordToken);

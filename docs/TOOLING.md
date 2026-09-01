@@ -288,7 +288,9 @@ label-аудитом, а не припущенням за зовнішнім в�
 Приклад з `BrowserMultiFormatReader` вище працює лише там, де є `document`.
 У MV3 background-контексті немає ні `document`, ні `Image`, ні `canvas` —
 код впаде. Рішення — [Offscreen Documents](https://developer.chrome.com/docs/extensions/reference/api/offscreen):
-прихована сторінка з повноцінним DOM, куди service worker шле зображення.
+прихована сторінка з повноцінним DOM. Для `/reschedule barcodes` вона сама
+завантажує Drive-фото й запускає ZXing, а service worker виконує лише вузькі
+depot lookup/reschedule запити.
 Потребує дозволу `offscreen` у маніфесті.
 
 **2. ZXing не читає PDF.**

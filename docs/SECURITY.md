@@ -63,3 +63,19 @@ day that created the batch. A later-day read deletes the stale queue so yesterda
 errors cannot be moved to a newly calculated "tomorrow". Targets are not synced
 or sent to Discord/Firestore; `/reschedule retry` sends only the retry instruction
 through the existing assigned, expiring task contract.
+
+## Remote Drive-label scan
+
+`/reschedule barcodes` sends only the command mode and dry-run flag through
+Firestore. The offscreen extension document reads the gitignored local Drive
+folder setting, receives the cached Google OAuth token through an internal
+runtime-only background bridge, downloads and decodes the photos locally, and
+asks the worker only for exact depot lookup/reschedule operations. Photos, OAuth
+tokens, Drive identifiers, and filenames are never written to Firestore or
+Discord. The bounded result may contain up to
+25 consignment numbers and is delivered to the administrator's private DM; the
+temporary task document is deleted by the bot after completion.
+
+Large barcode tasks may run for up to two hours. Deploy the matching
+`firestore.rules` update before using the command so the claimed executor may
+write its bounded `execMs` result after a long scan.

@@ -16,6 +16,7 @@ const depotMessage      = document.getElementById('depotMessage');
 const dryRunToggle      = document.getElementById('dryRun');
 const scanCADBtn        = document.getElementById('scanCAD');
 const scanDriveBtn      = document.getElementById('scanDrive');
+const retryRescheduleBtn = document.getElementById('retryReschedule');
 const scanProgress      = document.getElementById('scanProgress');
 const progressFill      = document.getElementById('progressFill');
 const progressLabel     = document.getElementById('progressLabel');
@@ -30,7 +31,7 @@ const checkLabelBtn     = document.getElementById('checkLabel');
 
 initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, scanCADBtn, scanDriveBtn,
+  dryRunToggle, scanCADBtn, scanDriveBtn, retryRescheduleBtn,
   scanProgress, progressFill, progressLabel, depotLogEl,
 });
 
@@ -61,4 +62,3 @@ document.querySelectorAll('details.section').forEach(detail => {
     if (!isOpen) detail.open = true;
   });
 });
-

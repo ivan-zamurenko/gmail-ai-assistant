@@ -268,3 +268,12 @@ into this log.
   any parcel number that is decoded remains in the photo filename only. Contested
   consignment numbers still fail closed. Synthetic parser and batch regressions
   were used without Drive, depot, customer data, or real identifiers.
+- Added a device-local recovery queue for live Drive-label reschedules and the
+  narrowly scoped Chrome `storage` permission it requires. Exact targets are
+  persisted before the depot mutation, merged across batches, and removed only
+  after a confirmed change or intentional skip; failed and indeterminate targets
+  remain available through an operator-confirmed retry that does not access
+  Drive or decode photos again. The queue stores only consignment numbers and
+  internal ConsIds, never recipient PII, depot sessions, OAuth tokens, or secrets,
+  and it is not synchronized to Discord or Firestore. Tests use an in-memory fake
+  storage adapter and synthetic identifiers only.

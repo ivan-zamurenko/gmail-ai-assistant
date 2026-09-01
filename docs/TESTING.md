@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **41 автоматизований тест у 12 файлах**. Усі вони працюють
+Поточна базова лінія: **44 автоматизовані тести у 13 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -63,7 +63,8 @@ test/
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
 │   ├── labelName.test.js     Drive label filename rules
 │   ├── lookup.test.js        Depot lookup input normalization
-│   └── monthFolders.test.js  Drive folder planning and dry-run safety
+│   ├── monthFolders.test.js  Drive folder planning and dry-run safety
+│   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
 ├── queue/
 │   └── executor.test.js     Queue validation and command boundary
 └── utils/
@@ -306,6 +307,26 @@ test/
 - Захищає від двох крайнощів: один поганий файл не валить batch, але недоступний
   depot не перетворює всі наступні фото на помилкові `unknown-*`.
 - Помилки, barcode та provider ports повністю синтетичні.
+
+### `test/depot/rescheduleRecovery.test.js`
+
+**Live targets are persisted and merged without losing an older failed batch**
+
+- Додає два synthetic exact targets окремими live batches і дублює один із них.
+- Перевіряє дедуплікацію за внутрішнім `ConsId`, відкидання malformed target та
+  збереження попередньої невдалої черги під час наступного Scan Drive Labels.
+
+**Total or indeterminate depot failure keeps every target for retry**
+
+- Передає повний збій без parcel-results і контрольований `__error`.
+- Доводить, що жоден exact target не зникає, якщо немає підтвердженого результату.
+
+**Confirmed and skipped targets clear while errors remain recoverable**
+
+- Імітує частковий batch: один `CHANGE_DATE`, один `ERROR`, а потім `SKIP`.
+- Підтверджені та свідомо пропущені записи видаляються; помилки залишаються до
+  повторної спроби. Після очищення останнього запису storage key видаляється.
+- Усі storage/depot значення синтетичні; Chrome, Drive і жива depot-сесія не потрібні.
 
 ### `test/depot/depotScript.test.js`
 

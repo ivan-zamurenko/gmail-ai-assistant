@@ -51,3 +51,12 @@ actually enabled and reviewed. The existing Drive workflow still needs the broad
 `drive` scope because it discovers and moves pre-existing files. Migrate it to
 `drive.file` only together with Google Picker; changing the scope alone would
 break access to the current shared folder.
+
+## Local reschedule recovery
+
+The `storage` permission is used for a device-local recovery queue containing
+only exact consignment numbers and internal ConsIds from live Drive-label runs.
+It contains no recipient name, address, phone, email, depot session URL, OAuth
+token, or service credential. Confirmed changes and intentional skips are
+removed; failed or indeterminate entries remain until a confirmed retry resolves
+them. The queue is not synced or sent to Discord/Firestore.

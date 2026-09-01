@@ -11,6 +11,11 @@ import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
 import { processLabels }                       from '../depot/driveScanner.js';
 import { depotLookup }                         from '../depot/lookup.js';
 import { depotMain }                           from '../depot/depotScript.js';
+import {
+  addRecoveryTargets,
+  applyRecoveryResult,
+  loadRecoveryTargets,
+} from '../depot/rescheduleRecovery.js';
 import { createLog }                           from './logView.js';
 import { setStatus }                           from './statusHelper.js';
 import { CONSTANTS }                           from '../utils/constants.js';
@@ -37,7 +42,7 @@ function fatal(message) {
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, scanCADBtn, scanDriveBtn,
+  dryRunToggle, scanCADBtn, scanDriveBtn, retryRescheduleBtn,
   scanProgress, progressFill, progressLabel, depotLogEl,
 }) {
   const log = createLog(depotLogEl);
@@ -51,6 +56,14 @@ export function initDepotFlow({
   function setDepotButtons(disabled) {
     scanCADBtn.disabled   = disabled;
     scanDriveBtn.disabled = disabled;
+    retryRescheduleBtn.disabled = disabled;
+  }
+
+  async function refreshRetryButton() {
+    const targets = await loadRecoveryTargets(chrome.storage.local);
+    retryRescheduleBtn.hidden = targets.length === 0;
+    retryRescheduleBtn.textContent = `Retry Failed Reschedules (${targets.length})`;
+    return targets;
   }
 
   function showDepotResult(result) {
@@ -189,17 +202,15 @@ export function initDepotFlow({
     return { verify, targetsFor };
   }
 
-  // Label verification already resolved exact depot targets. Reschedule those
-  // directly; a driver-scanned parcel can be PENDING without being in Pending List.
-  async function rescheduleFound(results, dryRun, targetsFor) {
-    const numbers = [...new Set(results.filter(r => r.number).map(r => r.number))];
-    if (numbers.length === 0) return '';
-
-    const { targets, unresolved } = targetsFor(numbers);
-    if (unresolved) log.warn(`${unresolved} verified parcel(s) had no exact depot target`);
-    if (targets.length === 0) return ' | Reschedule: no exact targets';
-
+  async function runExactReschedule(targets, dryRun) {
     log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${targets.length} parcel(s) to tomorrow...`);
+
+    // Persist before the live attempt. If the popup closes or every request
+    // fails, the exact targets remain reusable without reading Drive again.
+    if (!dryRun) {
+      await addRecoveryTargets(chrome.storage.local, targets);
+      await refreshRetryButton();
+    }
 
     const tab = await getActiveDepotTab();
     const [injection] = await chrome.scripting.executeScript({
@@ -212,7 +223,8 @@ export function initDepotFlow({
     const res = injection?.result;
     if (!res || res.__error) {
       log.fail(`Reschedule: ${res?.__error ?? 'depot script returned nothing'}`);
-      return ' | Reschedule failed';
+      const remaining = await refreshRetryButton();
+      return ` | Reschedule failed | Retry saved: ${remaining.length}`;
     }
     if (res.dryRun) {
       log.info(`Dry run — ${res.count} parcel(s) would be rescheduled`);
@@ -222,9 +234,68 @@ export function initDepotFlow({
       log.warn(res.warning);
       return ' | Reschedule: none matched';
     }
+
+    const errors = (res.results ?? []).filter(entry => entry.action === 'ERROR');
+    const skipped = (res.results ?? []).filter(entry => entry.action === 'SKIP');
+    for (const entry of errors.slice(0, 20)) log.fail(`${entry.consNumber} — reschedule failed`);
+    if (errors.length > 20) log.fail(`...and ${errors.length - 20} more failed parcel(s)`);
+    for (const entry of skipped.slice(0, 20)) log.warn(`${entry.consNumber} — skipped (${entry.status})`);
+    if (skipped.length > 20) log.warn(`...and ${skipped.length - 20} more skipped parcel(s)`);
+
+    const remaining = await applyRecoveryResult(chrome.storage.local, res);
+    await refreshRetryButton();
     log.info(`Reschedule — Changed: ${res.changed} | Skipped: ${res.skipped} | Errors: ${res.errors}`);
-    return ` | Rescheduled ${res.changed}`;
+    if (remaining.length) log.warn(`${remaining.length} failed parcel(s) saved for retry`);
+    return ` | Rescheduled ${res.changed}`
+      + (remaining.length ? ` | Retry saved: ${remaining.length}` : '');
   }
+
+  // Label verification already resolved exact depot targets. Reschedule those
+  // directly; a driver-scanned parcel can be PENDING without being in Pending List.
+  async function rescheduleFound(results, dryRun, targetsFor) {
+    const numbers = [...new Set(results.filter(r => r.number).map(r => r.number))];
+    if (numbers.length === 0) return '';
+
+    const { targets, unresolved } = targetsFor(numbers);
+    if (unresolved) log.warn(`${unresolved} verified parcel(s) had no exact depot target`);
+    if (targets.length === 0) return ' | Reschedule: no exact targets';
+
+    return runExactReschedule(targets, dryRun);
+  }
+
+  retryRescheduleBtn.addEventListener('click', async () => {
+    const targets = await refreshRetryButton();
+    if (targets.length === 0) {
+      setDepotStatus('done', 'No failed reschedules are waiting');
+      return;
+    }
+
+    const dryRun = dryRunToggle.checked;
+    if (!dryRun && !window.confirm(
+      `LIVE RETRY: attempt ${targets.length} saved parcel(s) again without scanning Drive?`,
+    )) return;
+
+    log.start(`${dryRun ? 'Dry run' : 'Live retry'} — using ${targets.length} saved parcel target(s)`);
+    setDepotStatus('running', 'Retrying saved reschedules — Drive will not be scanned');
+    setDepotButtons(true);
+    try {
+      const result = await runExactReschedule(targets, dryRun);
+      const remaining = await refreshRetryButton();
+      setDepotStatus('done',
+        `${dryRun ? 'Retry preview complete' : 'Retry complete'}${result}`
+        + (remaining.length ? ` | Still waiting: ${remaining.length}` : ''),
+      );
+    } catch (err) {
+      log.fail(err.message);
+      setDepotStatus('error', `${err.message} | Saved targets remain available`);
+    } finally {
+      setDepotButtons(false);
+    }
+  });
+
+  refreshRetryButton().catch((err) => {
+    log.fail(`Cannot load saved reschedules — ${err.message}`);
+  });
 
   scanDriveBtn.addEventListener('click', async () => {
     const dryRun = dryRunToggle.checked;

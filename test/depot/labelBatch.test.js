@@ -21,7 +21,7 @@ test('dry-run label batch plans a verified file without moving it', async () => 
     dryRun: true,
     verify: async (number) => number === '123456789',
     loadPhoto: async () => ({ synthetic: true }),
-    readCodes: () => [{
+    readCodes: async () => [{
       text: '%000000000001234567892000000',
       format: 'CODE_128',
       reads: 3,

@@ -26,6 +26,7 @@ import {
   COMMANDS, RESCHEDULE_MODE, STATUS, TASKS_COLLECTION,
 } from '../queue/contract.js';
 import { executeBarcodeTask } from '../queue/barcodeExecutor.js';
+import { createRuntimeStorage } from '../queue/runtimeStorage.js';
 import { safeErrorMessage }   from '../utils/errors.js';
 
 // One browser profile is the executor. Queue work is deliberately serial because
@@ -88,6 +89,7 @@ async function handle(db, id) {
         removeCachedAuthToken: (token) => chrome.runtime.sendMessage({
           type: 'drive-remove-token', token,
         }),
+        storage: createRuntimeStorage((message) => chrome.runtime.sendMessage(message)),
       })
       : await chrome.runtime.sendMessage({ type: 'execute', task });
     await writeResult(db, id, { ...result, execMs: Date.now() - started });

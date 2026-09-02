@@ -13,6 +13,7 @@ import {
   lookupLabelTarget,
   rescheduleLabelTargets,
 } from '../queue/executor.js';
+import { LABEL_RESCHEDULE_RECOVERY_KEY } from '../depot/rescheduleRecovery.js';
 import { STATUS }      from '../queue/contract.js';
 import { CONSTANTS }   from '../utils/constants.js';
 import { safeErrorMessage } from '../utils/errors.js';
@@ -94,6 +95,38 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     }
     removeCachedAuthToken(msg.token)
       .then(() => sendResponse({ ok: true }))
+      .catch((err) => sendResponse({ reason: safeErrorMessage(err) }));
+    return true;
+  }
+  if (msg?.type === 'label-recovery-get') {
+    if (msg.key !== LABEL_RESCHEDULE_RECOVERY_KEY) {
+      sendResponse({ reason: 'Invalid recovery storage key' });
+      return;
+    }
+    chrome.storage.local.get(msg.key)
+      .then((result) => sendResponse({ result }))
+      .catch((err) => sendResponse({ reason: safeErrorMessage(err) }));
+    return true;
+  }
+  if (msg?.type === 'label-recovery-set') {
+    const entries = msg.entries;
+    if (!entries || Object.keys(entries).length !== 1
+        || !(LABEL_RESCHEDULE_RECOVERY_KEY in entries)) {
+      sendResponse({ reason: 'Invalid recovery storage value' });
+      return;
+    }
+    chrome.storage.local.set(entries)
+      .then(() => sendResponse({ result: true }))
+      .catch((err) => sendResponse({ reason: safeErrorMessage(err) }));
+    return true;
+  }
+  if (msg?.type === 'label-recovery-remove') {
+    if (msg.key !== LABEL_RESCHEDULE_RECOVERY_KEY) {
+      sendResponse({ reason: 'Invalid recovery storage key' });
+      return;
+    }
+    chrome.storage.local.remove(msg.key)
+      .then(() => sendResponse({ result: true }))
       .catch((err) => sendResponse({ reason: safeErrorMessage(err) }));
     return true;
   }

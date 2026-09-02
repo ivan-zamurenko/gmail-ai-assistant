@@ -62,7 +62,9 @@ removed; failed or indeterminate entries remain available only on the processing
 day that created the batch. A later-day read deletes the stale queue so yesterday's
 errors cannot be moved to a newly calculated "tomorrow". Targets are not synced
 or sent to Discord/Firestore; `/reschedule retry` sends only the retry instruction
-through the existing assigned, expiring task contract.
+through the existing assigned, expiring task contract. Because Chrome offscreen
+documents expose no storage API, the scanner reaches this single local record
+through a narrow internal runtime bridge handled by the background worker.
 
 ## Remote Drive-label scan
 

@@ -311,3 +311,10 @@ into this log.
   `dry_run` is interpreted as `true`; choosing `dry_run:false` is now the single
   explicit confirmation for a live depot mutation. Updated the production
   command schema, handler, regression contract, and operator documentation.
+- Diagnosed the first real remote Drive-label run from PII-free Firestore status
+  and owner-observed extension errors. The scan completed barcode processing but
+  failed when the offscreen context directly accessed unavailable
+  `chrome.storage.local`. Added a narrow internal runtime bridge limited to the
+  existing recovery key; exact targets remain device-local and are not sent to
+  the bot, Discord, or Firestore. Added a synthetic adapter regression without
+  real Drive, depot, credentials, filenames, or consignment identifiers.

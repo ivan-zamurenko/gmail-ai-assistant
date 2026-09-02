@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **51 автоматизований тест у 15 файлах**. Усі вони працюють
+Поточна базова лінія: **52 автоматизовані тести у 16 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -68,7 +68,8 @@ test/
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
 ├── queue/
 │   ├── barcodeExecutor.test.js Discord Drive-label orchestration
-│   └── executor.test.js     Queue validation and command boundary
+│   ├── executor.test.js     Queue validation and command boundary
+│   └── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
 └── utils/
     └── errors.test.js       Safe outbound error messages
 ```
@@ -484,6 +485,16 @@ test/
 - Виконує той самий шлях із `dryRun:true` і exact target.
 - Storage ports навмисно кидають помилку при будь-якому зверненні; успішний тест
   доводить, що preview не створює, не змінює і не очищає recovery state.
+
+### `test/queue/runtimeStorage.test.js`
+
+**Offscreen recovery storage uses only the narrow runtime bridge**
+
+- Перевіряє production adapter для `get`, `set` і `remove`, який передає запити
+  з offscreen-документа у background service worker.
+- Захищає від прямого звернення до недоступного в offscreen `chrome.storage.local`.
+- Fake runtime port не використовує Chrome, Firestore, Drive, depot або реальні
+  consignment identifiers.
 
 ### `test/queue/executor.test.js`
 

@@ -13,7 +13,8 @@
  * Requires the Drive folder to be shared with the signed-in account as Editor.
  */
 
-import { loadImage, readBarcodes } from './barcode.js';
+import { loadImage } from './barcode.js';
+import { readBarcodesFastFirst } from './fastBarcodeReader.js';
 import { processLabelBatch } from './labelBatch.js';
 import { createMonthFolderResolver } from './monthFolders.js';
 
@@ -140,7 +141,7 @@ export async function processLabels({ folderInput, token, verify, dryRun, onProg
     dryRun,
     onProgress,
     loadPhoto: async (photo) => loadImage(await downloadAsDataUrl(photo.id, token)),
-    readCodes: readBarcodes,
+    readCodes: readBarcodesFastFirst,
     folderFor,
     movePhoto: (photo, folder, name) => (
       moveAndRename(photo.id, rootId, folder.id, name, token)

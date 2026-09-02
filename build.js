@@ -48,6 +48,11 @@ async function copyStatic() {
     await cp(path, `dist/${path}`, { recursive: true });
   }
 
+  await cp(
+    'node_modules/zxing-wasm/dist/reader/zxing_reader.wasm',
+    'dist/assets/zxing_reader.wasm',
+  );
+
   const manifest = JSON.parse(await readFile('manifest.json', 'utf8'));
   manifest.name = manifest.name.replace(SOURCE_MARKER, '');
   await writeFile('dist/manifest.json', JSON.stringify(manifest, null, 2));

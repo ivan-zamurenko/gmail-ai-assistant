@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **58 автоматизованих тестів у 16 файлах**. Усі вони працюють
+Поточна базова лінія: **60 автоматизованих тестів у 17 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -58,6 +58,7 @@ test/
 │   └── validation.test.js   Discord depot-command input validation
 ├── depot/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
+│   ├── fastBarcodeReader.test.js WASM-first decoder and safe fallback
 │   ├── depotScript.test.js   Direct label reschedule target boundary
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
@@ -134,6 +135,21 @@ test/
 - Приглушує тільки точний внутрішній warning ZXing для звичайної невдалої
   crop/rotation-спроби та зберігає всі сторонні warning.
 - Перевіряє fake reader без фотографій, barcode payload або персональних даних.
+
+### `test/depot/fastBarcodeReader.test.js`
+
+**Valid WASM result skips the expensive legacy reader**
+
+- Доводить, що exact DPD candidate з швидкого reader повертається без 30
+  JavaScript crop/rotation-спроб.
+- Використовує синтетичний barcode і injected ports; WASM та приватне фото не
+  завантажуються в unit-тесті.
+
+**Invalid or failed WASM result retains the proven fallback**
+
+- Перевіряє окремо нерозпізнаний результат і технічну помилку WASM.
+- В обох випадках викликається попередній ZXing reader, тому новий fast path не
+  перетворює складне фото на втрачений файл.
 
 ### `test/depot/labelBarcode.test.js`
 
@@ -590,6 +606,15 @@ Read-only batch перевірив **69 локальних фото** тим с�
 | Contested images | 0 | 0 |
 | Сторонні decoded formats | Micro QR, ITF, Code39 | немає |
 | DataMatrix | 0 | 0 |
+
+## Private WASM performance audit — 2026-09-02
+
+Read-only запуск `zxing-wasm/reader` локально перевірив усі 69 приватних фото,
+не виводячи назви, payload або tracking numbers. WASM знайшов barcode у 67 фото;
+усі **65/65** уже названих фото точно збіглися з очікуваним consignment. Повний
+набір зайняв **9.57 с**, у середньому **139 мс** на фото, максимум **213 мс**.
+Два нестандартні приклади, які fast path не прочитав, залишаються покритими
+попереднім JavaScript fallback.
 
 Підтверджена база після виправлення:
 

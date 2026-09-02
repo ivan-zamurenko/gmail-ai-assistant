@@ -30,7 +30,7 @@ export async function processLabelBatch({
       const image = await loadPhoto(photo);
 
       step('reading');
-      const candidate = pickConsignment(readCodes(image));
+      const candidate = pickConsignment(await readCodes(image));
       const pick = acceptExactConsignment(candidate);
 
       step('checking');

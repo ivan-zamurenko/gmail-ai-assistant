@@ -340,3 +340,10 @@ into this log.
   `MultiFormatReader` warning during its synchronous decode call; unrelated
   warnings, barcode selection, retry windows, and fail-closed handling remain
   unchanged. Added a focused regression for that boundary.
+- Replaced the primary 30-pass JavaScript label decode with a local
+  `zxing-cpp` WebAssembly reader restricted to Code128 and PDF417, while keeping
+  the proven JavaScript reader as a fail-safe fallback. The WASM binary is copied
+  into the extension and loaded from its own origin; no photo, payload, or
+  identifier is sent to a CDN. A read-only aggregate audit of all 69 private
+  examples completed in 9.57 seconds, matched all 65/65 pre-named consignments,
+  and emitted no identifiers. Added synthetic fast-path and fallback regressions.

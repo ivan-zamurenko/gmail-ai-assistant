@@ -78,6 +78,13 @@ Discord. The bounded result may contain up to
 25 consignment numbers and is delivered to the administrator's private DM; the
 temporary task document is deleted by the bot after completion.
 
+Barcode pixels are decoded locally with the self-hosted
+`assets/zxing_reader.wasm`; the extension never fetches decoder code from a CDN.
+The extension-page CSP permits WebAssembly compilation but keeps scripts limited
+to `'self'`. Only Code128 and PDF417 are enabled. A result must still pass the
+existing exact DPD parser; otherwise the proven JavaScript reader runs as a
+fallback before the photo can be classified or filed.
+
 Large barcode tasks may run for up to two hours. Deploy the matching
 `firestore.rules` update before using the command so the claimed executor may
 write its bounded `execMs` result after a long scan.

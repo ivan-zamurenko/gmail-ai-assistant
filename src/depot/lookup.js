@@ -10,7 +10,7 @@
  * parcel is carded and sent back. The scan history is the honest source.
  */
 
-export async function depotLookup(numbers) {
+export async function depotLookup(numbers, { identityOnly = false } = {}) {
   const SCAN_URL = '/scripts/cgiip.exe/WService=wsInterlink/woScanningHistoryList.p';
   const CONS_URL = '/scripts/cgiip.exe/WService=wsInterlink/woConsignmentDetails.p';
 
@@ -187,9 +187,25 @@ export async function depotLookup(numbers) {
     const t1 = Date.now();
     let detail = searched;
     let consId = consIdFromDetail(searched);
+    const directNumber = searched.getElementById('hiddenConsBarcodeValue')?.value ?? '';
 
-    if (!searched.getElementById('hiddenConsBarcodeValue')) {
+    if (identityOnly && directNumber) {
+      if (directNumber !== query) return { query, ok: false, reason: '0 matches' };
+      if (!/^\d+$/.test(consId)) {
+        return { query, ok: false, reason: 'Exact result missing ConsId' };
+      }
+      return { query, ok: true, consNumber: directNumber, consId };
+    }
+
+    if (!directNumber) {
       const hits = parseHitList(searched);
+      if (identityOnly) {
+        const exactHits = hits.filter(hit => hit.consNumber === query && /^\d+$/.test(hit.consId));
+        if (exactHits.length !== 1) {
+          return { query, ok: false, reason: `${exactHits.length} matches` };
+        }
+        return { query, ok: true, ...exactHits[0] };
+      }
       // Quick search matches substrings, so two hits mean we cannot tell which
       // parcel the customer meant — that is a case for a human, not a template.
       if (hits.length !== 1) return { query, ok: false, reason: `${hits.length} matches` };
@@ -199,7 +215,7 @@ export async function depotLookup(numbers) {
     if (!consId) consId = consIdFromDetail(detail);
     const t2 = Date.now();
 
-    const consNumber = detail.getElementById('hiddenConsBarcodeValue')?.value ?? '';
+    const consNumber = directNumber || detail.getElementById('hiddenConsBarcodeValue')?.value || '';
     const delivery   = readBlock(detail, 'Delivery Address');
     const confirm    = readBlock(detail, 'Confirmation / Notification / Delivery Details');
     const contact    = [...delivery, ...confirm];

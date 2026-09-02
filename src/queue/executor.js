@@ -145,14 +145,18 @@ function classifyLookup(res) {
 }
 
 const injectDepot   = (args)  => runInDepotTabs(depotMain,   [args],           classifyDepot);
-const injectLookup  = (conId) => runInDepotTabs(depotLookup, [[String(conId)]], classifyLookup);
+const injectLookup = (conId, options) => runInDepotTabs(
+  depotLookup,
+  options ? [[String(conId)], options] : [[String(conId)]],
+  classifyLookup,
+);
 
 /** Internal offscreen bridge: exact depot lookup for a decoded label number. */
 export async function lookupLabelTarget(conId) {
   if (typeof conId !== 'string' || !/^\d{9}$/.test(conId)) {
     return { reason: 'Некоректний номер лейбла' };
   }
-  return injectLookup(conId);
+  return injectLookup(conId, { identityOnly: true });
 }
 
 /** Internal offscreen bridge: apply the shared label reschedule rules. */

@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **52 автоматизовані тести у 16 файлах**. Усі вони працюють
+Поточна базова лінія: **56 автоматизованих тестів у 16 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -470,6 +470,15 @@ test/
 - Owner-provided reference-card photo та надрукований на ньому номер не входять
   у fixture, документацію або Git.
 
+**Identity-only label lookup skips unused Scanning History safely**
+
+- Перевіряє обидва підтверджені Quick Search variants: direct detail і exact
+  single-hit list; кожен повертає тільки `consNumber + ConsId` за один request.
+- Один substring hit відхиляється як `0 matches`, тому швидший шлях не розширює
+  автоматизацію приблизним збігом.
+- Окремий regression доводить, що звичайний повний lookup і далі завантажує
+  Scanning History для `/find`.
+
 ### `test/queue/barcodeExecutor.test.js`
 
 **Discord barcode live scan saves depot errors for same-day retry**
@@ -515,6 +524,13 @@ test/
 - Доводить, що command не використовує Pending List і не діє за приблизним
   збігом.
 - Chrome tabs та injections повністю fake; depot і Firestore не викликаються.
+
+**Label target lookup injects identity-only mode**
+
+- Перевіряє, що тільки вузький label-verification bridge передає
+  `{ identityOnly: true }` у production `depotLookup`.
+- Manual parcel і `/find` залишаються на повному lookup; queue schema та depot
+  reschedule contract не змінюються.
 
 **Retry task uses only today's saved exact targets without Drive or barcode lookup**
 

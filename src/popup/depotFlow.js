@@ -158,7 +158,7 @@ export function initDepotFlow({
           [injection] = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func:   depotLookup,
-            args:   [[number]],
+            args:   [[number], { identityOnly: true }],
             world:  'MAIN',
           });
         } catch (err) {

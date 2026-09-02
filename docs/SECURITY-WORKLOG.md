@@ -318,3 +318,12 @@ into this log.
   existing recovery key; exact targets remain device-local and are not sent to
   the bot, Discord, or Firestore. Added a synthetic adapter regression without
   real Drive, depot, credentials, filenames, or consignment identifiers.
+- Optimized label identity verification after a production-path review showed
+  that it fetched and discarded full recipient fields and Scanning History for
+  every unique decoded label. The opt-in lookup now accepts only an exact
+  consignment plus numeric ConsId and returns no customer fields; substring,
+  missing, and ambiguous results remain fail-closed. Full `/find` lookup is
+  unchanged, while `depotMain` still re-reads authoritative status and GOODS
+  HELD notes immediately before every live mutation. Synthetic tests cover both
+  Quick Search response variants, substring rejection, label-only wiring, and
+  preservation of the full Scanning History path without real parcel data.

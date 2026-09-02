@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { executeTask } from '../../src/queue/executor.js';
+import { executeTask, lookupLabelTarget } from '../../src/queue/executor.js';
 import { TASK_SCHEMA_VERSION } from '../../src/queue/contract.js';
 import {
   LABEL_RESCHEDULE_RECOVERY_KEY,
@@ -78,6 +78,34 @@ test('manual parcel task resolves one exact target before depot dry-run', async 
       date: newDate,
       targets: [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }],
     }]);
+  } finally {
+    if (originalChrome === undefined) delete globalThis.chrome;
+    else globalThis.chrome = originalChrome;
+  }
+});
+
+test('label target lookup injects identity-only mode', async () => {
+  const originalChrome = globalThis.chrome;
+  let injection;
+  globalThis.chrome = {
+    tabs: {
+      query: async () => [{ id: 7, discarded: false }],
+      update: async () => ({}),
+    },
+    scripting: {
+      executeScript: async (options) => {
+        injection = options;
+        return [{ result: [{
+          ok: true, consNumber: '123456789', consId: '7654321',
+        }] }];
+      },
+    },
+  };
+
+  try {
+    const response = await lookupLabelTarget('123456789');
+    assert.equal(response.result.consId, '7654321');
+    assert.deepEqual(injection.args, [['123456789'], { identityOnly: true }]);
   } finally {
     if (originalChrome === undefined) delete globalThis.chrome;
     else globalThis.chrome = originalChrome;

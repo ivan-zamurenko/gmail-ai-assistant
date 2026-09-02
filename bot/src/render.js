@@ -8,7 +8,7 @@
  */
 import { EmbedBuilder, AttachmentBuilder } from 'discord.js';
 
-import { normEircode, geocode, haversineKm, mapImage } from './geo.js';
+import { normEircode, geocode, reverseGeocode, haversineKm, mapImage } from './geo.js';
 
 const COLOR = {
   delivered: 0x2ecc71, // green
@@ -165,12 +165,15 @@ export async function buildParcelEmbed(parcel, apiKey) {
 
   const desc = [];
   if (parcel.drop) {
-    if (!eircode)     desc.push('📍 distance unavailable — no valid Eircode');
-    else if (!addr)   desc.push('📍 distance unavailable — Eircode not resolved');
+    // Where the parcel actually landed — the whole point when it went to the wrong door.
+    const dropEircode = await reverseGeocode(parcel.drop, apiKey);
+    const landed = dropEircode ? ` — dropped ≈ ${dropEircode}` : '';
+    if (!eircode)     desc.push(`📍 distance unavailable — no valid Eircode${landed}`);
+    else if (!addr)   desc.push(`📍 distance unavailable — Eircode not resolved${landed}`);
     else {
       const km    = haversineKm(parcel.drop, addr);
       const shown = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
-      desc.push(`📍 **≈ ${shown}** from Eircode ${eircode}`);
+      desc.push(`📍 **≈ ${shown}** from Eircode ${eircode}${landed}`);
     }
     const dest = eircode ?? encodeURIComponent(place(a));
     desc.push(`[🗺 Open route in Google Maps](https://www.google.com/maps/dir/?api=1`

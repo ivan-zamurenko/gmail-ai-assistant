@@ -32,6 +32,28 @@ export async function geocode(query, apiKey) {
   return loc ? { lat: loc.lat, lng: loc.lng } : null;
 }
 
+/**
+ * The Eircode nearest a point, or null. Eircodes are per-address, so a scan's
+ * GPS can land on a neighbour: treat the answer as "roughly here", not exact.
+ */
+export async function reverseGeocode(point, apiKey) {
+  if (!apiKey || !point) return null;
+
+  const url = 'https://maps.googleapis.com/maps/api/geocode/json'
+    + `?latlng=${point.lat},${point.lng}&region=ie&key=${apiKey}`;
+
+  const res = await fetch(url);
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  for (const result of data.results ?? []) {
+    const pc = result.address_components?.find((c) => c.types?.includes('postal_code'));
+    const eircode = normEircode(pc?.long_name);
+    if (eircode) return eircode;
+  }
+  return null;
+}
+
 /** Great-circle distance in km — one formula, no library needed. */
 export function haversineKm(a, b) {
   const R = 6371;

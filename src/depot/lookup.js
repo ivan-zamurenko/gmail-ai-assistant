@@ -149,7 +149,8 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
         notes,
         bay:        scanNoteField(notes, 'Bay'),
         sequence:   scanNoteField(notes, 'Sequence'),
-        onwardBc:   scanNoteField(notes, 'Onward BC'),
+        // The onward barcode carries a /N parcel suffix; keep only the barcode.
+        onwardBc:   scanNoteField(notes, 'Onward BC').split('/')[0],
         signature: text(tds[11]),
         coords:    coordsFromRow(tr),
       }];
@@ -251,7 +252,8 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
         county:   pick(delivery, 'County'),
         postCode: pick(delivery, 'Post Code'),
         depot:    pick(delivery, 'Delivery Depot'),
-        mobile:   pickMatching(contact, /mobile|telephone|phone/i),
+        // Prefer a real mobile; fall back to a landline only when none is listed.
+        mobile:   pickMatching(contact, /mobile/i) || pickMatching(contact, /telephone|phone/i),
         email:    pickMatching(contact, /e-?mail/i),
       },
     };

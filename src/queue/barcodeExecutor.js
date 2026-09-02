@@ -51,6 +51,9 @@ export async function executeBarcodeTask(task, ports = {}) {
 
   const dryRun = task.args?.dryRun ?? true;
   if (typeof dryRun !== 'boolean') return error('Некоректне значення dryRun');
+  const progress = (current, total, stage) => {
+    try { ports.onProgress?.(current, total, stage); } catch { /* diagnostics must not stop work */ }
+  };
 
   const config = (ports.loadConfig ?? loadConfig)();
   if (!config.driveFolderId) return error('Drive Folder ID не налаштований у розширенні');
@@ -72,10 +75,14 @@ export async function executeBarcodeTask(task, ports = {}) {
     },
   });
 
+  progress(0, 0, 'depot-probe');
   await verifier.verify(DEPOT_PROBE);
+  progress(0, 0, 'depot-ready');
 
+  progress(0, 0, 'drive-auth');
   const token = await tokenProvider();
   if (!token) return error('Google Drive не авторизований — відкрий розширення й увійди один раз');
+  progress(0, 0, 'drive-ready');
 
   const scanLabels = ports.processLabels ?? scanWithDriveAdapter;
   let results;
@@ -85,6 +92,7 @@ export async function executeBarcodeTask(task, ports = {}) {
       token,
       verify: verifier.verify,
       dryRun,
+      onProgress: progress,
     });
   } catch (err) {
     if (/Drive API (401|403)|HTTP (401|403)/.test(err.message)) {
@@ -107,6 +115,7 @@ export async function executeBarcodeTask(task, ports = {}) {
   const storage = ports.storage ?? chrome.storage.local;
   if (!dryRun) await addRecoveryTargets(storage, targets);
 
+  progress(targets.length, targets.length, 'reschedule');
   const response = await reschedule({ dryRun, targets });
   if (response?.reason || !response?.result) {
     return error(`${response?.reason ?? 'Depot не повернув результат'} | Для retry: ${targets.length}`);

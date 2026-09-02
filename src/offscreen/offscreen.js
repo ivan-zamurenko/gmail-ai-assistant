@@ -90,6 +90,10 @@ async function handle(db, id) {
           type: 'drive-remove-token', token,
         }),
         storage: createRuntimeStorage((message) => chrome.runtime.sendMessage(message)),
+        onProgress: (current, total, stage) => {
+          const count = total > 0 ? ` | ${current}/${total}` : '';
+          console.log(`[barcode] ${stage}${count} | ${Date.now() - started}ms`);
+        },
       })
       : await chrome.runtime.sendMessage({ type: 'execute', task });
     await writeResult(db, id, { ...result, execMs: Date.now() - started });

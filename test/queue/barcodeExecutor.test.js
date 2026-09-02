@@ -93,3 +93,29 @@ test('Discord barcode dry run previews the same exact target without local write
   assert.equal(result.status, 'done');
   assert.match(result.summary, /Dry run.*Reschedule: 1/);
 });
+
+test('Discord barcode scan reports PII-free execution stages', async () => {
+  const progress = [];
+  await executeBarcodeTask(task(true), {
+    loadConfig: () => ({ driveFolderId: 'synthetic-folder' }),
+    getAuthToken: async () => 'synthetic-token',
+    lookup,
+    processLabels: async (options) => {
+      options.onProgress(0, 1, 'listing');
+      options.onProgress(1, 1, 'reading');
+      options.onProgress(1, 1, 'done');
+      return scanOne(options);
+    },
+    storage: memoryStorage(),
+    onProgress: (current, total, stage) => progress.push({ current, total, stage }),
+    reschedule: async ({ dryRun, targets }) => ({ result: {
+      dryRun, count: targets.length, packages: targets,
+    } }),
+  });
+
+  assert.deepEqual(progress.map(({ stage }) => stage), [
+    'depot-probe', 'depot-ready', 'drive-auth', 'drive-ready',
+    'listing', 'reading', 'done', 'reschedule',
+  ]);
+  assert.doesNotMatch(JSON.stringify(progress), /123456789|7654321|synthetic-token/);
+});

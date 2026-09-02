@@ -327,3 +327,10 @@ into this log.
   HELD notes immediately before every live mutation. Synthetic tests cover both
   Quick Search response variants, substring rejection, label-only wiring, and
   preservation of the full Scanning History path without real parcel data.
+- Added PII-free progress diagnostics for remote Drive-label execution after the
+  first lookup optimization did not materially reduce the owner's observed run
+  time. The offscreen console now reports only stage, current/total counters,
+  and elapsed milliseconds across depot probe, Drive authorization, label scan,
+  and reschedule hand-off. It never logs filenames, file IDs, consignments,
+  ConsIds, OAuth tokens, or customer data. A synthetic regression protects the
+  stage sequence and the data-minimization boundary.

@@ -93,15 +93,6 @@ async function handleDepotCommand(interaction) {
 
   const mode   = interaction.options.getSubcommand(); // all | parcel | barcodes | retry
   const dryRun = interaction.options.getBoolean('dry_run') ?? true;
-  const confirmLive = interaction.options.getBoolean('confirm_live') ?? false;
-
-  if (!dryRun && !confirmLive) {
-    await interaction.reply({
-      content: '⚠️ Live-зміна потребує `confirm_live:true`. Спочатку виконай dry run.',
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
-  }
 
   let args;
   if (mode === RESCHEDULE_MODE.PARCEL) {

@@ -8,11 +8,7 @@ import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 
 const dryRunOption = (o) =>
   o.setName('dry_run')
-   .setDescription('true = лише показати, нічого не змінювати (за замовч. true)');
-
-const liveConfirmationOption = (o) =>
-  o.setName('confirm_live')
-   .setDescription('Обовʼязково true для live-зміни');
+   .setDescription('true = лише перегляд; false = LIVE-перенос (за замовч. true)');
 
 export const commands = [
   new SlashCommandBuilder()
@@ -22,8 +18,7 @@ export const commands = [
     .addSubcommand(s =>
       s.setName('all')
        .setDescription('Знайти всі CAD-посилки з майбутньою датою і перенести')
-       .addBooleanOption(dryRunOption)
-       .addBooleanOption(liveConfirmationOption))
+       .addBooleanOption(dryRunOption))
     .addSubcommand(s =>
       s.setName('parcel')
        .setDescription('Перенести одну посилку на задану дату')
@@ -35,18 +30,15 @@ export const commands = [
          o.setName('new_date')
           .setDescription('Дата YYYY-MM-DD — майбутня, не субота й не неділя')
           .setRequired(true))
-       .addBooleanOption(dryRunOption)
-       .addBooleanOption(liveConfirmationOption))
+       .addBooleanOption(dryRunOption))
     .addSubcommand(s =>
       s.setName('barcodes')
        .setDescription('Зчитати лейбли з Drive і перенести знайдені посилки')
-       .addBooleanOption(dryRunOption)
-       .addBooleanOption(liveConfirmationOption))
+       .addBooleanOption(dryRunOption))
     .addSubcommand(s =>
       s.setName('retry')
        .setDescription('Повторити сьогоднішні server errors без скану Drive')
-       .addBooleanOption(dryRunOption)
-       .addBooleanOption(liveConfirmationOption)),
+       .addBooleanOption(dryRunOption)),
 
   new SlashCommandBuilder()
     .setName('find')

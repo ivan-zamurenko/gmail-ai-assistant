@@ -83,7 +83,8 @@ test/
 **Discord command schema includes the three expected commands**
 
 - Перевіряє, що бот публікує команди `reschedule`, `find` і `todo`.
-- Фіксує manual parcel options: `con_id`, `new_date`, `dry_run`, `confirm_live`.
+- Фіксує options усіх чотирьох reschedule modes і доводить, що єдина live-згода
+  — явне `dry_run:false`, без окремого `confirm_live`.
 - Захищає від випадкового видалення або перейменування команди під час рефакторингу.
 - Fixture не потрібен: тест читає справжній command schema з production-коду.
 - Не перевіряє реєстрацію команд у Discord API або permissions у живому guild.

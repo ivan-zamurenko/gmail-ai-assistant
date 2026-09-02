@@ -60,9 +60,9 @@ Long scans acknowledge immediately and send their final private report by DM;
 Google Drive must first be authorized once from the extension popup.
 
 `/reschedule parcel` first resolves exactly one consignment, then applies the
-operator-selected future working date. It defaults to dry-run; a live Save also
-requires `dry_run:false` and `confirm_live:true`. Dates use `YYYY-MM-DD` in
-Discord and are converted to the depot's `DD/MM/YYYY` only inside the executor.
+operator-selected future working date. It defaults to dry-run; explicitly
+selecting `dry_run:false` confirms a live Save. Dates use `YYYY-MM-DD` in Discord
+and are converted to the depot's `DD/MM/YYYY` only inside the executor.
 
 `/find` looks up any consignment live and returns a rich card: status colour, full scan history, the straight-line distance between where the parcel was last scanned and its **Eircode** (resolved via Google Geocoding — Eircodes are proprietary, so OSM can't), and a route map. For a **multi-parcel** consignment it groups the scans per parcel and shows a `(delivered/total)` count with a per-parcel breakdown — so you can see at a glance that parcel 1 is delivered while parcel 2 is still at the depot.
 

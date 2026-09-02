@@ -53,8 +53,9 @@ project document.
   automation and goes to a human.
 - AI output must be grounded in depot data. It must not invent missing facts;
   customer communication starts as a draft with human review.
-- Mutating depot actions default to dry-run and require explicit live
-  confirmation.
+- Mutating depot actions default to dry-run. Per the owner's 2026-09-02
+  decision, explicitly selecting `dry_run:false` is the live confirmation;
+  Discord commands must not require a second `confirm_live` option.
 
 ## Team review lenses
 

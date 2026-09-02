@@ -9,12 +9,12 @@ test('Discord command schema includes the three expected commands', () => {
   ]);
 
   const reschedule = commands[0].toJSON();
-  const parcel = reschedule.options.find((option) => option.name === 'parcel');
-  assert.deepEqual(parcel.options.map((option) => option.name), [
-    'con_id', 'new_date', 'dry_run', 'confirm_live',
-  ]);
-  const retry = reschedule.options.find((option) => option.name === 'retry');
-  assert.deepEqual(retry.options.map((option) => option.name), [
-    'dry_run', 'confirm_live',
-  ]);
+  const optionNames = (subcommand) => reschedule.options
+    .find((option) => option.name === subcommand)
+    .options.map((option) => option.name);
+
+  assert.deepEqual(optionNames('all'), ['dry_run']);
+  assert.deepEqual(optionNames('parcel'), ['con_id', 'new_date', 'dry_run']);
+  assert.deepEqual(optionNames('barcodes'), ['dry_run']);
+  assert.deepEqual(optionNames('retry'), ['dry_run']);
 });

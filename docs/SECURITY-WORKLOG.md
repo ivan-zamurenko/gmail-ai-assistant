@@ -303,3 +303,11 @@ into this log.
   binding to prevent accidental deployment to another Firebase project and
   ignored local Firebase debug logs. Authentication tokens, account details,
   debug output, and other credentials were not added to the repository.
+
+## 2026-09-02
+
+- Removed the redundant Discord `confirm_live` option by explicit owner
+  decision. Reschedule commands remain fail-safe by default because an omitted
+  `dry_run` is interpreted as `true`; choosing `dry_run:false` is now the single
+  explicit confirmation for a live depot mutation. Updated the production
+  command schema, handler, regression contract, and operator documentation.

@@ -347,3 +347,16 @@ into this log.
   identifier is sent to a CDN. A read-only aggregate audit of all 69 private
   examples completed in 9.57 seconds, matched all 65/65 pre-named consignments,
   and emitted no identifiers. Added synthetic fast-path and fallback regressions.
+- Added a throttled Discord progress bar for remote Drive-label runs. The
+  extension coalesces Firestore writes and exposes only an allowlisted stage,
+  bounded current/total counters, bounded elapsed milliseconds, and server
+  timestamp; rules reject all other claimed-task progress mutations. The bot
+  edits one ephemeral message and retains the private DM final report. Added
+  synthetic tests for coalescing, bounds, rendering, throttling, and PII absence.
+- Verified the progress release with ESLint, 63 automated tests, a production
+  extension build, and `git diff --check`; deployed only the compiled Firestore
+  rules to the bound `dpd-assistant` project and restarted bot version 0.1.10.
+  The root dependency audit is clean. The bot audit still reports the known
+  moderate transitive `uuid` advisory through Firebase Admin; npm offers only a
+  breaking Firebase Admin major upgrade, so it was documented rather than
+  force-applied without a separate migration and regression pass.

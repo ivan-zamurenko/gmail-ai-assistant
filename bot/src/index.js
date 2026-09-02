@@ -17,6 +17,9 @@ import { buildParcelEmbed } from './render.js';
 import { addTodo, listTodos, markDone, clearDone, renderList } from './todo.js';
 import { safeErrorMessage } from './errors.js';
 import { validateConsignmentNumber, validateFutureWorkday } from './validation.js';
+import {
+  renderBarcodeProgress, shouldPublishBarcodeProgress,
+} from './barcodeProgress.js';
 
 const cfg = loadConfig();
 
@@ -118,26 +121,49 @@ async function handleDepotCommand(interaction) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
+    if (mode === RESCHEDULE_MODE.BARCODES) {
+      await interaction.editReply(
+        `⏳ Scan Drive Labels запускається (${dryRun ? 'DRY RUN' : 'LIVE'})…`,
+      );
+
+      let published = null;
+      let edits = Promise.resolve();
+      const onProgress = (progress) => {
+        const now = Date.now();
+        if (!shouldPublishBarcodeProgress(published, progress, now)) return;
+        published = { ...progress, publishedAt: now };
+        edits = edits
+          .then(() => interaction.editReply(renderBarcodeProgress(progress, dryRun)))
+          .catch((err) => console.error('Barcode progress update failed:', safeErrorMessage(err)));
+      };
+
+      const queued = enqueueAndWait({
+        command,
+        args,
+        requestedBy: interaction.user.id,
+      }, { timeoutMs: 2 * 60 * 60_000, onProgress });
+
+      queued.then(
+        async (result) => {
+          await edits;
+          await interaction.editReply('✅ Scan Drive Labels завершено — фінальний звіт надіслано в DM.');
+          await interaction.user.send(resultMessage(result));
+        },
+        async (err) => {
+          await edits;
+          const message = `⚠️ Scan Drive Labels: ${safeErrorMessage(err)}`;
+          await interaction.editReply(message);
+          await interaction.user.send(message);
+        },
+      ).catch((err) => console.error('Barcode result delivery failed:', safeErrorMessage(err)));
+      return;
+    }
+
     const queued = enqueueAndWait({
       command,
       args,
       requestedBy: interaction.user.id,
-    }, mode === RESCHEDULE_MODE.BARCODES
-      ? { timeoutMs: 2 * 60 * 60_000 }
-      : undefined);
-
-    if (mode === RESCHEDULE_MODE.BARCODES) {
-      await interaction.editReply(
-        `⏳ Scan Drive Labels запущено (${dryRun ? 'DRY RUN' : 'LIVE'}). `
-        + 'Можеш закрити Discord — фінальний звіт прийде в DM '
-        + '(дозволь приватні повідомлення від сервера).',
-      );
-      queued.then(
-        result => interaction.user.send(resultMessage(result)),
-        err => interaction.user.send(`⚠️ Scan Drive Labels: ${safeErrorMessage(err)}`),
-      ).catch((err) => console.error('Barcode result DM failed:', safeErrorMessage(err)));
-      return;
-    }
+    });
 
     const result = await queued;
     await replyWithResult(interaction, result);

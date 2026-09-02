@@ -134,7 +134,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 | ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |
 | ✅ | `/find` live parcel lookup | status, Eircode distance, route map, multi-parcel `(x/n)` |
 | ✅ | `/reschedule parcel` executor | exact lookup + chosen-date dry-run/live reschedule |
-| ✅ | `/reschedule barcodes` executor | offscreen Drive/ZXing scan + private DM result |
+| ✅ | `/reschedule barcodes` executor | offscreen Drive/ZXing scan + ephemeral progress bar + private DM result |
 | 🚧 | Gmail auto-reply | depot-grounded drafts, human-in-the-loop |
 | 📋 | Delivery verification | delivered-vs-expected → mini-report in Discord |
 | 📋 | Carrier adapter layer | swap DPD for another carrier without touching logic |

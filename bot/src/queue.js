@@ -24,7 +24,11 @@ const TERMINAL = new Set([STATUS.DONE, STATUS.ERROR, STATUS.CANCELLED]);
  * Drops a task on the queue and resolves with the extension's result document.
  * Rejects on timeout so an offline extension never leaves Discord hanging.
  */
-export function enqueueAndWait(task, { timeoutMs = 5 * 60_000, claimWindowMs = 60_000 } = {}) {
+export function enqueueAndWait(task, {
+  timeoutMs = 5 * 60_000,
+  claimWindowMs = 60_000,
+  onProgress,
+} = {}) {
   const id  = randomUUID();
   const ref = db.collection(TASKS_COLLECTION).doc(id);
 
@@ -43,6 +47,7 @@ export function enqueueAndWait(task, { timeoutMs = 5 * 60_000, claimWindowMs = 6
   return new Promise((resolvePromise, reject) => {
     let settled = false;
     let unsubscribe = () => {};
+    let lastProgress = '';
 
     const cleanup = () => {
       clearTimeout(timer);
@@ -102,7 +107,21 @@ export function enqueueAndWait(task, { timeoutMs = 5 * 60_000, claimWindowMs = 6
     unsubscribe = ref.onSnapshot(
       (snap) => {
         const data = snap.data();
-        if (!data || !TERMINAL.has(data.status)) return;
+        if (!data) return;
+        if (data.status === STATUS.CLAIMED && typeof onProgress === 'function') {
+          const progress = {
+            stage: data.progressStage,
+            current: data.progressCurrent,
+            total: data.progressTotal,
+            elapsedMs: data.progressMs,
+          };
+          const key = JSON.stringify(progress);
+          if (typeof progress.stage === 'string' && key !== lastProgress) {
+            lastProgress = key;
+            try { onProgress(progress); } catch { /* UI diagnostics must not stop work */ }
+          }
+        }
+        if (!TERMINAL.has(data.status)) return;
         finishWithResult(data);
       },
       // Do not reject early: the extension may already have claimed/executed the

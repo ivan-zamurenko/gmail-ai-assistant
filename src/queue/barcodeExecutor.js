@@ -115,7 +115,7 @@ export async function executeBarcodeTask(task, ports = {}) {
   const storage = ports.storage ?? chrome.storage.local;
   if (!dryRun) await addRecoveryTargets(storage, targets);
 
-  progress(targets.length, targets.length, 'reschedule');
+  progress(0, targets.length, 'reschedule');
   const response = await reschedule({ dryRun, targets });
   if (response?.reason || !response?.result) {
     return error(`${response?.reason ?? 'Depot не повернув результат'} | Для retry: ${targets.length}`);

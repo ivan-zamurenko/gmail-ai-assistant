@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **60 автоматизованих тестів у 17 файлах**. Усі вони працюють
+Поточна базова лінія: **63 автоматизовані тести у 19 файлах**. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -53,6 +53,7 @@ git diff --check
 ```text
 test/
 ├── bot/
+│   ├── barcodeProgress.test.js Discord progress rendering and throttling
 │   ├── commands.test.js     Discord command contract
 │   ├── render.test.js       Discord parcel-card presentation
 │   └── validation.test.js   Discord depot-command input validation
@@ -70,7 +71,8 @@ test/
 ├── queue/
 │   ├── barcodeExecutor.test.js Discord Drive-label orchestration
 │   ├── executor.test.js     Queue validation and command boundary
-│   └── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
+│   ├── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
+│   └── taskProgress.test.js PII-free coalesced progress transport
 └── utils/
     └── errors.test.js       Safe outbound error messages
 ```
@@ -79,6 +81,16 @@ test/
 модуль отримує власний test-файл; не складаємо всі сценарії в один загальний файл.
 
 ## Поточне покриття
+
+### `test/bot/barcodeProgress.test.js`
+
+**Discord renders a bounded PII-free progress bar**
+
+- Перевіряє режим, `current/total`, відсоток, етап і elapsed seconds в одному
+  редагованому ephemeral-повідомленні.
+- Доводить, що renderer не потребує consignment, ConsId, filename або token.
+- Окремий сценарій обмежує частоту проміжних Discord edits, але завжди пропускає
+  останнє фото та початок reschedule.
 
 ### `test/bot/commands.test.js`
 
@@ -533,6 +545,15 @@ test/
 - Захищає від прямого звернення до недоступного в offscreen `chrome.storage.local`.
 - Fake runtime port не використовує Chrome, Firestore, Drive, depot або реальні
   consignment identifiers.
+
+### `test/queue/taskProgress.test.js`
+
+**Queue progress is bounded, PII-free and coalesced**
+
+- Пропускає до Firestore тільки дозволені етапи та чотири числові/службові поля.
+- Об’єднує швидкі події, щоб progress-діагностика не стала bottleneck великого
+  batch; значення обмежені розміром batch і двогодинним execution window.
+- Використовує injected writer без Firebase, Discord, фотографій та parcel data.
 
 ### `test/queue/executor.test.js`
 

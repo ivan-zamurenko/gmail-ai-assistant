@@ -31,6 +31,33 @@ service cloud.firestore {
         && request.time >= resource.data.expiresAt
         && changedOnly(['status', 'summary', 'completedAt']);
 
+      // Claimed barcode tasks may expose only bounded, PII-free progress.
+      allow update: if assignedExecutor()
+        && resource.data.status == 'claimed'
+        && request.resource.data.status == 'claimed'
+        && request.resource.data.progressStage in [
+          'depot-probe', 'depot-ready', 'drive-auth', 'drive-ready',
+          'listing', 'done', 'reschedule'
+        ]
+        && request.resource.data.progressCurrent is int
+        && request.resource.data.progressCurrent >= 0
+        && request.resource.data.progressCurrent <= 10000
+        && request.resource.data.progressTotal is int
+        && request.resource.data.progressTotal >= 0
+        && request.resource.data.progressTotal <= 10000
+        && request.resource.data.progressCurrent
+          <= (request.resource.data.progressTotal == 0
+            ? 10000
+            : request.resource.data.progressTotal)
+        && request.resource.data.progressMs is int
+        && request.resource.data.progressMs >= 0
+        && request.resource.data.progressMs <= 7200000
+        && request.resource.data.progressAt == request.time
+        && changedOnly([
+          'progressStage', 'progressCurrent', 'progressTotal',
+          'progressMs', 'progressAt'
+        ]);
+
       // A claimed executor may return only bounded result fields; command,
       // arguments, actor, executor and timestamps remain immutable.
       allow update: if assignedExecutor()

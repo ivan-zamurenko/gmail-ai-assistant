@@ -78,6 +78,13 @@ Discord. The bounded result may contain up to
 25 consignment numbers and is delivered to the administrator's private DM; the
 temporary task document is deleted by the bot after completion.
 
+While a barcode task is claimed, the executor may update only a strict progress
+allowlist: stage, bounded current/total counters, bounded elapsed milliseconds,
+and a server timestamp. Firestore rules reject every other claimed-to-claimed
+mutation. The bot renders those fields into one throttled ephemeral progress
+message; no filename, Drive ID, consignment, ConsId, token, or customer field is
+part of this channel.
+
 Barcode pixels are decoded locally with the self-hosted
 `assets/zxing_reader.wasm`; the extension never fetches decoder code from a CDN.
 The extension-page CSP permits WebAssembly compilation but keeps scripts limited

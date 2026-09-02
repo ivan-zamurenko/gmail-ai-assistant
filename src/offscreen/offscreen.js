@@ -18,7 +18,7 @@ import { initializeApp }              from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import {
   getFirestore, collection, query, where,
-  onSnapshot, doc, runTransaction, serverTimestamp,
+  onSnapshot, doc, runTransaction, serverTimestamp, updateDoc,
 } from 'firebase/firestore';
 
 import { loadConfig }         from '../config/config.js';
@@ -27,6 +27,7 @@ import {
 } from '../queue/contract.js';
 import { executeBarcodeTask } from '../queue/barcodeExecutor.js';
 import { createRuntimeStorage } from '../queue/runtimeStorage.js';
+import { createTaskProgressReporter } from '../queue/taskProgress.js';
 import { safeErrorMessage }   from '../utils/errors.js';
 
 // One browser profile is the executor. Queue work is deliberately serial because
@@ -72,6 +73,16 @@ async function claimTask(db, id) {
 
 async function handle(db, id) {
   const started = Date.now();
+  const progress = createTaskProgressReporter((value) => updateDoc(
+    doc(db, TASKS_COLLECTION, id),
+    {
+      progressStage: value.stage,
+      progressCurrent: value.current,
+      progressTotal: value.total,
+      progressMs: value.elapsedMs,
+      progressAt: serverTimestamp(),
+    },
+  ));
   try {
     const task = await claimTask(db, id);
     if (!task) return;
@@ -91,11 +102,14 @@ async function handle(db, id) {
         }),
         storage: createRuntimeStorage((message) => chrome.runtime.sendMessage(message)),
         onProgress: (current, total, stage) => {
+          const elapsedMs = Date.now() - started;
           const count = total > 0 ? ` | ${current}/${total}` : '';
-          console.log(`[barcode] ${stage}${count} | ${Date.now() - started}ms`);
+          console.log(`[barcode] ${stage}${count} | ${elapsedMs}ms`);
+          progress.push(current, total, stage, elapsedMs);
         },
       })
       : await chrome.runtime.sendMessage({ type: 'execute', task });
+    if (isBarcodeTask) await progress.flush();
     await writeResult(db, id, { ...result, execMs: Date.now() - started });
   } catch (err) {
     await writeResult(db, id, {

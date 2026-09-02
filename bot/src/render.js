@@ -173,7 +173,10 @@ export async function buildParcelEmbed(parcel, apiKey) {
     else {
       const km    = haversineKm(parcel.drop, addr);
       const shown = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
-      desc.push(`📍 **≈ ${shown}** from Eircode ${eircode}${landed}`);
+      // 🔴/🔵 mirror the red S / blue D markers drawn on the map below.
+      desc.push(`📍 **≈ ${shown}** off target`
+        + `\n🔴 S · dropped ≈ ${dropEircode ?? '—'}`
+        + `\n🔵 D · target ${eircode}`);
     }
     const dest = eircode ?? encodeURIComponent(place(a));
     desc.push(`[🗺 Open route in Google Maps](https://www.google.com/maps/dir/?api=1`

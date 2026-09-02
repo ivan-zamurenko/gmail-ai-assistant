@@ -31,3 +31,25 @@ test('barcode windows preserve the configured ZXing reader state', () => {
     ['reset'],
   ]);
 });
+
+test('expected ZXing misses do not flood the operator console', () => {
+  const originalWarn = globalThis.console.warn;
+  const warnings = [];
+  globalThis.console.warn = (...args) => warnings.push(args);
+
+  try {
+    const reader = {
+      decodeWithState() {
+        globalThis.console.warn('MultiFormatReader: non-ReaderException from reader:', new Error('expected miss'));
+        globalThis.console.warn('unrelated warning');
+        throw new Error('no barcode in this window');
+      },
+      reset() {},
+    };
+
+    assert.equal(decodeWithConfiguredReader({}, reader), null);
+    assert.deepEqual(warnings, [['unrelated warning']]);
+  } finally {
+    globalThis.console.warn = originalWarn;
+  }
+});

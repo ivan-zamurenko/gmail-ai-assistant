@@ -334,3 +334,9 @@ into this log.
   and reschedule hand-off. It never logs filenames, file IDs, consignments,
   ConsIds, OAuth tokens, or customer data. A synthetic regression protects the
   stage sequence and the data-minimization boundary.
+- Confirmed from the owner's PII-free timing trace that label decoding, not Drive
+  listing, dominated the batch and that ZXing emitted a full warning stack for
+  ordinary failed angle/window attempts. Suppressed only ZXing's exact expected
+  `MultiFormatReader` warning during its synchronous decode call; unrelated
+  warnings, barcode selection, retry windows, and fail-closed handling remain
+  unchanged. Added a focused regression for that boundary.

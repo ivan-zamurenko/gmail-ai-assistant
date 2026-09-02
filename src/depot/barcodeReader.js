@@ -3,11 +3,18 @@
  * were configured once for the whole photo.
  */
 export function decodeWithConfiguredReader(bitmap, reader) {
+  const warn = console.warn;
+  console.warn = (...args) => {
+    if (args[0] !== 'MultiFormatReader: non-ReaderException from reader:') {
+      warn.apply(console, args);
+    }
+  };
   try {
     return reader.decodeWithState(bitmap);
   } catch {
     return null;
   } finally {
+    console.warn = warn;
     reader.reset();
   }
 }

@@ -1,0 +1,247 @@
+[
+  {
+    "path": "bot/config/config.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/config/local.example.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/commands.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/contract.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/errors.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/firebase.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/geo.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/index.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/queue.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/register-commands.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/render.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "bot/src/todo.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "build.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "eslint.config.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "snippets/depot_script_v2.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "snippets/discover_consignment_details.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "snippets/discover_quick_search.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "snippets/discover_reschedule_form.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/auth/getAuthToken.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/background/background.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/config/config.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/config/local.example.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/barcode.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/depotScript.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/driveScanner.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/futureDateCheck.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/futureDateConsole.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/labelBarcode.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/labelName.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/lookup.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/depot/lookupConsole.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/gmail/labels.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/offscreen/offscreen.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/parser/consignment.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/popup/depotFlow.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/popup/gmailFlow.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/popup/logView.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/popup/popup.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/popup/settingsFlow.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/popup/statusHelper.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/queue/contract.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/queue/executor.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/utils/constants.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/utils/errors.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/utils/logger.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "src/utils/request.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "test/security.test.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "tools/barcodeTest/build.js",
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "path": "tools/barcodeTest/main.js",
+    "exit_code": 0,
+    "output": ""
+  }
+]

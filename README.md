@@ -18,6 +18,14 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 
 ---
 
+## Робота з проєктом
+
+Комплект виконання v1.2 інтегровано зі збереженням чинного продукту.
+Початок: [інструкція](00_READ_FIRST.md), [поточна задача](.workflow/CURRENT.md),
+[актуальний стан](docs/audit/LOCAL_BASELINE.md), [план](roadmap/ROADMAP.md).
+Для локального читання всіх керованих документів відкрийте `START_HERE.html`.
+План містить майбутні задачі; їх наявність не означає реалізацію або дозвіл запуску.
+
 ## Engineering Highlights
 
 - **Two-process architecture over a shared queue.** Discord bot (Node) and Chrome extension (browser) exchange tasks via Firestore. A versioned contract keeps them decoupled; a version skew degrades gracefully instead of crashing.

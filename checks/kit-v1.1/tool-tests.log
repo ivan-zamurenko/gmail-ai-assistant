@@ -1,0 +1,172 @@
+TAP version 13
+# Subtest: valid UTF-8 docs and local links pass
+ok 1 - valid UTF-8 docs and local links pass
+  ---
+  duration_ms: 5.39528
+  type: 'test'
+  ...
+# Subtest: broken local link fails
+ok 2 - broken local link fails
+  ---
+  duration_ms: 1.629337
+  type: 'test'
+  ...
+# Subtest: unclosed code fence fails
+ok 3 - unclosed code fence fails
+  ---
+  duration_ms: 1.465599
+  type: 'test'
+  ...
+# Subtest: links inside code and external URLs are not filesystem paths
+ok 4 - links inside code and external URLs are not filesystem paths
+  ---
+  duration_ms: 2.590788
+  type: 'test'
+  ...
+# Subtest: invalid UTF-8 and empty documents fail
+ok 5 - invalid UTF-8 and empty documents fail
+  ---
+  duration_ms: 2.687649
+  type: 'test'
+  ...
+# Subtest: escaping local links are refused
+ok 6 - escaping local links are refused
+  ---
+  duration_ms: 1.730025
+  type: 'test'
+  ...
+# Subtest: unmanaged legacy Markdown is not silently included
+ok 7 - unmanaged legacy Markdown is not silently included
+  ---
+  duration_ms: 1.085915
+  type: 'test'
+  ...
+# Subtest: missing or empty manifest fails rather than empty success
+ok 8 - missing or empty manifest fails rather than empty success
+  ---
+  duration_ms: 1.298924
+  type: 'test'
+  ...
+# Subtest: reader embeds text safely without remote dependencies
+ok 9 - reader embeds text safely without remote dependencies
+  ---
+  duration_ms: 4.158441
+  type: 'test'
+  ...
+# Subtest: reader rejects empty manifest and escaping source path
+ok 10 - reader rejects empty manifest and escaping source path
+  ---
+  duration_ms: 1.621429
+  type: 'test'
+  ...
+# Subtest: HTML escaping includes ampersands and attribute quotes
+ok 11 - HTML escaping includes ampersands and attribute quotes
+  ---
+  duration_ms: 0.255309
+  type: 'test'
+  ...
+# Subtest: valid project selects first task
+ok 12 - valid project selects first task
+  ---
+  duration_ms: 4.254145
+  type: 'test'
+  ...
+# Subtest: pending gate blocks successor
+ok 13 - pending gate blocks successor
+  ---
+  duration_ms: 1.337345
+  type: 'test'
+  ...
+# Subtest: approved gate and completed dependency unlock successor
+ok 14 - approved gate and completed dependency unlock successor
+  ---
+  duration_ms: 2.644932
+  type: 'test'
+  ...
+# Subtest: in-progress task is returned before a ready task
+ok 15 - in-progress task is returned before a ready task
+  ---
+  duration_ms: 0.926763
+  type: 'test'
+  ...
+# Subtest: dependency cycle is rejected
+ok 16 - dependency cycle is rejected
+  ---
+  duration_ms: 1.4245
+  type: 'test'
+  ...
+# Subtest: unknown dependency and gate are rejected
+ok 17 - unknown dependency and gate are rejected
+  ---
+  duration_ms: 0.909854
+  type: 'test'
+  ...
+# Subtest: duplicate IDs and empty graph are rejected
+ok 18 - duplicate IDs and empty graph are rejected
+  ---
+  duration_ms: 0.848784
+  type: 'test'
+  ...
+# Subtest: missing card is rejected
+ok 19 - missing card is rejected
+  ---
+  duration_ms: 0.886743
+  type: 'test'
+  ...
+# Subtest: path traversal and escaping symlink are rejected
+ok 20 - path traversal and escaping symlink are rejected
+  ---
+  duration_ms: 1.107279
+  type: 'test'
+  ...
+# Subtest: done requires real matching evidence with a successful check
+ok 21 - done requires real matching evidence with a successful check
+  ---
+  duration_ms: 1.776092
+  type: 'test'
+  ...
+# Subtest: done requires finished dependencies and approved gates
+ok 22 - done requires finished dependencies and approved gates
+  ---
+  duration_ms: 1.381488
+  type: 'test'
+  ...
+# Subtest: blocked task requires reason and is not silently selected
+ok 23 - blocked task requires reason and is not silently selected
+  ---
+  duration_ms: 0.812104
+  type: 'test'
+  ...
+# Subtest: active state consistency and one writer are enforced
+ok 24 - active state consistency and one writer are enforced
+  ---
+  duration_ms: 1.157375
+  type: 'test'
+  ...
+# Subtest: approved gates need evidence and state cannot contain unknown tasks
+ok 25 - approved gates need evidence and state cannot contain unknown tasks
+  ---
+  duration_ms: 1.089319
+  type: 'test'
+  ...
+# Subtest: CLI next and show are read-only, never execute card commands
+ok 26 - CLI next and show are read-only, never execute card commands
+  ---
+  duration_ms: 93.113872
+  type: 'test'
+  ...
+# Subtest: CLI invalid ID and malformed JSON return failure
+ok 27 - CLI invalid ID and malformed JSON return failure
+  ---
+  duration_ms: 62.474717
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 245.479779

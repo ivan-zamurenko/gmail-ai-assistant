@@ -1,0 +1,13 @@
+{
+  "check": "dry_run_has_zero_drive_mutations",
+  "expected_mutations": 0,
+  "observed_mutations": 2,
+  "mutation_methods": [
+    "POST",
+    "POST"
+  ],
+  "result": "FAIL",
+  "boundary": "offline fetch and image-decoder fixtures; real scanner and naming modules"
+}
+(node:2531) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

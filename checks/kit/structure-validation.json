@@ -1,0 +1,42 @@
+{
+  "result": "PASS",
+  "managed_markdown": 92,
+  "mjs_checked": [
+    "tools/build-start-here.mjs",
+    "tools/roadmap.mjs",
+    "tools/check-docs.mjs",
+    "tools/tests/reader.test.mjs",
+    "tools/tests/roadmap.test.mjs",
+    "tools/tests/docs.test.mjs",
+    "checks/baseline/drive-dry-run-probe.mjs",
+    "checks/baseline/syntax-check.mjs"
+  ],
+  "config_files_checked": {
+    "json": [
+      "DOCS_MANIFEST.json",
+      ".workflow/state.json",
+      "roadmap/tasks.json",
+      "docs/copilot/settings.merge-example.json",
+      "docs/audit/source-inventory.json",
+      "checks/kit/source-integrity.json",
+      "checks/kit/run-report.json",
+      ".workflow/evidence/KIT-00.json",
+      ".workflow/evidence/TEMPLATE.json"
+    ],
+    "toml": [
+      "agent-config/codex.config.example.toml"
+    ],
+    "yaml": [
+      ".agents/skills/dpd-task-delivery/agents/openai.yaml"
+    ],
+    "frontmatter": [
+      ".github/instructions/tests.instructions.md",
+      ".github/instructions/depot.instructions.md",
+      ".github/instructions/gmail-ai.instructions.md",
+      ".github/agents/dpd-review.agent.md",
+      ".agents/skills/dpd-task-delivery/SKILL.md"
+    ]
+  },
+  "html_inline_script_syntax": "PASS",
+  "html_browser_rendering": "not_performed"
+}

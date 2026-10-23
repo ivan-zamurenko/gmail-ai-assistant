@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-09",
+  "status": "passed_with_known_runtime_defect",
+  "environment": {
+    "node": "v22.16.0",
+    "npm": "10.9.2",
+    "python": "3.13.5"
+  },
+  "managed_markdown": 92,
+  "task_count": 40,
+  "stage_count": 9,
+  "acceptance_scenarios": 200,
+  "checks": [
+    {
+      "name": "roadmap-validate",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "validate"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/roadmap-validate.log"
+    },
+    {
+      "name": "roadmap-next",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "next"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/roadmap-next.log"
+    },
+    {
+      "name": "markdown-validate",
+      "command": [
+        "node",
+        "tools/check-docs.mjs"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/markdown-validate.log"
+    },
+    {
+      "name": "tool-tests",
+      "command": [
+        "node",
+        "--test",
+        "tools/tests/docs.test.mjs",
+        "tools/tests/reader.test.mjs",
+        "tools/tests/roadmap.test.mjs"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/tool-tests.log"
+    },
+    {
+      "name": "html-build",
+      "command": [
+        "node",
+        "tools/build-start-here.mjs"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/html-build.log"
+    },
+    {
+      "name": "runtime-syntax",
+      "command": [
+        "node",
+        "/mnt/data/dpd-assistance-kit/checks/baseline/syntax-check.mjs",
+        "--root",
+        "/mnt/data/audit/gmail-ai-assistant"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/runtime-syntax.log"
+    },
+    {
+      "name": "runtime-eslint",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/**/*.js"
+      ],
+      "cwd": "/mnt/data/audit/gmail-ai-assistant",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/runtime-eslint.log"
+    },
+    {
+      "name": "runtime-known-dry-run-defect",
+      "command": [
+        "node",
+        "--experimental-vm-modules",
+        "/mnt/data/dpd-assistance-kit/checks/baseline/drive-dry-run-probe.mjs",
+        "--root",
+        "/mnt/data/audit/gmail-ai-assistant"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "matched_expected": true,
+      "log": "checks/kit/runtime-known-dry-run-defect.log"
+    },
+    {
+      "name": "skill-package",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "/home/oai/skills/skill-creator/scripts/package_skill.py",
+        "/mnt/data/dpd-assistance-kit/.agents/skills/dpd-task-delivery",
+        "/mnt/data"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/skill-package.log"
+    }
+  ],
+  "structure_validation": "checks/kit/structure-validation.json",
+  "warning": "Expected exit 1 for the original runtime dry-run probe is an UNFIXED defect, not a product PASS.",
+  "final_reader_verification": {
+    "reason": "Localized navigation labels after main validation",
+    "command": [
+      "node",
+      "--test",
+      "tools/tests/reader.test.mjs"
+    ],
+    "exit_code": 0,
+    "passed": 3,
+    "failed": 0,
+    "log": "checks/kit/reader-final.log",
+    "markdown_revalidated": true,
+    "html_regenerated": true,
+    "inline_script_syntax": "PASS"
+  }
+}

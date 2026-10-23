@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "active_task": null,
+  "tasks": {
+    "S00-01": {
+      "status": "done",
+      "evidence": ".workflow/evidence/S00-01.json",
+      "block_reason": null
+    },
+    "S00-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S00-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S00-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S00-05": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S01-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S01-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S01-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S01-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S01-05": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S02-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S02-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S02-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S02-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S03-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S03-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S03-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S03-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S03-05": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S04-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S04-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S04-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S04-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S04-05": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S05-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S05-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S05-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S05-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S05-05": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S06-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S06-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S06-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S06-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S06-05": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S07-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S07-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S07-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S08-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S08-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S08-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S08-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-01": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-02": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-03": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-04": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-05": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-06": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-07": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-08": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-09": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-10": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-11": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    },
+    "S09-12": {
+      "status": "todo",
+      "evidence": null,
+      "block_reason": null
+    }
+  },
+  "gates": {
+    "G_ARCHITECTURE": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Существующая топология Chrome + Node bot + Firestore известна. Требуется допустимая глубина изменений и выбор устойчивого Drive execution context."
+    },
+    "G_GMAIL_POLICY": {
+      "status": "pending",
+      "evidence": null,
+      "note": "OWNER-D01 (2026-10-09): обязательная ручная проверка AI-ответов выбрана; auto-send сейчас вне scope. Остаются scope/exclusions, язык, адресаты/Reply-To, labels и внешний допуск; gate pending."
+    },
+    "G_DEPOT_POLICY": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Разрешённые статусы, поля формы и правила logCall."
+    },
+    "G_CALENDAR": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Timezone, cut-off, рабочие дни и источник календаря."
+    },
+    "G_DRIVE_POLICY": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Источник filing date, unknown/ambiguous и existing names."
+    },
+    "G_AI_PROVIDER": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Provider/model, цели, payload и бюджет."
+    },
+    "G_PRIVACY": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Данные/цели/retention и доступ: Gmail, Drive, depot, AI, Firestore, Discord ephemeral replies, Maps. OWNER-D02 не разрешает передачу клиентских данных."
+    },
+    "G_TEST_ACCOUNTS": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Отдельные test accounts/folders и depot стенд."
+    },
+    "G_RELEASE": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Пилот, канал выпуска, остановка и rollback."
+    },
+    "G_GIT": {
+      "status": "approved",
+      "evidence": "AGENTS.md; docs/decisions.md LOCAL-2026-10-23",
+      "note": "Commit/push погоджених змін у codex; без merge main, без чужих незакомічених змін."
+    },
+    "G_DISCORD_ACCESS": {
+      "status": "pending",
+      "evidence": null,
+      "note": "Конкретный test guild/Firebase project/executor, permissions register/start/rules, разрешённые поля Discord и operational scope."
+    },
+    "G_DISCORD_MODES": {
+      "status": "pending",
+      "evidence": null,
+      "note": "all/parcel/barcodes/retry вже реалізовані. Gate стосується лише нової семантики чи розширення scope; не є дозволом на live запуск."
+    }
+  }
+}

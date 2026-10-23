@@ -1,0 +1,149 @@
+{
+  "source": "gmail-ai-assistant-main.zip",
+  "claims": [
+    {
+      "id": "slash_schema",
+      "path": "bot/src/commands.js",
+      "start_line": 17,
+      "end_line": 78,
+      "observation": "find/reschedule all|parcel|barcodes/todo options",
+      "sha256": "a63f85414be3018ab07486bb7629840195bbb12d79973b01b0a8002f2e7e6358"
+    },
+    {
+      "id": "admission_reply",
+      "path": "bot/src/index.js",
+      "start_line": 31,
+      "end_line": 186,
+      "observation": "guild/Admin, ephemeral, default dryRun, handlers and reply",
+      "sha256": "e9a1a847a22de0fa539b64d33ceb1e75b11db7e81147e24f2a826ef5a493dda1"
+    },
+    {
+      "id": "queue_producer",
+      "path": "bot/src/queue.js",
+      "start_line": 27,
+      "end_line": 116,
+      "observation": "record schema, deadlines, terminal delete before reply",
+      "sha256": "2c30353e04a7820c05305b467fd87e6d1099acd03bb0507bf611cd93e24aa936"
+    },
+    {
+      "id": "queue_mirror_bot",
+      "path": "bot/src/contract.js",
+      "start_line": 9,
+      "end_line": 32,
+      "observation": "schema version, statuses, commands and modes",
+      "sha256": "06caa97344e7ccccb6982cea318094f85462db50d4f670cdf1074e1e10a63793"
+    },
+    {
+      "id": "queue_mirror_extension",
+      "path": "src/queue/contract.js",
+      "start_line": 9,
+      "end_line": 32,
+      "observation": "matching values; Object.freeze",
+      "sha256": "931c266e355436cfd925a937f0bbc0db7d1086b27f8f69d291040ac2533008b7"
+    },
+    {
+      "id": "executor_projection",
+      "path": "src/queue/executor.js",
+      "start_line": 168,
+      "end_line": 208,
+      "observation": "minimized lookup fields",
+      "sha256": "b9898bcce7b02df0604a8309d14c2f5993f1fe1cf9e392dd890b8bacf9fb310e"
+    },
+    {
+      "id": "executor_modes",
+      "path": "src/queue/executor.js",
+      "start_line": 210,
+      "end_line": 233,
+      "observation": "only all and find wired",
+      "sha256": "b9898bcce7b02df0604a8309d14c2f5993f1fe1cf9e392dd890b8bacf9fb310e"
+    },
+    {
+      "id": "listener",
+      "path": "src/offscreen/offscreen.js",
+      "start_line": 28,
+      "end_line": 122,
+      "observation": "claim/write/serial/auth/query/heartbeat",
+      "sha256": "4b1ab2ec8f577206dc16ccc5ce6da1d201d36e20a719475d6381c2da95791846"
+    },
+    {
+      "id": "worker",
+      "path": "src/background/background.js",
+      "start_line": 18,
+      "end_line": 71,
+      "observation": "offscreen, alarms and message sender not checked",
+      "sha256": "3af8744e639830b7eadcff6081531cd59888e9a6666470c02f86b0279d2a4e48"
+    },
+    {
+      "id": "rules",
+      "path": "firestore.rules",
+      "start_line": 5,
+      "end_line": 63,
+      "observation": "identity and allowed fields/transitions; Admin distinction",
+      "sha256": "b0ba7f9e3b387e3e48d6cff50589713470a880614367c93523ec2eb7b4f344d2"
+    },
+    {
+      "id": "todo",
+      "path": "bot/src/todo.js",
+      "start_line": 18,
+      "end_line": 68,
+      "observation": "userId, sort, markDone by index, delete only done",
+      "sha256": "a2c2995e1132c2515308f093fcd8a0857bc5d67db39d596603deea16aef6c4ff"
+    },
+    {
+      "id": "render",
+      "path": "bot/src/render.js",
+      "start_line": 1,
+      "end_line": 212,
+      "observation": "12 history limit, latest scan, multiparcel and map",
+      "sha256": "5a5ed89741aa92b1fa05b3079e9ea8118402db199c076c04d18039c753b83a54"
+    },
+    {
+      "id": "geo",
+      "path": "bot/src/geo.js",
+      "start_line": 1,
+      "end_line": 67,
+      "observation": "optional key, geocode, haversine and map fetch",
+      "sha256": "03f70a26cb7d9b60155c4f4713b41fe0066dfb14c5f6b575e47cb8d84e00d6ee"
+    },
+    {
+      "id": "bot_config",
+      "path": "bot/config/config.js",
+      "start_line": 7,
+      "end_line": 24,
+      "observation": "required local values and executorUid",
+      "sha256": "bc7c432d7a3bd3471f947277d7c460bf679bdc592849a1607996dae812566de5"
+    },
+    {
+      "id": "extension_config",
+      "path": "src/config/config.js",
+      "start_line": 1,
+      "end_line": 29,
+      "observation": "static local.js import",
+      "sha256": "42a4c78b45f69ae75ab39c2196a831c10e58a3821f9b366b513e7bcdfec8aae6"
+    },
+    {
+      "id": "security_tests",
+      "path": "test/security.test.js",
+      "start_line": 1,
+      "end_line": 52,
+      "observation": "four existing security tests",
+      "sha256": "46d7546e9883e3dcbd6705dbfba7251d9f9dbca2b55f5d5ab8a0aa6d8cd68e6a"
+    },
+    {
+      "id": "build",
+      "path": "build.js",
+      "start_line": 1,
+      "end_line": 99,
+      "observation": "three browser entry points; no bot in browser bundle",
+      "sha256": "76cdbc24618ef42c94fe249d888da7aec75658c11de4abdcb2c99be19543bd80"
+    },
+    {
+      "id": "manifest",
+      "path": "manifest.json",
+      "start_line": 1,
+      "end_line": 52,
+      "observation": "6.3.0.5; gmail.readonly; offscreen and Firebase hosts",
+      "sha256": "97599014a2c0ae5d0df80ab4cffceb64ec1b4d137af9aff9d791fd5c7882a6b3"
+    }
+  ]
+}

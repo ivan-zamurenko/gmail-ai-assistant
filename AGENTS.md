@@ -105,3 +105,29 @@ The owner makes the final product and trade-off decision.
   current. Do not merge into `main` without explicit owner authorization.
 - Preserve unrelated user work and untracked files. In particular, do not add,
   edit, delete, or commit unrelated EVE guide files.
+
+## Execution kit integration — 2026-10-23
+
+Communicate with the owner in Ukrainian. The owner approved workflow setup only;
+new product features are separate assignments. Start with `.workflow/CURRENT.md`,
+`docs/audit/LOCAL_BASELINE.md`, and `docs/decisions.md`; select only an assigned
+roadmap task. `node tools/roadmap.mjs next` is a read-only recommendation, not
+authorization to execute the roadmap. Keep one writer for shared state/locks;
+delegate bounded independent reviews when helpful.
+
+The kit's ZIP audits and checks are historical. Current source, current owner
+decisions, and local evidence override their snapshot claims. Preserve existing
+`test/` regressions and both `package-lock.json` and `bot/package-lock.json`.
+Parcel/barcodes/retry already exist. Discord live confirmation remains only
+`dry_run:false`; do not restore `confirm_live` or require a second preview approval.
+
+The project skill is `.agents/skills/dpd-task-delivery/SKILL.md`. Its files are
+installed locally; actual discovery in a new IDE session must be verified there.
+Record checks and untested boundaries in `.workflow/evidence/<TASK>.json`,
+update CURRENT/state, and never infer completion from archived logs.
+
+For kit changes run `node tools/roadmap.mjs validate`,
+`node tools/check-docs.mjs`, `node --test tools/tests/*.test.mjs`, and rebuild
+the offline reader with `node tools/build-start-here.mjs`. Product changes also
+follow the quality gates above. Historical probes under `checks/` are manual
+snapshot diagnostics, not current product regression tests.

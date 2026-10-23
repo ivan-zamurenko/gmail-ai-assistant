@@ -708,3 +708,18 @@ Firestore потрібен emulator або ізольований test-project, 
 Зараз тести запускаються локально. Автоматичного GitHub Actions workflow ще
 немає. Коли додамо CI, він має виконувати той самий quality gate без доступу до
 секретів, customer-даних і production Firebase/depot середовища.
+
+## Workflow tooling — 2026-10-23
+
+Комплект додає `tools/tests/` до автоматичного discovery `npm test`.
+Окремий запуск: `node --test tools/tests/*.test.mjs`. Тести перевіряють graph/state,
+обов'язкове evidence для done, відмову для path traversal/symlink, нерозкриття
+HTML/script із Markdown, локальні посилання та актуальні capabilities. Fixtures
+створюються в тимчасових каталогах; зовнішні сервіси не викликаються.
+
+Додаткові команди: `node tools/roadmap.mjs validate`, `node tools/check-docs.mjs`,
+`node tools/build-start-here.mjs`. Точна кількість та результати поточного прогону
+записуються в `.workflow/evidence/S00-01.json`; початкові 63/19 вище — попередня
+продуктова базова лінія, а не новий підрахунок. Історичний Discord probe має назву
+`.probe.mjs` і не входить у default test discovery. Його старі очікування
+не замінюють актуальні product regressions.

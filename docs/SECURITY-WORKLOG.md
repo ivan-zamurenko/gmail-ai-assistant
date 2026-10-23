@@ -360,3 +360,15 @@ into this log.
   moderate transitive `uuid` advisory through Firebase Admin; npm offers only a
   breaking Firebase Admin major upgrade, so it was documented rather than
   force-applied without a separate migration and regression pass.
+
+## 2026-10-23 — execution kit integration
+
+- Installed owner-requested workflow documentation and offline validators after
+  checking archive checksums. Preserved existing runtime edits, private configs,
+  credentials, and label photos. No live services, registration, deployment, or
+  customer-data transfer was performed.
+- Reconciled archive instructions with current access boundaries and the owner's
+  dry_run:false decision. Historical probes/logs are explicitly separated from
+  current regression evidence; no credentials or customer identifiers were added.
+- Existing uncommitted worklog entries were preserved and excluded from the
+  workflow installation commit. Local evidence is in .workflow/evidence/S00-01.json.

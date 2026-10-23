@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "scope": "Document metadata and preserved inputs; not product tests",
+  "tasks": 41,
+  "acceptance_scenarios": 205,
+  "all_tasks_todo": true,
+  "all_gates_pending": true,
+  "card_dependency_tables_match_graph": true,
+  "card_acceptance_counts_match_metadata": true,
+  "reviewed_reply_required_for_ui_and_pilot": true,
+  "prior_baseline_probes_and_skill_bytes_unchanged": true,
+  "original_source_zip_sha256_unchanged": true
+}

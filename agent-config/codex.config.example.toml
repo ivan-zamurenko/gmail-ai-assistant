@@ -1,0 +1,7 @@
+# Merge only after checking the installed client and managed policy.
+# This file is not loaded automatically. No model or credentials are set.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false

@@ -1,0 +1,11 @@
+{
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "chat.useAgentsMdFile": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/__MACOSX": true,
+    "**/labels_example": true,
+    "**/.local": true
+  }
+}

@@ -1,0 +1,231 @@
+TAP version 13
+# Subtest: Discord documentation is included in the managed manifest
+not ok 1 - Discord documentation is included in the managed manifest
+  ---
+  duration_ms: 2.824462
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:10:1'
+  failureType: 'testCodeFailure'
+  error: 'docs/discord-bot.md'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:12:34)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: the roadmap has a dedicated existing-bot workstream
+not ok 2 - the roadmap has a dedicated existing-bot workstream
+  ---
+  duration_ms: 11.690244
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(m.stages.S09)
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:15:44)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: queue task context includes both contract mirrors and Firestore rules
+not ok 3 - queue task context includes both contract mirrors and Firestore rules
+  ---
+  duration_ms: 2.373065
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:18:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(task)
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:19:78)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: source capability inventory does not equate command registration with execution
+not ok 4 - source capability inventory does not equate command registration with execution
+  ---
+  duration_ms: 0.332598
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:22:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open '/mnt/data/dpd-assistance-kit-v1.2/docs/discord/capabilities.json'"
+  code: 'ENOENT'
+  stack: |-
+    Object.readFileSync (node:fs:442:20)
+    read (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:7:18)
+    json (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:8:26)
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:23:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: bot guide retains OWNER-D01 and no-email-send boundary
+not ok 5 - bot guide retains OWNER-D01 and no-email-send boundary
+  ---
+  duration_ms: 0.232278
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:29:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open '/mnt/data/dpd-assistance-kit-v1.2/docs/discord-bot.md'"
+  code: 'ENOENT'
+  stack: |-
+    Object.readFileSync (node:fs:442:20)
+    read (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:7:18)
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:30:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: toolchain explicitly covers two dependency installations and the existing test
+not ok 6 - toolchain explicitly covers two dependency installations and the existing test
+  ---
+  duration_ms: 0.26075
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:32:1'
+  failureType: 'testCodeFailure'
+  error: 'npm --prefix bot ci'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:33:139)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: release integrates bot evidence without forcing unfinished optional modes
+not ok 7 - release integrates bot evidence without forcing unfinished optional modes
+  ---
+  duration_ms: 0.46738
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(get('S08-03').depends_on.includes('S09-12'))
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:37:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: each added bot card contains baseline, boundaries, acceptance, and evidence
+not ok 8 - each added bot card contains baseline, boundaries, acceptance, and evidence
+  ---
+  duration_ms: 0.140501
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:41:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open '/mnt/data/dpd-assistance-kit-v1.2/roadmap/tasks/S09-01.md'"
+  code: 'ENOENT'
+  stack: |-
+    Object.readFileSync (node:fs:442:20)
+    read (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:7:18)
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:43:55)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: new source provenance is distinct from the historical baseline
+not ok 9 - new source provenance is distinct from the historical baseline
+  ---
+  duration_ms: 0.312719
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:48:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open '/mnt/data/dpd-assistance-kit-v1.2/docs/audit/GITHUB_BASELINE.md'"
+  code: 'ENOENT'
+  stack: |-
+    Object.readFileSync (node:fs:442:20)
+    read (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:7:18)
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:49:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: source-based docs do not silently use the old worker or storage architecture
+not ok 10 - source-based docs do not silently use the old worker or storage architecture
+  ---
+  duration_ms: 0.431687
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:53:1'
+  failureType: 'testCodeFailure'
+  error: 'bot/'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:54:130)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 0
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 90.105644

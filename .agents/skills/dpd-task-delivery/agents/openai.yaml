@@ -1,0 +1,4 @@
+interface:
+  display_name: "DPD Task Delivery"
+  short_description: "Одна карточка DPD: проверки, review и checkpoint"
+  default_prompt: "Выполни одну порученную карточку DPD Assistance по AGENTS, CURRENT и roadmap."

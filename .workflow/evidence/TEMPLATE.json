@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "task_id": "<TASK_ID>",
+  "outcome": "not_run",
+  "scope": "<assigned scope>",
+  "base_sha": null,
+  "branch": null,
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "<repository root>",
+      "command": "<exact command>",
+      "exit_code": null,
+      "result": "not_run",
+      "boundary": "synthetic only",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "<repository root>",
+      "command": "<exact command>",
+      "exit_code": null,
+      "result": "not_run",
+      "boundary": "synthetic only",
+      "log": null
+    }
+  ],
+  "decisions": [],
+  "gates": [],
+  "changed_paths": [],
+  "untested": [],
+  "residual_risk": [],
+  "blocker": null,
+  "next_step": null,
+  "git": {
+    "commit_sha": null,
+    "commit_status": "not_performed",
+    "push_status": "not_permitted"
+  },
+  "external_effects": []
+}

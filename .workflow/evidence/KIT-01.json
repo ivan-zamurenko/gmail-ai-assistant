@@ -1,0 +1,76 @@
+{
+  "task_id": "KIT-01",
+  "outcome": "passed",
+  "scope": "documentation update only; application behavior not implemented",
+  "owner_decision": "OWNER-D01",
+  "date": "2026-10-09",
+  "decision_path": "docs/decisions.md",
+  "checks": [
+    {
+      "phase": "validation",
+      "name": "roadmap-validate",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "validate"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/roadmap-validate.log"
+    },
+    {
+      "phase": "validation",
+      "name": "roadmap-next",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "next"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/roadmap-next.log"
+    },
+    {
+      "phase": "validation",
+      "name": "markdown-validate",
+      "command": [
+        "node",
+        "tools/check-docs.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/markdown-validate.log"
+    },
+    {
+      "phase": "validation",
+      "name": "tool-tests",
+      "command": [
+        "node",
+        "--test",
+        "tools/tests/docs.test.mjs",
+        "tools/tests/reader.test.mjs",
+        "tools/tests/roadmap.test.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/tool-tests.log"
+    },
+    {
+      "phase": "validation",
+      "name": "html-build",
+      "command": [
+        "node",
+        "tools/build-start-here.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/html-build.log"
+    }
+  ],
+  "consistency": "checks/kit-v1.1/consistency.json",
+  "product_task_status_changed": false,
+  "new_product_task": "S06-05",
+  "live_calls": false,
+  "commit": null,
+  "push": "not_performed"
+}

@@ -1,0 +1,1092 @@
+{
+  "schema_version": 1,
+  "stages": {
+    "S00": {
+      "title": "Принятие проекта и инструменты",
+      "description": "Безопасное принятие нового bot/extension baseline, две воспроизводимые установки, сохранённые security tests, CI и инструкции агентов."
+    },
+    "S01": {
+      "title": "Приоритетные защитные исправления",
+      "description": "Dry Run без Drive mutations, проверка target/origin, безопасные ошибки, bounded retries и совместимое хранение настроек."
+    },
+    "S02": {
+      "title": "Идентификаторы, неоднозначность и именование",
+      "description": "Проверяемые barcode/text parsers. Существование номера не доказывает его принадлежность изображению или автору письма."
+    },
+    "S03": {
+      "title": "Проверяемые depot действия",
+      "description": "HTML/lookup, подтверждённые calendar/status policy, настоящий preview и защищённое применение формы. Реальные изменения не выполняются в локальных тестах."
+    },
+    "S04": {
+      "title": "Надёжная пакетная обработка Drive",
+      "description": "Folder scope, актуальный filing plan, execution context, durable journal, cancel/recovery и отдельный тестовый roundtrip."
+    },
+    "S05": {
+      "title": "Gmail от очереди до подтверждённого draft",
+      "description": "Pagination, MIME, проверенный case context, reply policy и draft с recovery. Автоматической отправки в этом плане нет."
+    },
+    "S06": {
+      "title": "Контролируемый AI",
+      "description": "Provider выбирает владелец; schema и hostile synthetic cases можно проверить заранее. Live shadow требует отдельных разрешений и бюджета. OWNER-D01: каждый ответ проверяет человек; S06-05 связывает proposal с подтверждённым draft."
+    },
+    "S07": {
+      "title": "Понятный и устойчивый интерфейс",
+      "description": "Фактические состояния, capabilities, клавиатура и ошибки. Не менять язык интерфейса или стек только ради соответствия примеру."
+    },
+    "S08": {
+      "title": "Браузерная проверка и согласованный выпуск",
+      "description": "Проверка Chrome, совместимых bot/extension/rules, чистого артефакта и разрешённого пилота. Не заменяет live evidence документом."
+    },
+    "S09": {
+      "title": "Discord-бот и общая очередь Firestore",
+      "description": "Перевірка й укріплення чинного Discord-бота, all/parcel/barcodes/retry, контрактів, доступів і доставки результатів."
+    }
+  },
+  "tasks": [
+    {
+      "id": "S00-01",
+      "title": "Безопасно принять существующий репозиторий",
+      "stage": "S00",
+      "depends_on": [],
+      "gates": [],
+      "path": "roadmap/tasks/S00-01.md",
+      "context": [
+        "INSTALL_RU.md",
+        "docs/audit/GITHUB_BASELINE.md",
+        "docs/decisions.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S00-02",
+      "title": "Воспроизводимо установить и собрать toolchain",
+      "stage": "S00",
+      "depends_on": [
+        "S00-01"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S00-02.md",
+      "context": [
+        "docs/toolchain.md",
+        "docs/architecture.md",
+        "build.js",
+        "package.json",
+        "package-lock.json",
+        "bot/package.json",
+        "bot/package-lock.json",
+        "src/config/local.example.js",
+        "bot/config/local.example.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S00-03",
+      "title": "Создать независимый fixture test harness",
+      "stage": "S00",
+      "depends_on": [
+        "S00-02"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S00-03.md",
+      "context": [
+        "docs/testing-and-commits.md",
+        "docs/contracts.md",
+        "src/depot/labelName.js",
+        "src/gmail/labels.js",
+        "docs/TESTING.md",
+        "bot/src/contract.js",
+        "src/queue/contract.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S00-04",
+      "title": "Подключить обязательные CI проверки",
+      "stage": "S00",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S00-04.md",
+      "context": [
+        "docs/toolchain.md",
+        "docs/testing-and-commits.md",
+        "package.json",
+        "bot/package.json",
+        "bot/package-lock.json",
+        "docs/TESTING.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S00-05",
+      "title": "Проверить обнаружение инструкций в выбранном агенте",
+      "stage": "S00",
+      "depends_on": [
+        "S00-01"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S00-05.md",
+      "context": [
+        "COPILOT_SETUP_RU.md",
+        "CODEX_SETUP_RU.md",
+        "docs/copilot/WORKFLOW_RU.md",
+        "docs/skills-policy.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S01-01",
+      "title": "Сделать Drive Dry Run действительно немутирующим",
+      "stage": "S01",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S01-01.md",
+      "context": [
+        "docs/drive-contract.md",
+        "docs/audit/BASELINE.md",
+        "src/depot/driveScanner.js",
+        "src/depot/labelName.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S01-02",
+      "title": "Проверять вкладку, origin и границу инъекции",
+      "stage": "S01",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S01-02.md",
+      "context": [
+        "docs/depot-contract.md",
+        "docs/security-and-privacy.md",
+        "src/popup/depotFlow.js",
+        "src/depot/depotScript.js",
+        "src/depot/lookup.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S01-03",
+      "title": "Убрать чувствительные данные из журналов и ошибок",
+      "stage": "S01",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S01-03.md",
+      "context": [
+        "docs/security-and-privacy.md",
+        "docs/audit/BASELINE.md",
+        "src/depot/depotScript.js",
+        "src/depot/lookup.js",
+        "src/popup/depotFlow.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S01-04",
+      "title": "Разделить API ошибки и ограничить повторы",
+      "stage": "S01",
+      "depends_on": [
+        "S00-03",
+        "S01-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S01-04.md",
+      "context": [
+        "docs/contracts.md",
+        "docs/drive-contract.md",
+        "docs/gmail-contract.md",
+        "src/depot/driveScanner.js",
+        "src/popup/depotFlow.js",
+        "src/gmail/labels.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S01-05",
+      "title": "Валидировать локальную конфигурацию двух runtime",
+      "stage": "S01",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S01-05.md",
+      "context": [
+        "docs/contracts.md",
+        "docs/security-and-privacy.md",
+        "src/config/config.js",
+        "src/config/local.example.js",
+        "bot/config/config.js",
+        "bot/config/local.example.js",
+        "manifest.json"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S02-01",
+      "title": "Зафиксировать поддерживаемые barcode форматы",
+      "stage": "S02",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S02-01.md",
+      "context": [
+        "docs/drive-contract.md",
+        "src/depot/barcode.js",
+        "src/depot/labelBarcode.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S02-02",
+      "title": "Не скрывать неоднозначность номера и parcel",
+      "stage": "S02",
+      "depends_on": [
+        "S02-01",
+        "S01-01"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S02-02.md",
+      "context": [
+        "docs/drive-contract.md",
+        "src/depot/labelBarcode.js",
+        "src/depot/driveScanner.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S02-03",
+      "title": "Уточнить дату и детерминированное именование",
+      "stage": "S02",
+      "depends_on": [
+        "S02-01",
+        "S01-05"
+      ],
+      "gates": [
+        "G_DRIVE_POLICY"
+      ],
+      "path": "roadmap/tasks/S02-03.md",
+      "context": [
+        "docs/drive-contract.md",
+        "docs/decisions.md",
+        "src/depot/labelName.js",
+        "src/depot/driveScanner.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S02-04",
+      "title": "Проверять извлечение consignment из текста",
+      "stage": "S02",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S02-04.md",
+      "context": [
+        "docs/gmail-contract.md",
+        "src/parser/consignment.js",
+        "src/popup/gmailFlow.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S03-01",
+      "title": "Проверять depot HTML и результаты lookup",
+      "stage": "S03",
+      "depends_on": [
+        "S01-02",
+        "S01-03",
+        "S02-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S03-01.md",
+      "context": [
+        "docs/depot-contract.md",
+        "src/depot/lookup.js",
+        "src/depot/depotScript.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S03-02",
+      "title": "Реализовать согласованный рабочий календарь",
+      "stage": "S03",
+      "depends_on": [
+        "S00-03",
+        "S01-05"
+      ],
+      "gates": [
+        "G_CALENDAR"
+      ],
+      "path": "roadmap/tasks/S03-02.md",
+      "context": [
+        "docs/depot-contract.md",
+        "docs/decisions.md",
+        "src/depot/depotScript.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S03-03",
+      "title": "Зафиксировать eligibility policy статусов",
+      "stage": "S03",
+      "depends_on": [
+        "S03-01"
+      ],
+      "gates": [
+        "G_DEPOT_POLICY"
+      ],
+      "path": "roadmap/tasks/S03-03.md",
+      "context": [
+        "docs/depot-contract.md",
+        "docs/decisions.md",
+        "src/depot/depotScript.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S03-04",
+      "title": "Показывать полный немутирующий depot preview",
+      "stage": "S03",
+      "depends_on": [
+        "S03-01",
+        "S03-02",
+        "S03-03",
+        "S01-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S03-04.md",
+      "context": [
+        "docs/depot-contract.md",
+        "docs/contracts.md",
+        "src/depot/depotScript.js",
+        "src/popup/depotFlow.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S03-05",
+      "title": "Безопасно применять подтверждённый reschedule",
+      "stage": "S03",
+      "depends_on": [
+        "S03-04",
+        "S01-04"
+      ],
+      "gates": [
+        "G_DEPOT_POLICY"
+      ],
+      "path": "roadmap/tasks/S03-05.md",
+      "context": [
+        "docs/depot-contract.md",
+        "docs/contracts.md",
+        "src/depot/depotScript.js",
+        "src/popup/depotFlow.js",
+        "src/queue/executor.js",
+        "bot/src/index.js",
+        "docs/queue-contract.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S04-01",
+      "title": "Проверять Drive folder scope и полный список файлов",
+      "stage": "S04",
+      "depends_on": [
+        "S01-01",
+        "S01-04",
+        "S01-05"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S04-01.md",
+      "context": [
+        "docs/drive-contract.md",
+        "src/depot/driveScanner.js",
+        "src/popup/depotFlow.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S04-02",
+      "title": "Согласовать Drive plan/apply и коллизии имён",
+      "stage": "S04",
+      "depends_on": [
+        "S04-01",
+        "S02-02",
+        "S02-03"
+      ],
+      "gates": [
+        "G_DRIVE_POLICY"
+      ],
+      "path": "roadmap/tasks/S04-02.md",
+      "context": [
+        "docs/drive-contract.md",
+        "docs/contracts.md",
+        "src/depot/driveScanner.js",
+        "src/depot/labelName.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S04-03",
+      "title": "Выбрать и реализовать восстанавливаемый runner",
+      "stage": "S04",
+      "depends_on": [
+        "S04-02",
+        "S01-05"
+      ],
+      "gates": [
+        "G_ARCHITECTURE"
+      ],
+      "path": "roadmap/tasks/S04-03.md",
+      "context": [
+        "docs/architecture.md",
+        "docs/drive-contract.md",
+        "src/background/background.js",
+        "src/depot/barcode.js",
+        "src/popup/depotFlow.js",
+        "src/offscreen/offscreen.js",
+        "src/queue/executor.js",
+        "docs/queue-contract.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S04-04",
+      "title": "Добавить journal, cancel и сверку неопределённых writes",
+      "stage": "S04",
+      "depends_on": [
+        "S04-03",
+        "S01-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S04-04.md",
+      "context": [
+        "docs/drive-contract.md",
+        "docs/contracts.md",
+        "docs/security-and-privacy.md",
+        "src/workflow/driveJobs.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S04-05",
+      "title": "Проверить Drive на разрешённой тестовой папке",
+      "stage": "S04",
+      "depends_on": [
+        "S04-04"
+      ],
+      "gates": [
+        "G_TEST_ACCOUNTS",
+        "G_DRIVE_POLICY",
+        "G_PRIVACY"
+      ],
+      "path": "roadmap/tasks/S04-05.md",
+      "context": [
+        "docs/drive-contract.md",
+        "docs/owner-gates.md",
+        "docs/security-and-privacy.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S05-01",
+      "title": "Обрабатывать все страницы Gmail очереди",
+      "stage": "S05",
+      "depends_on": [
+        "S00-03",
+        "S01-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S05-01.md",
+      "context": [
+        "docs/gmail-contract.md",
+        "src/gmail/labels.js",
+        "src/popup/gmailFlow.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S05-02",
+      "title": "Нормализовать Gmail message и MIME без side effects",
+      "stage": "S05",
+      "depends_on": [
+        "S05-01",
+        "S02-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S05-02.md",
+      "context": [
+        "docs/gmail-contract.md",
+        "src/gmail/labels.js",
+        "src/parser/consignment.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S05-03",
+      "title": "Связать candidates письма с подтверждёнными depot фактами",
+      "stage": "S05",
+      "depends_on": [
+        "S05-02",
+        "S03-01"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S05-03.md",
+      "context": [
+        "docs/gmail-contract.md",
+        "docs/depot-contract.md",
+        "src/parser/consignment.js",
+        "src/depot/lookup.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S05-04",
+      "title": "Определить безопасную reply/draft policy",
+      "stage": "S05",
+      "depends_on": [
+        "S05-03"
+      ],
+      "gates": [
+        "G_GMAIL_POLICY"
+      ],
+      "path": "roadmap/tasks/S05-04.md",
+      "context": [
+        "docs/gmail-contract.md",
+        "docs/decisions.md",
+        "docs/contracts.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S05-05",
+      "title": "Создавать подтверждённый draft без повторных эффектов",
+      "stage": "S05",
+      "depends_on": [
+        "S05-04",
+        "S01-04",
+        "S01-05"
+      ],
+      "gates": [
+        "G_GMAIL_POLICY"
+      ],
+      "path": "roadmap/tasks/S05-05.md",
+      "context": [
+        "docs/gmail-contract.md",
+        "docs/contracts.md",
+        "src/gmail/messages.js",
+        "src/workflow/replyPolicy.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S06-01",
+      "title": "Зафиксировать контракт и выбор AI provider",
+      "stage": "S06",
+      "depends_on": [
+        "S05-03"
+      ],
+      "gates": [
+        "G_AI_PROVIDER",
+        "G_PRIVACY"
+      ],
+      "path": "roadmap/tasks/S06-01.md",
+      "context": [
+        "docs/ai-boundary.md",
+        "docs/decisions.md",
+        "docs/security-and-privacy.md",
+        "src/config/config.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S06-02",
+      "title": "Валидировать AI output и игнорировать инструкции из данных",
+      "stage": "S06",
+      "depends_on": [
+        "S05-03",
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S06-02.md",
+      "context": [
+        "docs/ai-boundary.md",
+        "docs/contracts.md",
+        "docs/gmail-contract.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S06-03",
+      "title": "Создать synthetic evaluation и критерии качества",
+      "stage": "S06",
+      "depends_on": [
+        "S06-02",
+        "S05-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S06-03.md",
+      "context": [
+        "docs/ai-boundary.md",
+        "docs/gmail-contract.md",
+        "docs/testing-and-commits.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S06-04",
+      "title": "Проверить AI в разрешённом shadow режиме",
+      "stage": "S06",
+      "depends_on": [
+        "S06-01",
+        "S06-03"
+      ],
+      "gates": [
+        "G_AI_PROVIDER",
+        "G_PRIVACY",
+        "G_TEST_ACCOUNTS"
+      ],
+      "path": "roadmap/tasks/S06-04.md",
+      "context": [
+        "docs/ai-boundary.md",
+        "docs/ai-evaluation.md",
+        "docs/owner-gates.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S06-05",
+      "title": "Связать ответ ИИ, ручную проверку и черновик Gmail",
+      "stage": "S06",
+      "depends_on": [
+        "S05-05",
+        "S06-02",
+        "S06-03"
+      ],
+      "gates": [
+        "G_GMAIL_POLICY"
+      ],
+      "path": "roadmap/tasks/S06-05.md",
+      "context": [
+        "docs/decisions.md",
+        "docs/gmail-contract.md",
+        "docs/ai-boundary.md",
+        "src/gmail/drafts.js",
+        "src/workflow/draftJobs.js",
+        "src/popup/gmailFlow.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S07-01",
+      "title": "Показывать фактический прогресс и partial outcomes",
+      "stage": "S07",
+      "depends_on": [
+        "S03-04",
+        "S04-04",
+        "S05-05",
+        "S06-05"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S07-01.md",
+      "context": [
+        "docs/contracts.md",
+        "docs/drive-contract.md",
+        "docs/gmail-contract.md",
+        "src/popup/statusHelper.js",
+        "src/popup/logView.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S07-02",
+      "title": "Отображать только реально доступные capabilities",
+      "stage": "S07",
+      "depends_on": [
+        "S01-05"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S07-02.md",
+      "context": [
+        "docs/architecture.md",
+        "docs/ai-boundary.md",
+        "src/popup/settingsFlow.js",
+        "src/popup/popup.html"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S07-03",
+      "title": "Проверить клавиатуру, ошибки и устойчивость popup",
+      "stage": "S07",
+      "depends_on": [
+        "S07-01",
+        "S07-02"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S07-03.md",
+      "context": [
+        "docs/testing-and-commits.md",
+        "src/popup/popup.html",
+        "src/popup/popup.css",
+        "src/popup/statusHelper.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S08-01",
+      "title": "Проверить собранное расширение в Chrome",
+      "stage": "S08",
+      "depends_on": [
+        "S00-04",
+        "S01-02",
+        "S04-03",
+        "S07-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S08-01.md",
+      "context": [
+        "docs/toolchain.md",
+        "docs/testing-and-commits.md",
+        "build.js",
+        "manifest.json",
+        "src/offscreen/offscreen.js",
+        "src/background/background.js",
+        "docs/discord/TEST_MATRIX.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S08-02",
+      "title": "Собирать чистый релизный артефакт",
+      "stage": "S08",
+      "depends_on": [
+        "S00-02",
+        "S00-04",
+        "S08-01"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S08-02.md",
+      "context": [
+        "docs/toolchain.md",
+        "docs/security-and-privacy.md",
+        "build.js",
+        "manifest.json",
+        "bot/package.json",
+        "bot/package-lock.json",
+        "docs/discord/RUNBOOK_RU.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S08-03",
+      "title": "Провести ограниченный межсервисный пилот",
+      "stage": "S08",
+      "depends_on": [
+        "S08-02",
+        "S04-05",
+        "S05-05",
+        "S06-04",
+        "S06-05",
+        "S09-12"
+      ],
+      "gates": [
+        "G_TEST_ACCOUNTS",
+        "G_PRIVACY",
+        "G_DEPOT_POLICY",
+        "G_CALENDAR",
+        "G_GMAIL_POLICY",
+        "G_DRIVE_POLICY",
+        "G_RELEASE",
+        "G_DISCORD_ACCESS"
+      ],
+      "path": "roadmap/tasks/S08-03.md",
+      "context": [
+        "docs/owner-gates.md",
+        "docs/gmail-contract.md",
+        "docs/depot-contract.md",
+        "docs/drive-contract.md",
+        "docs/release-runbook.md",
+        "docs/discord/RUNBOOK_RU.md",
+        "docs/discord/TEST_MATRIX.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S08-04",
+      "title": "Подготовить допуск, остановку и rollback релиза",
+      "stage": "S08",
+      "depends_on": [
+        "S08-03"
+      ],
+      "gates": [
+        "G_RELEASE"
+      ],
+      "path": "roadmap/tasks/S08-04.md",
+      "context": [
+        "docs/release-runbook.md",
+        "docs/audit/UPDATE_V1_2.md",
+        "docs/owner-gates.md",
+        "docs/security-and-privacy.md",
+        "docs/queue-contract.md",
+        "docs/discord/RUNBOOK_RU.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-01",
+      "title": "Зафиксировать совместимость bot/extension queue контракта",
+      "stage": "S09",
+      "depends_on": [
+        "S00-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-01.md",
+      "context": [
+        "docs/queue-contract.md",
+        "bot/src/contract.js",
+        "src/queue/contract.js",
+        "firestore.rules",
+        "docs/TESTING.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-02",
+      "title": "Проверить доступ и параметры Discord-команд",
+      "stage": "S09",
+      "depends_on": [
+        "S09-01"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-02.md",
+      "context": [
+        "docs/discord-bot.md",
+        "bot/src/commands.js",
+        "bot/src/index.js",
+        "bot/config/config.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-03",
+      "title": "Проверить Firestore rules на локальном Emulator",
+      "stage": "S09",
+      "depends_on": [
+        "S09-01",
+        "S01-05"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-03.md",
+      "context": [
+        "docs/queue-contract.md",
+        "firestore.rules",
+        "firebase.json",
+        "src/offscreen/offscreen.js",
+        "bot/src/firebase.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-04",
+      "title": "Сохранить результат при сбое доставки Discord reply",
+      "stage": "S09",
+      "depends_on": [
+        "S09-01",
+        "S01-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-04.md",
+      "context": [
+        "docs/queue-contract.md",
+        "bot/src/queue.js",
+        "bot/src/index.js",
+        "firestore.rules",
+        "docs/security-and-privacy.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-05",
+      "title": "Проверить listener lifecycle и границу runtime messages",
+      "stage": "S09",
+      "depends_on": [
+        "S09-03",
+        "S01-02"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-05.md",
+      "context": [
+        "docs/queue-contract.md",
+        "src/offscreen/offscreen.js",
+        "src/background/background.js",
+        "src/queue/executor.js",
+        "firestore.rules"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-06",
+      "title": "Проверить карточки find, историю и минимизацию данных",
+      "stage": "S09",
+      "depends_on": [
+        "S09-01",
+        "S03-01",
+        "S01-03"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-06.md",
+      "context": [
+        "docs/discord-bot.md",
+        "bot/src/render.js",
+        "src/queue/executor.js",
+        "src/depot/lookup.js",
+        "docs/TESTING.md"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-07",
+      "title": "Изолировать optional Maps от основного ответа find",
+      "stage": "S09",
+      "depends_on": [
+        "S09-06",
+        "S01-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-07.md",
+      "context": [
+        "docs/discord-bot.md",
+        "bot/src/geo.js",
+        "bot/src/render.js",
+        "bot/config/local.example.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-08",
+      "title": "Проверить изоляцию и устойчивость личного todo",
+      "stage": "S09",
+      "depends_on": [
+        "S09-01"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-08.md",
+      "context": [
+        "docs/discord-bot.md",
+        "bot/src/todo.js",
+        "bot/src/index.js",
+        "firestore.rules"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-09",
+      "title": "Связать Discord CAD с общей проверкой preview/apply",
+      "stage": "S09",
+      "depends_on": [
+        "S09-02",
+        "S09-04",
+        "S09-05",
+        "S03-05"
+      ],
+      "gates": [
+        "G_DEPOT_POLICY"
+      ],
+      "path": "roadmap/tasks/S09-09.md",
+      "context": [
+        "docs/depot-contract.md",
+        "docs/queue-contract.md",
+        "bot/src/index.js",
+        "bot/src/queue.js",
+        "src/queue/executor.js",
+        "src/depot/depotScript.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-10",
+      "title": "Перевірити й укріпити наявний режим parcel",
+      "stage": "S09",
+      "depends_on": [
+        "S09-09",
+        "S03-02"
+      ],
+      "gates": [
+        "G_DISCORD_MODES",
+        "G_CALENDAR",
+        "G_DEPOT_POLICY"
+      ],
+      "path": "roadmap/tasks/S09-10.md",
+      "context": [
+        "docs/discord-bot.md",
+        "docs/depot-contract.md",
+        "bot/src/commands.js",
+        "bot/src/index.js",
+        "src/queue/executor.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-11",
+      "title": "Перевірити й укріпити наявний режим barcodes",
+      "stage": "S09",
+      "depends_on": [
+        "S09-09",
+        "S04-04"
+      ],
+      "gates": [
+        "G_DISCORD_MODES",
+        "G_DRIVE_POLICY",
+        "G_DEPOT_POLICY"
+      ],
+      "path": "roadmap/tasks/S09-11.md",
+      "context": [
+        "docs/discord-bot.md",
+        "docs/drive-contract.md",
+        "docs/depot-contract.md",
+        "src/queue/executor.js",
+        "src/depot/driveScanner.js",
+        "bot/src/commands.js"
+      ],
+      "acceptance_count": 5
+    },
+    {
+      "id": "S09-12",
+      "title": "Провести разрешённый пилот существующего бота",
+      "stage": "S09",
+      "depends_on": [
+        "S09-03",
+        "S09-04",
+        "S09-05",
+        "S09-06",
+        "S09-07",
+        "S09-08",
+        "S09-09"
+      ],
+      "gates": [
+        "G_DISCORD_ACCESS",
+        "G_TEST_ACCOUNTS",
+        "G_PRIVACY",
+        "G_DEPOT_POLICY"
+      ],
+      "path": "roadmap/tasks/S09-12.md",
+      "context": [
+        "docs/discord/RUNBOOK_RU.md",
+        "docs/discord/TEST_MATRIX.md",
+        "docs/queue-contract.md",
+        "docs/security-and-privacy.md",
+        "docs/owner-gates.md"
+      ],
+      "acceptance_count": 5
+    }
+  ]
+}

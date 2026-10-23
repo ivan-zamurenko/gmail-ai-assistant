@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "name": "markdown-final",
+      "command": [
+        "node",
+        "tools/check-docs.mjs"
+      ],
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/markdown-final.log"
+    },
+    {
+      "name": "reader-final",
+      "command": [
+        "node",
+        "tools/build-start-here.mjs"
+      ],
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/reader-final.log"
+    },
+    {
+      "name": "roadmap-final",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "validate"
+      ],
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/roadmap-final.log"
+    }
+  ]
+}

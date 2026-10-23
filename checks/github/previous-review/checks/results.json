@@ -1,0 +1,12 @@
+{
+  "syntax_files": 49,
+  "syntax_failures": 0,
+  "offline_tests_command": "node --test checks/offline-discord.test.mjs",
+  "offline_tests_exit": 0,
+  "existing_tests_command": "node --test test/security.test.js",
+  "existing_tests_status": "env_blocked",
+  "existing_tests_exit": 1,
+  "source_files_changed": [],
+  "live_services_called": false,
+  "node": "v22.16.0"
+}

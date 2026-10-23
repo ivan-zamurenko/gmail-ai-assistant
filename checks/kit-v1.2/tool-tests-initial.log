@@ -1,0 +1,444 @@
+TAP version 13
+# Subtest: Discord documentation is included in the managed manifest
+ok 1 - Discord documentation is included in the managed manifest
+  ---
+  duration_ms: 2.564653
+  type: 'test'
+  ...
+# Subtest: the roadmap has a dedicated existing-bot workstream
+ok 2 - the roadmap has a dedicated existing-bot workstream
+  ---
+  duration_ms: 0.582242
+  type: 'test'
+  ...
+# Subtest: queue task context includes both contract mirrors and Firestore rules
+ok 3 - queue task context includes both contract mirrors and Firestore rules
+  ---
+  duration_ms: 0.360971
+  type: 'test'
+  ...
+# Subtest: source capability inventory does not equate command registration with execution
+ok 4 - source capability inventory does not equate command registration with execution
+  ---
+  duration_ms: 0.212839
+  type: 'test'
+  ...
+# Subtest: bot guide retains OWNER-D01 and no-email-send boundary
+not ok 5 - bot guide retains OWNER-D01 and no-email-send boundary
+  ---
+  duration_ms: 2.638082
+  type: 'test'
+  location: '/mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:29:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /auto-send/. Input:
+
+    '# Discord-бот DPD Assistance — действующий код и план развития\n' +
+      '\n' +
+      '**Версия документа: v1.2. Источник: предоставленный `gmail-ai-assistant-main.zip`, не первый ZIP и не проверка текущего GitHub HEAD.**\n' +
+      '\n' +
+      'Содержание: назначение; команды; вывод информации; цепочка выполнения; доступ; ограничения; почта и ИИ; задачи и приёмка.\n' +
+      '\n' +
+      '## 1. Назначение и статус\n' +
+      '\n' +
+      'В `bot/` уже есть отдельный Node.js-процесс с `discord.js` и `firebase-admin`. Это не будущий webhook и не функция внутри popup. Бот принимает slash-команды, обращается к Firestore и возвращает ответ оператору. Для depot-команд ему нужен исполнитель в Chrome-расширении и подходящая авторизованная depot-вкладка. `/todo` работает непосредственно через бот и Firestore, без расширения.\n' +
+      '\n' +
+      'Этот документ сохраняет существующую реализацию. «Реализовано» ниже означает обнаруженный подключённый путь в исходниках. Оно не означает успешную регистрацию команд, доступ к Firebase, запущенный бот или подтверждённое выполнение в рабочем depot. Такие проверки относятся к S09-12 и отдельным допускам.\n' +
+      '\n' +
+      '## 2. Каталог slash-команд\n' +
+      '\n' +
+      '| Команда | Аргументы и текущая логика | Состояние в новом архиве | Карточка развития |\n' +
+      '|---|---|---|---|\n' +
+      '| `/find` | `con_id`: строка из 9 либо 14 цифр; очередь `command=find`; lookup и карточки результата | Исполнитель подключён; live не проверен | S09-06 |\n' +
+      '| `/reschedule all` | Необязательные `dry_run`, `confirm_live`; `dry_run` по умолчанию `true`; запуск CAD | Исполнитель подключён; live не проверен | S09-09 |\n' +
+      '| `/reschedule parcel` | Обязательные `con_id`, `new_date`; дата `YYYY-MM-DD`, будущий будний день по локальному времени процесса бота | Команда объявлена, но dispatcher возвращает error «режим ещё не подключён» | S09-10, условная |\n' +
+      '| `/reschedule barcodes` | `dry_run`, `confirm_live`; заявлен маршрут от Drive labels к reschedule | Команда объявлена, исполнитель отсутствует | S09-11, условная |\n' +
+      '| `/todo add` | `text`; сохраняет личную задачу оператора | Реализовано в `todos` | S09-08 |\n' +
+      '| `/todo list` | Задачи текущего Discord user ID, сортировка по `createdAt` | Реализовано | S09-08 |\n' +
+      '| `/todo done` | `number`: текущая позиция в списке, начиная с 1 | Реализовано; не является почтовым одобрением | S09-08 |\n' +
+      '| `/todo clear` | Удаляет только завершённые задачи данного пользователя, не весь список | Реализовано | S09-08 |\n' +
+      '\n' +
+      'Источник схемы меню: `bot/src/commands.js:17–78`. Обработчики: `bot/src/index.js:31–209`. Подключение режимов: `src/queue/executor.js:210–233`. `/find` проверяет номер и на стороне бота, и в executor; нельзя предполагать, что такая же двойная проверка уже реализована для неподключённого режима parcel.\n' +
+      '\n' +
+      'Текущие тексты slash-команд преимущественно украинские, часть ответов английская. Русский язык этой документации не разрешает молча переводить существующий интерфейс.\n' +
+      '\n' +
+      '## 3. Какая информация выводится\n' +
+      '\n' +
+      '### `/find`\n' +
+      '\n' +
+      '`bot/src/render.js` формирует две карточки: основную и историю. Заголовок использует последнее событие по вычисленному timestamp сканирования, а не только потенциально устаревшую надпись detail page. Для нескольких физических посылок выбирается последнее событие каждой и показывается количество, совпадающее с заголовочным статусом.\n' +
+      '\n' +
+      'Вывод содержит consignment number, статус, время события, post code, town/county; для отдельных событий — route, Bay и Onward BC. Полный адрес, имя, подпись и произвольные notes не включаются в объект, формируемый `runFind()`. Но номер, Eircode и координаты остаются чувствительными операционными данными: это минимизация, не анонимизация.\n' +
+      '\n' +
+      'История ограничена `MAX_HISTORY = 12`. Дописывается число скрытых более ранних событий. Сейчас `historyBlock()` разворачивает входной массив, а не выполняет собственную сортировку всех событий по timestamp; независимость от порядка входа является сценарием S09-06, не доказанной гарантией.\n' +
+      '\n' +
+      '### Карта и расстояние\n' +
+      '\n' +
+      'При наличии `drop`, валидного по текущему parser Eircode и Google Maps key вызываются `geocode()` и `mapImage()`. Расстояние вычисляется через `haversineKm()` по прямой, не по автомобильному маршруту. Ссылка на маршрут может выводиться при наличии `drop` даже без изображения. Ключ используется в серверном запросе бота; изображение передаётся как attachment, а не как URL с ключом.\n' +
+      '\n' +
+      'Текущий код не содержит полноценной изоляции исключений Maps от вывода depot-фактов. Поэтому «карта необязательна» как цель ещё не означает, что любой её сбой не потеряет основной ответ. S09-07 добавляет проверяемую деградацию. Стоимость, доступность Maps и утверждения комментариев о бесплатных квотах здесь не подтверждаются и не копируются как условия сервиса.\n' +
+      '\n' +
+      '### `/reschedule all` и `/todo`\n' +
+      '\n' +
+      'CAD возвращает сводку: dry-run count либо changed/skipped/errors. Детальный блок ограничен 25 строками и строкой о скрытом остатке. Лимит строк не является доказательством соблюдения всех ограничений длины Discord payload: длинные поля проверяются отдельно в S09-06/S09-09.\n' +
+      '\n' +
+      'Личный checklist показывает номер позиции, текст и отметку выполнения. Сейчас `renderList()` не задаёт собственную pagination/ограничение общего размера. Это предмет S09-08, а не основание выдавать большие списки за проверенные.\n' +
+      '\n' +
+      '## 4. Как доставляется ответ\n' +
+      '\n' +
+      '```text\n' +
+      'Discord slash interaction\n' +
+      '  -> bot/src/index.js: guild + permission + input checks\n' +
+      '  -> bot/src/queue.js: документ tasks\n' +
+      '  -> Firestore\n' +
+      '  -> src/offscreen/offscreen.js: assigned listener + claim\n' +
+      "  -> runtime message {type: 'execute', task}\n" +
+      '  -> src/background/background.js\n' +
+      '  -> src/queue/executor.js\n' +
+      '  -> depotMain / depotLookup в MAIN подходящей вкладки\n' +
+      '  -> Firestore terminal result\n' +
+      '  -> bot render / editReply\n' +
+      '```\n' +
+      '\n' +
+      '`/todo` использует только `bot/src/todo.js` и коллекцию `todos`. Не смешивать её с `tasks`, Gmail label queue или `.workflow/state.json` — это четыре разных вида состояния.\n' +
+      '\n' +
+      'Все текущие обработчики запрашивают ephemeral reply. Это ответ на действие конкретного пользователя, не регулярный отчёт в общий канал и не универсальный push-канал. Передача данных Discord всё равно происходит. Сбой Discord нельзя лечить повторным depot reschedule: внешнее действие и показ результата — разные операции.\n' +
+      '\n' +
+      '## 5. Доступ и live-подтверждение\n' +
+      '\n' +
+      'На входе сравнивается `interaction.guildId` с `cfg.guildId`; `/find` и `/reschedule` требуют Administrator. `/todo` ограничен тем же guild, но не требует этой depot-проверки. Сохранить фактические защиты до отдельного reviewed решения о ролях. Не назначать боту глобальные Administrator permissions только из-за того, что они проверяются у оператора.\n' +
+      '\n' +
+      'Для `dry_run:false` бот требует `confirm_live:true`. Однако в queue args передаётся `dryRun`, а не доказательство просмотренного preview: нет `previewId`, revision и срока действия одобренного плана. Флаг — текущий барьер, не полноценная связь с конкретными изменениями. Целевую связь проверяет S09-09 вместе с S03-04/S03-05.\n' +
+      '\n' +
+      '## 6. Известные ограничения, не потерянные при модернизации\n' +
+      '\n' +
+      '`finishWithResult()` в `bot/src/queue.js` инициирует удаление terminal document до успешного `editReply` в обработчике. После потери ответа нет доказанного durable recovery этого результата. `claimed` после сбоя также не имеет полноценного протокола восстановления. Транзакционный claim и последовательный Promise-chain полезны, но не доказывают exactly-once для depot writes или координацию popup и очереди.\n' +
+      '\n' +
+      '`firebase.executorUid` связывает бот с Firebase UID конкретного профиля расширения. Сброс данных профиля или смена identity требуют сверки привязки; нельзя предполагать вечную стабильность anonymous UID. Rules в репозитории не доказывают их deployment. Детали: [queue-contract](queue-contract.md).\n' +
+      '\n' +
+      '## 7. Gmail и ИИ — без изменения OWNER-D01\n' +
+      '\n' +
+      '**OWNER-D01 остаётся обязательным: ИИ предлагает ответ, человек проверяет и правит, одобряет конкретный текст; затем создаётся Gmail draft, а отправляет человек в Gmail. Auto-send не входит в текущий объём.** Связка — S06-05.\n' +
+      '\n' +
+      '`/todo done` не одобряет письмо; `confirm_live` относится к depot и не разрешает email send. Наличие бота не означает, что текст письма разрешено пересылать Discord или что участники сервера могут его читать.\n' +
+      '\n' +
+      'В архиве нет Gmail review-кнопок, вывода AI proposal или создания draft из Discord. Проактивные уведомления «нужна проверка ответа» и перенос самого review в Discord остаются отдельным возможным расширением после решения владельца по интерфейсу, доступу и данным. В S09 такое расширение не маскируется под уже реализованные команды.\n' +
+      '\n' +
+      '## 8. Работа по карточкам\n' +
+      '\n' +
+      'S09-01…S09-09 сохраняют и проверяют существующие возможности и устраняют разрывы надёжности. S09-10/S09-11 описывают условное подключение незавершённых режимов; G_DISCORD_MODES pending. S09-12 проверяет доступный baseline на разрешённом стенде и не зависит от optional режимов. S08-03 требует S09-12, чтобы общий пилот не пропустил бота.\n' +
+      '\n' +
+      'Полные критерии: [roadmap](../roadmap/ROADMAP.md), [матрица тестов](discord/TEST_MATRIX.md), [runbook](discord/RUNBOOK_RU.md), [снимок исходников](audit/GITHUB_BASELINE.md).\n'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    # Discord-бот DPD Assistance — действующий код и план развития
+
+    **Версия документа: v1.2. Источник: предоставленный `gmail-ai-assistant-main.zip`, не первый ZIP и не проверка текущего GitHub HEAD.**
+
+    Содержание: назначение; команды; вывод информации; цепочка выполнения; доступ; ограничения; почта и ИИ; задачи и приёмка.
+
+    ## 1. Назначение и статус
+
+    В `bot/` уже есть отдельный Node.js-процесс с `discord.js` и `firebase-admin`. Это не будущий webhook и не функция внутри popup. Бот принимает slash-команды, обращается к Firestore и возвращает ответ оператору. Для depot-команд ему нужен исполнитель в Chrome-расширении и подходящая авторизованная depot-вкладка. `/todo` работает непосредственно через бот и Firestore, без расширения.
+
+    Этот документ сохраняет существующую реализацию. «Реализовано» ниже означает обнаруженный подключённый путь в исходниках. Оно не означает успешную регистрацию команд, доступ к Firebase, запущенный бот или подтверждённое выполнение в рабочем depot. Такие проверки относятся к S09-12 и отдельным допускам.
+
+    ## 2. Каталог slash-команд
+
+    | Команда | Аргументы и текущая логика | Состояние в новом архиве | Карточка развития |
+    |---|---|---|---|
+    | `/find` | `con_id`: строка из 9 либо 14 цифр; очередь `command=find`; lookup и карточки результата | Исполнитель подключён; live не проверен | S09-06 |
+    | `/reschedule all` | Необязательные `dry_run`, `confirm_live`; `dry_run` по умолчанию `true`; запуск CAD | Исполнитель подключён; live не проверен | S09-09 |
+    | `/reschedule parcel` | Обязательные `con_id`, `new_date`; дата `YYYY-MM-DD`, будущий будний день по локальному времени процесса бота | Команда объявлена, но dispatcher возвращает error «режим ещё не подключён» | S09-10, условная |
+    | `/reschedule barcodes` | `dry_run`, `confirm_live`; заявлен маршрут от Drive labels к reschedule | Команда объявлена, исполнитель отсутствует | S09-11, условная |
+    | `/todo add` | `text`; сохраняет личную задачу оператора | Реализовано в `todos` | S09-08 |
+    | `/todo list` | Задачи текущего Discord user ID, сортировка по `createdAt` | Реализовано | S09-08 |
+    | `/todo done` | `number`: текущая позиция в списке, начиная с 1 | Реализовано; не является почтовым одобрением | S09-08 |
+    | `/todo clear` | Удаляет только завершённые задачи данного пользователя, не весь список | Реализовано | S09-08 |
+
+    Источник схемы меню: `bot/src/commands.js:17–78`. Обработчики: `bot/src/index.js:31–209`. Подключение режимов: `src/queue/executor.js:210–233`. `/find` проверяет номер и на стороне бота, и в executor; нельзя предполагать, что такая же двойная проверка уже реализована для неподключённого режима parcel.
+
+    Текущие тексты slash-команд преимущественно украинские, часть ответов английская. Русский язык этой документации не разрешает молча переводить существующий интерфейс.
+
+    ## 3. Какая информация выводится
+
+    ### `/find`
+
+    `bot/src/render.js` формирует две карточки: основную и историю. Заголовок использует последнее событие по вычисленному timestamp сканирования, а не только потенциально устаревшую надпись detail page. Для нескольких физических посылок выбирается последнее событие каждой и показывается количество, совпадающее с заголовочным статусом.
+
+    Вывод содержит consignment number, статус, время события, post code, town/county; для отдельных событий — route, Bay и Onward BC. Полный адрес, имя, подпись и произвольные notes не включаются в объект, формируемый `runFind()`. Но номер, Eircode и координаты остаются чувствительными операционными данными: это минимизация, не анонимизация.
+
+    История ограничена `MAX_HISTORY = 12`. Дописывается число скрытых более ранних событий. Сейчас `historyBlock()` разворачивает входной массив, а не выполняет собственную сортировку всех событий по timestamp; независимость от порядка входа является сценарием S09-06, не доказанной гарантией.
+
+    ### Карта и расстояние
+
+    При наличии `drop`, валидного по текущему parser Eircode и Google Maps key вызываются `geocode()` и `mapImage()`. Расстояние вычисляется через `haversineKm()` по прямой, не по автомобильному маршруту. Ссылка на маршрут может выводиться при наличии `drop` даже без изображения. Ключ используется в серверном запросе бота; изображение передаётся как attachment, а не как URL с ключом.
+
+    Текущий код не содержит полноценной изоляции исключений Maps от вывода depot-фактов. Поэтому «карта необязательна» как цель ещё не означает, что любой её сбой не потеряет основной ответ. S09-07 добавляет проверяемую деградацию. Стоимость, доступность Maps и утверждения комментариев о бесплатных квотах здесь не подтверждаются и не копируются как условия сервиса.
+
+    ### `/reschedule all` и `/todo`
+
+    CAD возвращает сводку: dry-run count либо changed/skipped/errors. Детальный блок ограничен 25 строками и строкой о скрытом остатке. Лимит строк не является доказательством соблюдения всех ограничений длины Discord payload: длинные поля проверяются отдельно в S09-06/S09-09.
+
+    Личный checklist показывает номер позиции, текст и отметку выполнения. Сейчас `renderList()` не задаёт собственную pagination/ограничение общего размера. Это предмет S09-08, а не основание выдавать большие списки за проверенные.
+
+    ## 4. Как доставляется ответ
+
+    ```text
+    Discord slash interaction
+      -> bot/src/index.js: guild + permission + input checks
+      -> bot/src/queue.js: документ tasks
+      -> Firestore
+      -> src/offscreen/offscreen.js: assigned listener + claim
+      -> runtime message {type: 'execute', task}
+      -> src/background/background.js
+      -> src/queue/executor.js
+      -> depotMain / depotLookup в MAIN подходящей вкладки
+      -> Firestore terminal result
+      -> bot render / editReply
+    ```
+
+    `/todo` использует только `bot/src/todo.js` и коллекцию `todos`. Не смешивать её с `tasks`, Gmail label queue или `.workflow/state.json` — это четыре разных вида состояния.
+
+    Все текущие обработчики запрашивают ephemeral reply. Это ответ на действие конкретного пользователя, не регулярный отчёт в общий канал и не универсальный push-канал. Передача данных Discord всё равно происходит. Сбой Discord нельзя лечить повторным depot reschedule: внешнее действие и показ результата — разные операции.
+
+    ## 5. Доступ и live-подтверждение
+
+    На входе сравнивается `interaction.guildId` с `cfg.guildId`; `/find` и `/reschedule` требуют Administrator. `/todo` ограничен тем же guild, но не требует этой depot-проверки. Сохранить фактические защиты до отдельного reviewed решения о ролях. Не назначать боту глобальные Administrator permissions только из-за того, что они проверяются у оператора.
+
+    Для `dry_run:false` бот требует `confirm_live:true`. Однако в queue args передаётся `dryRun`, а не доказательство просмотренного preview: нет `previewId`, revision и срока действия одобренного плана. Флаг — текущий барьер, не полноценная связь с конкретными изменениями. Целевую связь проверяет S09-09 вместе с S03-04/S03-05.
+
+    ## 6. Известные ограничения, не потерянные при модернизации
+
+    `finishWithResult()` в `bot/src/queue.js` инициирует удаление terminal document до успешного `editReply` в обработчике. После потери ответа нет доказанного durable recovery этого результата. `claimed` после сбоя также не имеет полноценного протокола восстановления. Транзакционный claim и последовательный Promise-chain полезны, но не доказывают exactly-once для depot writes или координацию popup и очереди.
+
+    `firebase.executorUid` связывает бот с Firebase UID конкретного профиля расширения. Сброс данных профиля или смена identity требуют сверки привязки; нельзя предполагать вечную стабильность anonymous UID. Rules в репозитории не доказывают их deployment. Детали: [queue-contract](queue-contract.md).
+
+    ## 7. Gmail и ИИ — без изменения OWNER-D01
+
+    **OWNER-D01 остаётся обязательным: ИИ предлагает ответ, человек проверяет и правит, одобряет конкретный текст; затем создаётся Gmail draft, а отправляет человек в Gmail. Auto-send не входит в текущий объём.** Связка — S06-05.
+
+    `/todo done` не одобряет письмо; `confirm_live` относится к depot и не разрешает email send. Наличие бота не означает, что текст письма разрешено пересылать Discord или что участники сервера могут его читать.
+
+    В архиве нет Gmail review-кнопок, вывода AI proposal или создания draft из Discord. Проактивные уведомления «нужна проверка ответа» и перенос самого review в Discord остаются отдельным возможным расширением после решения владельца по интерфейсу, доступу и данным. В S09 такое расширение не маскируется под уже реализованные команды.
+
+    ## 8. Работа по карточкам
+
+    S09-01…S09-09 сохраняют и проверяют существующие возможности и устраняют разрывы надёжности. S09-10/S09-11 описывают условное подключение незавершённых режимов; G_DISCORD_MODES pending. S09-12 проверяет доступный baseline на разрешённом стенде и не зависит от optional режимов. S08-03 требует S09-12, чтобы общий пилот не пропустил бота.
+
+    Полные критерии: [roadmap](../roadmap/ROADMAP.md), [матрица тестов](discord/TEST_MATRIX.md), [runbook](discord/RUNBOOK_RU.md), [снимок исходников](audit/GITHUB_BASELINE.md).
+
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///mnt/data/dpd-assistance-kit-v1.2/tools/tests/discord-docs.test.mjs:30:104)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: toolchain explicitly covers two dependency installations and the existing test
+ok 6 - toolchain explicitly covers two dependency installations and the existing test
+  ---
+  duration_ms: 0.238016
+  type: 'test'
+  ...
+# Subtest: release integrates bot evidence without forcing unfinished optional modes
+ok 7 - release integrates bot evidence without forcing unfinished optional modes
+  ---
+  duration_ms: 0.454591
+  type: 'test'
+  ...
+# Subtest: each added bot card contains baseline, boundaries, acceptance, and evidence
+ok 8 - each added bot card contains baseline, boundaries, acceptance, and evidence
+  ---
+  duration_ms: 0.879168
+  type: 'test'
+  ...
+# Subtest: new source provenance is distinct from the historical baseline
+ok 9 - new source provenance is distinct from the historical baseline
+  ---
+  duration_ms: 0.484226
+  type: 'test'
+  ...
+# Subtest: source-based docs do not silently use the old worker or storage architecture
+ok 10 - source-based docs do not silently use the old worker or storage architecture
+  ---
+  duration_ms: 0.604676
+  type: 'test'
+  ...
+# Subtest: valid UTF-8 docs and local links pass
+ok 11 - valid UTF-8 docs and local links pass
+  ---
+  duration_ms: 4.463507
+  type: 'test'
+  ...
+# Subtest: broken local link fails
+ok 12 - broken local link fails
+  ---
+  duration_ms: 4.297999
+  type: 'test'
+  ...
+# Subtest: unclosed code fence fails
+ok 13 - unclosed code fence fails
+  ---
+  duration_ms: 1.533848
+  type: 'test'
+  ...
+# Subtest: links inside code and external URLs are not filesystem paths
+ok 14 - links inside code and external URLs are not filesystem paths
+  ---
+  duration_ms: 7.113687
+  type: 'test'
+  ...
+# Subtest: invalid UTF-8 and empty documents fail
+ok 15 - invalid UTF-8 and empty documents fail
+  ---
+  duration_ms: 3.976407
+  type: 'test'
+  ...
+# Subtest: escaping local links are refused
+ok 16 - escaping local links are refused
+  ---
+  duration_ms: 1.339256
+  type: 'test'
+  ...
+# Subtest: unmanaged legacy Markdown is not silently included
+ok 17 - unmanaged legacy Markdown is not silently included
+  ---
+  duration_ms: 0.843675
+  type: 'test'
+  ...
+# Subtest: missing or empty manifest fails rather than empty success
+ok 18 - missing or empty manifest fails rather than empty success
+  ---
+  duration_ms: 1.016153
+  type: 'test'
+  ...
+# Subtest: reader embeds text safely without remote dependencies
+ok 19 - reader embeds text safely without remote dependencies
+  ---
+  duration_ms: 3.106454
+  type: 'test'
+  ...
+# Subtest: reader rejects empty manifest and escaping source path
+ok 20 - reader rejects empty manifest and escaping source path
+  ---
+  duration_ms: 1.717303
+  type: 'test'
+  ...
+# Subtest: HTML escaping includes ampersands and attribute quotes
+ok 21 - HTML escaping includes ampersands and attribute quotes
+  ---
+  duration_ms: 0.164015
+  type: 'test'
+  ...
+# Subtest: valid project selects first task
+ok 22 - valid project selects first task
+  ---
+  duration_ms: 4.039692
+  type: 'test'
+  ...
+# Subtest: pending gate blocks successor
+ok 23 - pending gate blocks successor
+  ---
+  duration_ms: 1.670293
+  type: 'test'
+  ...
+# Subtest: approved gate and completed dependency unlock successor
+ok 24 - approved gate and completed dependency unlock successor
+  ---
+  duration_ms: 2.810612
+  type: 'test'
+  ...
+# Subtest: in-progress task is returned before a ready task
+ok 25 - in-progress task is returned before a ready task
+  ---
+  duration_ms: 1.135271
+  type: 'test'
+  ...
+# Subtest: dependency cycle is rejected
+ok 26 - dependency cycle is rejected
+  ---
+  duration_ms: 1.471364
+  type: 'test'
+  ...
+# Subtest: unknown dependency and gate are rejected
+ok 27 - unknown dependency and gate are rejected
+  ---
+  duration_ms: 1.153148
+  type: 'test'
+  ...
+# Subtest: duplicate IDs and empty graph are rejected
+ok 28 - duplicate IDs and empty graph are rejected
+  ---
+  duration_ms: 0.883334
+  type: 'test'
+  ...
+# Subtest: missing card is rejected
+ok 29 - missing card is rejected
+  ---
+  duration_ms: 0.803504
+  type: 'test'
+  ...
+# Subtest: path traversal and escaping symlink are rejected
+ok 30 - path traversal and escaping symlink are rejected
+  ---
+  duration_ms: 1.209723
+  type: 'test'
+  ...
+# Subtest: done requires real matching evidence with a successful check
+ok 31 - done requires real matching evidence with a successful check
+  ---
+  duration_ms: 1.485986
+  type: 'test'
+  ...
+# Subtest: done requires finished dependencies and approved gates
+ok 32 - done requires finished dependencies and approved gates
+  ---
+  duration_ms: 1.349932
+  type: 'test'
+  ...
+# Subtest: blocked task requires reason and is not silently selected
+ok 33 - blocked task requires reason and is not silently selected
+  ---
+  duration_ms: 0.763043
+  type: 'test'
+  ...
+# Subtest: active state consistency and one writer are enforced
+ok 34 - active state consistency and one writer are enforced
+  ---
+  duration_ms: 0.940388
+  type: 'test'
+  ...
+# Subtest: approved gates need evidence and state cannot contain unknown tasks
+ok 35 - approved gates need evidence and state cannot contain unknown tasks
+  ---
+  duration_ms: 0.681411
+  type: 'test'
+  ...
+# Subtest: CLI next and show are read-only, never execute card commands
+ok 36 - CLI next and show are read-only, never execute card commands
+  ---
+  duration_ms: 95.931636
+  type: 'test'
+  ...
+# Subtest: CLI invalid ID and malformed JSON return failure
+ok 37 - CLI invalid ID and malformed JSON return failure
+  ---
+  duration_ms: 60.692681
+  type: 'test'
+  ...
+1..37
+# tests 37
+# suites 0
+# pass 36
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 313.826658

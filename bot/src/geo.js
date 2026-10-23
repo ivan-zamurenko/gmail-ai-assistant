@@ -37,21 +37,43 @@ export async function geocode(query, apiKey) {
  * GPS can land on a neighbour: treat the answer as "roughly here", not exact.
  */
 export async function reverseGeocode(point, apiKey) {
-  if (!apiKey || !point) return null;
+  if (!apiKey || !point || !Number.isFinite(point.lat) || !Number.isFinite(point.lng)) return null;
 
-  const url = 'https://maps.googleapis.com/maps/api/geocode/json'
+  const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json'
     + `?latlng=${point.lat},${point.lng}&region=ie&key=${apiKey}`;
 
-  const res = await fetch(url);
-  if (!res.ok) return null;
+  const urls = [
+    baseUrl,
+    baseUrl + '&result_type=street_address|premise|subpremise|route',
+    baseUrl + '&result_type=postal_code',
+  ];
 
-  const data = await res.json();
-  for (const result of data.results ?? []) {
-    const pc = result.address_components?.find((c) => c.types?.includes('postal_code'));
-    const eircode = normEircode(pc?.long_name);
-    if (eircode) return eircode;
+  const candidates = [];
+  let fallback = null;
+  for (const url of urls) {
+    const res = await fetch(url);
+    if (!res.ok) continue;
+
+    const data = await res.json();
+    for (const result of data.results ?? []) {
+      const values = [
+        ...(result.address_components ?? [])
+          .filter((component) => component.types?.includes('postal_code'))
+          .flatMap((component) => [component.long_name, component.short_name]),
+        result.formatted_address,
+      ];
+      const eircode = values.flatMap((value) => [
+        normEircode(value),
+        ...(String(value ?? '').match(/[A-Z0-9]{3}\s?[A-Z0-9]{4}/gi) ?? []).map(normEircode),
+      ]).find(Boolean);
+      if (eircode && !fallback) fallback = eircode;
+      const location = result.geometry?.location;
+      if (eircode && Number.isFinite(location?.lat) && Number.isFinite(location?.lng)) {
+        candidates.push({ eircode, distance: haversineKm(point, location) });
+      }
+    }
   }
-  return null;
+  return candidates.sort((a, b) => a.distance - b.distance)[0]?.eircode ?? fallback;
 }
 
 /** Great-circle distance in km — one formula, no library needed. */

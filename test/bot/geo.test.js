@@ -32,6 +32,40 @@ test('reverseGeocode returns the first valid Eircode near a point', async () => 
   });
 });
 
+test('reverseGeocode retries address results when the nearest result has no postal code', async () => {
+  const body = {
+    results: [{ formatted_address: 'Unnamed road, Ireland', address_components: [] }],
+  };
+  await withFetch({ body }, async (calls) => {
+    const eircode = await reverseGeocode({ lat: 52.037612, lng: -9.994881 }, 'key');
+    assert.equal(eircode, null);
+    assert.equal(calls.length, 3);
+    assert.match(calls[1], /result_type=street_address\|premise\|subpremise\|route/);
+    assert.match(calls[2], /result_type=postal_code/);
+  });
+});
+
+test('reverseGeocode can read an Eircode embedded in a formatted address', async () => {
+  const body = {
+    results: [{ formatted_address: 'Example House, V93 AE38, Ireland', address_components: [] }],
+  };
+  await withFetch({ body }, async () => {
+    assert.equal(await reverseGeocode({ lat: 52.04, lng: -9.99 }, 'key'), 'V93AE38');
+  });
+});
+
+test('reverseGeocode chooses the closest Eircode candidate', async () => {
+  const body = {
+    results: [
+      { formatted_address: 'Far House, V93 AE38, Ireland', geometry: { location: { lat: 52.05, lng: -9.99 } } },
+      { formatted_address: 'Near House, V93 AE39, Ireland', geometry: { location: { lat: 52.0401, lng: -9.9901 } } },
+    ],
+  };
+  await withFetch({ body }, async () => {
+    assert.equal(await reverseGeocode({ lat: 52.04, lng: -9.99 }, 'key'), 'V93AE39');
+  });
+});
+
 test('reverseGeocode ignores non-Eircode postal codes', async () => {
   const body = { results: [{ address_components: [{ long_name: 'ZZZZ', types: ['postal_code'] }] }] };
   await withFetch({ body }, async () => {

@@ -1,10 +1,11 @@
 {
   "name": "dpd-assistant-bot",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "description": "Discord bot — operator commands for the DPD depot AI assistant",
   "scripts": {
+    "prestart": "pkill -f 'node src/index.js' 2>/dev/null || true",
     "start": "node src/index.js",
     "register": "node src/register-commands.js"
   },

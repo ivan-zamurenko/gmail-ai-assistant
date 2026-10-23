@@ -35,6 +35,7 @@ function shortDate(date) {
 
 /** Keep the full clock — seconds tell two scans in the same minute apart. */
 const hms = (time) => (time || '').slice(0, 8);
+const coord = (value) => Number(value).toFixed(6);
 
 const MAX_HISTORY = 12;
 
@@ -81,6 +82,11 @@ function byParcel(scans) {
     .map(([parcel, lastScan]) => ({ parcel, lastScan }));
 }
 
+/** Route names like NearRoute are internal and should be hidden from operator-facing logs. */
+function displayRoute(route) {
+  return (route || '').toLowerCase() === 'nearroute' ? '' : (route || '');
+}
+
 /** A green dot for a delivered parcel, amber for one still in the network. */
 function parcelsBlock(parcels) {
   const width = Math.max(...parcels.map((p) => p.lastScan.type.length));
@@ -94,25 +100,25 @@ function parcelsBlock(parcels) {
   return '```ansi\n' + lines.join('\n') + '\n```';
 }
 
-/** Newest first: parcel, status, date/time, route, then CAD location at far right. */
-function historyBlock(scans, showParcel) {
-  const rows = [...scans].reverse().slice(0, MAX_HISTORY);
-  const sw = rows.length ? Math.max(...rows.map((s) => s.type.length)) : 0;
-  const rw = rows.length ? Math.max(...rows.map((s) => (s.route || '').length)) : 0;
-  const lw = rows.length ? Math.max(...rows.map((s) => cadLocation(s).length)) : 0;
+const isNearestRoute = (scan) => /nearest route assigned/i.test(scan?.type || '');
 
+/** Newest first with one aligned line per visible scan. */
+function historyBlock(scans, showParcel) {
+  const rows = [...scans].reverse().filter((s) => !isNearestRoute(s)).slice(0, MAX_HISTORY);
+  const statusWidth = rows.length ? Math.max(...rows.map((s) => s.type.length)) : 0;
+  const routeWidth = rows.length ? Math.max(...rows.map((s) => displayRoute(s.route).length)) : 0;
   const lines = rows.map((s) => {
+    const route = displayRoute(s.route);
     const location = cadLocation(s);
-    const tag    = showParcel ? `P${s.parcel} ` : '';
-    const label  = s.type.padEnd(sw);
-    const route  = (s.route || '').padEnd(rw);
-    const bc     = onwardBc(s);
+    const prefix = showParcel ? `P${s.parcel}  ` : '';
+    const bc = onwardBc(s);
     const onward = bc ? `  →${bc}` : '';
-    return `${tag}${label} ${CYAN}${shortDate(s.date)} ${hms(s.time)}${RESET} ${route}`
-      + `${location ? ` ${location.padEnd(lw)}` : ''}${onward}`;
+    const dateTime = `${shortDate(s.date)} ${hms(s.time)}`;
+    return `${prefix}${s.type.padEnd(statusWidth)}  ${CYAN}${dateTime}${RESET}`
+      + `  ${route.padEnd(routeWidth)}${location ? `  ${location}` : ''}${onward}`;
   });
 
-  const hidden = scans.length - lines.length;
+  const hidden = scans.filter((s) => !isNearestRoute(s)).length - lines.length;
   if (hidden > 0) lines.push(`… +${hidden} earlier`);
 
   return '```ansi\n' + lines.join('\n') + '\n```';
@@ -120,8 +126,9 @@ function historyBlock(scans, showParcel) {
 
 /** Status bold, time yellow — needs an ANSI code block, plain text has no colour. */
 function lastEventLine(s, minWidth = 0) {
+  const route = displayRoute(s.route);
   const head = `${BOLD}${s.type}${RESET} at ${YELLOW}${hms(s.time)}${RESET}`
-    + `${s.route ? ` by route ${s.route}` : ''}`;
+    + `${route ? ` by route ${route}` : ''}`;
   const bc    = onwardBc(s);
   const signed = s.signature ? `\n-> Signed to ${s.signature} <-` : '';
   const onward = bc ? `\n-> Onward BC ${bc} <-` : '';
@@ -145,9 +152,10 @@ export async function buildParcelEmbed(parcel, apiKey) {
   const a = parcel.address;
   const consignee = [...new Set([a.contact, a.company].filter(Boolean))].join(', ');
 
+  const relevantScans = parcel.scans.filter((scan) => !isNearestRoute(scan));
   // Parcel "0" is a consignment-level event (order received), not a physical box.
-  const numbered  = parcel.scans.filter((sc) => Number(sc.parcel) >= 1);
-  const scans     = numbered.length ? numbered : parcel.scans;
+  const numbered  = relevantScans.filter((sc) => Number(sc.parcel) >= 1);
+  const scans     = numbered.length ? numbered : relevantScans;
   // The honest current status is the latest real scan — the detail page goes stale
   // (still says "Delivered" after a later redirect).
   const s         = scans.reduce((x, y) => (stamp(y) >= stamp(x) ? y : x));
@@ -167,7 +175,8 @@ export async function buildParcelEmbed(parcel, apiKey) {
   if (parcel.drop) {
     // Where the parcel actually landed — the whole point when it went to the wrong door.
     const dropEircode = await reverseGeocode(parcel.drop, apiKey);
-    const landed = dropEircode ? ` — dropped ≈ ${dropEircode}` : '';
+    const dropPoint = `${coord(parcel.drop.lat)}, ${coord(parcel.drop.lng)}`;
+    const landed = dropEircode ? ` — dropped ≈ ${dropEircode}` : ` — 🔴 S: ${dropPoint}`;
     if (!eircode)     desc.push(`📍 distance unavailable — no valid Eircode${landed}`);
     else if (!addr)   desc.push(`📍 distance unavailable — Eircode not resolved${landed}`);
     else {
@@ -175,12 +184,14 @@ export async function buildParcelEmbed(parcel, apiKey) {
       const shown = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
       // 🔴/🔵 mirror the red S / blue D markers drawn on the map below.
       desc.push(`📍 **≈ ${shown}** off target`
-        + `\n🔴 S · dropped ≈ ${dropEircode ?? '—'}`
+        + `\n${dropEircode ? `🔴 S · Dropped Eircode: ${dropEircode}` : `🔴 S: ${dropPoint}`}`
         + `\n🔵 D · target ${eircode}`);
     }
-    const dest = eircode ?? encodeURIComponent(place(a));
-    desc.push(`[🗺 Open route in Google Maps](https://www.google.com/maps/dir/?api=1`
-      + `&origin=${parcel.drop.lat},${parcel.drop.lng}&destination=${dest})`);
+    const destination = eircode ?? encodeURIComponent(place(a));
+    desc.push(`[🗺 Open scan location in Google Maps](https://www.google.com/maps/search/?api=1`
+      + `&query=${parcel.drop.lat},${parcel.drop.lng})`
+      + ` · [Open route to target](https://www.google.com/maps/dir/?api=1`
+      + `&origin=${parcel.drop.lat},${parcel.drop.lng}&destination=${destination})`);
   }
 
   // Match the two cards: stretch the main card's Last event to the history width.
@@ -215,6 +226,15 @@ export async function buildParcelEmbed(parcel, apiKey) {
 
   // A picture of how far the scan (S) sits from the address (D).
   const files = [];
+  const extraEmbeds = [];
+  if (parcel.pod?.body) {
+    const pod = Buffer.from(parcel.pod.body, 'base64');
+    files.push(new AttachmentBuilder(pod, { name: 'pod.jpg' }));
+    extraEmbeds.push(new EmbedBuilder()
+      .setColor(colorFor(s.type))
+      .setTitle('POD photo')
+      .setImage('attachment://pod.jpg'));
+  }
   if (addr) {
     const png = await mapImage(parcel.drop, addr, apiKey);
     if (png) {
@@ -229,5 +249,5 @@ export async function buildParcelEmbed(parcel, apiKey) {
     .setTitle(`History (${scans.length})`)
     .setDescription(historyStr);
 
-  return { embeds: [mainEmbed, historyEmbed], files };
+  return { embeds: [mainEmbed, historyEmbed, ...extraEmbeds], files };
 }

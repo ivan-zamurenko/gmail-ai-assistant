@@ -23,9 +23,9 @@
       "block_reason": null
     },
     "S00-05": {
-      "status": "todo",
-      "evidence": null,
-      "block_reason": null
+      "status": "blocked",
+      "evidence": ".workflow/evidence/S00-05.json",
+      "block_reason": "Потрібен список файлів із Chat: Open Customizations → Instructions або References відповіді; власник підтвердив лише «без помилок», References порожні, debug-логів Copilot Chat за 2026-10-23 немає."
     },
     "S01-01": {
       "status": "todo",

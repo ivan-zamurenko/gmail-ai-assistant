@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "task_id": "S00-05",
+  "outcome": "partial",
+  "scope": "Verify that the chosen agent (Copilot in VS Code) actually loads project instructions; read-only.",
+  "base_sha": "f3515cf",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "green",
+      "kind": "manual",
+      "cwd": "workspace root",
+      "command": "Read-only chat request in Copilot (VS Code Chat): current card and live prohibitions",
+      "exit_code": null,
+      "result": "passed: answer named S00-05 from roadmap next, listed dry_run:false-only live consent, no confirm_live, no auto-send, no bot start/register/deploy, /find admin-only ephemeral, merge to main only with permission; UI showed 0 files changed",
+      "boundary": "owner-run manual check; model answer alone is not proof of loading",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "workspace root",
+      "command": "git status --short | wc -l (before/after the read-only request)",
+      "exit_code": 0,
+      "result": "12 entries both times; no new changes",
+      "boundary": "local",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "manual",
+      "cwd": "VS Code UI",
+      "command": "Chat: Open Customizations → Instructions",
+      "exit_code": null,
+      "result": "owner: no errors; loaded file list not reported",
+      "boundary": "owner observation",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "manual",
+      "cwd": "VS Code UI",
+      "command": "Chat response References",
+      "exit_code": null,
+      "result": "not provided (empty)",
+      "boundary": "owner observation",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "VS Code workspace storage",
+      "command": "search GitHub.copilot-chat/debug-logs for this workspace",
+      "exit_code": 0,
+      "result": "latest session log is from 2026-08-26; no log for 2026-10-23, so no independent load record",
+      "boundary": "local files, no contents copied",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Copilot (VS Code Chat) chosen as the verified tool; Codex left unverified."
+  ],
+  "gates": [],
+  "changed_paths": [
+    ".workflow/evidence/S00-05.json",
+    ".workflow/state.json",
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md",
+    "START_HERE.html"
+  ],
+  "untested": [
+    "Which instruction files the Customizations view lists",
+    "References of the answer",
+    "Codex (openai.chatgpt 26.51007 extension, codex-cli 0.153.4) discovery",
+    "Codex config vs VS Code settings as separate layers"
+  ],
+  "residual_risk": [
+    "Without the file list a silently skipped .instructions.md (applyTo) would go unnoticed."
+  ],
+  "blocker": "Потрібен список файлів із Chat: Open Customizations → Instructions або References відповіді; власник підтвердив лише «без помилок», References порожні, debug-логів Copilot Chat за 2026-10-23 немає.",
+  "next_step": "Owner: send file list from Customizations → Instructions (or enable chat debug logging and repeat the read-only request); then mark done. S01 tasks are not blocked.",
+  "environment": {
+    "product": "GitHub Copilot in VS Code (built into VS Code)",
+    "vscode": "1.143.0",
+    "codex_cli": "0.153.4",
+    "codex_extension": "openai.chatgpt 26.51007",
+    "workspace_root": "repository root (gmail-ai-assistant)"
+  },
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "performed"
+  },
+  "external_effects": []
+}

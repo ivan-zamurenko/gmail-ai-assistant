@@ -34,5 +34,6 @@
 | 2026-10-23 | Copilot | Виконано | Root package 1.1.9 за S00-02 (дозвіл власника на bump + commit/push). | — |
 | 2026-10-23 | Copilot | Виконано | S00-03: `npm test` з preload-забороною fetch і явним набором файлів (helper-модулі більше не рахуються як «ok»); fakes fetch/chrome, валідатор fixtures, Gmail labels і naming тести. RED 3/6 → GREEN; 129/129, lint, build — PASS; root 1.1.10; [evidence](evidence/S00-03.json). Сокети discord.js/firebase не перехоплюються. | S00-04 — звірити картку. |
 | 2026-10-23 | Copilot | Виконано | S00-04: `tools/checks.mjs` (fail-fast gate: lint, test>0, build, артефакти manifest, docs, diff-check; `--install` — npm ci root+bot, lock drift) і read-only workflow `checks` з pinned actions. 8/8 тестів; локально PASS; чистий clone PASS; GitHub run 39990600863 success. Власник: агенти по черзі, CI push дозволено. | S00-05; required check — рішення власника. |
+| 2026-10-23 | Copilot + власник | Заблоковано | S00-05: read-only запит у Copilot (VS Code 1.143.0) пояснив картку й заборони live, 0 змін; Customizations — без помилок. Список інструкцій/References не надано, debug-логів за сьогодні немає; [evidence](evidence/S00-05.json). | Власнику — список з Customizations → Instructions; далі S01. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.

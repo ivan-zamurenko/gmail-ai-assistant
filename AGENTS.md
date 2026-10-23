@@ -15,6 +15,7 @@ Before changing the project, read and follow:
    barcode, AI, or MV3 work.
 5. `docs/TESTING.md` before adding, changing, or reorganizing tests.
 6. `docs/SECURITY-WORKLOG.md` before security-related work.
+7. `.workflow/WORKLOG.md` — concise shared history, decisions, and handoffs.
 
 If documentation conflicts with the working code, diagnose the difference and
 report it. Do not silently invent a new architecture. Newer explicit owner
@@ -131,3 +132,16 @@ For kit changes run `node tools/roadmap.mjs validate`,
 the offline reader with `node tools/build-start-here.mjs`. Product changes also
 follow the quality gates above. Historical probes under `checks/` are manual
 snapshot diagnostics, not current product regression tests.
+
+## Shared journal
+
+Read `.workflow/WORKLOG.md` at session start. After each completed step, append
+one short dated entry with agent, status, result, verification/reference, and
+next action. Distinguish proposals, approved decisions, analysis, and implemented
+behavior. Under parallel work, only the integrator writes WORKLOG/CURRENT/state;
+other agents send their summaries. Preserve history and unrelated dirty work.
+The journal does not replace roadmap state, detailed evidence, or security logs.
+
+Owner testing decision: keep the minimum tests needed for concrete risks. For
+behavior changes, write the expectation and regression test before changing code;
+do not weaken expectations to fit implementation or duplicate existing coverage.

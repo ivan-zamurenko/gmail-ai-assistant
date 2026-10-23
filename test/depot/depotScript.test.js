@@ -16,6 +16,7 @@ async function runReschedule(mode, {
   saveConfirmation = 'success',
   targets = null,
   requestedDate = '',
+  formAction = '/save',
 } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
@@ -63,7 +64,7 @@ async function runReschedule(mode, {
     notes: { body: fakeText(notes) },
     form: {
       querySelector: (selector) => selector === 'form'
-        ? { getAttribute: () => '/save', elements: [] }
+        ? { getAttribute: () => formAction, elements: [] }
         : null,
       body: fakeText(),
     },
@@ -81,7 +82,7 @@ async function runReschedule(mode, {
 
   globalThis.window = {
     location: {
-      href: 'https://depot.invalid/home?session=synthetic&UID=synthetic',
+      href: 'http://synthetic.interlink.local/home?session=synthetic&UID=synthetic',
       search: '?session=synthetic&UID=synthetic',
     },
   };
@@ -149,6 +150,24 @@ async function runReschedule(mode, {
   }
 }
 
+// Injected scripts check the page they run on; dry-run cases still need a depot page.
+async function onDepotPage(run) {
+  const had = Object.hasOwn(globalThis, 'window');
+  const previous = globalThis.window;
+  globalThis.window = {
+    location: {
+      href: 'http://synthetic.interlink.local/home?session=synthetic&UID=synthetic',
+      search: '?session=synthetic&UID=synthetic',
+    },
+  };
+  try {
+    return await run();
+  } finally {
+    if (had) globalThis.window = previous;
+    else delete globalThis.window;
+  }
+}
+
 test('label dry-run uses exact verified targets without reading Pending List', async () => {
   const original = {
     log: globalThis.console.log,
@@ -160,7 +179,7 @@ test('label dry-run uses exact verified targets without reading Pending List', a
   globalThis.console.warn = () => {};
 
   try {
-    const result = await depotMain({
+    const result = await onDepotPage(() => depotMain({
       dryRun: true,
       mode: 'labels',
       targets: [
@@ -168,7 +187,7 @@ test('label dry-run uses exact verified targets without reading Pending List', a
         // Duplicate target must not schedule the same internal consignment twice.
         { consNumber: '012345678', consId: '7654321', type: 'PopUp' },
       ],
-    });
+    }));
 
     assert.deepEqual(result, {
       dryRun: true,
@@ -191,14 +210,14 @@ test('invalid exact label targets are rejected before depot access', async () =>
   globalThis.console.warn = () => {};
 
   try {
-    const result = await depotMain({
+    const result = await onDepotPage(() => depotMain({
       dryRun: true,
       mode: 'labels',
       targets: [
         { consNumber: 'not-nine-digits', consId: '7654321' },
         { consNumber: '123456789', consId: 'not-numeric' },
       ],
-    });
+    }));
 
     assert.deepEqual(result, {
       changed: 0,
@@ -334,4 +353,14 @@ test('one failed parcel does not stop the next parcel in the batch', async () =>
     { consNumber: '123456789', action: 'ERROR' },
     { consNumber: '987654321', action: 'CHANGE_DATE' },
   ]);
+});
+
+test('reschedule refuses a cross-origin form action before posting session fields', async () => {
+  const { result, saveWrites } = await runReschedule('labels', {
+    formAction: 'http://evil.invalid/save',
+  });
+
+  assert.equal(saveWrites, 0);
+  assert.equal(result.changed, 0);
+  assert.equal(result.errors, 1);
 });

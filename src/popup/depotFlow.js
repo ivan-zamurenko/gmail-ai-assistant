@@ -11,6 +11,7 @@ import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
 import { processLabels }                       from '../depot/driveScanner.js';
 import { depotLookup }                         from '../depot/lookup.js';
 import { depotMain }                           from '../depot/depotScript.js';
+import { assertDepotTab }                      from '../depot/depotTarget.js';
 import { createLabelVerifier, DEPOT_PROBE }     from '../depot/labelVerifier.js';
 import {
   addRecoveryTargets,
@@ -19,7 +20,6 @@ import {
 } from '../depot/rescheduleRecovery.js';
 import { createLog }                           from './logView.js';
 import { setStatus }                           from './statusHelper.js';
-import { CONSTANTS }                           from '../utils/constants.js';
 
 const STATE_LABELS = {
   listing:     'Listing',
@@ -101,19 +101,7 @@ export function initDepotFlow({
 
   async function getActiveDepotTab() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab) throw new Error('No active tab found');
-    let url;
-    try {
-      url = new URL(tab.url);
-    } catch {
-      throw new Error('Open the depot page in the active tab first');
-    }
-    const isDepot = url.protocol === 'http:'
-      && url.hostname.toLowerCase().endsWith('.interlink.local');
-    if (!isDepot) {
-      throw new Error(`Active tab is not a depot page (${CONSTANTS.DEPOT_URL_PATTERN})`);
-    }
-    return tab;
+    return assertDepotTab(tab);
   }
 
   // ── Scan CAD List ───────────────────────────────────────────────────────────

@@ -68,6 +68,7 @@ test/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
 │   ├── fastBarcodeReader.test.js WASM-first decoder and safe fallback
 │   ├── depotScript.test.js   Direct label reschedule target boundary
+│   ├── depotTarget.test.js   Depot tab/origin rule and in-page origin guard
 │   ├── driveLabels.test.js   Drive adapter: every request in dry-run vs live
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
@@ -292,6 +293,21 @@ test/
 - Нечитабельний barcode дає `unknown-007` з нулями й extension у нижньому
   регістрі; файл без extension отримує `.jpg`.
 - Дата файлу — день створення в Drive (`dateOf`), без переформатування.
+
+### `test/depot/depotTarget.test.js`
+
+**Depot code runs only on the depot origin and never posts elsewhere**
+
+- Таблиця URL: лише `http://*.interlink.local` без `user:pass@`; відхиляються https,
+  голий `interlink.local`, `interlink.local.evil`, підрядок у path/query, `chrome://`.
+- Активна вкладка: відсутня, без URL, з чужим host — помилка до ін'єкції.
+- `depotMain`/`depotLookup` відтворюються з тексту функції (як у Chrome) і на чужій
+  сторінці повертають «unexpected origin» без жодного запиту.
+- Quick search з `form.action` іншого origin не надсилає номер; свій origin — POST.
+- Суміжно: `depotScript.test.js` — reschedule з чужим form action не робить POST
+  (0 save, 1 error); `executor.test.js` — вкладка, що пішла з depot після
+  `tabs.query`, не отримує ін'єкцію.
+- Не перевіряє справжній Chrome, реальні depot URL/path і iframe.
 
 ### `test/depot/driveLabels.test.js`
 

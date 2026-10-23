@@ -17,13 +17,30 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
   const text  = (el) => (el?.textContent ?? '').replace(/\s+/g, ' ').trim();
   const toDoc = (html) => new DOMParser().parseFromString(html, 'text/html');
 
+  // Runs in the page MAIN world: confirm the page is the depot (same rule as
+  // depotTarget.js) and keep every request on its origin.
+  function isDepotPage() {
+    const here = new URL(window.location.href);
+    return here.protocol === 'http:'
+      && here.hostname.toLowerCase().endsWith('.interlink.local')
+      && here.hostname.length > '.interlink.local'.length
+      && here.href.startsWith(`${here.origin}/`); // no user:pass@ in the URL
+  }
+
+  function sameOrigin(raw) {
+    const here = new URL(window.location.href);
+    const url = new URL(raw, here.href);
+    if (url.origin !== here.origin) throw new Error('Refusing a cross-origin depot request');
+    return url.href;
+  }
+
   function sessionParams() {
     const p = new URLSearchParams(window.location.search);
     return { session: p.get('session') ?? '', uid: p.get('UID') ?? '' };
   }
 
   async function fetchDoc(url) {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await fetch(sameOrigin(url), { credentials: 'include' });
     if (!res.ok) throw new Error(`Depot page returned HTTP ${res.status}`);
     return toDoc(await res.text());
   }
@@ -45,7 +62,7 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
     const form = document.getElementById('ConQSearchForm');
     if (!form) throw new Error('Quick search form not found — is this a depot page?');
 
-    const res = await fetch(form.action, {
+    const res = await fetch(sameOrigin(form.action), {
       method:      'POST',
       credentials: 'include',
       headers:     { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -265,6 +282,10 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
         email:    pickMatching(contact, /e-?mail/i),
       },
     };
+  }
+
+  if (!isDepotPage()) {
+    return numbers.map((query) => ({ query, ok: false, reason: 'Not a depot page (unexpected origin)' }));
   }
 
   const results = [];

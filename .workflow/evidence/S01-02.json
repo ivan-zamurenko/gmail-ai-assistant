@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "task_id": "S01-02",
+  "outcome": "passed",
+  "scope": "Reject depot injection on wrong tabs and cross-origin form/session transfer; plus owner-approved move of POD credentials out of the page MAIN world.",
+  "base_sha": "e299757",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/lookup.test.js",
+      "exit_code": 1,
+      "result": "owner's pending POD draft: serialized depotLookup contained podAuth (credentials passed into MAIN)",
+      "boundary": "local checkout; synthetic chrome/page/fetch fakes; network guard; no real Chrome or depot",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js",
+      "exit_code": 1,
+      "result": "reschedule with form action http://evil.invalid/save performed the POST with session fields",
+      "boundary": "local checkout; synthetic chrome/page/fetch fakes; network guard; no real Chrome or depot",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotTarget.test.js",
+      "exit_code": 1,
+      "result": "2/4 failed: serialized depotMain/depotLookup ran on non-depot pages; quick search posted to a cross-origin form action (module missing was fixed first, not counted as RED)",
+      "boundary": "local checkout; synthetic chrome/page/fetch fakes; network guard; no real Chrome or depot",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/executor.test.js",
+      "exit_code": 1,
+      "result": "a tab returned by tabs.query that had navigated to another site was injected",
+      "boundary": "local checkout; synthetic chrome/page/fetch fakes; network guard; no real Chrome or depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotTarget.test.js test/depot/depotScript.test.js test/depot/lookup.test.js test/depot/podImage.test.js test/queue/executor.test.js",
+      "exit_code": 0,
+      "result": "all pass",
+      "boundary": "local checkout; synthetic chrome/page/fetch fakes; network guard; no real Chrome or depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages: lint, 153/153 tests, build, dist artifacts, docs, diff-check",
+      "boundary": "local checkout; synthetic chrome/page/fetch fakes; network guard; no real Chrome or depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "remote",
+      "cwd": "GitHub Actions",
+      "command": "checks workflow on 50c1c3c (POD commit)",
+      "exit_code": null,
+      "result": "see GitHub run list",
+      "boundary": "ubuntu-latest, no secrets",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Owner chose 'POD first': POD authorize/image moved from the injected lookup to src/depot/podImage.js (extension); committed together with owner's pending POD and bot work in two commits (0d3fefc, 50c1c3c).",
+    "Depot rule derived from CONSTANTS.DEPOT_URL_PATTERN in src/depot/depotTarget.js; injected functions repeat it inline because they must stay self-contained.",
+    "Path is not restricted: real depot URL paths are not confirmed (Liam lens); host/protocol/userinfo + same-origin requests only.",
+    "Existing synthetic fixtures moved from https://depot.invalid to http://synthetic.interlink.local and tab fixtures gained a url; expectations unchanged.",
+    "Versions: extension 6.3.0.59, root 1.1.13."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "src/depot/depotTarget.js",
+    "src/depot/depotScript.js",
+    "src/depot/lookup.js",
+    "src/popup/depotFlow.js",
+    "src/queue/executor.js",
+    "test/depot/depotTarget.test.js",
+    "test/depot/depotScript.test.js",
+    "test/depot/lookup.test.js",
+    "test/queue/executor.test.js",
+    "docs/depot-contract.md",
+    "docs/TESTING.md",
+    "docs/SECURITY-WORKLOG.md",
+    "roadmap/tasks/S01-02.md",
+    "manifest.json",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Real Chrome executeScript/MAIN behaviour and tab URL availability",
+    "Real depot URL shapes, iframes and redirects",
+    "DPD POD API from the background service worker with the new host permissions",
+    "background.js keepalive injection (func returns true, no data) left unchanged"
+  ],
+  "residual_risk": [
+    "If the real depot ever serves pages over https or a different host suffix, the guard will refuse it until DEPOT_URL_PATTERN and the inline checks are updated together.",
+    "podAuth is bundled into the private dist build."
+  ],
+  "blocker": null,
+  "next_step": "Owner: live smoke of /find with a delivered parcel (POD) and one popup dry-run on the depot tab; then S01-03.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

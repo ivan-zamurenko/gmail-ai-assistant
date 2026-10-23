@@ -11,13 +11,13 @@ async function withLookupDocument(doc, run) {
   const requests = [];
   globalThis.window = {
     location: {
-      href: 'https://depot.invalid/home?session=synthetic&UID=synthetic',
+      href: 'http://synthetic.interlink.local/home?session=synthetic&UID=synthetic',
       search: '?session=synthetic&UID=synthetic',
     },
   };
   globalThis.document = {
     getElementById: (id) => id === 'ConQSearchForm'
-      ? { action: 'https://depot.invalid/search' }
+      ? { action: 'http://synthetic.interlink.local/search' }
       : null,
   };
   globalThis.DOMParser = class { parseFromString() { return doc; } };
@@ -53,13 +53,13 @@ test('lookup requires the zero marker before searching a legacy eight-digit numb
 
   globalThis.window = {
     location: {
-      href: 'https://depot.invalid/home?session=synthetic&UID=synthetic',
+      href: 'http://synthetic.interlink.local/home?session=synthetic&UID=synthetic',
       search: '?session=synthetic&UID=synthetic',
     },
   };
   globalThis.document = {
     getElementById: (id) => id === 'ConQSearchForm'
-      ? { action: 'https://depot.invalid/search' }
+      ? { action: 'http://synthetic.interlink.local/search' }
       : null,
   };
   globalThis.DOMParser = class {

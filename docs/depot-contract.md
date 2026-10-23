@@ -14,6 +14,15 @@
 
 До вызова проверить разрешённый hostname/path, tab ID и признаки ожидаемой страницы. Внутри injected функции повторно проверить critical DOM/session prerequisites. Переходы по ссылкам и form action ограничить ожидаемым origin и разрешённым маршрутом.
 
+**Реалізовано (S01-02, 2026-10-23):** правило вкладки — `src/depot/depotTarget.js`
+(`http:`, host строго під `.interlink.local` з `DEPOT_URL_PATTERN`, без `user:pass@`).
+Popup перевіряє активну вкладку перед кожною ін'єкцією, executor повторно фільтрує
+вкладки з `tabs.query`. `depotMain` і `depotLookup` повторюють перевірку на сторінці
+(навігація між перевіркою і ін'єкцією) і пропускають кожен fetch/form action через
+`sameOrigin`: чужий origin відхиляється до відправлення session/hidden fields.
+Маршрут (path) не обмежується — реальні depot URL окремо не підтверджені. POD API
+викликається з розширення (`podImage.js`), не з MAIN.
+
 Функция должна быть self-contained после serialization. Выделенный helper нельзя просто импортировать сверху: Chrome не переносит внешнее closure. Для тестов использовать независимый контекст выполнения и собранную версию; данные передавать явно через сериализуемые args. [S-CHROME-SCRIPT](SOURCES.md)
 
 Google OAuth token, Gemini key, carrier key и содержимое других писем не передаются в MAIN. Session страницы используется только для работы разрешённых depot endpoints и не возвращается в popup/result/log.

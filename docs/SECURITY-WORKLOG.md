@@ -6,6 +6,11 @@ into this log.
 
 ## 2026-10-23
 
+- S01-02: depot code is injected only into tabs that match the depot rule
+  (`src/depot/depotTarget.js`), re-checked by the queue executor and, inside
+  the page, by `depotMain`/`depotLookup`. Every depot fetch and form action is
+  restricted to the page origin, so session and hidden fields cannot be posted to
+  another origin. Synthetic tests only; real Chrome/depot not exercised.
 - Moved POD authorization and image retrieval out of the depot page MAIN world
   into the extension (`src/depot/podImage.js`). The DPD API user/password and
   access token were previously passed as injected args, where page scripts could

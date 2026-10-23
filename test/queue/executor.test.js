@@ -41,7 +41,7 @@ test('manual parcel task resolves one exact target before depot dry-run', async 
 
   globalThis.chrome = {
     tabs: {
-      query: async () => [{ id: 7, discarded: false }],
+      query: async () => [{ id: 7, discarded: false, url: 'http://synthetic.interlink.local/home?session=synthetic' }],
       update: async () => ({}),
     },
     scripting: {
@@ -89,7 +89,7 @@ test('label target lookup injects identity-only mode', async () => {
   let injection;
   globalThis.chrome = {
     tabs: {
-      query: async () => [{ id: 7, discarded: false }],
+      query: async () => [{ id: 7, discarded: false, url: 'http://synthetic.interlink.local/home?session=synthetic' }],
       update: async () => ({}),
     },
     scripting: {
@@ -134,7 +134,7 @@ test('retry task uses only today saved exact targets without Drive or barcode lo
       },
     },
     tabs: {
-      query: async () => [{ id: 7, discarded: false }],
+      query: async () => [{ id: 7, discarded: false, url: 'http://synthetic.interlink.local/home?session=synthetic' }],
       update: async () => ({}),
     },
     scripting: {
@@ -216,7 +216,7 @@ test('find injects only the number; the POD photo is requested by the extension'
   let podEventId = null;
   globalThis.chrome = {
     tabs: {
-      query: async () => [{ id: 7, discarded: false }],
+      query: async () => [{ id: 7, discarded: false, url: 'http://synthetic.interlink.local/home?session=synthetic' }],
       update: async () => ({}),
     },
     scripting: {
@@ -253,4 +253,34 @@ test('find injects only the number; the POD photo is requested by the extension'
   assert.match(delivered.summary, /POD photo error: POD (request failed|authorization is not configured)/);
 
   assert.deepEqual(injections, [[['123456789']], [['123456789']]]);
+});
+
+test('a tab that left the depot after the query is never injected', async (t) => {
+  const originalChrome = globalThis.chrome;
+  const injectedTabs = [];
+  globalThis.chrome = {
+    tabs: {
+      // Chrome matched both by pattern, but tab 5 navigated away before injection.
+      query: async () => [
+        { id: 5, discarded: false, url: 'https://www.googleapis.com/' },
+        { id: 7, discarded: false, url: 'http://synthetic.interlink.local/home?session=synthetic' },
+      ],
+      update: async () => ({}),
+    },
+    scripting: {
+      executeScript: async ({ target }) => {
+        injectedTabs.push(target.tabId);
+        return [{ result: [{ ok: true, consNumber: '123456789', consId: '7654321' }] }];
+      },
+    },
+  };
+  t.after(() => {
+    if (originalChrome === undefined) delete globalThis.chrome;
+    else globalThis.chrome = originalChrome;
+  });
+
+  const response = await lookupLabelTarget('123456789');
+
+  assert.equal(response.result.consId, '7654321');
+  assert.deepEqual(injectedTabs, [7]);
 });

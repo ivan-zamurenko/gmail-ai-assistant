@@ -102,6 +102,26 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     return { action: 'SKIP', reason: `Unknown status: "${status}"` };
   }
 
+  // ── Origin guard ───────────────────────────────────────────────────────────────
+
+  // This runs in the page MAIN world. The tab can navigate after the extension
+  // checked its URL, so confirm where we actually are (same rule as
+  // depotTarget.js) and never send session-bearing requests to another origin.
+  function isDepotPage() {
+    const here = new URL(window.location.href);
+    return here.protocol === 'http:'
+      && here.hostname.toLowerCase().endsWith('.interlink.local')
+      && here.hostname.length > '.interlink.local'.length
+      && here.href.startsWith(`${here.origin}/`); // no user:pass@ in the URL
+  }
+
+  function sameOrigin(raw) {
+    const here = new URL(window.location.href);
+    const url = new URL(raw, here.href);
+    if (url.origin !== here.origin) throw new Error('Refusing a cross-origin depot request');
+    return url.href;
+  }
+
   // ── Fetch helpers ──────────────────────────────────────────────────────────────
 
   function getSessionParams() {
@@ -110,7 +130,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   }
 
   async function fetchDoc(url) {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await fetch(sameOrigin(url), { credentials: 'include' });
     if (!res.ok) throw new Error(`Depot page returned HTTP ${res.status}`);
     return new DOMParser().parseFromString(await res.text(), 'text/html');
   }
@@ -180,7 +200,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       const m = s.textContent.match(/ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*['"]([^'"]+)['"]/);
       if (!m) continue;
       try {
-        const doc = await fetchDoc(new URL(m[1], window.location.href).href);
+        const doc = await fetchDoc(m[1]);
         return doc.body?.textContent?.trim() ?? '';
       } catch { return ''; }
     }
@@ -204,7 +224,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         for (const el of form.elements) {
           if (el.name && el.type === 'hidden') body.set(el.name, el.value);
         }
-        await fetch(new URL(form.getAttribute('action'), window.location.href).href, {
+        await fetch(sameOrigin(form.getAttribute('action')), {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: body.toString(),
@@ -217,7 +237,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([/\w][^'"]+)['"]/
       );
       if (om) {
-        await fetch(new URL(om[1], window.location.href).href, { credentials: 'include' });
+        await fetch(sameOrigin(om[1]), { credentials: 'include' });
         return;
       }
 
@@ -244,7 +264,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       throw new Error(`Reschedule form not found. Page says: ${preview}`);
     }
 
-    const actionUrl = new URL(form.getAttribute('action') ?? formUrl, window.location.href).href;
+    const actionUrl = sameOrigin(form.getAttribute('action') ?? formUrl);
 
 
     // Echo every field back exactly as the server filled it — a field we omit
@@ -339,6 +359,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   try {
     console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'} | ${new Date().toLocaleTimeString()}`);
 
+    if (!isDepotPage()) throw new Error('Not the correct depot page (unexpected origin)');
     if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error(`Unsupported depot mode: ${mode}`);
     const { todayShort, tomorrowInput } = getDates();
     const arrangedDate = mode === 'manual' ? manualDateInput(date) : tomorrowInput;

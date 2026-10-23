@@ -1692,7 +1692,7 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 виконано, [S00-02](evidence/S00-02.json), [S00-03](evidence/S00-03.json), [S00-04](evidence/S00-04.json). Driver report обговорено,
 код не змінено. Додано [S09-13](../roadmap/tasks/S09-13.md) зі статусом todo;
 цей запис стосується лише планування report; активна задача — у state.json.
-12 незакомічених файлів власника не чіпалися (package.json/lock закомічені з bump) — звірити `git status`.
+Незакомічених змін власника більше немає: бот і POD закомічено за його рішенням (`0d3fefc`, `50c1c3c`).
 
 ## Поточний стан
 
@@ -1706,6 +1706,9 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
   Actions `checks` (read-only, без secrets) — перший run success. Не required check.
 - S01-01: виконано; Drive-адаптер винесено в `driveLabels.js`, тест кожного
   запиту: dry-run лише GET до Drive. Extension 6.3.0.57, root 1.1.11.
+- S01-02: виконано; depot-код лише на `http://*.interlink.local`, перевірка і в
+  сторінці, усі запити same-origin. POD перенесено з MAIN у розширення; зміни
+  власника (бот, POD) закомічено. Extension 6.3.0.59, root 1.1.13, bot 0.2.3.
 - Обсяг власника: налаштувати проєкт; нові функції — окремо.
 - Гілка: `codex`; початковий HEAD `f1bead1cddfc07a8b68e0d15833cfcdd1dfc0e05`.
 - Чужі незакомічені зміни збережено; перелік і розбіжності архіву:
@@ -1776,6 +1779,7 @@ IDE config examples не активовано; фактичне discovery skill 
 | 2026-10-23 | Copilot | Виконано | S00-04: `tools/checks.mjs` (fail-fast gate: lint, test&gt;0, build, артефакти manifest, docs, diff-check; `--install` — npm ci root+bot, lock drift) і read-only workflow `checks` з pinned actions. 8/8 тестів; локально PASS; чистий clone PASS; GitHub run 39990600863 success. Власник: агенти по черзі, CI push дозволено. | S00-05; required check — рішення власника. |
 | 2026-10-23 | Copilot + власник | Заблоковано | S00-05: read-only запит у Copilot (VS Code 1.143.0) пояснив картку й заборони live, 0 змін; Customizations — без помилок. Список інструкцій/References не надано, debug-логів за сьогодні немає; [evidence](evidence/S00-05.json). | Власнику — список з Customizations → Instructions; далі S01. |
 | 2026-10-23 | Copilot | Виконано | S01-01: dry-run guard уже був; закрито пробіл — Drive-адаптер (`driveLabels.js`) тестується по кожному method/URL: dry-run лише GET, depot POST дозволений, live — папки після verify і один PATCH. Мутації без `dryRun` → RED; 4/4, gate 141 — PASS; [evidence](evidence/S01-01.json). Браузерний прогін декодування не робився. | S01-02; власнику — smoke dry-run скану. |
+| 2026-10-23 | Copilot + власник | Виконано | S01-02: знайдено, що POD-чернетка передавала логін/пароль DPD API у MAIN сторінки; за рішенням власника POD перенесено в розширення (`podImage.js`) і закомічено разом з його змінами бота. Далі: правило вкладки `depotTarget.js`, повторна перевірка в executor і на сторінці, same-origin для всіх fetch/form action. RED 4 сценарії → GREEN; gate 153 — PASS; [evidence](evidence/S01-02.json). | Власнику — live smoke `/find` з POD і dry-run у popup; далі S01-03. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 </pre></article>
@@ -2611,6 +2615,15 @@ S09 — инженерная декомпозиция проверки/разв�
 
 До вызова проверить разрешённый hostname/path, tab ID и признаки ожидаемой страницы. Внутри injected функции повторно проверить critical DOM/session prerequisites. Переходы по ссылкам и form action ограничить ожидаемым origin и разрешённым маршрутом.
 
+**Реалізовано (S01-02, 2026-10-23):** правило вкладки — `src/depot/depotTarget.js`
+(`http:`, host строго під `.interlink.local` з `DEPOT_URL_PATTERN`, без `user:pass@`).
+Popup перевіряє активну вкладку перед кожною ін&#39;єкцією, executor повторно фільтрує
+вкладки з `tabs.query`. `depotMain` і `depotLookup` повторюють перевірку на сторінці
+(навігація між перевіркою і ін&#39;єкцією) і пропускають кожен fetch/form action через
+`sameOrigin`: чужий origin відхиляється до відправлення session/hidden fields.
+Маршрут (path) не обмежується — реальні depot URL окремо не підтверджені. POD API
+викликається з розширення (`podImage.js`), не з MAIN.
+
 Функция должна быть self-contained после serialization. Выделенный helper нельзя просто импортировать сверху: Chrome не переносит внешнее closure. Для тестов использовать независимый контекст выполнения и собранную версию; данные передавать явно через сериализуемые args. [S-CHROME-SCRIPT](SOURCES.md)
 
 Google OAuth token, Gemini key, carrier key и содержимое других писем не передаются в MAIN. Session страницы используется только для работы разрешённых depot endpoints и не возвращается в popup/result/log.
@@ -3299,6 +3312,7 @@ test/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
 │   ├── fastBarcodeReader.test.js WASM-first decoder and safe fallback
 │   ├── depotScript.test.js   Direct label reschedule target boundary
+│   ├── depotTarget.test.js   Depot tab/origin rule and in-page origin guard
 │   ├── driveLabels.test.js   Drive adapter: every request in dry-run vs live
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
@@ -3306,6 +3320,7 @@ test/
 │   ├── labelVerifier.test.js Shared exact depot target collection
 │   ├── lookup.test.js        Depot lookup input normalization
 │   ├── monthFolders.test.js  Drive folder planning and dry-run safety
+│   ├── podImage.test.js      POD photo fetch from the extension, safe errors
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
 ├── fixtures/
 │   └── gmail-labels.json    Synthetic Gmail labels/messages (&quot;synthetic&quot;: true)
@@ -3522,6 +3537,21 @@ test/
 - Нечитабельний barcode дає `unknown-007` з нулями й extension у нижньому
   регістрі; файл без extension отримує `.jpg`.
 - Дата файлу — день створення в Drive (`dateOf`), без переформатування.
+
+### `test/depot/depotTarget.test.js`
+
+**Depot code runs only on the depot origin and never posts elsewhere**
+
+- Таблиця URL: лише `http://*.interlink.local` без `user:pass@`; відхиляються https,
+  голий `interlink.local`, `interlink.local.evil`, підрядок у path/query, `chrome://`.
+- Активна вкладка: відсутня, без URL, з чужим host — помилка до ін&#39;єкції.
+- `depotMain`/`depotLookup` відтворюються з тексту функції (як у Chrome) і на чужій
+  сторінці повертають «unexpected origin» без жодного запиту.
+- Quick search з `form.action` іншого origin не надсилає номер; свій origin — POST.
+- Суміжно: `depotScript.test.js` — reschedule з чужим form action не робить POST
+  (0 save, 1 error); `executor.test.js` — вкладка, що пішла з depot після
+  `tabs.query`, не отримує ін&#39;єкцію.
+- Не перевіряє справжній Chrome, реальні depot URL/path і iframe.
 
 ### `test/depot/driveLabels.test.js`
 
@@ -3785,6 +3815,19 @@ test/
   автоматизацію приблизним збігом.
 - Окремий regression доводить, що звичайний повний lookup і далі завантажує
   Scanning History для `/find`.
+
+### `test/depot/podImage.test.js`
+
+**POD photo is fetched by the extension with exact requests and safe errors**
+
+- Точні POST на authorize і image API, `credentials: &#39;omit&#39;`, Bearer з відповіді.
+- Відсутній eventId/невалідний формат/немає podAuth — відмова без запиту.
+- HTTP 401, відсутній токен, відсутнє фото, мережна помилка — короткі помилки
+  без логіна, пароля чи токена.
+- `test/depot/lookup.test.js` окремо перевіряє, що серіалізована `depotLookup`
+  не містить podAuth, Authorization і викликів DPD API; `test/queue/executor.test.js`
+  — що `/find` передає в ін&#39;єкцію лише номер, а eventId не виходить у результат.
+- Справжній DPD API і host permissions у Chrome не перевіряються.
 
 ### `test/queue/barcodeExecutor.test.js`
 
@@ -5135,6 +5178,11 @@ Evidence: `.workflow/evidence/S01-01.json`. Обновить существую�
 ```sh
 node --test test/unit/depot-target.test.mjs
 ```
+
+Виконано 2026-10-23: `node --test --import ./test/helpers/noNetwork.js test/depot/depotTarget.test.js test/depot/depotScript.test.js test/depot/lookup.test.js test/queue/executor.test.js`
+(модульна структура `test/`). Scope розширено: `src/depot/depotTarget.js`,
+`src/queue/executor.js` (повторна перевірка вкладок) і, за рішенням власника,
+перенесення POD з MAIN (`src/depot/podImage.js`).
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
 

@@ -14,6 +14,7 @@
 import { depotMain }       from '../depot/depotScript.js';
 import { depotLookup }     from '../depot/lookup.js';
 import { fetchPodImage }   from '../depot/podImage.js';
+import { isDepotUrl }      from '../depot/depotTarget.js';
 import {
   applyRecoveryResult,
   loadRecoveryTargets,
@@ -34,7 +35,10 @@ const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
 const config = loadConfig();
 
 async function findDepotTabs() {
-  const tabs = await chrome.tabs.query({ url: CONSTANTS.DEPOT_URL_PATTERN });
+  // The pattern query can return a tab that has since navigated; re-check each
+  // URL with the same rule the popup uses before anything is injected.
+  const tabs = (await chrome.tabs.query({ url: CONSTANTS.DEPOT_URL_PATTERN }))
+    .filter((tab) => isDepotUrl(tab.url));
   // Chrome's Memory Saver discards idle background tabs; waking a discarded depot
   // tab forces a full page reload (10–40s), which is the bulk of a slow /find.
   // Pinning them keeps the renderer alive so later tasks inject instantly.

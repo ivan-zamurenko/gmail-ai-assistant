@@ -91,7 +91,8 @@ test/
 │   ├── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
 │   └── taskProgress.test.js PII-free coalesced progress transport
 ├── tooling/
-│   └── build.test.mjs       esbuild one-off/watch plan and dist boundary
+│   ├── build.test.mjs       esbuild one-off/watch plan and dist boundary
+│   └── checks.test.mjs      tools/checks.mjs gate runner and CI workflow policy
 └── utils/
     └── errors.test.js       Safe outbound error messages
 ```
@@ -657,6 +658,17 @@ test/
 - HTTP 401/403 стають помилкою зі статусом; помилка identity зупиняє до запиту.
 - Fake transport не перевіряє реальні OAuth scopes і pagination Gmail.
 
+### `test/tooling/checks.test.mjs`
+
+**Quality gate fails closed**
+
+- Стадія з exit 7 зупиняє pipeline з кодом 7; наступні не запускаються, `PASS` не друкується.
+- `# tests 0`, наявні падіння або відсутній summary — помилка навіть при exit 0.
+- Відсутні dist-артефакти manifest перелічуються поіменно; source marker відхиляється.
+- Зміна lockfile під час install виявляється за SHA-256.
+- Workflow: лише `contents: read`, без secrets і live-команд, actions закріплені SHA.
+- Не доводить, що GitHub-хмара реально виконала workflow.
+
 ### `test/tooling/build.test.mjs`
 
 **Build plan is identical for one-off and watch, and never touches foreign files**
@@ -767,9 +779,15 @@ Firestore потрібен emulator або ізольований test-project, 
 
 ## CI status
 
-Зараз тести запускаються локально. Автоматичного GitHub Actions workflow ще
-немає. Коли додамо CI, він має виконувати той самий quality gate без доступу до
-секретів, customer-даних і production Firebase/depot середовища.
+З S00-04 один runner `node tools/checks.mjs` виконує lint → test (вимагає
+`# tests > 0` і `# fail 0`) → build → перевірку dist-артефактів manifest →
+roadmap/doc validators → `git diff --check` і зупиняється на першій помилці з її
+exit code. `--install` спершу робить `npm ci` для root і bot, перевіряє, що
+lockfiles не змінились, і створює `src/config/local.js` з example, лише якщо його
+немає. `.github/workflows/checks.yml` запускає саме `--install` з правами
+`contents: read`, без secrets, deploy, bot start/register. Browser-тестів ще
+немає: runner явно друкує `browser: NOT RUN`. Локальний PASS і хмарний run —
+окремі докази.
 
 ## Workflow tooling — 2026-10-23
 

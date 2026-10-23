@@ -89,6 +89,19 @@ synthetic fixtures — `test/fixtures/` через `test/helpers/fixtures.js`. �
 Якщо шаблон не знаходить файлів, shell передає його буквально і Node завершується
 з помилкою — порожній набір не стає успіхом.
 
+### Quality gate і CI (S00-04)
+
+```sh
+node tools/checks.mjs            # локально, на наявних node_modules
+node tools/checks.mjs --install  # як у CI: npm ci root+bot, lock drift, synthetic config
+```
+
+`.github/workflows/checks.yml` (push у codex/main, pull_request) запускає
+`--install` на ubuntu-latest з Node із `.node-version`. Actions закріплені SHA:
+`actions/checkout` v7.0.1, `actions/setup-node` v7.1.0 (перевірено через GitHub
+API 2026-10-23). Права `contents: read`, `persist-credentials: false`, secrets
+не використовуються.
+
 ## 7. Будущие файлы тестов
 
 Пути `test/bot/*.test.mjs`, `test/queue/*.test.mjs` и другие новые файлы из карточек — целевые. Их нужно создать при выполнении задачи. S00-03 расширяет harness зі збереженням поточного модульного suite. Gaps browser/Emulator/live явно записываются, не заменяются успешной Markdown validation.

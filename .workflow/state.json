@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_task": null,
+  "active_task": "S00-04",
   "tasks": {
     "S00-01": {
       "status": "done",
@@ -18,7 +18,7 @@
       "block_reason": null
     },
     "S00-04": {
-      "status": "todo",
+      "status": "in_progress",
       "evidence": null,
       "block_reason": null
     },

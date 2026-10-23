@@ -1087,6 +1087,35 @@
         "docs/owner-gates.md"
       ],
       "acceptance_count": 5
+    },
+    {
+      "id": "S09-13",
+      "title": "Створити короткий driver report для повторної доставки в Discord",
+      "stage": "S09",
+      "depends_on": [
+        "S09-02",
+        "S09-04",
+        "S09-06",
+        "S09-07"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-13.md",
+      "context": [
+        "docs/decisions.md",
+        "docs/discord-bot.md",
+        "docs/queue-contract.md",
+        "docs/SECURITY.md",
+        "docs/TESTING.md",
+        "bot/src/render.js",
+        "bot/src/geo.js",
+        "bot/src/index.js",
+        "src/depot/lookup.js",
+        "src/queue/executor.js",
+        "bot/src/contract.js",
+        "src/queue/contract.js",
+        "firestore.rules"
+      ],
+      "acceptance_count": 5
     }
   ]
 }

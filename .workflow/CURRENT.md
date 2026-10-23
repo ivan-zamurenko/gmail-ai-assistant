@@ -4,7 +4,9 @@
 
 Читайте [спільний журнал](WORKLOG.md). Останнє доручення — S00-02 (відтворювана
 збірка): виконано, [evidence](evidence/S00-02.json). Driver report обговорено,
-код не змінено. 14 незакомічених файлів власника не чіпалися — звірити `git status`.
+код не змінено. Додано [S09-13](../roadmap/tasks/S09-13.md) зі статусом todo;
+цей запис стосується лише планування report; активна задача — у state.json.
+14 незакомічених файлів власника не чіпалися — звірити `git status`.
 
 ## Поточний стан
 
@@ -19,7 +21,7 @@
 
 ## Що встановлено
 
-AGENTS/README об'єднані; додано Copilot instructions, project skill, 53 картки
+AGENTS/README об'єднані; додано Copilot instructions, project skill, 54 картки
 roadmap, state/evidence, offline validators і довідник START_HERE.html.
 Поточні owner decisions мають пріоритет: українська, codex, dry_run:false,
 реалізовані parcel/barcodes/retry. Історичні аудити не є поточним PASS.

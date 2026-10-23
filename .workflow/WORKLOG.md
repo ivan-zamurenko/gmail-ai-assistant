@@ -30,5 +30,6 @@
 | 2026-10-23 | Codex | Запропоновано | Два Maps-посилання та окрема дія Text for WhatsApp із повними URL; POD передається окремо. Остаточне оформлення і кнопка ще не погоджені як реалізація. | Не вважати пропозицію готовою функцією. |
 | 2026-10-23 | Codex | Виконано | Створено цей журнал і правило його читання/оновлення в AGENTS та Copilot; додано до CURRENT й offline reader. 38 tooling-тестів і roadmap/doc validators — PASS; product/runtime не змінено. | Наступному агенту прочитати CURRENT, журнал і перевірити dirty tree. |
 | 2026-10-23 | Copilot | Виконано | S00-02: `build.js` — watch збирає console helpers, шляхи від кореня проєкту; `test/tooling/build.test.mjs` RED 2/4 → GREEN 4/4; чистий `npm ci` обох locks без змін; lint/test 115/build — PASS; [evidence](evidence/S00-02.json). Chrome load не перевірявся. | S00-03 — окремим дорученням. |
+| 2026-10-23 | Codex | Виконано | Додано [S09-13](../roadmap/tasks/S09-13.md): driver report англійською в Discord, без історії, точний parcel/event, POD і Maps; scope, залежності й мінімальні test-first критерії. Статус todo; roadmap/doc validators і 38 tooling-тестів PASS, runtime не змінено. | Реалізація за окремим дорученням після залежностей; відкриті UX-рішення — у картці. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.

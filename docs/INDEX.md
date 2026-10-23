@@ -23,7 +23,7 @@
 
 ## Этапы
 
-[Roadmap](../roadmap/ROADMAP.md), [вехи](../roadmap/MILESTONES.md), [совместимость и миграции](../roadmap/MIGRATIONS.md). Все подробные карточки (53) доступны из roadmap и `START_HERE.html`.
+[Roadmap](../roadmap/ROADMAP.md), [вехи](../roadmap/MILESTONES.md), [совместимость и миграции](../roadmap/MIGRATIONS.md). Все подробные карточки (54) доступны из roadmap и `START_HERE.html`.
 
 [Решение владельца по AI/email](../OWNER_DECISION_GMAIL_RU.md) · [Связка AI → review → draft](../roadmap/tasks/S06-05.md).
 

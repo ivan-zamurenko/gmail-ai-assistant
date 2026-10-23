@@ -1,6 +1,6 @@
 <!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DPD Assistance - Markdown execution kit</title><style>
 :root{color-scheme:light dark;--bg:#f5f6f7;--panel:#fff;--text:#20282f;--muted:#53616c;--line:#d7dde2;--accent:#aa1735}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,sans-serif}header{padding:16px 24px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center;flex-wrap:wrap}header strong{font-size:20px}header span{color:var(--muted)}button,input{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px}button{cursor:pointer}#toggle{margin-left:auto}#layout{display:grid;grid-template-columns:320px minmax(0,1fr)}aside{height:calc(100vh - 85px);position:sticky;top:0;overflow:auto;padding:16px;border-right:1px solid var(--line);background:var(--panel)}#search{width:100%;margin-bottom:10px}.nav{display:block;padding:10px;color:var(--text);text-decoration:none;border-bottom:1px solid var(--line);line-height:1.4}.nav small{display:block;font-size:11px;color:var(--muted);overflow-wrap:anywhere}.nav.active{border-left:4px solid var(--accent);background:var(--bg)}main{min-width:0;padding:28px clamp(18px,4vw,64px)}article{max-width:1100px;margin:auto}h1{font-size:32px;line-height:1.2}.path{font-size:13px;overflow-wrap:anywhere}a{color:var(--accent)}.markdown{font:15px/1.7 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel);padding:24px;border:1px solid var(--line);border-radius:8px}.hint{font-size:13px;color:var(--muted)}[hidden]{display:none!important}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}body.dark{--bg:#15191d;--panel:#20262c;--text:#e6ebef;--muted:#aebac3;--line:#46515b;--accent:#ff9eb2}@media(max-width:850px){#layout{grid-template-columns:1fr}aside{position:static;height:auto;max-height:40vh;border-bottom:1px solid var(--line)}main{padding:20px 12px}.markdown{padding:14px}h1{font-size:25px}}
-</style></head><body><header><strong>DPD Assistance</strong><span>Комплект v1.2 / 53 задачі / 118 Markdown-файлів</span><button id="toggle" type="button">Світла / темна</button></header><div id="layout"><aside aria-label="Документи"><label for="search">Пошук</label><input id="search" type="search" placeholder="S01-01, dryRun, Gmail..."><p id="count" class="hint" aria-live="polite"></p><nav><a class="nav" href="#doc-0" data-target="doc-0">DPD Assistance — робочий комплект v1.2<small>00_READ_FIRST.md</small></a>
+</style></head><body><header><strong>DPD Assistance</strong><span>Комплект v1.2 / 54 задачі / 119 Markdown-файлів</span><button id="toggle" type="button">Світла / темна</button></header><div id="layout"><aside aria-label="Документи"><label for="search">Пошук</label><input id="search" type="search" placeholder="S01-01, dryRun, Gmail..."><p id="count" class="hint" aria-live="polite"></p><nav><a class="nav" href="#doc-0" data-target="doc-0">DPD Assistance — робочий комплект v1.2<small>00_READ_FIRST.md</small></a>
 <a class="nav" href="#doc-1" data-target="doc-1">README.md<small>README.md</small></a>
 <a class="nav" href="#doc-2" data-target="doc-2">Установка комплекта без потери существующей работы<small>INSTALL_RU.md</small></a>
 <a class="nav" href="#doc-3" data-target="doc-3">DPD Assistance — Agent Instructions<small>AGENTS.md</small></a>
@@ -13,7 +13,7 @@
 <a class="nav" href="#doc-10" data-target="doc-10">Актуальний стан після встановлення комплекту — 2026-10-23<small>docs/audit/LOCAL_BASELINE.md</small></a>
 <a class="nav" href="#doc-11" data-target="doc-11">Актуальный baseline: GitHub ZIP с существующим Discord-ботом<small>docs/audit/GITHUB_BASELINE.md</small></a>
 <a class="nav" href="#doc-12" data-target="doc-12">Указатель документации DPD Assistance<small>docs/INDEX.md</small></a>
-<a class="nav" href="#doc-13" data-target="doc-13">Roadmap DPD Assistance — 53 небольшие задачи<small>roadmap/ROADMAP.md</small></a>
+<a class="nav" href="#doc-13" data-target="doc-13">Roadmap DPD Assistance — 54 задачі<small>roadmap/ROADMAP.md</small></a>
 <a class="nav" href="#doc-14" data-target="doc-14">Deliver one DPD task<small>.agents/skills/dpd-task-delivery/SKILL.md</small></a>
 <a class="nav" href="#doc-15" data-target="doc-15">Read-only review одной карточки<small>.github/agents/dpd-review.agent.md</small></a>
 <a class="nav" href="#doc-16" data-target="doc-16">DPD Assistance — Copilot<small>.github/copilot-instructions.md</small></a>
@@ -116,8 +116,9 @@
 <a class="nav" href="#doc-113" data-target="doc-113">S09-10 — Перевірити й укріпити наявний режим parcel<small>roadmap/tasks/S09-10.md</small></a>
 <a class="nav" href="#doc-114" data-target="doc-114">S09-11 — Перевірити й укріпити наявний режим barcodes<small>roadmap/tasks/S09-11.md</small></a>
 <a class="nav" href="#doc-115" data-target="doc-115">S09-12 — Провести разрешённый пилот существующего бота<small>roadmap/tasks/S09-12.md</small></a>
-<a class="nav" href="#doc-116" data-target="doc-116">Локальные инструменты комплекта<small>tools/README.md</small></a>
-<a class="nav" href="#doc-117" data-target="doc-117">Рабочий процесс DPD Assistance<small>WORKFLOW_RU.md</small></a></nav></aside><main><p class="hint">Документи доступні офлайн. Тут показано повний Markdown; джерелом залишаються файли .md. Поточні статуси задач дивіться в .workflow/CURRENT.md та .workflow/state.json.</p><article id="doc-0" tabindex="-1"><p class="path"><a href="00_READ_FIRST.md">00_READ_FIRST.md</a></p><h1>DPD Assistance — робочий комплект v1.2</h1><pre class="markdown"># DPD Assistance — робочий комплект v1.2
+<a class="nav" href="#doc-116" data-target="doc-116">S09-13 — Короткий driver report для повторної доставки в Discord<small>roadmap/tasks/S09-13.md</small></a>
+<a class="nav" href="#doc-117" data-target="doc-117">Локальные инструменты комплекта<small>tools/README.md</small></a>
+<a class="nav" href="#doc-118" data-target="doc-118">Рабочий процесс DPD Assistance<small>WORKFLOW_RU.md</small></a></nav></aside><main><p class="hint">Документи доступні офлайн. Тут показано повний Markdown; джерелом залишаються файли .md. Поточні статуси задач дивіться в .workflow/CURRENT.md та .workflow/state.json.</p><article id="doc-0" tabindex="-1"><p class="path"><a href="00_READ_FIRST.md">00_READ_FIRST.md</a></p><h1>DPD Assistance — робочий комплект v1.2</h1><pre class="markdown"># DPD Assistance — робочий комплект v1.2
 
 Комплект встановлено в чинний `gmail-ai-assistant`, гілка `codex`.
 Мета цього налаштування — узгоджені інструкції, документація, roadmap і локальні
@@ -149,7 +150,7 @@ Chrome MV3, окремий Discord-бот, Firestore, esbuild, поточний 
 Gmail-відповіді потребують перевірки людиною; налаштування не запускає надсилання.
 
 Архівні аудити і логи збережені як історія, а не сьогоднішні докази.
-53 картки roadmap — план розвитку та перевірок; їх статус ведеться окремо від
+54 картки roadmap — план розвитку та перевірок; їх статус ведеться окремо від
 наявності функцій у коді. Налаштування IDE у `agent-config/` — приклади,
 вони не змінюють глобальні налаштування автоматично. Інструкції Codex/Copilot
 встановлено на рівні репозиторію; фактичне виявлення skill перевіряється в новій сесії.
@@ -1360,7 +1361,7 @@ MAX_HISTORY=12, CAD detail block=25 строк; лимит строк не до�
 
 ## Этапы
 
-[Roadmap](../roadmap/ROADMAP.md), [вехи](../roadmap/MILESTONES.md), [совместимость и миграции](../roadmap/MIGRATIONS.md). Все подробные карточки (53) доступны из roadmap и `START_HERE.html`.
+[Roadmap](../roadmap/ROADMAP.md), [вехи](../roadmap/MILESTONES.md), [совместимость и миграции](../roadmap/MIGRATIONS.md). Все подробные карточки (54) доступны из roadmap и `START_HERE.html`.
 
 [Решение владельца по AI/email](../OWNER_DECISION_GMAIL_RU.md) · [Связка AI → review → draft](../roadmap/tasks/S06-05.md).
 
@@ -1368,12 +1369,12 @@ MAX_HISTORY=12, CAD detail block=25 строк; лимит строк не до�
 
 [Существующие команды и вывод](discord-bot.md), [queue schema/rules/recovery](queue-contract.md), [runbook](discord/RUNBOOK_RU.md), [матрица тестов](discord/TEST_MATRIX.md), [решение включить бота](../OWNER_DECISION_DISCORD_RU.md). JSON [capabilities](discord/capabilities.json) фиксирует обнаруженное в исходном снимке, не live статус. Все 12 подробных S09 карточек доступны из roadmap.
 </pre></article>
-<article id="doc-13" tabindex="-1" hidden><p class="path"><a href="roadmap/ROADMAP.md">roadmap/ROADMAP.md</a></p><h1>Roadmap DPD Assistance — 53 небольшие задачи</h1><pre class="markdown"># Roadmap DPD Assistance — 53 небольшие задачи
+<article id="doc-13" tabindex="-1" hidden><p class="path"><a href="roadmap/ROADMAP.md">roadmap/ROADMAP.md</a></p><h1>Roadmap DPD Assistance — 54 задачі</h1><pre class="markdown"># Roadmap DPD Assistance — 54 задачі
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
 
-**v1.2: 10 стадий, 265 сценариев приёмки. Все 53 карточки при выдаче todo.** Наличие кода бота не означает выполненную модернизацию. KIT-02 — обновление документации, не продуктовый релиз.
+**Поточний план: 10 стадій, 54 задачі, 270 критеріїв приймання. Статуси — у `.workflow/state.json`; архів v1.2 містив 53 картки.** Наличие кода бота не означает выполненную модернизацию. KIT-02 — обновление документации, не продуктовый релиз.
 
 ## Как выбирать работу
 
@@ -1510,6 +1511,7 @@ Provider выбирает владелец; schema и hostile synthetic cases м
 | [S09-10](tasks/S09-10.md) | Подключить parcel только после решения о режиме | S09-09, S03-02 | G_DISCORD_MODES, G_CALENDAR, G_DEPOT_POLICY |
 | [S09-11](tasks/S09-11.md) | Подключить barcodes через проверенный набор отправлений | S09-09, S04-04 | G_DISCORD_MODES, G_DRIVE_POLICY, G_DEPOT_POLICY |
 | [S09-12](tasks/S09-12.md) | Провести разрешённый пилот существующего бота | S09-03, S09-04, S09-05, S09-06, S09-07, S09-08, S09-09 | G_DISCORD_ACCESS, G_TEST_ACCOUNTS, G_PRIVACY, G_DEPOT_POLICY |
+| [S09-13](tasks/S09-13.md) | Англомовний driver report: delivery point, правильна адреса, POD і Maps; без історії сканів | S09-02, S09-04, S09-06, S09-07 | Offline без gates; live — окремий допуск |
 
 ## Границы готовности
 
@@ -1688,7 +1690,9 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Читайте [спільний журнал](WORKLOG.md). Останнє доручення — S00-02 (відтворювана
 збірка): виконано, [evidence](evidence/S00-02.json). Driver report обговорено,
-код не змінено. 14 незакомічених файлів власника не чіпалися — звірити `git status`.
+код не змінено. Додано [S09-13](../roadmap/tasks/S09-13.md) зі статусом todo;
+цей запис стосується лише планування report; активна задача — у state.json.
+14 незакомічених файлів власника не чіпалися — звірити `git status`.
 
 ## Поточний стан
 
@@ -1703,7 +1707,7 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 ## Що встановлено
 
-AGENTS/README об&#39;єднані; додано Copilot instructions, project skill, 53 картки
+AGENTS/README об&#39;єднані; додано Copilot instructions, project skill, 54 картки
 roadmap, state/evidence, offline validators і довідник START_HERE.html.
 Поточні owner decisions мають пріоритет: українська, codex, dry_run:false,
 реалізовані parcel/barcodes/retry. Історичні аудити не є поточним PASS.
@@ -1760,6 +1764,7 @@ IDE config examples не активовано; фактичне discovery skill 
 | 2026-10-23 | Codex | Запропоновано | Два Maps-посилання та окрема дія Text for WhatsApp із повними URL; POD передається окремо. Остаточне оформлення і кнопка ще не погоджені як реалізація. | Не вважати пропозицію готовою функцією. |
 | 2026-10-23 | Codex | Виконано | Створено цей журнал і правило його читання/оновлення в AGENTS та Copilot; додано до CURRENT й offline reader. 38 tooling-тестів і roadmap/doc validators — PASS; product/runtime не змінено. | Наступному агенту прочитати CURRENT, журнал і перевірити dirty tree. |
 | 2026-10-23 | Copilot | Виконано | S00-02: `build.js` — watch збирає console helpers, шляхи від кореня проєкту; `test/tooling/build.test.mjs` RED 2/4 → GREEN 4/4; чистий `npm ci` обох locks без змін; lint/test 115/build — PASS; [evidence](evidence/S00-02.json). Chrome load не перевірявся. | S00-03 — окремим дорученням. |
+| 2026-10-23 | Codex | Виконано | Додано [S09-13](../roadmap/tasks/S09-13.md): driver report англійською в Discord, без історії, точний parcel/event, POD і Maps; scope, залежності й мінімальні test-first критерії. Статус todo; roadmap/doc validators і 38 tooling-тестів PASS, runtime не змінено. | Реалізація за окремим дорученням після залежностей; відкриті UX-рішення — у картці. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 </pre></article>
@@ -2477,6 +2482,15 @@ Drive: synthetic photo → deterministic candidate → preview без writes →
 Рабочие поля и правила сохранения: [handoff](../handoff.md). Реальный checkpoint: [.workflow/CURRENT.md](../../.workflow/CURRENT.md).
 </pre></article>
 <article id="doc-36" tabindex="-1" hidden><p class="path"><a href="docs/decisions.md">docs/decisions.md</a></p><h1>Решения и источник истины</h1><pre class="markdown"># Решения и источник истины
+
+## REPORT-2026-10-23 — задача driver report
+
+Власник доручив внести [S09-13](../roadmap/tasks/S09-13.md) у roadmap.
+Погоджено: англійська, Discord, компактний формат без історії сканів; дані
+доставки, Recorded delivery point і правильна адреса для передоставлення.
+WhatsApp поки вручну, без API. Остаточний спосіб виклику/вибору parcel/event
+та кнопка Text for WhatsApp не погоджені. Додавання плану не є виконанням
+функції або дозволом на live надсилання. Мінімальні risk-based тести — до коду.
 
 ## LOCAL-2026-10-23 — інтеграція до чинного checkout
 
@@ -4401,6 +4415,13 @@ S09 изменения не создают новую БД: используют
 | B-optional | S09-10/S09-11 | Parcel/barcodes только после G_DISCORD_MODES; не обязательны для B4 |
 
 Наличие Firestore task не делает Drive batch устойчивым. Успех Discord пилота не закрывает Gmail/AI review. Внешние действия и техническая готовность оцениваются раздельно, а не одним green значком.
+
+## Driver report — додано 2026-10-23
+
+[S09-13](tasks/S09-13.md): короткий приватний report англійською в Discord,
+зі зв’язаними parcel/event доказами та маршрутом до правильної адреси.
+Окрема можливість після S09-02/S09-04/S09-06/S09-07; не змінює готовність
+базового пілоту S09-12. Реалізація ще не почалась.
 </pre></article>
 <article id="doc-63" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-01.md">roadmap/tasks/S00-01.md</a></p><h1>S00-01 — Безопасно принять существующий репозиторий</h1><pre class="markdown"># S00-01 — Безопасно принять существующий репозиторий
 
@@ -8985,7 +9006,140 @@ test(discord): [S09-12] record authorized bot pilot
 
 Evidence: `.workflow/evidence/S09-12.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-116" tabindex="-1" hidden><p class="path"><a href="tools/README.md">tools/README.md</a></p><h1>Локальные инструменты комплекта</h1><pre class="markdown"># Локальные инструменты комплекта
+<article id="doc-116" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-13.md">roadmap/tasks/S09-13.md</a></p><h1>S09-13 — Короткий driver report для повторної доставки в Discord</h1><pre class="markdown"># S09-13 — Короткий driver report для повторної доставки в Discord
+
+**Мета:** оператор отримує приватний англомовний report, з якого водієві зрозуміло,
+де зафіксовано доставку, яку фізичну посилку шукати та куди її передоставити.
+
+| Поле | Значення |
+|---|---|
+| Стадія | S09 — Discord і Firestore |
+| Залежності | [S09-02](S09-02.md), [S09-04](S09-04.md), [S09-06](S09-06.md), [S09-07](S09-07.md) |
+| Статус | todo; фактичний стан у `.workflow/state.json` |
+| Власник області | discord_owner; extension_owner допомагає з джерелом delivery event |
+| Поточний дозвіл | Внести задачу до roadmap; реалізацію ще не розпочато |
+| Acceptance | 5 критеріїв, згрупованих у мінімальні тести нижче |
+
+## Baseline — перевірити перед початком
+
+`bot/src/render.js` формує загальну `/find` картку: адреса/контакти, карта,
+історія до 12 сканів, POD. Вона не є окремим driver report.
+`src/depot/lookup.js` обирає POD останнього delivered event і GPS останнього
+скану з координатами незалежно, серед усіх parcels. `src/queue/executor.js`
+не зберігає спільний parcel/event ключ для POD і GPS. Помилка POD може зупинити
+весь `/find`. Не будувати новий report поверх припущення, що ці дані збігаються.
+Це результати статичного аналізу; звірити з актуальним кодом і dirty tree.
+
+Прочитати AGENTS, CURRENT, WORKLOG, `docs/decisions.md`, `docs/SECURITY.md`,
+`docs/SECURITY-WORKLOG.md`, `docs/TESTING.md`, `docs/queue-contract.md` та
+`docs/discord-bot.md`. Зберегти існуючі `/find`, Administrator/ephemeral межі
+й користувацькі зміни, особливо render/geo/lookup/executor.
+
+## Погоджений зміст і макет
+
+Мова report — англійська. Одна компактна колонка, без історії сканів, ANSI-таблиць,
+внутрішніх статусів, debug-полів, email та іншого необов&#39;язкового шуму.
+Не змінювати загальну `/find` картку на урізаний driver report.
+
+```text
+Parcel recovery &amp; redelivery
+[Consignment number] · Parcel [physical parcel number]
+
+Recorded delivery point
+[GPS coordinates / Collection location unavailable]
+Nearby Eircode: [approximate, only if available]
+Delivered: [date and time of the selected delivery event]
+Signed for by: [only if recorded for that event]
+
+Deliver to
+[Recipient / company]
+[Full correct address]
+[Correct Eircode]
+Phone: [recipient phone, if available]
+
+Open recorded delivery point: [Google Maps URL]
+Route to correct address: [Google Maps driving URL]
+
+[POD photo for the selected delivery event, separate attachment]
+```
+
+Позначати Eircode, отриманий reverse geocoding, як приблизний. GPS — місце
+зафіксованої події, не доказ поточного місцеперебування. Відстань сама по собі
+не доводить помилкової доставки. Без підтвердження оператором контексту
+передоставлення не називати помилкову доставку доведеним фактом.
+Відсутні необов&#39;язкові поля пропускати; відсутність точки доставки повідомляти
+явно та не створювати маршрут із GPS іншої події. Не вигадувати кількість parcels.
+
+## Scope — межі й архітектура
+
+- Agent: `bot/src/` — окремі невеликі модулі відбору даних/моделі report і
+  Discord rendering; тонке підключення до handler; `test/bot/`.
+- Extension contributor: `src/depot/lookup.js`, вузькі регресії `test/depot/` —
+  зберегти зв&#39;язок конкретної фізичної посилки, delivery event, GPS, POD і підпису.
+- Лише integrator: `src/queue/executor.js`, обидва `contract.js`, `firestore.rules`
+  за потреби, версії/locks, документація, CURRENT/state/evidence/WORKLOG.
+- Provider виклики тримати поза чистим renderer; готова модель report не повинна
+  залежати від Discord, щоб у майбутньому не дублювати правила для WhatsApp.
+- Wire-зміни описати й узгодити між producer/consumer/rules; версіонувати при
+  несумісності, не додавати довільні depot notes або зайві персональні поля.
+
+Спочатку показати власнику точний вхід у функцію (команда чи дія в `/find`),
+спосіб вибору parcel/event при неоднозначності та фінальний макет. Це ще відкриті
+продуктові рішення; не вгадувати їх і не перепитувати вже погоджені мову/канал/зміст.
+
+## Не входить
+
+WhatsApp API, автоматичне надсилання водієві, публічні Discord-канали, зміна
+статусу доставки чи дати в depot, AI-опис фото та автоматичне визначення вини.
+Кнопка `Text for WhatsApp` — попередня пропозиція, не обов&#39;язкова погоджена функція.
+Врахувати ручне копіювання: повні URL можна перенести в WhatsApp; фото окремо.
+Не запускати bot/register/deploy/live API як локальну перевірку. Для live-пілоту
+потрібні відповідні G_DISCORD_ACCESS/G_TEST_ACCOUNTS/G_PRIVACY; вони не блокують
+синтетичну розробку. S09-13 не входить автоматично в базовий пілот S09-12.
+
+## Acceptance — критерії готовності
+
+1. Report містить лише потрібні водієві дані з макета, англійською, без scan history;
+   `/find` зберігає свою функцію, report доступний лише адміністратору приватно.
+2. Ідентичність parcel і delivery event узгоджує GPS/POD/підпис/час. На fixture
+   з двома parcels та пізнішим стороннім GPS нічого не змішується. Неоднозначність
+   вимагає вибору оператора; відсутні докази не підміняються сусідньою подією.
+3. Maps-посилання мають перевірені й URL-encoded точки: recorded GPS та правильна
+   адреса/Eircode, `api=1`, для маршруту `travelmode=driving`. Приблизна reverse
+   адреса не замінює GPS; текст не називає пряму відстань довжиною дороги.
+4. Відсутні/недоступні POD або Maps не приховують корисний report. Довгі поля
+   вкладаються в Discord limits без втрати ключового номера/адреси; layout
+   читабельний на мобільному synthetic preview. Відмова Discord не повторює depot-дію.
+5. Handler використовує спільну перевірену модель report, не дублює domain logic.
+   У tests/logs/evidence немає реальних клієнтських даних, фото, credentials або
+   session URL; контракти сумісні, продуктова версія підвищена для змінених artifacts.
+
+## Test-first — мінімум, без дублювання
+
+Перед зміною коду сформулювати очікування і написати тести на відсутню поведінку.
+Зберегти наявні tests; не змінювати очікування заради GREEN. Мінімальні групи:
+
+1. **Правильна доставка:** synthetic multi-parcel/event fixture доводить зв&#39;язок
+   доказів і endpoints обох Maps URL; неоднозначність не дає впевненого report.
+2. **Неповні дані:** немає GPS/POD або provider відмовив — лишається правильний
+   текст із чесною відсутністю даних, без підстановок чужих координат/фото.
+3. **Discord output:** погоджені поля, без історії, довгі значення вкладаються
+   в ліміти. Admission/delivery тести залежностей перевикористати, не дублювати.
+
+Рекомендований новий файл — `test/bot/driverReport.test.js`; adapter coverage
+додавати лише там, де потрібний ризик не перевіряється через цей файл. Спочатку
+вузький RED → GREEN, потім affected regressions і project gate: lint, npm test,
+build, git diff --check. Наявний валідний сценарій не ламати заради штучного RED.
+
+## Evidence — завершення
+
+`.workflow/evidence/S09-13.json`: точні перевірки й exit codes, synthetic/manual
+межі, прийнятий макет та вибір event, неперевірений live/mobile і залишкові ризики.
+Оновити потрібні контракти, TESTING, SECURITY-WORKLOG, CURRENT/state/WORKLOG;
+done лише після acceptance, не після додавання цієї картки. Commit/push у codex
+лише погоджених файлів; registration/deploy — окрема операція.
+</pre></article>
+<article id="doc-117" tabindex="-1" hidden><p class="path"><a href="tools/README.md">tools/README.md</a></p><h1>Локальные инструменты комплекта</h1><pre class="markdown"># Локальные инструменты комплекта
 
 Эти `.mjs` используют только Node built-ins и не требуют npm install. Они не импортируют product runtime и не выполняют команды, прочитанные из Markdown. Проверенная версия среды указана в [VALIDATION](../docs/audit/VALIDATION.md).
 
@@ -9054,7 +9208,7 @@ Drive probe також прив’язаний до старого module graph:
 
 Інструменти перевіряють структуру документації та evidence, але не підтверджують живі інтеграції. Чинні правила власника в AGENTS мають перевагу над архівними інструкціями.
 </pre></article>
-<article id="doc-117" tabindex="-1" hidden><p class="path"><a href="WORKFLOW_RU.md">WORKFLOW_RU.md</a></p><h1>Рабочий процесс DPD Assistance</h1><pre class="markdown"># Рабочий процесс DPD Assistance
+<article id="doc-118" tabindex="-1" hidden><p class="path"><a href="WORKFLOW_RU.md">WORKFLOW_RU.md</a></p><h1>Рабочий процесс DPD Assistance</h1><pre class="markdown"># Рабочий процесс DPD Assistance
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 

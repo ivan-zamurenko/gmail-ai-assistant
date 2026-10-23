@@ -75,6 +75,7 @@ test/
 │   ├── labelVerifier.test.js Shared exact depot target collection
 │   ├── lookup.test.js        Depot lookup input normalization
 │   ├── monthFolders.test.js  Drive folder planning and dry-run safety
+│   ├── podImage.test.js      POD photo fetch from the extension, safe errors
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
 ├── fixtures/
 │   └── gmail-labels.json    Synthetic Gmail labels/messages ("synthetic": true)
@@ -554,6 +555,19 @@ test/
   автоматизацію приблизним збігом.
 - Окремий regression доводить, що звичайний повний lookup і далі завантажує
   Scanning History для `/find`.
+
+### `test/depot/podImage.test.js`
+
+**POD photo is fetched by the extension with exact requests and safe errors**
+
+- Точні POST на authorize і image API, `credentials: 'omit'`, Bearer з відповіді.
+- Відсутній eventId/невалідний формат/немає podAuth — відмова без запиту.
+- HTTP 401, відсутній токен, відсутнє фото, мережна помилка — короткі помилки
+  без логіна, пароля чи токена.
+- `test/depot/lookup.test.js` окремо перевіряє, що серіалізована `depotLookup`
+  не містить podAuth, Authorization і викликів DPD API; `test/queue/executor.test.js`
+  — що `/find` передає в ін'єкцію лише номер, а eventId не виходить у результат.
+- Справжній DPD API і host permissions у Chrome не перевіряються.
 
 ### `test/queue/barcodeExecutor.test.js`
 

@@ -13,6 +13,7 @@
 
 import { depotMain }       from '../depot/depotScript.js';
 import { depotLookup }     from '../depot/lookup.js';
+import { fetchPodImage }   from '../depot/podImage.js';
 import {
   applyRecoveryResult,
   loadRecoveryTargets,
@@ -22,6 +23,7 @@ import {
 } from './contract.js';
 import { CONSTANTS }       from '../utils/constants.js';
 import { safeErrorMessage } from '../utils/errors.js';
+import { loadConfig }      from '../config/config.js';
 
 const done  = (summary, details) => ({ status: STATUS.DONE,  summary, details });
 const error = (summary)          => ({ status: STATUS.ERROR, summary });
@@ -29,6 +31,7 @@ const error = (summary)          => ({ status: STATUS.ERROR, summary });
 // Discord caps a message near 2000 chars, so the per-parcel block is bounded.
 const MAX_DETAIL_LINES = 25;
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
+const config = loadConfig();
 
 async function findDepotTabs() {
   const tabs = await chrome.tabs.query({ url: CONSTANTS.DEPOT_URL_PATTERN });
@@ -277,11 +280,17 @@ async function runFind(args) {
       ...(onwardBc && { onwardBc }),
     };
   });
+  // Credentials stay in the extension: the depot tab only reports the event id.
+  const podResult = res.podEventId == null ? null : await fetchPodImage(res.podEventId, config.podAuth);
+  const podBody = typeof podResult?.image?.body === 'string' && /^[A-Za-z0-9+/=]+$/.test(podResult.image.body)
+    && podResult.image.body.length <= 700_000 ? podResult.image.body : '';
+  if (podResult?.error) return error(`${res.consNumber || res.query} — POD photo error: ${podResult.error}`);
   const parcel = {
     query:      res.query,
     consNumber: res.consNumber,
     arrangedDate: res.arrangedDate,
     scans,
+    ...(podBody && { pod: { mime: 'image/jpeg', body: podBody } }),
     drop:       res.drop,
     timing:     res.timing,
     _diag:      res._diag,

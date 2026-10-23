@@ -167,3 +167,12 @@ test('full lookup still loads Scanning History', async () => {
     assert.match(String(requests[1].url), /woScanningHistoryList\.p/);
   });
 });
+
+test('the injected lookup carries no POD credentials or third-party API calls', () => {
+  // depotLookup runs in the depot page MAIN world, where page scripts can patch
+  // fetch/btoa. Credentials and external API calls must stay in the extension.
+  const injected = depotLookup.toString();
+  for (const forbidden of ['podAuth', 'password', 'Authorization', 'api2.dpd.ie', 'papi.dpd.ie', 'btoa(']) {
+    assert.ok(!injected.includes(forbidden), `injected depotLookup contains ${forbidden}`);
+  }
+});

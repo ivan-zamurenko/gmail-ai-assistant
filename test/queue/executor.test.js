@@ -209,3 +209,48 @@ test('retry task deletes a previous-day batch without reaching the depot', async
     else globalThis.chrome = originalChrome;
   }
 });
+
+test('find injects only the number; the POD photo is requested by the extension', async (t) => {
+  const originalChrome = globalThis.chrome;
+  const injections = [];
+  let podEventId = null;
+  globalThis.chrome = {
+    tabs: {
+      query: async () => [{ id: 7, discarded: false }],
+      update: async () => ({}),
+    },
+    scripting: {
+      executeScript: async (options) => {
+        injections.push(options.args);
+        return [{ result: [{
+          ok: true,
+          query: '123456789',
+          consNumber: '123456789',
+          consId: '7654321',
+          scans: [{ parcel: '1', type: 'Delivered', date: '01/09/26', time: '10:00', route: 'R1', eventId: '555' }],
+          podEventId,
+          address: { lines: [] },
+        }] }];
+      },
+    },
+  };
+  t.after(() => {
+    if (originalChrome === undefined) delete globalThis.chrome;
+    else globalThis.chrome = originalChrome;
+  });
+  const task = { schemaVersion: TASK_SCHEMA_VERSION, command: 'find', args: { conId: '123456789' } };
+
+  const notDelivered = await executeTask(task);
+  assert.equal(notDelivered.status, 'done');
+  assert.equal(notDelivered.parcel.pod, undefined);
+  assert.equal(JSON.stringify(notDelivered.parcel).includes('555'), false, 'event id must not leave the extension');
+
+  podEventId = '555';
+  const delivered = await executeTask(task);
+  // The test network guard (or a missing local podAuth in CI) makes the POD step
+  // fail inside the extension; either way the error is reported, not the photo.
+  assert.equal(delivered.status, 'error');
+  assert.match(delivered.summary, /POD photo error: POD (request failed|authorization is not configured)/);
+
+  assert.deepEqual(injections, [[['123456789']], [['123456789']]]);
+});

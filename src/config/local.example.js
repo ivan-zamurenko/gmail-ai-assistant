@@ -10,6 +10,11 @@ export const LOCAL = {
     apiKey:    '',
     projectId: '',
   },
+  podAuth: {
+    user:     '',
+    password: '',
+    type:     'HO',
+  },
   contact: {
     brand: 'Powered by You',
     email: '',

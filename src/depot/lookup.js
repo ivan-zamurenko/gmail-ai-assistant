@@ -137,6 +137,8 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
 
       const [date = '', time = ''] = text(tds[4]).split(' ');
       const notes = tds[10].getAttribute('title')?.trim() || text(tds[10]);
+      const imageCell = Array.from(tds).find((td) => /setEventID\s*\(/i.test(td.innerHTML));
+      const eventId = imageCell?.innerHTML.match(/setEventID\s*\(\s*["']?(\d+)["']?\s*\)/i)?.[1] ?? '';
       return [{
         route:  text(tds[1]),
         depot:  text(tds[2]),
@@ -152,6 +154,7 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
         // The onward barcode carries a /N parcel suffix; keep only the barcode.
         onwardBc:   scanNoteField(notes, 'Onward BC').split('/')[0],
         signature: text(tds[11]),
+        eventId,
         coords:    coordsFromRow(tr),
       }];
     });
@@ -227,6 +230,8 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
     // (label renaming) still get the number back.
     if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber, consId };
 
+    const delivered = scans.filter((scan) => /delivered/i.test(scan.type));
+
     // Only field scans (delivery, carding, failed attempt) carry GPS; the most
     // recent of those is where the parcel physically ended up.
     const located = scans.filter((s) => s.coords);
@@ -242,6 +247,9 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
       lastScan:     latest(scans),
       scanCount:    scans.length,
       scans,
+      // The POD photo is fetched by the extension (podImage.js); only the event
+      // id of the latest delivered scan leaves the page. null = not delivered.
+      podEventId:   delivered.length ? latest(delivered).eventId : null,
       timing:       { search: t1 - t0, detail: t2 - t1, scans: t3 - t2 },
       drop:         drop && { ...drop.coords, type: drop.type, date: drop.date, time: drop.time },
       address: {

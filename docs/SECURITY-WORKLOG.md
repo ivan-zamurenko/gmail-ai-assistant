@@ -4,6 +4,25 @@ This file records security-related work on DPD Assistance. Never write secrets,
 session identifiers, customer names, addresses, tracking data, or label contents
 into this log.
 
+## 2026-10-23
+
+- Moved POD authorization and image retrieval out of the depot page MAIN world
+  into the extension (`src/depot/podImage.js`). The DPD API user/password and
+  access token were previously passed as injected args, where page scripts could
+  read or intercept them. The injected lookup now returns only the numeric event
+  id of the latest delivered scan; the event id stays in the extension and is
+  not included in the queue result. Regression: `test/depot/lookup.test.js`,
+  `test/depot/podImage.test.js`, `test/queue/executor.test.js` (owner-approved).
+- Residual: podAuth is still bundled into the built extension from the
+  gitignored local config, like the other local settings; dist must stay private.
+
+## 2026-09-03
+
+- Added bounded POD image retrieval inside the authenticated depot tab. Only the
+  approved image body is transferred through the assigned queue for the private
+  Discord reply; depot tokens, cookies, event identifiers, and image URLs stay
+  inside the depot tab and are never logged.
+
 ## 2026-08-28
 
 - 14:46 IST — Started the remediation pass requested after the repository audit.

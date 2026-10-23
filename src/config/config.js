@@ -20,6 +20,7 @@ export function loadConfig() {
     geminiApiKey:  LOCAL.geminiApiKey,
     driveFolderId: LOCAL.driveFolderId,
     firebase:      LOCAL.firebase,
+    podAuth:       LOCAL.podAuth,
   };
 }
 

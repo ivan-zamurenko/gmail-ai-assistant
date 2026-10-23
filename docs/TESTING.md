@@ -68,6 +68,7 @@ test/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
 │   ├── fastBarcodeReader.test.js WASM-first decoder and safe fallback
 │   ├── depotScript.test.js   Direct label reschedule target boundary
+│   ├── driveLabels.test.js   Drive adapter: every request in dry-run vs live
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
 │   ├── labelName.test.js     Drive label filename rules
@@ -290,6 +291,21 @@ test/
 - Нечитабельний barcode дає `unknown-007` з нулями й extension у нижньому
   регістрі; файл без extension отримує `.jpg`.
 - Дата файлу — день створення в Drive (`dateOf`), без переформатування.
+
+### `test/depot/driveLabels.test.js`
+
+**Drive adapter sends only GET requests to Drive in dry-run**
+
+- Synthetic Drive і depot через fake `fetch`; записуються method і URL кожного запиту,
+  невідомий запит — помилка.
+- Відсутні `YYYY/MM`: dry-run не робить POST/PATCH, preview має шлях і назву без
+  вигаданого folder id.
+- Наявна папка й колізія назв: план `-p02-2` і `unknown-005`, жодної мутації Drive.
+- Depot lookup POST у dry-run дозволений; Drive mutation — ні (розрізняються за host).
+- Live: list → download → verify → створення року й місяця → один PATCH з
+  `addParents`/`removeParents`.
+- Мутації «прибрати `dryRun` з resolver/batch» ловляться (S01-01 evidence).
+- Не перевіряє справжні права Drive, ZXing і FileReader у браузері.
 
 ### `test/depot/monthFolders.test.js`
 

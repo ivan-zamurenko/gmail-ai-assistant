@@ -18,6 +18,8 @@
   per-test fakes fetch/chrome, synthetic fixtures; 129 тестів. Root 1.1.10.
 - S00-04: виконано; `node tools/checks.mjs [--install]` — єдиний gate; GitHub
   Actions `checks` (read-only, без secrets) — перший run success. Не required check.
+- S01-01: виконано; Drive-адаптер винесено в `driveLabels.js`, тест кожного
+  запиту: dry-run лише GET до Drive. Extension 6.3.0.57, root 1.1.11.
 - Обсяг власника: налаштувати проєкт; нові функції — окремо.
 - Гілка: `codex`; початковий HEAD `f1bead1cddfc07a8b68e0d15833cfcdd1dfc0e05`.
 - Чужі незакомічені зміни збережено; перелік і розбіжності архіву:

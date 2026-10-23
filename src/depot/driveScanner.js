@@ -15,49 +15,9 @@
 
 import { loadImage } from './barcode.js';
 import { readBarcodesFastFirst } from './fastBarcodeReader.js';
-import { processLabelBatch } from './labelBatch.js';
-import { createMonthFolderResolver } from './monthFolders.js';
+import { processDriveLabels } from './driveLabels.js';
 
-const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
-const FOLDER_MIME = 'application/vnd.google-apps.folder';
-
-// ── Drive ─────────────────────────────────────────────────────────────────────
-
-// Accepts a full Drive URL or a plain folder ID.
-function parseFolderId(input) {
-  const match = input.match(/\/folders\/([a-zA-Z0-9_-]+)/);
-  return match ? match[1] : input.trim();
-}
-
-async function driveGet(path, token) {
-  const res = await fetch(`${DRIVE_API}/${path}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`Drive API ${res.status}: GET ${path}`);
-  return res.json();
-}
-
-async function listFiles(query, fields, token) {
-  const files = [];
-  let pageToken = '';
-
-  do {
-    const url = `files?q=${encodeURIComponent(query)}`
-      + `&fields=nextPageToken,files(${fields})&pageSize=200`
-      + (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
-    const data = await driveGet(url, token);
-    files.push(...(data.files ?? []));
-    pageToken = data.nextPageToken ?? '';
-  } while (pageToken);
-
-  return files;
-}
-
-async function downloadAsDataUrl(fileId, token) {
-  const res = await fetch(`${DRIVE_API}/files/${fileId}?alt=media`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error(`Failed to download file ${fileId}: HTTP ${res.status}`);
-
-  const blob = await res.blob();
+function blobToDataUrl(blob) {
   return new Promise((resolve, reject) => {
     const reader   = new FileReader();
     reader.onload  = () => resolve(reader.result);
@@ -65,40 +25,6 @@ async function downloadAsDataUrl(fileId, token) {
     reader.readAsDataURL(blob);
   });
 }
-
-async function findFolder(name, parentId, token) {
-  const found = await listFiles(
-    `name='${name}' and '${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
-    'id',
-    token
-  );
-  return found[0]?.id ?? null;
-}
-
-async function createFolder(name, parentId, token) {
-  const res = await fetch(`${DRIVE_API}/files?fields=id`, {
-    method:  'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ name, mimeType: FOLDER_MIME, parents: [parentId] }),
-  });
-  if (!res.ok) throw new Error(`Failed to create folder "${name}": HTTP ${res.status}`);
-  return (await res.json()).id;
-}
-
-// Drive moves and renames in the same request, so filing a photo costs one call.
-async function moveAndRename(fileId, fromId, toId, name, token) {
-  const res = await fetch(
-    `${DRIVE_API}/files/${fileId}?addParents=${toId}&removeParents=${fromId}&fields=id`,
-    {
-      method:  'PATCH',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ name }),
-    }
-  );
-  if (!res.ok) throw new Error(`Failed to file ${fileId}: HTTP ${res.status}`);
-}
-
-// ── Exports ───────────────────────────────────────────────────────────────────
 
 /**
  * Reads, checks and files every photo sitting directly in the folder.
@@ -116,35 +42,14 @@ async function moveAndRename(fileId, fromId, toId, name, token) {
  * @returns {Promise<Array<{ from, to: string|null, number: string|null,
  *                           contested: boolean, error: string|null }>>}
  */
-export async function processLabels({ folderInput, token, verify, dryRun, onProgress }) {
-  const rootId = parseFolderId(folderInput);
-
-  onProgress?.(0, 1, 'listing');
-  const photos   = await listFiles(
-    `'${rootId}' in parents and mimeType contains 'image/' and trashed=false`,
-    'id,name,createdTime',
-    token
-  );
-  const folderFor = createMonthFolderResolver({
-    rootId,
-    dryRun,
-    findFolder: (name, parentId) => findFolder(name, parentId, token),
-    createFolder: (name, parentId) => createFolder(name, parentId, token),
-    listNames: async (parentId) => (
-      await listFiles(`'${parentId}' in parents and trashed=false`, 'name', token)
-    ).map((file) => file.name),
-  });
-
-  return processLabelBatch({
-    photos,
+export function processLabels({ folderInput, token, verify, dryRun, onProgress }) {
+  return processDriveLabels({
+    folderInput,
+    token,
     verify,
     dryRun,
     onProgress,
-    loadPhoto: async (photo) => loadImage(await downloadAsDataUrl(photo.id, token)),
+    decodePhoto: async (blob) => loadImage(await blobToDataUrl(blob)),
     readCodes: readBarcodesFastFirst,
-    folderFor,
-    movePhoto: (photo, folder, name) => (
-      moveAndRename(photo.id, rootId, folder.id, name, token)
-    ),
   });
 }

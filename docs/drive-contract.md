@@ -8,7 +8,7 @@
 
 `onProgress` использует состояния listing/downloading/reading/checking/filing/done. Результат элемента содержит `from`, `to`, `number`, `contested`, `error`. Реальной длительной очереди или transacted batch в исходнике нет.
 
-**Текущая защита:** `src/depot/monthFolders.js` не создаёт отсутствующие YYYY/MM при dryRun; `processLabelBatch` не переносит фотографии в preview. Регрессии находятся в `test/depot/monthFolders.test.js` и `test/depot/labelBatch.test.js`. Дефект и probe старого ZIP исторические; полные критерии S01-01 требуют отдельной сверки, а не повторного внедрения уже существующего guard.
+**Текущая защита:** `src/depot/monthFolders.js` не создаёт отсутствующие YYYY/MM при dryRun; `processLabelBatch` не переносит фотографии в preview. Регрессии находятся в `test/depot/monthFolders.test.js` и `test/depot/labelBatch.test.js`. Дефект и probe старого ZIP исторические. З S01-01 Drive-адаптер винесено в `src/depot/driveLabels.js` (без DOM/ZXing; декодування — порт із `driveScanner.js`), а `test/depot/driveLabels.test.js` перевіряє кожен method/URL: у dryRun до Drive йдуть лише GET, depot lookup POST дозволений, live створює папки після verify і робить один PATCH.
 
 ## 2. Folder input и список
 

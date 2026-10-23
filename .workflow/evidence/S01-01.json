@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "task_id": "S01-01",
+  "outcome": "passed",
+  "scope": "Prove Drive dry-run is non-mutating end to end through the Drive adapter; no naming-policy change, no real Drive.",
+  "base_sha": "8805720",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js  (mutation A: dryRun removed from createMonthFolderResolver wiring)",
+      "exit_code": 1,
+      "result": "2/4 failed: Drive POST folder creation detected in dry-run (tests 1, 3)",
+      "boundary": "local checkout incl. owner's uncommitted changes; synthetic Drive/depot fake fetch; no real Drive",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js  (mutation B: dryRun removed from processLabelBatch wiring)",
+      "exit_code": 1,
+      "result": "3/4 failed: Drive PATCH detected in dry-run incl. existing-folder collision case",
+      "boundary": "local checkout incl. owner's uncommitted changes; synthetic Drive/depot fake fetch; no real Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js",
+      "exit_code": 0,
+      "result": "4/4 after restoring the code",
+      "boundary": "local checkout incl. owner's uncommitted changes; synthetic Drive/depot fake fetch; no real Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages: lint, 141/141 tests, build, dist artifacts, docs, diff-check",
+      "boundary": "local checkout incl. owner's uncommitted changes; synthetic Drive/depot fake fetch; no real Drive",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Current code already had the dry-run guards (monthFolders, labelBatch); the archived two-POST defect is not present, so no behavioural fix was needed.",
+    "Gap closed: the Drive adapter wiring was untested because driveScanner.js cannot be imported in Node (@zxing/library named export). Drive HTTP + wiring moved unchanged to src/depot/driveLabels.js; driveScanner.js keeps processLabels() and supplies the decode port (FileReader + Image + ZXing).",
+    "Historical checks/baseline/drive-dry-run-probe.mjs not run: built for the archived snapshot, incompatible with the current module graph (LOCAL_BASELINE). RED shown by controlled mutations instead.",
+    "Tests placed in test/depot/driveLabels.test.js instead of test/unit/drive-dry-run.test.mjs; card updated.",
+    "Versions: manifest 6.3.0.57 (only the version line committed; owner's uncommitted host_permissions left unstaged), root package 1.1.11."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "src/depot/driveLabels.js",
+    "src/depot/driveScanner.js",
+    "test/depot/driveLabels.test.js",
+    "docs/TESTING.md",
+    "docs/drive-contract.md",
+    "roadmap/tasks/S01-01.md",
+    "manifest.json (version only)",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/state.json",
+    ".workflow/evidence/S01-01.json",
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md"
+  ],
+  "untested": [
+    "Real Drive permissions and API responses",
+    "Popup/offscreen runtime: FileReader → Image → ZXing decode path after the refactor (only build-verified)",
+    "Drive pagination beyond one page in the adapter test"
+  ],
+  "residual_risk": [
+    "The refactor moved FileReader conversion into driveScanner.js; a browser smoke run of a dry-run scan on a synthetic folder is still recommended."
+  ],
+  "blocker": null,
+  "next_step": "S01-02 (check card before starting); owner smoke-test of popup dry-run scan recommended.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

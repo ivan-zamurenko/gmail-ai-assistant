@@ -1704,6 +1704,8 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
   per-test fakes fetch/chrome, synthetic fixtures; 129 тестів. Root 1.1.10.
 - S00-04: виконано; `node tools/checks.mjs [--install]` — єдиний gate; GitHub
   Actions `checks` (read-only, без secrets) — перший run success. Не required check.
+- S01-01: виконано; Drive-адаптер винесено в `driveLabels.js`, тест кожного
+  запиту: dry-run лише GET до Drive. Extension 6.3.0.57, root 1.1.11.
 - Обсяг власника: налаштувати проєкт; нові функції — окремо.
 - Гілка: `codex`; початковий HEAD `f1bead1cddfc07a8b68e0d15833cfcdd1dfc0e05`.
 - Чужі незакомічені зміни збережено; перелік і розбіжності архіву:
@@ -1773,6 +1775,7 @@ IDE config examples не активовано; фактичне discovery skill 
 | 2026-10-23 | Copilot | Виконано | S00-03: `npm test` з preload-забороною fetch і явним набором файлів (helper-модулі більше не рахуються як «ok»); fakes fetch/chrome, валідатор fixtures, Gmail labels і naming тести. RED 3/6 → GREEN; 129/129, lint, build — PASS; root 1.1.10; [evidence](evidence/S00-03.json). Сокети discord.js/firebase не перехоплюються. | S00-04 — звірити картку. |
 | 2026-10-23 | Copilot | Виконано | S00-04: `tools/checks.mjs` (fail-fast gate: lint, test&gt;0, build, артефакти manifest, docs, diff-check; `--install` — npm ci root+bot, lock drift) і read-only workflow `checks` з pinned actions. 8/8 тестів; локально PASS; чистий clone PASS; GitHub run 39990600863 success. Власник: агенти по черзі, CI push дозволено. | S00-05; required check — рішення власника. |
 | 2026-10-23 | Copilot + власник | Заблоковано | S00-05: read-only запит у Copilot (VS Code 1.143.0) пояснив картку й заборони live, 0 змін; Customizations — без помилок. Список інструкцій/References не надано, debug-логів за сьогодні немає; [evidence](evidence/S00-05.json). | Власнику — список з Customizations → Instructions; далі S01. |
+| 2026-10-23 | Copilot | Виконано | S01-01: dry-run guard уже був; закрито пробіл — Drive-адаптер (`driveLabels.js`) тестується по кожному method/URL: dry-run лише GET, depot POST дозволений, live — папки після verify і один PATCH. Мутації без `dryRun` → RED; 4/4, gate 141 — PASS; [evidence](evidence/S01-01.json). Браузерний прогін декодування не робився. | S01-02; власнику — smoke dry-run скану. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 </pre></article>
@@ -2710,7 +2713,7 @@ Parcel/barcodes/retry уже реализованы. S09-12 не подтвер�
 
 `onProgress` использует состояния listing/downloading/reading/checking/filing/done. Результат элемента содержит `from`, `to`, `number`, `contested`, `error`. Реальной длительной очереди или transacted batch в исходнике нет.
 
-**Текущая защита:** `src/depot/monthFolders.js` не создаёт отсутствующие YYYY/MM при dryRun; `processLabelBatch` не переносит фотографии в preview. Регрессии находятся в `test/depot/monthFolders.test.js` и `test/depot/labelBatch.test.js`. Дефект и probe старого ZIP исторические; полные критерии S01-01 требуют отдельной сверки, а не повторного внедрения уже существующего guard.
+**Текущая защита:** `src/depot/monthFolders.js` не создаёт отсутствующие YYYY/MM при dryRun; `processLabelBatch` не переносит фотографии в preview. Регрессии находятся в `test/depot/monthFolders.test.js` и `test/depot/labelBatch.test.js`. Дефект и probe старого ZIP исторические. З S01-01 Drive-адаптер винесено в `src/depot/driveLabels.js` (без DOM/ZXing; декодування — порт із `driveScanner.js`), а `test/depot/driveLabels.test.js` перевіряє кожен method/URL: у dryRun до Drive йдуть лише GET, depot lookup POST дозволений, live створює папки після verify і робить один PATCH.
 
 ## 2. Folder input и список
 
@@ -3296,6 +3299,7 @@ test/
 │   ├── barcodeReader.test.js ZXing reader-state adapter
 │   ├── fastBarcodeReader.test.js WASM-first decoder and safe fallback
 │   ├── depotScript.test.js   Direct label reschedule target boundary
+│   ├── driveLabels.test.js   Drive adapter: every request in dry-run vs live
 │   ├── labelBatch.test.js    Label batch orchestration and write boundaries
 │   ├── labelBarcode.test.js  DPD barcode domain parsing
 │   ├── labelName.test.js     Drive label filename rules
@@ -3518,6 +3522,21 @@ test/
 - Нечитабельний barcode дає `unknown-007` з нулями й extension у нижньому
   регістрі; файл без extension отримує `.jpg`.
 - Дата файлу — день створення в Drive (`dateOf`), без переформатування.
+
+### `test/depot/driveLabels.test.js`
+
+**Drive adapter sends only GET requests to Drive in dry-run**
+
+- Synthetic Drive і depot через fake `fetch`; записуються method і URL кожного запиту,
+  невідомий запит — помилка.
+- Відсутні `YYYY/MM`: dry-run не робить POST/PATCH, preview має шлях і назву без
+  вигаданого folder id.
+- Наявна папка й колізія назв: план `-p02-2` і `unknown-005`, жодної мутації Drive.
+- Depot lookup POST у dry-run дозволений; Drive mutation — ні (розрізняються за host).
+- Live: list → download → verify → створення року й місяця → один PATCH з
+  `addParents`/`removeParents`.
+- Мутації «прибрати `dryRun` з resolver/batch» ловляться (S01-01 evidence).
+- Не перевіряє справжні права Drive, ZXing і FileReader у браузері.
 
 ### `test/depot/monthFolders.test.js`
 
@@ -5023,6 +5042,11 @@ Evidence: `.workflow/evidence/S00-05.json`. Обновить существую�
 ```sh
 node --experimental-vm-modules checks/baseline/drive-dry-run-probe.mjs &amp;&amp; node --test test/unit/drive-dry-run.test.mjs
 ```
+
+Виконано 2026-10-23: тест — `node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js`
+(модульна структура `test/`). Архівний probe не запускався: він розрахований на
+snapshot ZIP і несумісний з поточним module graph (LOCAL_BASELINE); RED отримано
+контрольованими мутаціями. Scope розширено новим модулем `src/depot/driveLabels.js`.
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
 

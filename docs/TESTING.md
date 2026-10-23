@@ -73,6 +73,8 @@ test/
 │   ├── executor.test.js     Queue validation and command boundary
 │   ├── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
 │   └── taskProgress.test.js PII-free coalesced progress transport
+├── tooling/
+│   └── build.test.mjs       esbuild one-off/watch plan and dist boundary
 └── utils/
     └── errors.test.js       Safe outbound error messages
 ```
@@ -607,6 +609,19 @@ test/
   Firestore, Discord або користувацьке повідомлення.
 - Всі значення синтетичні; справжні URL, токени й ключі в тестах заборонені.
 - Не перевіряє кожну можливу форму секрету або сторонні library stack traces.
+
+### `test/tooling/build.test.mjs`
+
+**Build plan is identical for one-off and watch, and never touches foreign files**
+
+- Збирає тимчасову копію `src/`, `assets/`, `manifest.json` із synthetic
+  `local.js` з example; приватний `src/config/local.js` не копіюється, мережі немає.
+- One-off: усі entry points manifest, popup, offscreen, WASM і console helpers;
+  source marker прибрано, `key` і версія manifest не змінені.
+- Watch: зміна `lookup.js` оновлює той самий `dist/console/lookupConsole.js`
+  без ESM `export` (до S00-02 watch його не збирав).
+- Запуск з чужого cwd не видаляє його `dist/`; синтаксична помилка дає ненульовий exit.
+- Не перевіряє завантаження в Chrome або serialization injected functions.
 
 ## Private label audits — 2026-08-29 / 2026-08-31
 

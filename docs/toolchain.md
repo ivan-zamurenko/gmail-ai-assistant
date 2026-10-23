@@ -35,9 +35,20 @@ npm test
 npm run build
 ```
 
-`build.js` пересоздаёт dist; отдельные entry points: popup, background, offscreen. One-off также собирает lookupConsole/futureDateConsole. Watch path не идентичен one-off для console helpers — проверить это в S00-02. Bot Node process не bundle-ится esbuild в расширение.
+`build.js` пересоздаёт dist; отдельные entry points: popup, background, offscreen. One-off і watch (з S00-02) використовують один план: обидва збирають lookupConsole/futureDateConsole у `dist/console`. Шляхи прив'язані до каталогу `build.js`, тож запуск з іншого cwd не чистить чужий `dist/`. Bot Node process не bundle-ится esbuild в расширение.
 
 Проверка load unpacked указывает на dist. Перед передачей artifact проверить отсутствие local secrets в результате сборки; gitignore не исключает значения, которые код импортировал. Успех node --check не доказывает разрешение imports, корректность serialization или запуск Chrome.
+
+### Перевірене середовище (S00-02, 2026-10-23)
+
+Фактично перевірено на macOS: Node 20.14.0 (`.node-version`), npm 10.7.0,
+esbuild 0.28.1, ESLint 9.39.5, discord.js 14.27.0, firebase-admin 13.10.0.
+У тимчасовій копії без `node_modules` `npm ci` та `npm --prefix bot ci` пройшли
+з exit 0; SHA-256 обох lockfile до і після збігаються. На цій установці
+`npm run build`, `npm run lint`, `npm test` — exit 0. Конфіг для збірки —
+копія `local.example.js`; приватний `local.js` не копіювався. Інші версії Node
+не перевірялися. Регресії збірки: `node --test test/tooling/build.test.mjs`
+(склад dist, watch для console helpers, межа очищення dist, ненульовий exit).
 
 ## 4. Запуск и регистрация бота
 

@@ -33,5 +33,6 @@
 | 2026-10-23 | Codex | Виконано | Додано [S09-13](../roadmap/tasks/S09-13.md): driver report англійською в Discord, без історії, точний parcel/event, POD і Maps; scope, залежності й мінімальні test-first критерії. Статус todo; roadmap/doc validators і 38 tooling-тестів PASS, runtime не змінено. | Реалізація за окремим дорученням після залежностей; відкриті UX-рішення — у картці. |
 | 2026-10-23 | Copilot | Виконано | Root package 1.1.9 за S00-02 (дозвіл власника на bump + commit/push). | — |
 | 2026-10-23 | Copilot | Виконано | S00-03: `npm test` з preload-забороною fetch і явним набором файлів (helper-модулі більше не рахуються як «ok»); fakes fetch/chrome, валідатор fixtures, Gmail labels і naming тести. RED 3/6 → GREEN; 129/129, lint, build — PASS; root 1.1.10; [evidence](evidence/S00-03.json). Сокети discord.js/firebase не перехоплюються. | S00-04 — звірити картку. |
+| 2026-10-23 | Copilot | Виконано | S00-04: `tools/checks.mjs` (fail-fast gate: lint, test>0, build, артефакти manifest, docs, diff-check; `--install` — npm ci root+bot, lock drift) і read-only workflow `checks` з pinned actions. 8/8 тестів; локально PASS; чистий clone PASS; GitHub run 39990600863 success. Власник: агенти по черзі, CI push дозволено. | S00-05; required check — рішення власника. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.

@@ -1688,8 +1688,8 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 ## Остання передача роботи
 
-Читайте [спільний журнал](WORKLOG.md). Останнє доручення — S00-02 (відтворювана
-збірка): виконано, [evidence](evidence/S00-02.json). Driver report обговорено,
+Читайте [спільний журнал](WORKLOG.md). Останні доручення — S00-02 (збірка) і S00-03
+(test harness): виконано, [S00-02](evidence/S00-02.json), [S00-03](evidence/S00-03.json). Driver report обговорено,
 код не змінено. Додано [S09-13](../roadmap/tasks/S09-13.md) зі статусом todo;
 цей запис стосується лише планування report; активна задача — у state.json.
 14 незакомічених файлів власника не чіпалися — звірити `git status`.
@@ -1700,6 +1700,8 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 - S00-01: виконано; workflow налаштовано й локально перевірено.
 - S00-02: виконано; watch збирає console helpers, dist прив&#39;язано до проєкту,
   чиста установка з обох lockfile перевірена; `.node-version` = 20.14.0.
+- S00-03: виконано; `npm test` блокує мережу, явний набір тест-файлів,
+  per-test fakes fetch/chrome, synthetic fixtures; 129 тестів. Root 1.1.10.
 - Обсяг власника: налаштувати проєкт; нові функції — окремо.
 - Гілка: `codex`; початковий HEAD `f1bead1cddfc07a8b68e0d15833cfcdd1dfc0e05`.
 - Чужі незакомічені зміни збережено; перелік і розбіжності архіву:
@@ -1721,9 +1723,8 @@ roadmap, state/evidence, offline validators і довідник START_HERE.html.
 
 ## Наступний крок
 
-Рекомендована картка — S00-03 (незалежний fixture test harness); виконується
-окремим дорученням. Версію root package не підвищено: `package.json` містить
-незакомічений bump власника. G_GIT погоджено в межах codex; інші gates не дають
+Наступна рекомендована картка — S00-04; звірити її з кодом перед стартом.
+Власник дозволив підвищувати версії й робити commit + push у codex. G_GIT погоджено в межах codex; інші gates не дають
 дозволу на production. Не повторювати вже погоджені питання.
 
 ## Межі
@@ -1765,6 +1766,8 @@ IDE config examples не активовано; фактичне discovery skill 
 | 2026-10-23 | Codex | Виконано | Створено цей журнал і правило його читання/оновлення в AGENTS та Copilot; додано до CURRENT й offline reader. 38 tooling-тестів і roadmap/doc validators — PASS; product/runtime не змінено. | Наступному агенту прочитати CURRENT, журнал і перевірити dirty tree. |
 | 2026-10-23 | Copilot | Виконано | S00-02: `build.js` — watch збирає console helpers, шляхи від кореня проєкту; `test/tooling/build.test.mjs` RED 2/4 → GREEN 4/4; чистий `npm ci` обох locks без змін; lint/test 115/build — PASS; [evidence](evidence/S00-02.json). Chrome load не перевірявся. | S00-03 — окремим дорученням. |
 | 2026-10-23 | Codex | Виконано | Додано [S09-13](../roadmap/tasks/S09-13.md): driver report англійською в Discord, без історії, точний parcel/event, POD і Maps; scope, залежності й мінімальні test-first критерії. Статус todo; roadmap/doc validators і 38 tooling-тестів PASS, runtime не змінено. | Реалізація за окремим дорученням після залежностей; відкриті UX-рішення — у картці. |
+| 2026-10-23 | Copilot | Виконано | Root package 1.1.9 за S00-02 (дозвіл власника на bump + commit/push). | — |
+| 2026-10-23 | Copilot | Виконано | S00-03: `npm test` з preload-забороною fetch і явним набором файлів (helper-модулі більше не рахуються як «ok»); fakes fetch/chrome, валідатор fixtures, Gmail labels і naming тести. RED 3/6 → GREEN; 129/129, lint, build — PASS; root 1.1.10; [evidence](evidence/S00-03.json). Сокети discord.js/firebase не перехоплюються. | S00-04 — звірити картку. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 </pre></article>
@@ -3247,16 +3250,23 @@ git diff --cached --check
 npm test
 ```
 
-Одна група:
+`npm test` передає Node явний набір `test/*/*.test.js`, `test/*/*.test.mjs` і
+`tools/tests/*.test.mjs` та preload `test/helpers/noNetwork.js`. Preload замінює
+`fetch` на guard: будь-який не підмінений тестом запит відхиляється з кодом
+`TEST_NETWORK_BLOCKED`. Явний перелік потрібен, бо Node 20 інакше запускає кожен
+`.js` у `test/`, і helper-модулі рахувались би як «ok» без жодного тесту.
+Новий тест кладіть на один рівень: `test/&lt;група&gt;/&lt;назва&gt;.test.js`.
+
+Одна група (із тим самим guard):
 
 ```sh
-node --test test/depot/labelBarcode.test.js
+node --test --import ./test/helpers/noNetwork.js test/depot/labelBarcode.test.js
 ```
 
 Один сценарій за назвою:
 
 ```sh
-node --test --test-name-pattern=&quot;damaged consignment&quot; test/depot/labelBarcode.test.js
+node --test --import ./test/helpers/noNetwork.js --test-name-pattern=&quot;damaged consignment&quot; test/depot/labelBarcode.test.js
 ```
 
 Повний quality gate перед комітом:
@@ -3288,6 +3298,16 @@ test/
 │   ├── lookup.test.js        Depot lookup input normalization
 │   ├── monthFolders.test.js  Drive folder planning and dry-run safety
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
+├── fixtures/
+│   └── gmail-labels.json    Synthetic Gmail labels/messages (&quot;synthetic&quot;: true)
+├── gmail/
+│   └── labels.test.js       Gmail label transport: status, auth, exact payload
+├── helpers/
+│   ├── networkGuard.js      Shared blocked fetch (no side effects)
+│   ├── noNetwork.js         npm test preload: global network ban
+│   ├── harness.js           Per-test fake fetch routes, chrome storage/identity
+│   ├── fixtures.js          Fixture loader that rejects real-looking data
+│   └── harness.test.js      Harness guard, isolation and fixture validator
 ├── queue/
 │   ├── barcodeExecutor.test.js Discord Drive-label orchestration
 │   ├── executor.test.js     Queue validation and command boundary
@@ -3486,6 +3506,12 @@ test/
 - Очікує наступну вільну назву `-3`, щоб Drive move/rename не створив колізію.
 - Також перевіряє, що справді вільна назва залишається без зайвого суфікса.
 - Використовує лише `Set` синтетичних назв і не звертається до Drive API.
+
+**Unreadable labels and file dates**
+
+- Нечитабельний barcode дає `unknown-007` з нулями й extension у нижньому
+  регістрі; файл без extension отримує `.jpg`.
+- Дата файлу — день створення в Drive (`dateOf`), без переформатування.
 
 ### `test/depot/monthFolders.test.js`
 
@@ -3830,6 +3856,30 @@ test/
 - Всі значення синтетичні; справжні URL, токени й ключі в тестах заборонені.
 - Не перевіряє кожну можливу форму секрету або сторонні library stack traces.
 
+### `test/helpers/harness.test.js`
+
+**Tests cannot reach the network or inherit state from each other**
+
+- Не підмінений `fetch` відхиляється guard&#39;ом до виходу з процесу.
+- `useFetch` відповідає лише на перелічені method+URL, кожен маршрут один раз,
+  а решту записує як unexpected.
+- Пара послідовних тестів доводить, що chrome storage, fake clock, fetch і
+  pending fake timer не переходять у наступний тест.
+- Валідатор fixtures вимагає `&quot;synthetic&quot;: true` і відхиляє токени, приватні
+  ключі, вбудовані зображення, raw HTML, depot host/session і не-example email.
+- Обов&#39;язкові групи `test/` не можуть бути порожніми.
+- Regex-валідатор не гарантує відсутність будь-яких PII; рев&#39;ю fixtures лишається.
+
+### `test/gmail/labels.test.js`
+
+**Gmail label transport sends the exact request and surfaces failures**
+
+- `findLabelId` шукає точну назву і передає `Bearer` токен з `chrome.identity`.
+- `listByLabel` повертає id і порожній список, коли Gmail не надсилає `messages`.
+- `moveLabels` надсилає точний POST payload `addLabelIds/removeLabelIds`.
+- HTTP 401/403 стають помилкою зі статусом; помилка identity зупиняє до запиту.
+- Fake transport не перевіряє реальні OAuth scopes і pagination Gmail.
+
 ### `test/tooling/build.test.mjs`
 
 **Build plan is identical for one-off and watch, and never touches foreign files**
@@ -3946,7 +3996,7 @@ Firestore потрібен emulator або ізольований test-project, 
 
 ## Workflow tooling — 2026-10-23
 
-Комплект додає `tools/tests/` до автоматичного discovery `npm test`.
+Комплект додає `tools/tests/` до `npm test` (з S00-03 — явним шаблоном).
 Окремий запуск: `node --test tools/tests/*.test.mjs`. Тести перевіряють graph/state,
 обов&#39;язкове evidence для done, відмову для path traversal/symlink, нерозкриття
 HTML/script із Markdown, локальні посилання та актуальні capabilities. Fixtures
@@ -4039,6 +4089,16 @@ parcel/barcodes/full-card можливостям, а Drive VM linker — нин�
 Вони не входять у поточний gate. Для історичного відтворення слід явно задати
 `DPD_SOURCE_ROOT` на окрему копію відповідного snapshot, не на робочий checkout.
 Поточні докази: `npm test`, `test/` і `tools/tests/`.
+
+### Test harness (S00-03)
+
+`npm test` = `node --test --import ./test/helpers/noNetwork.js` з явним набором
+`test/*/*.test.js`, `test/*/*.test.mjs`, `tools/tests/*.test.mjs`. Preload
+блокує будь-який не підмінений `fetch`; per-test fakes — `test/helpers/harness.js`,
+synthetic fixtures — `test/fixtures/` через `test/helpers/fixtures.js`. Шаблон
+без явного переліку в Node 20 запускав би helper-модулі як порожні «ok».
+Якщо шаблон не знаходить файлів, shell передає його буквально і Node завершується
+з помилкою — порожній набір не стає успіхом.
 
 ## 7. Будущие файлы тестов
 
@@ -4659,8 +4719,12 @@ Evidence: `.workflow/evidence/S00-02.json`. Обновить существую�
 Создать реальные characterization assertions существующего именования/ошибок; наблюдаемый RED должен относиться к неверному поведению harness или явно помеченному дефекту, а не к отсутствию Node.
 
 ```sh
-node --test test/unit/*.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/helpers/harness.test.js test/gmail/labels.test.js test/depot/labelName.test.js
 ```
+
+Виконано 2026-10-23: замість `test/unit/` тести розміщено за чинною модульною
+структурою `test/` ([TESTING](../../docs/TESTING.md)); наявний
+`test/depot/labelName.test.js` доповнено, а не продубльовано.
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
 

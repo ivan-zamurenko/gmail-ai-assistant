@@ -27,16 +27,23 @@
 npm test
 ```
 
-Одна група:
+`npm test` передає Node явний набір `test/*/*.test.js`, `test/*/*.test.mjs` і
+`tools/tests/*.test.mjs` та preload `test/helpers/noNetwork.js`. Preload замінює
+`fetch` на guard: будь-який не підмінений тестом запит відхиляється з кодом
+`TEST_NETWORK_BLOCKED`. Явний перелік потрібен, бо Node 20 інакше запускає кожен
+`.js` у `test/`, і helper-модулі рахувались би як «ok» без жодного тесту.
+Новий тест кладіть на один рівень: `test/<група>/<назва>.test.js`.
+
+Одна група (із тим самим guard):
 
 ```sh
-node --test test/depot/labelBarcode.test.js
+node --test --import ./test/helpers/noNetwork.js test/depot/labelBarcode.test.js
 ```
 
 Один сценарій за назвою:
 
 ```sh
-node --test --test-name-pattern="damaged consignment" test/depot/labelBarcode.test.js
+node --test --import ./test/helpers/noNetwork.js --test-name-pattern="damaged consignment" test/depot/labelBarcode.test.js
 ```
 
 Повний quality gate перед комітом:
@@ -68,6 +75,16 @@ test/
 │   ├── lookup.test.js        Depot lookup input normalization
 │   ├── monthFolders.test.js  Drive folder planning and dry-run safety
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
+├── fixtures/
+│   └── gmail-labels.json    Synthetic Gmail labels/messages ("synthetic": true)
+├── gmail/
+│   └── labels.test.js       Gmail label transport: status, auth, exact payload
+├── helpers/
+│   ├── networkGuard.js      Shared blocked fetch (no side effects)
+│   ├── noNetwork.js         npm test preload: global network ban
+│   ├── harness.js           Per-test fake fetch routes, chrome storage/identity
+│   ├── fixtures.js          Fixture loader that rejects real-looking data
+│   └── harness.test.js      Harness guard, isolation and fixture validator
 ├── queue/
 │   ├── barcodeExecutor.test.js Discord Drive-label orchestration
 │   ├── executor.test.js     Queue validation and command boundary
@@ -266,6 +283,12 @@ test/
 - Очікує наступну вільну назву `-3`, щоб Drive move/rename не створив колізію.
 - Також перевіряє, що справді вільна назва залишається без зайвого суфікса.
 - Використовує лише `Set` синтетичних назв і не звертається до Drive API.
+
+**Unreadable labels and file dates**
+
+- Нечитабельний barcode дає `unknown-007` з нулями й extension у нижньому
+  регістрі; файл без extension отримує `.jpg`.
+- Дата файлу — день створення в Drive (`dateOf`), без переформатування.
 
 ### `test/depot/monthFolders.test.js`
 
@@ -610,6 +633,30 @@ test/
 - Всі значення синтетичні; справжні URL, токени й ключі в тестах заборонені.
 - Не перевіряє кожну можливу форму секрету або сторонні library stack traces.
 
+### `test/helpers/harness.test.js`
+
+**Tests cannot reach the network or inherit state from each other**
+
+- Не підмінений `fetch` відхиляється guard'ом до виходу з процесу.
+- `useFetch` відповідає лише на перелічені method+URL, кожен маршрут один раз,
+  а решту записує як unexpected.
+- Пара послідовних тестів доводить, що chrome storage, fake clock, fetch і
+  pending fake timer не переходять у наступний тест.
+- Валідатор fixtures вимагає `"synthetic": true` і відхиляє токени, приватні
+  ключі, вбудовані зображення, raw HTML, depot host/session і не-example email.
+- Обов'язкові групи `test/` не можуть бути порожніми.
+- Regex-валідатор не гарантує відсутність будь-яких PII; рев'ю fixtures лишається.
+
+### `test/gmail/labels.test.js`
+
+**Gmail label transport sends the exact request and surfaces failures**
+
+- `findLabelId` шукає точну назву і передає `Bearer` токен з `chrome.identity`.
+- `listByLabel` повертає id і порожній список, коли Gmail не надсилає `messages`.
+- `moveLabels` надсилає точний POST payload `addLabelIds/removeLabelIds`.
+- HTTP 401/403 стають помилкою зі статусом; помилка identity зупиняє до запиту.
+- Fake transport не перевіряє реальні OAuth scopes і pagination Gmail.
+
 ### `test/tooling/build.test.mjs`
 
 **Build plan is identical for one-off and watch, and never touches foreign files**
@@ -726,7 +773,7 @@ Firestore потрібен emulator або ізольований test-project, 
 
 ## Workflow tooling — 2026-10-23
 
-Комплект додає `tools/tests/` до автоматичного discovery `npm test`.
+Комплект додає `tools/tests/` до `npm test` (з S00-03 — явним шаблоном).
 Окремий запуск: `node --test tools/tests/*.test.mjs`. Тести перевіряють graph/state,
 обов'язкове evidence для done, відмову для path traversal/symlink, нерозкриття
 HTML/script із Markdown, локальні посилання та актуальні capabilities. Fixtures

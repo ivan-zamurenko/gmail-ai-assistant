@@ -1,0 +1,12 @@
+{
+  "synthetic": true,
+  "labels": [
+    { "id": "Label_SYN_1", "name": "AI-Reply", "type": "user" },
+    { "id": "Label_SYN_2", "name": "AI-Done", "type": "user" },
+    { "id": "INBOX", "name": "INBOX", "type": "system" }
+  ],
+  "messages": [
+    { "id": "msg-syn-001", "threadId": "thr-syn-001" },
+    { "id": "msg-syn-002", "threadId": "thr-syn-002" }
+  ]
+}

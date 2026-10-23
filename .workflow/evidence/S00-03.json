@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "task_id": "S00-03",
+  "outcome": "passed",
+  "scope": "Isolated synthetic test harness: global fetch ban, per-test fetch/chrome fakes, fixture validator, Gmail transport and naming characterization. No runtime src changes.",
+  "base_sha": "3079e32060a432745b8a0810d664e293b1bbc006",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test test/helpers/",
+      "exit_code": 1,
+      "result": "3/6 failed as expected: unfaked fetch was not blocked (real fetch to loopback discard port, no external traffic), fetch after a test was not the guard, test/gmail had no tests",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npm test (with --import preload, before explicit file set)",
+      "exit_code": 0,
+      "result": "exit 0 but 133 = 129 tests + 4 helper modules reported as 'ok' with zero tests; treated as harness defect (empty success)",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/helpers/harness.test.js test/gmail/labels.test.js test/depot/labelName.test.js",
+      "exit_code": 0,
+      "result": "16/16",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npm test",
+      "exit_code": 0,
+      "result": "129/129 (115 previous + 14 new); 0 file-level pseudo-tests",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npm run lint",
+      "exit_code": 0,
+      "result": "passed; new files are .js and inside the lint glob",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npm run build",
+      "exit_code": 0,
+      "result": "passed",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "passed",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/roadmap.mjs validate && node tools/check-docs.mjs && node --test tools/tests/*.test.mjs",
+      "exit_code": 0,
+      "result": "PASS; 38/38",
+      "boundary": "local working checkout incl. owner's uncommitted changes; synthetic fixtures; fetch guard; no live service calls",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Tests placed in the current module layout (test/helpers, test/gmail, test/fixtures, existing test/depot/labelName.test.js) instead of test/unit/*.test.mjs, per docs/TESTING.md and LOCAL_BASELINE; card command updated.",
+    "Existing naming coverage (parcel suffix, duplicate suffix) not duplicated; only unknown/extension/date cases added.",
+    "npm test lists test files explicitly because Node 20 runs every .js under test/ and would count helpers as passing tests.",
+    "Network ban covers fetch (the project's only HTTP path via src/utils/request.js); sockets/discord.js/firebase transports are not intercepted.",
+    "Root package bumped 1.1.9 -> 1.1.10 with owner authorization."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "package.json",
+    "package-lock.json",
+    "test/helpers/networkGuard.js",
+    "test/helpers/noNetwork.js",
+    "test/helpers/harness.js",
+    "test/helpers/fixtures.js",
+    "test/helpers/harness.test.js",
+    "test/fixtures/gmail-labels.json",
+    "test/gmail/labels.test.js",
+    "test/depot/labelName.test.js",
+    "docs/TESTING.md",
+    "docs/toolchain.md",
+    "roadmap/tasks/S00-03.md",
+    "START_HERE.html",
+    ".workflow/state.json",
+    ".workflow/evidence/S00-03.json",
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md"
+  ],
+  "untested": [
+    "Real Gmail OAuth scopes and pagination (nextPageToken)",
+    "Non-fetch network paths (net/tls sockets used by discord.js, firebase-admin)",
+    "Real chrome.identity behaviour",
+    "Firebase/Discord fixtures (deferred to S09-03 Emulator)"
+  ],
+  "residual_risk": [
+    "Regex fixture validator can miss PII shapes; human review of fixtures still required.",
+    "Tests run directly with `node --test file` without --import have no network ban; documented in docs/TESTING.md.",
+    "Shell glob pattern assumes one directory level under test/."
+  ],
+  "blocker": null,
+  "next_step": "S00-04 (recommended; check card before starting).",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

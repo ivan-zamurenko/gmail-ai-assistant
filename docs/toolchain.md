@@ -79,6 +79,16 @@ parcel/barcodes/full-card можливостям, а Drive VM linker — нин�
 `DPD_SOURCE_ROOT` на окрему копію відповідного snapshot, не на робочий checkout.
 Поточні докази: `npm test`, `test/` і `tools/tests/`.
 
+### Test harness (S00-03)
+
+`npm test` = `node --test --import ./test/helpers/noNetwork.js` з явним набором
+`test/*/*.test.js`, `test/*/*.test.mjs`, `tools/tests/*.test.mjs`. Preload
+блокує будь-який не підмінений `fetch`; per-test fakes — `test/helpers/harness.js`,
+synthetic fixtures — `test/fixtures/` через `test/helpers/fixtures.js`. Шаблон
+без явного переліку в Node 20 запускав би helper-модулі як порожні «ok».
+Якщо шаблон не знаходить файлів, shell передає його буквально і Node завершується
+з помилкою — порожній набір не стає успіхом.
+
 ## 7. Будущие файлы тестов
 
 Пути `test/bot/*.test.mjs`, `test/queue/*.test.mjs` и другие новые файлы из карточек — целевые. Их нужно создать при выполнении задачи. S00-03 расширяет harness зі збереженням поточного модульного suite. Gaps browser/Emulator/live явно записываются, не заменяются успешной Markdown validation.

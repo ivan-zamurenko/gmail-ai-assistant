@@ -119,6 +119,8 @@
     "tools/README.md",
     "docs/audit/LOCAL_BASELINE.md",
     "docs/TESTING.md",
-    "roadmap/tasks/S09-13.md"
+    "roadmap/tasks/S09-13.md",
+    "docs/AGENT_ASSIGNMENTS.md",
+    "CLAUDE.md"
   ]
 }

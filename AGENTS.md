@@ -1,5 +1,8 @@
 # DPD Assistance — Agent Instructions
 
+Before taking a task, read `docs/AGENT_ASSIGNMENTS.md`: portable roles, report-first
+priority, one writer per shared checkout, and explicit session handoff in CURRENT.
+
 These instructions apply to the whole repository. The project owner is the
 founder and final decision-maker. Work in the `codex` branch unless the owner
 explicitly authorizes another branch or a merge into `main`.

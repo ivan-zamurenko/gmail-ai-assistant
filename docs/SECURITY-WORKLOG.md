@@ -4,6 +4,17 @@ This file records security-related work on DPD Assistance. Never write secrets,
 session identifiers, customer names, addresses, tracking data, or label contents
 into this log.
 
+## 2026-10-26 — S09-02
+
+- Extracted the actual Discord handler behind explicit adapters for offline
+  admission tests; startup/login/config remain in index.js.
+- Unknown commands/subcommands and malformed option getter/type failures now
+  receive a fixed safe ephemeral error before queue/todo side effects.
+- Preserved configured guild, depot Administrator checks, interaction user
+  identity for todo, and explicit dry_run:false as the sole live confirmation.
+- Synthetic tests only; no permission/schema registration, live bot startup,
+  Firebase calls, customer data or secret values used.
+
 ## 2026-10-26 — S09-01
 
 - Protected both queue vocabularies with equality/drift tests; preserved schema 2.

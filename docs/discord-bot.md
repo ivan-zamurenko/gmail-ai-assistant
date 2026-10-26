@@ -26,7 +26,7 @@
 | `/todo done` | `number`: текущая позиция в списке, начиная с 1 | Реализовано; не является почтовым одобрением | S09-08 |
 | `/todo clear` | Удаляет только завершённые задачи данного пользователя, не весь список | Реализовано | S09-08 |
 
-Источники: `bot/src/commands.js`, `bot/src/index.js`, `src/queue/executor.js`, `src/queue/barcodeExecutor.js` и `src/offscreen/offscreen.js`. Find и parcel валидируют номер в handler и executor; parcel также проверяет дату на обеих границах. Barcodes маршрутизируется offscreen отдельно от обычного executor.
+Источники: `bot/src/commands.js`, `bot/src/interactions.js`, `bot/src/index.js`, `src/queue/executor.js`, `src/queue/barcodeExecutor.js` и `src/offscreen/offscreen.js`. Find и parcel валидируют номер в handler и executor; parcel также проверяет дату на обеих границах. Barcodes маршрутизируется offscreen отдельно от обычного executor.
 
 Текущие тексты slash-команд преимущественно украинские, часть ответов английская. Русский язык этой документации не разрешает молча переводить существующий интерфейс.
 
@@ -56,7 +56,7 @@ CAD возвращает dry-run count со списком packages либо cha
 
 ```text
 Discord slash interaction
-  -> bot/src/index.js: guild + permission + input checks
+  -> bot/src/interactions.js: guild + permission + input checks (wired by index.js)
   -> bot/src/queue.js: документ tasks
   -> Firestore
   -> src/offscreen/offscreen.js: assigned listener + claim
@@ -98,3 +98,23 @@ Discord slash interaction
 S09-01…S09-09 сохраняют и проверяют существующие возможности и устраняют разрывы надёжности. S09-10/S09-11 требуют сверки с уже реализованными parcel/barcodes и проверки оставшихся acceptance; повторное подключение или отключение этих режимов не требуется. S09-12 проверяет согласованный набор команд на разрешённом стенде; реализованный код не заменяет допуск к live. S08-03 требует S09-12, чтобы общий пилот не пропустил бота.
 
 Полные критерии: [roadmap](../roadmap/ROADMAP.md), [матрица тестов](discord/TEST_MATRIX.md), [runbook](discord/RUNBOOK_RU.md), [снимок исходников](audit/GITHUB_BASELINE.md).
+
+## S09-02 — локальна перевірка admission, 2026-10-26
+
+`index.js` запускає client і підключає реальні адаптери. `interactions.js`
+експортує createInteractionHandler з явними залежностями; імпорт не запускає
+бота й не читає Firebase/config. Guild/Admin перевірки залишені на вході.
+Параметри читаються один раз до defer, queue або todo writes. Невідомі команди,
+підкоманди, зламані getters і неправильні типи відхиляються приватною відповіддю
+без echo вхідних значень. Помилка parsing не перезапускає бізнес-операцію.
+
+Todo лишається доступним без depot Admin у дозволеному guild; userId береться
+лише з interaction.user.id. Number — додатне ціле, text — непорожній рядок.
+Відсутній optional boolean у Discord повертається як null і означає dryRun=true;
+explicit false достатньо для live. До queue надходить уже boolean, тому це не
+скасовує відхилення wire dryRun:null, додане в S09-01.
+
+Schema команд, усі чотири reschedule modes, progress/DM та render збережені.
+П'ять grouped synthetic admission tests перевіряють реальний handler з підставними
+зовнішніми портами. Live permissions, registration, Firebase і Discord delivery
+не перевірялись. Втрата відповіді залишається окремою задачею S09-04.

@@ -927,7 +927,7 @@ Markdown не устанавливает Copilot, не авторизует GitH
 | `/todo done` | `number`: текущая позиция в списке, начиная с 1 | Реализовано; не является почтовым одобрением | S09-08 |
 | `/todo clear` | Удаляет только завершённые задачи данного пользователя, не весь список | Реализовано | S09-08 |
 
-Источники: `bot/src/commands.js`, `bot/src/index.js`, `src/queue/executor.js`, `src/queue/barcodeExecutor.js` и `src/offscreen/offscreen.js`. Find и parcel валидируют номер в handler и executor; parcel также проверяет дату на обеих границах. Barcodes маршрутизируется offscreen отдельно от обычного executor.
+Источники: `bot/src/commands.js`, `bot/src/interactions.js`, `bot/src/index.js`, `src/queue/executor.js`, `src/queue/barcodeExecutor.js` и `src/offscreen/offscreen.js`. Find и parcel валидируют номер в handler и executor; parcel также проверяет дату на обеих границах. Barcodes маршрутизируется offscreen отдельно от обычного executor.
 
 Текущие тексты slash-команд преимущественно украинские, часть ответов английская. Русский язык этой документации не разрешает молча переводить существующий интерфейс.
 
@@ -957,7 +957,7 @@ CAD возвращает dry-run count со списком packages либо cha
 
 ```text
 Discord slash interaction
-  -&gt; bot/src/index.js: guild + permission + input checks
+  -&gt; bot/src/interactions.js: guild + permission + input checks (wired by index.js)
   -&gt; bot/src/queue.js: документ tasks
   -&gt; Firestore
   -&gt; src/offscreen/offscreen.js: assigned listener + claim
@@ -999,6 +999,26 @@ Discord slash interaction
 S09-01…S09-09 сохраняют и проверяют существующие возможности и устраняют разрывы надёжности. S09-10/S09-11 требуют сверки с уже реализованными parcel/barcodes и проверки оставшихся acceptance; повторное подключение или отключение этих режимов не требуется. S09-12 проверяет согласованный набор команд на разрешённом стенде; реализованный код не заменяет допуск к live. S08-03 требует S09-12, чтобы общий пилот не пропустил бота.
 
 Полные критерии: [roadmap](../roadmap/ROADMAP.md), [матрица тестов](discord/TEST_MATRIX.md), [runbook](discord/RUNBOOK_RU.md), [снимок исходников](audit/GITHUB_BASELINE.md).
+
+## S09-02 — локальна перевірка admission, 2026-10-26
+
+`index.js` запускає client і підключає реальні адаптери. `interactions.js`
+експортує createInteractionHandler з явними залежностями; імпорт не запускає
+бота й не читає Firebase/config. Guild/Admin перевірки залишені на вході.
+Параметри читаються один раз до defer, queue або todo writes. Невідомі команди,
+підкоманди, зламані getters і неправильні типи відхиляються приватною відповіддю
+без echo вхідних значень. Помилка parsing не перезапускає бізнес-операцію.
+
+Todo лишається доступним без depot Admin у дозволеному guild; userId береться
+лише з interaction.user.id. Number — додатне ціле, text — непорожній рядок.
+Відсутній optional boolean у Discord повертається як null і означає dryRun=true;
+explicit false достатньо для live. До queue надходить уже boolean, тому це не
+скасовує відхилення wire dryRun:null, додане в S09-01.
+
+Schema команд, усі чотири reschedule modes, progress/DM та render збережені.
+П&#39;ять grouped synthetic admission tests перевіряють реальний handler з підставними
+зовнішніми портами. Live permissions, registration, Firebase і Discord delivery
+не перевірялись. Втрата відповіді залишається окремою задачею S09-04.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1719,37 +1739,37 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 </pre></article>
 <article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — поточна передача</h1><pre class="markdown"># DPD Assistance — поточна передача
 
-## Завершена задача — 2026-10-26
+## Завершено S09-02 — 2026-10-26
 
-- Пріоритет власника: report S09-13 і його залежності.
-- S09-01, implementation, branch `codex`, base `bd6fb22`; початкове дерево чисте.
-- `s09_contract_impl` завершив runtime/test зміни й передав integrator;
-  незалежний `s09_contract_review` прийняв diff. Продуктових writer немає.
-- Реалізовано: mirror/identity tests, pure pending builder, null dryRun guard,
-  zero-Chrome/ports rejection, ALL default. Focused 14/14 PASS.
-- Scope: bot pendingTask/queue, barcodeExecutor, три queue tests; integrator
-  веде docs, state/evidence, packages/locks/manifest, reader та Git.
-- Версії: root 1.1.14, bot 0.2.4, extension 6.3.0.60; queue schema 2 збережено.
-- S09-01 done: повний gate PASS, 157/157 тестів, lint/build/artifacts/docs/diff.
-  [Evidence](evidence/S09-01.json); `active_task: null`.
+- Пріоритет: report S09-13 та залежності; власник доручив «давай далі».
+- Branch codex, base 29c8be4, початковий Git чистий.
+- Writer s09_admission_impl завершив роботу й передав integrator Codex/root.
+  s09_admission_review: ACCEPT; read-only, зміни не вносив.
+- Код: index.js підключає interactions.js; admission перевіряє параметри до
+  queue/todo, відхиляє невідомі команди й malformed options без input echo.
+- Перевірено focused 7/7; три runtime/test файли. Integrator веде shared docs,
+  state/evidence, versions/locks, reader і Git. Повний gate PASS: 162/162 тестів,
+  lint/build/artifacts/docs/diff. [Evidence](evidence/S09-02.json).
+- Статус done, active_task null; продуктових writer немає.
+- Версії root 1.1.15, bot 0.2.5; extension 6.3.0.60 і queue schema 2 незмінні.
 
 ## Стан і наступне
 
-S00-01…04, S01-01…02 виконані; S00-05 blocked через непідтверджений список
-інструкцій у Copilot. Це не блокує report. Точні статуси — [state](state.json),
-історія — [WORKLOG](WORKLOG.md), категорії й порядок —
+S00-01…04, S01-01…02 і S09-01 done; S00-05 blocked через непідтверджений
+список інструкцій у Copilot, report не блокує. Точні статуси — [state](state.json),
+історія — [WORKLOG](WORKLOG.md), порядок —
 [AGENT_ASSIGNMENTS](../docs/AGENT_ASSIGNMENTS.md).
 
-Після завершення S09-01 наступна задача пріоритету — S09-02 (`discord_owner`).
-Вона не активується автоматично. `roadmap.mjs next` використовує загальний порядок,
-а не report-first. Новий агент звіряє Git і отримує явну передачу writer.
+Наступна задача report-first після S09-02 — S01-03, toolchain_owner:
+безпечна діагностика й помилки. Не починається автоматично. Новий writer
+звіряє Git і отримує явну передачу; спільний checkout має одного writer.
 
 ## Межі
 
-Лише synthetic offline перевірки. Bot startup/register, deploy, live depot/Drive,
-передача клієнтських даних не виконувались. Потрібні окремі live перевірки
-Chrome/POD і rules; локальні тести їх не замінюють. Report ще не реалізований.
-Commit/push погоджених змін у codex дозволені; main не змінювати.
+Лише synthetic offline. Не запускали client.login/register/deploy або live
+операції. Перевірки не доводять live Discord/Firebase permissions чи delivery.
+Report ще не реалізований; S09-04 має вирішити втрату результату при reply failure.
+Commit/push у codex дозволені; main не змінювати.
 </pre></article>
 <article id="doc-22" tabindex="-1" hidden><p class="path"><a href=".workflow/WORKLOG.md">.workflow/WORKLOG.md</a></p><h1>Спільний журнал DPD Assistance</h1><pre class="markdown"># Спільний журнал DPD Assistance
 
@@ -1797,6 +1817,10 @@ Commit/push погоджених змін у codex дозволені; main не
 | 2026-10-26 | discord_owner / s09_contract_impl | Перевірено | S09-01 RED: 11/12 PASS, explicit null dryRun доходив до barcode ports; mirror drift і zero-Chrome перевірки PASS. Identity перевірено через pure builder. | Мінімальний fix без зміни schema 2. |
 | 2026-10-26 | discord_owner → integrator | Виконано | Null guard виправлено; focused 14/14 PASS; додано ALL default, збережено explicit true та omitted dryRun. Writer передав шість runtime/test файлів, більше не редагує. | Integrator: review, docs/version, повний gate. |
 | 2026-10-26 | Codex / integrator + s09_contract_review | Виконано | S09-01: незалежний review ACCEPT; full gate PASS, 157/157 тестів, lint/build/artifacts/docs/diff. Root 1.1.14, bot 0.2.4, extension 6.3.0.60; schema 2. [Evidence](evidence/S09-01.json). | S09-02 наступна; live не перевірено. |
+| 2026-10-26 | Codex / integrator | Погоджено | S09-02 призначено discord_owner/s09_admission_impl після «давай далі»; base 29c8be4, дерево чисте. Handler boundary без startup, мінімальні test-first перевірки доступу/параметрів. | Реалізація та незалежний review; без live. |
+| 2026-10-26 | discord_owner / s09_admission_impl | Перевірено | S09-02 RED: admission 3/5 PASS, невідома команда викликала queue, getter exception виходив із handler; guild/admin та supported modes characterization PASS. | Parse-once validation до ефектів. |
+| 2026-10-26 | discord_owner → integrator + s09_admission_review | Виконано | Handler винесено в interactions.js; input guards, safe ephemeral rejection; focused 7/7 PASS, незалежний review ACCEPT. Writer передав три runtime/test файли; progress/DM і live consent збережено. | Docs/version/full gate; без live. |
+| 2026-10-26 | Codex / integrator + s09_admission_review | Виконано | S09-02 done: незалежний review ACCEPT, full gate PASS 162/162 тестів; root 1.1.15, bot 0.2.5. [Evidence](evidence/S09-02.json). Extension/schema/permissions незмінні. | S01-03 — безпечні логи й помилки; live не перевірено. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 </pre></article>
@@ -4310,6 +4334,25 @@ HTML/script із Markdown, локальні посилання та актуал
   preload для виконавців. Emulator, Chrome і живі сервіси не перевірялись.
 
 Мінімальний запуск: `node --test --import ./test/helpers/noNetwork.js test/queue/contract.test.mjs test/queue/executor.test.js test/queue/barcodeExecutor.test.js`.
+
+## S09-02 — Discord admission, 2026-10-26
+
+`test/discord/admission.test.mjs` містить п&#39;ять згрупованих synthetic сценаріїв:
+
+- Чужий guild та depot actor без Admin: жодного queue/todo виклику.
+- Реальна command schema маршрутизує всі depot modes рівно в один enqueue;
+  omitted/true/false dry_run, ephemeral і barcode DM збережені.
+- Усі todo subcommands працюють без Admin лише для interaction.user.id.
+- Невідомі command/subcommand відхиляються до defer, не лишають завислу відповідь.
+- Getter exceptions, неправильні типи actor/options, find/parcel number/date,
+  todo text/number: без побічних ефектів та відображення synthetic secret marker.
+
+Тест імпортує справжній createInteractionHandler з interactions.js; enqueue,
+render і todo adapters підставлені. Index/client.login/Firebase/config не
+імпортуються. RED відтворив unknown-command enqueue і uncaught getter error
+після механічного extraction без зміни поведінки; GREEN після admission guards.
+Чинні command-schema і validation тести збережені. Live та delivery recovery
+не покриті цією задачею.
 </pre></article>
 <article id="doc-52" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -8466,9 +8509,12 @@ commands.js ограничивает depot-команды Administrator; index.j
 ## Scope — разрешённые пути
 
 - `bot/src/index.js`
+- `bot/src/interactions.js` — testable handler boundary без startup
 - `bot/src/commands.js`
 - `bot/config/config.js`
 - `test/discord/admission.test.mjs`
+
+Scope уточнено 2026-10-26: механічне винесення handler у interactions.js дозволяє тестувати справжню логіку без client.login/Firebase; schema/permissions не змінюються.
 
 CURRENT, state и evidence текущей карточки допустимы как служебные изменения. Новый test path ниже — требование к реализации, а не уже существующий тест. Расширение scope сначала обосновать; не переписывать бот/extension целиком.
 

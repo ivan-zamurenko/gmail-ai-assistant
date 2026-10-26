@@ -865,3 +865,22 @@ HTML/script із Markdown, локальні посилання та актуал
   preload для виконавців. Emulator, Chrome і живі сервіси не перевірялись.
 
 Мінімальний запуск: `node --test --import ./test/helpers/noNetwork.js test/queue/contract.test.mjs test/queue/executor.test.js test/queue/barcodeExecutor.test.js`.
+
+## S09-02 — Discord admission, 2026-10-26
+
+`test/discord/admission.test.mjs` містить п'ять згрупованих synthetic сценаріїв:
+
+- Чужий guild та depot actor без Admin: жодного queue/todo виклику.
+- Реальна command schema маршрутизує всі depot modes рівно в один enqueue;
+  omitted/true/false dry_run, ephemeral і barcode DM збережені.
+- Усі todo subcommands працюють без Admin лише для interaction.user.id.
+- Невідомі command/subcommand відхиляються до defer, не лишають завислу відповідь.
+- Getter exceptions, неправильні типи actor/options, find/parcel number/date,
+  todo text/number: без побічних ефектів та відображення synthetic secret marker.
+
+Тест імпортує справжній createInteractionHandler з interactions.js; enqueue,
+render і todo adapters підставлені. Index/client.login/Firebase/config не
+імпортуються. RED відтворив unknown-command enqueue і uncaught getter error
+після механічного extraction без зміни поведінки; GREEN після admission guards.
+Чинні command-schema і validation тести збережені. Live та delivery recovery
+не покриті цією задачею.

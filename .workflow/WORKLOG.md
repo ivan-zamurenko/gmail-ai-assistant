@@ -52,5 +52,6 @@
 | 2026-10-26 | Власник + Codex | Погоджено | POD-FALLBACK: generated DPD Ireland 404, коли фото немає; базові дані /find лишаються. Asset у bot/assets, prompt записано. Maps/delivery без змін. | Мінімальні зміни існуючих тестів. |
 | 2026-10-26 | pod_fallback_impl → integrator + pod_fallback_review | Виконано | Оновлено два тести, нових немає; RED11/13 → GREEN13/13; safe warning RED12/13 → GREEN13/13. Незалежний review ACCEPT; writer передав 4 runtime/test файли. | Повний gate, docs/version; live не запускали. |
 | 2026-10-26 | Codex / integrator | Виконано | POD-FALLBACK: generated local PNG, core /find при POD error; 162/162, lint/build/artifacts/docs PASS. Лінтер виправлено явними Node URL imports/globalThis.console. Нових тестів немає. [Evidence](evidence/POD-FALLBACK-2026-10-26.json). | S01-03; timeout/Maps/delivery не змінені, live не перевірено. |
+| 2026-10-26 | Власник + Codex | Погоджено | /find/report лишаються відповіддю в чаті групи, не DM; чинна ephemeral видимість збережена. Уточнено decisions і S09-13, runtime не змінено. | Не плутати з окремим barcode DM flow. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.

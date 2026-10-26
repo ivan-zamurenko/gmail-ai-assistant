@@ -1824,6 +1824,7 @@ Report-first збережено; наступна roadmap задача S01-03. M
 | 2026-10-26 | Власник + Codex | Погоджено | POD-FALLBACK: generated DPD Ireland 404, коли фото немає; базові дані /find лишаються. Asset у bot/assets, prompt записано. Maps/delivery без змін. | Мінімальні зміни існуючих тестів. |
 | 2026-10-26 | pod_fallback_impl → integrator + pod_fallback_review | Виконано | Оновлено два тести, нових немає; RED11/13 → GREEN13/13; safe warning RED12/13 → GREEN13/13. Незалежний review ACCEPT; writer передав 4 runtime/test файли. | Повний gate, docs/version; live не запускали. |
 | 2026-10-26 | Codex / integrator | Виконано | POD-FALLBACK: generated local PNG, core /find при POD error; 162/162, lint/build/artifacts/docs PASS. Лінтер виправлено явними Node URL imports/globalThis.console. Нових тестів немає. [Evidence](evidence/POD-FALLBACK-2026-10-26.json). | S01-03; timeout/Maps/delivery не змінені, live не перевірено. |
+| 2026-10-26 | Власник + Codex | Погоджено | /find/report лишаються відповіддю в чаті групи, не DM; чинна ephemeral видимість збережена. Уточнено decisions і S09-13, runtime не змінено. | Не плутати з окремим barcode DM flow. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 </pre></article>
@@ -2826,6 +2827,15 @@ Drive: synthetic photo → deterministic candidate → preview без writes →
 Рабочие поля и правила сохранения: [handoff](../handoff.md). Реальный checkpoint: [.workflow/CURRENT.md](../../.workflow/CURRENT.md).
 </pre></article>
 <article id="doc-40" tabindex="-1" hidden><p class="path"><a href="docs/decisions.md">docs/decisions.md</a></p><h1>Решения и источник истины</h1><pre class="markdown"># Решения и источник истины
+
+## REPORT-CHANNEL-2026-10-26 — відповідь у чаті групи
+
+Власник уточнив: відповідь іде в чат групи, не DM; поки залишити так.
+Контекст — /find та майбутній driver report. Поточний /find використовує
+Ephemeral, тобто відповідь у чаті бачить лише автор команди. Видимість не
+розширювати. Приклад DM failure не описує цей шлях; для нього актуальна
+можлива помилка editReply. Окремий наявний barcode DM flow цим уточненням
+не змінювався; не переносити його припущення на /find/report.
 
 ## POD-FALLBACK-2026-10-26 — відсутнє фото
 
@@ -9596,6 +9606,10 @@ test(discord): [S09-12] record authorized bot pilot
 Evidence: `.workflow/evidence/S09-12.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
 <article id="doc-120" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-13.md">roadmap/tasks/S09-13.md</a></p><h1>S09-13 — Короткий driver report для повторної доставки в Discord</h1><pre class="markdown"># S09-13 — Короткий driver report для повторної доставки в Discord
+
+&gt; Канал відповіді уточнено власником 2026-10-26: чат групи Discord, не DM.
+&gt; Зберегти чинну приватну (ephemeral) видимість; це не дозвіл показувати PII
+&gt; всім учасникам. Спосіб виклику report ще визначається окремо.
 
 &gt; Оновлення baseline 2026-10-26, окреме доручення POD-FALLBACK: чинний /find
 &gt; уже зберігає core data при POD error та показує локальну 404-заглушку без фото.

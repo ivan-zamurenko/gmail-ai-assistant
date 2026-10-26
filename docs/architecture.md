@@ -25,7 +25,7 @@
 | Путь | Ответственность | Граница |
 |---|---|---|
 | `bot/src/commands.js`, `register-commands.js` | Схема slash menu и её внешняя регистрация | Register не выполнять в CI без допуска |
-| `bot/src/index.js` | Admission guild/permissions, handlers, reply | Не доверять options как одобрению любых эффектов |
+| `bot/src/index.js`, `interactions.js` | Startup окремо від admission guild/permissions, handlers і reply | Не доверять options как одобрению любых эффектов |
 | `bot/src/queue.js` | Создание задания, ожидание terminal result, timeout | Результат выполнения не равен доставке Discord reply |
 | `bot/src/render.js`, `geo.js` | Lookup cards/history, optional Maps | Ошибка optional enrichment не должна терять facts — целевая гарантия S09-07 |
 | `bot/src/todo.js` | Checklist по Discord userId | Не approval email и не depot queue |
@@ -66,3 +66,8 @@ Browser config содержит статический import local.js. Вним
 Claim не означает exactly-once внешней операции; ephemeral не означает отсутствие передачи данных Discord; heartbeat не заменяет restart tests; maps marker не доказывает правильность доставки; наличие команды не означает подключённый executor. Существующие product tests в `test/` (реестр — `docs/TESTING.md`) и отдельные offline probes — полезный baseline, не полный integration certificate.
 
 Критерии по этим границам находятся в [S09](../roadmap/ROADMAP.md) и [security](security-and-privacy.md).
+
+## Поточний аналіз меж
+
+[Статичний аудит модулів 2026-10-26](audit/MODULE_BOUNDARIES_2026-10-26.md):
+структура частково модульна; POD/Maps/delivery/retry ще потребують ізоляції збоїв.

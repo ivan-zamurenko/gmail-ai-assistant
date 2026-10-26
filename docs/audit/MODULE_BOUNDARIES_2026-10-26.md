@@ -1,5 +1,9 @@
 # Аналіз меж модулів — 2026-10-26
 
+> Подальша зміна POD-FALLBACK: відмова POD більше не забирає core /find;
+> додано локальну заглушку. Нижче — історичний висновок на baseline bd64375.
+> Maps, timeout та delivery ризики залишаються невиправленими.
+
 Baseline: `bd64375`, branch codex, початковий Git чистий. Доручення власника:
 перевірити, чи можна виправляти модулі без впливу на решту. Статичний огляд
 Codex/integrator + architecture_bot_audit + architecture_extension_audit.

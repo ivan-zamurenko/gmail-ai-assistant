@@ -227,6 +227,8 @@ test('retry task deletes a previous-day batch without reaching the depot', async
 });
 
 test('find injects only the number; the POD photo is requested by the extension', async (t) => {
+  const warnings = [];
+  t.mock.method(globalThis.console, 'warn', (...args) => warnings.push(args));
   const originalChrome = globalThis.chrome;
   const injections = [];
   let podEventId = null;
@@ -261,12 +263,18 @@ test('find injects only the number; the POD photo is requested by the extension'
   assert.equal(notDelivered.parcel.pod, undefined);
   assert.equal(JSON.stringify(notDelivered.parcel).includes('555'), false, 'event id must not leave the extension');
 
+  assert.deepEqual(warnings, [], 'no warning when no POD was expected');
   podEventId = '555';
   const delivered = await executeTask(task);
   // The test network guard (or a missing local podAuth in CI) makes the POD step
-  // fail inside the extension; either way the error is reported, not the photo.
-  assert.equal(delivered.status, 'error');
-  assert.match(delivered.summary, /POD photo error: POD (request failed|authorization is not configured)/);
+  // fail inside the extension; core facts must still reach the renderer.
+  assert.equal(delivered.status, 'done');
+  assert.equal(delivered.parcel.pod, undefined);
+  assert.equal(delivered.parcel.consNumber, '123456789');
+  assert.deepEqual(delivered.parcel.scans, notDelivered.parcel.scans);
+  assert.equal(JSON.stringify(delivered).includes('555'), false, 'event id stays local even when POD fails');
+  assert.doesNotMatch(JSON.stringify(delivered), /POD (request|authorization)/);
+  assert.deepEqual(warnings, [['[find] POD_UNAVAILABLE']]);
 
   assert.deepEqual(injections, [[['123456789']], [['123456789']]]);
 });

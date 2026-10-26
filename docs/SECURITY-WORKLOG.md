@@ -424,3 +424,11 @@ into this log.
   failure propagation, and potential replay after an indeterminate injection
   error. No live reproduction, secret reads, customer data, or runtime changes.
 - Diagnostic output paths recorded for S01-03; no actual secret leak claimed.
+
+## 2026-10-26 — POD fallback
+
+- Preserved successful parcel facts when optional POD retrieval returns an error;
+  provider error/event ID are not added to the queue payload. Diagnostic warning
+  is the constant POD_UNAVAILABLE only, without identifiers or provider text.
+- Added generated local placeholder with no customer/reference data; real photos
+  remain private attachments. No live sending, deployment or credentials read.

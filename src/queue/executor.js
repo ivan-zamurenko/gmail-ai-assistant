@@ -288,7 +288,9 @@ async function runFind(args) {
   const podResult = res.podEventId == null ? null : await fetchPodImage(res.podEventId, config.podAuth);
   const podBody = typeof podResult?.image?.body === 'string' && /^[A-Za-z0-9+/=]+$/.test(podResult.image.body)
     && podResult.image.body.length <= 700_000 ? podResult.image.body : '';
-  if (podResult?.error) return error(`${res.consNumber || res.query} — POD photo error: ${podResult.error}`);
+  if (podResult?.error) console.warn('[find] POD_UNAVAILABLE');
+  // POD is optional: a provider failure must not discard the confirmed parcel
+  // facts. With no image the bot renders its local unavailable-photo placeholder.
   const parcel = {
     query:      res.query,
     consNumber: res.consNumber,

@@ -7,8 +7,11 @@
  * lives in its own embed to sit below the map).
  */
 import { EmbedBuilder, AttachmentBuilder } from 'discord.js';
+import { fileURLToPath, URL } from 'node:url';
 
 import { normEircode, geocode, reverseGeocode, haversineKm, mapImage } from './geo.js';
+
+const POD_PLACEHOLDER = fileURLToPath(new URL('../assets/pod-unavailable.png', import.meta.url));
 
 const COLOR = {
   delivered: 0x2ecc71, // green
@@ -234,6 +237,12 @@ export async function buildParcelEmbed(parcel, apiKey) {
       .setColor(colorFor(s.type))
       .setTitle('POD photo')
       .setImage('attachment://pod.jpg'));
+  } else {
+    files.push(new AttachmentBuilder(POD_PLACEHOLDER, { name: 'pod-unavailable.png' }));
+    extraEmbeds.push(new EmbedBuilder()
+      .setColor(COLOR.other)
+      .setTitle('Delivery photo unavailable')
+      .setImage('attachment://pod-unavailable.png'));
   }
   if (addr) {
     const png = await mapImage(parcel.drop, addr, apiKey);

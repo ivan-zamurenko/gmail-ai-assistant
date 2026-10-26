@@ -118,3 +118,14 @@ Schema команд, усі чотири reschedule modes, progress/DM та rend
 П'ять grouped synthetic admission tests перевіряють реальний handler з підставними
 зовнішніми портами. Live permissions, registration, Firebase і Discord delivery
 не перевірялись. Втрата відповіді залишається окремою задачею S09-04.
+
+## POD fallback — 2026-10-26
+
+Якщо фото немає (зокрема коли POD provider повернув error), /find зберігає
+основну картку й додає локальну 404-графіку з підписом Delivery photo unavailable.
+Справжній pod.jpg має пріоритет. [Asset та prompt](../bot/assets/README.md).
+Папка bot/assets входить до поставки бота; шлях не залежить від cwd.
+Executor пише лише технічний POD_UNAVAILABLE при provider error, без його
+вмісту або клієнтських ідентифікаторів. Відсутність фото не означає втрату посилки.
+Це не timeout захист: завислий POD-запит поки може затримати відповідь (S01-04).
+Maps і Discord delivery recovery не змінені.

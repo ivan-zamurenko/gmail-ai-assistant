@@ -884,3 +884,13 @@ render і todo adapters підставлені. Index/client.login/Firebase/conf
 після механічного extraction без зміни поведінки; GREEN після admission guards.
 Чинні command-schema і validation тести збережені. Live та delivery recovery
 не покриті цією задачею.
+
+## POD fallback — 2026-10-26
+
+Без нових test cases: змінено два чинні тести під нову вимогу власника.
+Renderer тепер перевіряє локальний PNG attachment, існування/PNG signature,
+module-relative path і збережені адресу/history. Чинний real-POD тест збережено.
+Executor очікує done/core parcel без фото й event ID при POD error замість
+старої навмисної відмови; warning має лише константу POD_UNAVAILABLE.
+RED11/13 → GREEN13/13, а перевірка warning RED12/13 → GREEN13/13.
+Synthetic only; реальне надсилання attachment, POD timeout і Maps не перевірено.

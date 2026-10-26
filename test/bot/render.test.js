@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath, URL } from 'node:url';
 
 import { buildParcelEmbed } from '../../bot/src/render.js';
 
@@ -20,8 +22,16 @@ test('the private parcel card renders full recipient details and CAD location', 
     }],
   };
   const output = await buildParcelEmbed(parcel, '');
-  assert.equal(output.embeds.length, 2);
-  assert.equal(output.files.length, 0);
+  assert.equal(output.embeds.length, 3);
+  assert.equal(output.files.length, 1);
+  const placeholder = output.files[0];
+  assert.equal(placeholder.name, 'pod-unavailable.png');
+  assert.equal(placeholder.attachment, fileURLToPath(new URL('../../bot/assets/pod-unavailable.png', import.meta.url)));
+  const image = await readFile(placeholder.attachment);
+  assert.deepEqual([...image.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+  const photo = output.embeds[2].toJSON();
+  assert.equal(photo.title, 'Delivery photo unavailable');
+  assert.equal(photo.image.url, 'attachment://pod-unavailable.png');
   const [main, history] = output.embeds.map((embed) => embed.toJSON());
   const plain = history.description.replaceAll('\u001b', '').replace(/\[[0-9;]*m/g, '');
   assert.equal(main.fields.find((field) => field.name === 'Recipient').value, 'Jane Doe, Example Ltd');

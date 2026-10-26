@@ -14,7 +14,8 @@ import { randomUUID } from 'node:crypto';
 
 import { db, admin } from './firebase.js';
 import { loadConfig } from '../config/config.js';
-import { STATUS, TASKS_COLLECTION, TASK_SCHEMA_VERSION } from './contract.js';
+import { STATUS, TASKS_COLLECTION } from './contract.js';
+import { buildPendingTask } from './pendingTask.js';
 import { safeErrorMessage } from './errors.js';
 
 const cfg = loadConfig();
@@ -32,17 +33,12 @@ export function enqueueAndWait(task, {
   const id  = randomUUID();
   const ref = db.collection(TASKS_COLLECTION).doc(id);
 
-  const record = {
+  const record = buildPendingTask(task, {
     id,
-    schemaVersion: TASK_SCHEMA_VERSION,
-    command:     task.command,
-    args:        task.args ?? {},
-    requestedBy: task.requestedBy,
     executorUid: cfg.firebase.executorUid,
-    status:      STATUS.PENDING,
-    createdAt:   admin.firestore.FieldValue.serverTimestamp(),
-    expiresAt:   admin.firestore.Timestamp.fromMillis(Date.now() + claimWindowMs),
-  };
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + claimWindowMs),
+  });
 
   return new Promise((resolvePromise, reject) => {
     let settled = false;

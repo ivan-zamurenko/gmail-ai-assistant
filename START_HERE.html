@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">DPD Assistance — налаштування комплекту v1.2<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">DPD Assistance — поточна передача<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1083,6 +1083,29 @@ Retention, очистка и доступ к журналу задаются я�
 Локально: test data не вызывает live Firebase; mirror equality, unauthorized UID, изменённые args, expiry, duplicate listener, restart и lost reply имеют отдельные проверки. На стенде: подтверждён конкретный guild/project/executor, правила и ограничения проверены реальными отказами на разрешённых synthetic записях.
 
 [Стадия S09](../roadmap/ROADMAP.md) · [Security](security-and-privacy.md) · [Runbook](discord/RUNBOOK_RU.md) · [Test matrix](discord/TEST_MATRIX.md).
+
+## S09-01 — перевірка сумісності, 2026-10-26
+
+`bot/src/pendingTask.js` — чистий builder запису pending; `queue.js` передає
+йому UUID, executorUid із config та Firestore timestamps. `requestedBy` надходить
+із task, створеної Discord handler; це автор запиту, а не UID виконавця.
+`args` лишаються вкладеними: не можуть підмінити identity, version чи status.
+Builder не є перевіркою прав Discord — ця межа окремо перевіряється в S09-02.
+
+Споживачі: collection — bot queue та extension listener; schema/command/mode —
+executor і barcodeExecutor; status — queue/claim/result; executorUid — listener
+filter та rules; requestedBy — metadata автора, не browser authorization;
+createdAt/expiresAt — queue/claim timeout. Args конвертуються в depot-параметри,
+а не поширюються довільно на envelope.
+
+`test/queue/contract.test.mjs` порівнює п&#39;ять mirror exports і перевіряє
+чутливість до кожного synthetic drift, а також production builder без Firebase
+startup. Executor-тести доводять відмову некоректним задачам до Chrome/ports.
+Barcode `dryRun: null` тепер відхиляється; пропущене значення лишається `true`.
+Schema 2, поля й підтримані all/parcel/barcodes/retry збережені. Barcodes
+виконується окремо в offscreen, а не в worker executeTask.
+
+Це локальні synthetic перевірки, не доказ live Firestore rules або Discord прав.
 </pre></article>
 <article id="doc-9" tabindex="-1" hidden><p class="path"><a href="docs/discord/RUNBOOK_RU.md">docs/discord/RUNBOOK_RU.md</a></p><h1>Discord + Firestore + Chrome — порядок подготовки и эксплуатации</h1><pre class="markdown"># Discord + Firestore + Chrome — порядок подготовки и эксплуатации
 
@@ -1694,88 +1717,39 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — налаштування комплекту v1.2</h1><pre class="markdown"># DPD Assistance — налаштування комплекту v1.2
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — поточна передача</h1><pre class="markdown"># DPD Assistance — поточна передача
 
-## Передача агентам — 2026-10-25
+## Завершена задача — 2026-10-26
 
-Пріоритет власника: **report S09-13 та його залежності**.
-Категорії, порядок і стартовий промпт: [AGENT_ASSIGNMENTS](../docs/AGENT_ASSIGNMENTS.md).
-Завершене доручення Codex/integrator: документація координації; base `dd4d7d8`;
-дозволені лише інструкції, roadmap S09-01, журнал, manifest документації та reader.
-Продуктова задача не активована; `active_task` лишається null.
-Review завершено; продуктових writer немає. Після завершення цієї сесії наступний
-integrator може оформити доручення S09-01, звіривши фактичний Git.
+- Пріоритет власника: report S09-13 і його залежності.
+- S09-01, implementation, branch `codex`, base `bd6fb22`; початкове дерево чисте.
+- `s09_contract_impl` завершив runtime/test зміни й передав integrator;
+  незалежний `s09_contract_review` прийняв diff. Продуктових writer немає.
+- Реалізовано: mirror/identity tests, pure pending builder, null dryRun guard,
+  zero-Chrome/ports rejection, ALL default. Focused 14/14 PASS.
+- Scope: bot pendingTask/queue, barcodeExecutor, три queue tests; integrator
+  веде docs, state/evidence, packages/locks/manifest, reader та Git.
+- Версії: root 1.1.14, bot 0.2.4, extension 6.3.0.60; queue schema 2 збережено.
+- S09-01 done: повний gate PASS, 157/157 тестів, lint/build/artifacts/docs/diff.
+  [Evidence](evidence/S09-01.json); `active_task: null`.
 
-| Сесія | Область доручення | Режим / результат |
-|---|---|---|
-| Codex / integrator | Документація й інтеграція висновків | Документація готова; validators і 38 tooling-тестів PASS |
-| ownership_review | Категорії всіх 54 задач і перетини файлів | Read-only завершено; 5 ролей, без дублювання |
-| handoff_review | Підключення нового агента, стан і передача | Read-only завершено; один writer, явний handoff |
-| discord_plan_review | S09/report, залежності та діагностика | Read-only завершено; виявлено застарілі вимоги S09-01 |
+## Стан і наступне
 
-Наступний кандидат: `discord_owner`, S09-01, після конкретного доручення й запису
-виконавця/шляхів. Ці три reviewer-сесії не є постійними службами і не займають
-продуктові задачі. Для нового writer спочатку повторно перевірити Git.
+S00-01…04, S01-01…02 виконані; S00-05 blocked через непідтверджений список
+інструкцій у Copilot. Це не блокує report. Точні статуси — [state](state.json),
+історія — [WORKLOG](WORKLOG.md), категорії й порядок —
+[AGENT_ASSIGNMENTS](../docs/AGENT_ASSIGNMENTS.md).
 
-
-## Остання передача роботи
-
-Читайте [спільний журнал](WORKLOG.md). Останні доручення — S00-02 (збірка), S00-03 (test harness) і S00-04 (CI):
-виконано, [S00-02](evidence/S00-02.json), [S00-03](evidence/S00-03.json), [S00-04](evidence/S00-04.json). Driver report обговорено,
-код не змінено. Додано [S09-13](../roadmap/tasks/S09-13.md) зі статусом todo;
-цей запис стосується лише планування report; активна задача — у state.json.
-Незакомічених змін власника більше немає: бот і POD закомічено за його рішенням (`0d3fefc`, `50c1c3c`).
-
-## Поточний стан
-
-- Дата: 2026-10-23, Europe/Dublin.
-- S00-01: виконано; workflow налаштовано й локально перевірено.
-- S00-02: виконано; watch збирає console helpers, dist прив&#39;язано до проєкту,
-  чиста установка з обох lockfile перевірена; `.node-version` = 20.14.0.
-- S00-03: виконано; `npm test` блокує мережу, явний набір тест-файлів,
-  per-test fakes fetch/chrome, synthetic fixtures; 129 тестів. Root 1.1.10.
-- S00-04: виконано; `node tools/checks.mjs [--install]` — єдиний gate; GitHub
-  Actions `checks` (read-only, без secrets) — перший run success. Не required check.
-- S01-01: виконано; Drive-адаптер винесено в `driveLabels.js`, тест кожного
-  запиту: dry-run лише GET до Drive. Extension 6.3.0.57, root 1.1.11.
-- S01-02: виконано; depot-код лише на `http://*.interlink.local`, перевірка і в
-  сторінці, усі запити same-origin. POD перенесено з MAIN у розширення; зміни
-  власника (бот, POD) закомічено. Extension 6.3.0.59, root 1.1.13, bot 0.2.3.
-- Обсяг власника: налаштувати проєкт; нові функції — окремо.
-- Гілка: `codex`; початковий HEAD `f1bead1cddfc07a8b68e0d15833cfcdd1dfc0e05`.
-- Чужі незакомічені зміни збережено; перелік і розбіжності архіву:
-  [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md).
-
-## Що встановлено
-
-AGENTS/README об&#39;єднані; додано Copilot instructions, project skill, 54 картки
-roadmap, state/evidence, offline validators і довідник START_HERE.html.
-Поточні owner decisions мають пріоритет: українська, codex, dry_run:false,
-реалізовані parcel/barcodes/retry. Історичні аудити не є поточним PASS.
-
-## Перевірки та Git
-
-Точні команди, результати та неперевірені межі:
-[evidence S00-01](evidence/S00-01.json). Пройшли 111 тестів (73 product + 38 tooling), lint, build та validators.
-Налаштування збережено commit `2788138` і відправлено в `origin/codex`.
-Наведені 111 тестів — результат встановлення комплекту, не новий прогін журналу.
-
-## Наступний крок
-
-S00-05 частково: read-only запит пройдено, бракує списку інструкцій з Customizations/References — blocked до відповіді власника; S01 не блокує.
-За рішенням 2026-10-25 кілька агентів виконують незалежний read-only аналіз/review;
-у спільній папці один writer, спільні файли веде integrator. Передача — за
-[AGENT_ASSIGNMENTS](../docs/AGENT_ASSIGNMENTS.md). Пріоритет: report і залежності;
-першою рекомендовано S09-01, а не автоматичний вибір selector.
-Власник дозволив підвищувати версії й робити commit + push у codex. G_GIT погоджено в межах codex; інші gates не дають
-дозволу на production. Не повторювати вже погоджені питання.
+Після завершення S09-01 наступна задача пріоритету — S09-02 (`discord_owner`).
+Вона не активується автоматично. `roadmap.mjs next` використовує загальний порядок,
+а не report-first. Новий агент звіряє Git і отримує явну передачу writer.
 
 ## Межі
 
-Не запускалися live операції, bot/register/deploy, email send або AI uploads.
-IDE config examples не активовано; фактичне discovery skill у новій сесії
-не перевірено. Встановлення комплекту не змінювало продуктові версії; подальші зміни
-версій наведені вище та в evidence відповідних задач.
+Лише synthetic offline перевірки. Bot startup/register, deploy, live depot/Drive,
+передача клієнтських даних не виконувались. Потрібні окремі live перевірки
+Chrome/POD і rules; локальні тести їх не замінюють. Report ще не реалізований.
+Commit/push погоджених змін у codex дозволені; main не змінювати.
 </pre></article>
 <article id="doc-22" tabindex="-1" hidden><p class="path"><a href=".workflow/WORKLOG.md">.workflow/WORKLOG.md</a></p><h1>Спільний журнал DPD Assistance</h1><pre class="markdown"># Спільний журнал DPD Assistance
 
@@ -1819,6 +1793,10 @@ IDE config examples не активовано; фактичне discovery skill 
 | 2026-10-25 | Codex + ownership_review / handoff_review / discord_plan_review | Перевірено | Три read-only огляди: розподіл 54 задач, перетини файлів, передача між клієнтами, залежності report. Виправлено застарілі інструкції S09-01 про schema 1 та відмову parcel/barcodes; runtime не змінено. | Єдиний writer інтегрує документацію. |
 | 2026-10-25 | Власник | Погоджено | Пріоритет report S09-13 та його залежності; прості рішення, короткий журнал, консультації щодо специфіки DPD. | Перша задача напряму — S09-01. |
 | 2026-10-25 | Codex / integrator | Виконано | Створено AGENT_ASSIGNMENTS і CLAUDE.md, зв’язано інструкції всіх клієнтів, визначено 5 ролей, один writer та передачу; 54/54 задач без дублювання, validators і 38 tooling-тестів PASS. [Evidence](evidence/AGENT-SETUP-2026-10-25.json). Продуктові задачі не активовані. | Передати конкретному discord_owner S09-01; runtime/live і discovery Claude не перевірялись. |
+| 2026-10-26 | Codex / integrator | Погоджено | Продовжено пріоритет report: S09-01 призначено discord_owner/s09_contract_impl; base bd6fb22, дерево чисте, один writer; мінімальні test-first сценарії без live. | Реалізація та незалежний review. |
+| 2026-10-26 | discord_owner / s09_contract_impl | Перевірено | S09-01 RED: 11/12 PASS, explicit null dryRun доходив до barcode ports; mirror drift і zero-Chrome перевірки PASS. Identity перевірено через pure builder. | Мінімальний fix без зміни schema 2. |
+| 2026-10-26 | discord_owner → integrator | Виконано | Null guard виправлено; focused 14/14 PASS; додано ALL default, збережено explicit true та omitted dryRun. Writer передав шість runtime/test файлів, більше не редагує. | Integrator: review, docs/version, повний gate. |
+| 2026-10-26 | Codex / integrator + s09_contract_review | Виконано | S09-01: незалежний review ACCEPT; full gate PASS, 157/157 тестів, lint/build/artifacts/docs/diff. Root 1.1.14, bot 0.2.4, extension 6.3.0.60; schema 2. [Evidence](evidence/S09-01.json). | S09-02 наступна; live не перевірено. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 </pre></article>
@@ -4316,6 +4294,22 @@ HTML/script із Markdown, локальні посилання та актуал
 продуктова базова лінія, а не новий підрахунок. Історичний Discord probe має назву
 `.probe.mjs` і не входить у default test discovery. Його старі очікування
 не замінюють актуальні product regressions.
+
+## S09-01 — queue contract, 2026-10-26
+
+- `test/queue/contract.test.mjs`: equality п&#39;яти mirror exports; контрольовані
+  розходження виявляються; production pending builder зберігає trusted envelope
+  і розділяє requestedBy/executorUid незалежно від вкладених args.
+- `test/queue/executor.test.js`: розширено чинний invalid-task тест лічильником
+  доступів Chrome, invalid mode і nonboolean dryRun; додано ALL dispatch із
+  безпечним default. Чинні позитивні parcel/retry тести збережені.
+- `test/queue/barcodeExecutor.test.js`: invalid version/command/mode/dryRun
+  відхиляються до читання ports/config; explicit null — regression RED → GREEN.
+  Чинний dry-run сценарій перевіряє і true, і undefined; live/progress збережені.
+- Fixtures synthetic, без Firebase/startup imports у contract suite, noNetwork
+  preload для виконавців. Emulator, Chrome і живі сервіси не перевірялись.
+
+Мінімальний запуск: `node --test --import ./test/helpers/noNetwork.js test/queue/contract.test.mjs test/queue/executor.test.js test/queue/barcodeExecutor.test.js`.
 </pre></article>
 <article id="doc-52" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -8384,7 +8378,12 @@ Rollback включает совместимость bot/extension/schema/rules 
 - `bot/src/contract.js`
 - `src/queue/contract.js`
 - `test/queue/contract.test.mjs`
+- `test/queue/executor.test.js`, `test/queue/barcodeExecutor.test.js`
+- `bot/src/pendingTask.js`, `bot/src/queue.js`
+- `src/queue/barcodeExecutor.js`
 - `docs/queue-contract.md`
+
+Scope уточнено 2026-10-26 після діагностики: pure producer builder для перевірки identity без Firebase startup; мінімальне відхилення explicit null dryRun у barcode executor після regression RED.
 
 CURRENT, state и evidence текущей карточки допустимы как служебные изменения. Новый test path ниже — требование к реализации, а не уже существующий тест. Расширение scope сначала обосновать; не переписывать бот/extension целиком.
 

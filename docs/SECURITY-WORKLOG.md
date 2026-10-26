@@ -4,6 +4,16 @@ This file records security-related work on DPD Assistance. Never write secrets,
 session identifiers, customer names, addresses, tracking data, or label contents
 into this log.
 
+## 2026-10-26 — S09-01
+
+- Protected both queue vocabularies with equality/drift tests; preserved schema 2.
+- Extracted the existing pending-record builder to test requester/executor and
+  trusted envelope isolation without Firebase startup or credential reads.
+- Added zero-Chrome/ports-access assertions for invalid tasks; regression found
+  explicit null dryRun accepted by barcode executor. It now rejects null before
+  config/Drive/depot access; omitted dryRun still defaults to preview.
+- Synthetic local checks only; no live calls, rule deployment or customer data.
+
 ## 2026-10-23
 
 - S01-02: depot code is injected only into tabs that match the depot rule

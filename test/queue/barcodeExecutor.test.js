@@ -73,25 +73,27 @@ test('Discord barcode live scan saves depot errors for same-day retry', async ()
 });
 
 test('Discord barcode dry run previews the same exact target without local writes', async () => {
-  const result = await executeBarcodeTask(task(true), {
-    loadConfig: () => ({ driveFolderId: 'synthetic-folder' }),
-    getAuthToken: async () => 'synthetic-token',
-    lookup,
-    processLabels: scanOne,
-    storage: {
-      get: async () => { throw new Error('Dry run must not read recovery storage'); },
-      set: async () => { throw new Error('Dry run must not write recovery storage'); },
-      remove: async () => { throw new Error('Dry run must not clear recovery storage'); },
-    },
-    reschedule: async ({ dryRun, targets }) => ({ result: {
-      dryRun,
-      count: targets.length,
-      packages: targets,
-    } }),
-  });
+  for (const dryRun of [true, undefined]) {
+    const result = await executeBarcodeTask(task(dryRun), {
+      loadConfig: () => ({ driveFolderId: 'synthetic-folder' }),
+      getAuthToken: async () => 'synthetic-token',
+      lookup,
+      processLabels: scanOne,
+      storage: {
+        get: async () => { throw new Error('Dry run must not read recovery storage'); },
+        set: async () => { throw new Error('Dry run must not write recovery storage'); },
+        remove: async () => { throw new Error('Dry run must not clear recovery storage'); },
+      },
+      reschedule: async ({ dryRun, targets }) => ({ result: {
+        dryRun,
+        count: targets.length,
+        packages: targets,
+      } }),
+    });
 
-  assert.equal(result.status, 'done');
-  assert.match(result.summary, /Dry run.*Reschedule: 1/);
+    assert.equal(result.status, 'done');
+    assert.match(result.summary, /Dry run.*Reschedule: 1/);
+  }
 });
 
 test('Discord barcode scan reports PII-free execution stages', async () => {
@@ -118,4 +120,23 @@ test('Discord barcode scan reports PII-free execution stages', async () => {
     'listing', 'reading', 'done', 'reschedule',
   ]);
   assert.doesNotMatch(JSON.stringify(progress), /123456789|7654321|synthetic-token/);
+});
+
+test('invalid barcode tasks stop before config, Drive or depot ports', async () => {
+  let portAccesses = 0;
+  const ports = new Proxy({}, { get() {
+    portAccesses++;
+    throw new Error('Invalid barcode task must not access ports');
+  } });
+  const invalid = [
+    null,
+    { ...task(true), schemaVersion: 0 },
+    { ...task(true), command: 'unknown' },
+    { ...task(true), args: { mode: 'unknown', dryRun: true } },
+    ...[null, 'false', 0, {}].map(task),
+  ];
+  for (const candidate of invalid) {
+    assert.equal((await executeBarcodeTask(candidate, ports)).status, 'error');
+  }
+  assert.equal(portAccesses, 0);
 });

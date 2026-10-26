@@ -849,3 +849,19 @@ HTML/script із Markdown, локальні посилання та актуал
 продуктова базова лінія, а не новий підрахунок. Історичний Discord probe має назву
 `.probe.mjs` і не входить у default test discovery. Його старі очікування
 не замінюють актуальні product regressions.
+
+## S09-01 — queue contract, 2026-10-26
+
+- `test/queue/contract.test.mjs`: equality п'яти mirror exports; контрольовані
+  розходження виявляються; production pending builder зберігає trusted envelope
+  і розділяє requestedBy/executorUid незалежно від вкладених args.
+- `test/queue/executor.test.js`: розширено чинний invalid-task тест лічильником
+  доступів Chrome, invalid mode і nonboolean dryRun; додано ALL dispatch із
+  безпечним default. Чинні позитивні parcel/retry тести збережені.
+- `test/queue/barcodeExecutor.test.js`: invalid version/command/mode/dryRun
+  відхиляються до читання ports/config; explicit null — regression RED → GREEN.
+  Чинний dry-run сценарій перевіряє і true, і undefined; live/progress збережені.
+- Fixtures synthetic, без Firebase/startup imports у contract suite, noNetwork
+  preload для виконавців. Emulator, Chrome і живі сервіси не перевірялись.
+
+Мінімальний запуск: `node --test --import ./test/helpers/noNetwork.js test/queue/contract.test.mjs test/queue/executor.test.js test/queue/barcodeExecutor.test.js`.

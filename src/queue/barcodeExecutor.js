@@ -49,7 +49,7 @@ export async function executeBarcodeTask(task, ports = {}) {
     return error('Некоректна barcode queue task');
   }
 
-  const dryRun = task.args?.dryRun ?? true;
+  const { dryRun = true } = task.args;
   if (typeof dryRun !== 'boolean') return error('Некоректне значення dryRun');
   const progress = (current, total, stage) => {
     try { ports.onProgress?.(current, total, stage); } catch { /* diagnostics must not stop work */ }

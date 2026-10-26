@@ -81,3 +81,26 @@ Retention, очистка и доступ к журналу задаются я�
 Локально: test data не вызывает live Firebase; mirror equality, unauthorized UID, изменённые args, expiry, duplicate listener, restart и lost reply имеют отдельные проверки. На стенде: подтверждён конкретный guild/project/executor, правила и ограничения проверены реальными отказами на разрешённых synthetic записях.
 
 [Стадия S09](../roadmap/ROADMAP.md) · [Security](security-and-privacy.md) · [Runbook](discord/RUNBOOK_RU.md) · [Test matrix](discord/TEST_MATRIX.md).
+
+## S09-01 — перевірка сумісності, 2026-10-26
+
+`bot/src/pendingTask.js` — чистий builder запису pending; `queue.js` передає
+йому UUID, executorUid із config та Firestore timestamps. `requestedBy` надходить
+із task, створеної Discord handler; це автор запиту, а не UID виконавця.
+`args` лишаються вкладеними: не можуть підмінити identity, version чи status.
+Builder не є перевіркою прав Discord — ця межа окремо перевіряється в S09-02.
+
+Споживачі: collection — bot queue та extension listener; schema/command/mode —
+executor і barcodeExecutor; status — queue/claim/result; executorUid — listener
+filter та rules; requestedBy — metadata автора, не browser authorization;
+createdAt/expiresAt — queue/claim timeout. Args конвертуються в depot-параметри,
+а не поширюються довільно на envelope.
+
+`test/queue/contract.test.mjs` порівнює п'ять mirror exports і перевіряє
+чутливість до кожного synthetic drift, а також production builder без Firebase
+startup. Executor-тести доводять відмову некоректним задачам до Chrome/ports.
+Barcode `dryRun: null` тепер відхиляється; пропущене значення лишається `true`.
+Schema 2, поля й підтримані all/parcel/barcodes/retry збережені. Barcodes
+виконується окремо в offscreen, а не в worker executeTask.
+
+Це локальні synthetic перевірки, не доказ live Firestore rules або Discord прав.

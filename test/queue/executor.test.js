@@ -8,13 +8,28 @@ import {
   recoveryDay,
 } from '../../src/depot/rescheduleRecovery.js';
 
-test('invalid or unversioned tasks cannot reach a depot command', async () => {
+test('invalid or unversioned tasks cannot reach a depot command', async (t) => {
+  const originalChrome = globalThis.chrome;
+  let chromeAccesses = 0;
+  globalThis.chrome = new Proxy({}, { get() {
+    chromeAccesses++;
+    throw new Error('Invalid task must not access Chrome');
+  } });
+  t.after(() => {
+    if (originalChrome === undefined) delete globalThis.chrome;
+    else globalThis.chrome = originalChrome;
+  });
   const tasks = [
     null,
     { schemaVersion: 0 },
     { schemaVersion: 1, command: 'find', args: { conId: '123456789' } },
     { schemaVersion: TASK_SCHEMA_VERSION, command: 'other', args: { mode: 'all', dryRun: false } },
     { schemaVersion: TASK_SCHEMA_VERSION, command: 'find', args: { conId: 'not-a-consignment' } },
+    { schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'unknown', dryRun: true } },
+    ...['all', 'parcel', 'retry'].flatMap((mode) =>
+      [null, 'false', 0, {}].map((dryRun) => ({
+        schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode, dryRun },
+      }))),
     { schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: {
       mode: 'parcel', conId: '12345678', newDate: '2099-09-03', dryRun: true,
     } },
@@ -25,6 +40,7 @@ test('invalid or unversioned tasks cannot reach a depot command', async () => {
   for (const task of tasks) {
     assert.equal((await executeTask(task)).status, 'error');
   }
+  assert.equal(chromeAccesses, 0, 'invalid tasks stop before any Chrome API access');
 });
 
 test('manual parcel task resolves one exact target before depot dry-run', async () => {
@@ -283,4 +299,30 @@ test('a tab that left the depot after the query is never injected', async (t) =>
 
   assert.equal(response.result.consId, '7654321');
   assert.deepEqual(injectedTabs, [7]);
+});
+
+test('all mode defaults an omitted dryRun to a depot preview', async (t) => {
+  const originalChrome = globalThis.chrome;
+  const injections = [];
+  globalThis.chrome = {
+    tabs: {
+      query: async () => [{ id: 7, url: 'http://synthetic.interlink.local/home' }],
+      update: async () => ({}),
+    },
+    scripting: {
+      executeScript: async ({ func, args }) => {
+        injections.push({ name: func.name, args });
+        return [{ result: { dryRun: true, count: 0, packages: [] } }];
+      },
+    },
+  };
+  t.after(() => {
+    if (originalChrome === undefined) delete globalThis.chrome;
+    else globalThis.chrome = originalChrome;
+  });
+  const result = await executeTask({
+    schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'all' },
+  });
+  assert.equal(result.status, 'done');
+  assert.deepEqual(injections, [{ name: 'depotMain', args: [{ dryRun: true, mode: 'cad' }] }]);
 });

@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '../utils/errors.js';
 /**
  * Executes `/reschedule barcodes` in the offscreen DOM context.
  * Drive image decoding stays here; authenticated depot access is delegated to
@@ -18,7 +19,7 @@ const MAX_DETAIL_LINES = 25;
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
 
 const done = (summary, details) => ({ status: STATUS.DONE, summary, details });
-const error = (summary) => ({ status: STATUS.ERROR, summary });
+const error = (summary, details) => ({ status: STATUS.ERROR, summary, ...(details ? { details } : {}) });
 
 function fatal(message) {
   return Object.assign(new Error(message), { fatal: true });
@@ -95,11 +96,11 @@ export async function executeBarcodeTask(task, ports = {}) {
       onProgress: progress,
     });
   } catch (err) {
-    if (/Drive API (401|403)|HTTP (401|403)/.test(err.message)) {
+    if (err.code === 'unauthenticated') {
       await ports.removeCachedAuthToken?.(token);
       return error('Google Drive authorization expired — open the extension and authorize Drive again');
     }
-    throw err;
+    return error(safeErrorMessage(err, 'Drive scan failed'));
   }
 
   if (results.length === 0) return done('У папці Drive немає фотографій лейблів');
@@ -108,12 +109,17 @@ export async function executeBarcodeTask(task, ports = {}) {
   const { targets, unresolved } = verifier.targetsFor(numbers);
   const photoErrors = results.filter(item => item.error).length;
   const recognized = results.filter(item => item.number).length;
+  const storage = ports.storage ?? globalThis.chrome?.storage?.local;
+  if (!dryRun && targets.length) await addRecoveryTargets(storage, targets);
+  const stopped = results.find(item => ['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied'].includes(item.errorCode));
+  if (stopped) {
+    if (stopped.errorCode === 'unauthenticated') await ports.removeCachedAuthToken?.(token);
+    return error(`Фото: ${results.length - photoErrors}/${results.length} | File errors: ${photoErrors} | Saved targets: ${dryRun ? 0 : targets.length} | ${stopped.error}`);
+  }
   if (targets.length === 0) {
-    return done(`Фото: ${results.length} | Розпізнано: ${recognized} | Exact targets: 0`);
+    return (photoErrors ? error : done)(`Фото: ${results.length} | Розпізнано: ${recognized} | Exact targets: 0 | File errors: ${photoErrors}`);
   }
 
-  const storage = ports.storage ?? chrome.storage.local;
-  if (!dryRun) await addRecoveryTargets(storage, targets);
 
   progress(0, targets.length, 'reschedule');
   const response = await reschedule({ dryRun, targets });
@@ -123,7 +129,7 @@ export async function executeBarcodeTask(task, ports = {}) {
 
   const res = response.result;
   if (dryRun) {
-    return done(
+    return (photoErrors ? error : done)(
       `Dry run — Фото: ${results.length} | Розпізнано: ${recognized}`
       + ` | Reschedule: ${res.count ?? 0} | File errors: ${photoErrors}`,
       detailsFor(res),
@@ -131,8 +137,9 @@ export async function executeBarcodeTask(task, ports = {}) {
   }
 
   const remaining = await applyRecoveryResult(storage, res);
-  return done(
+  return (photoErrors ? error : done)(
     `Фото: ${results.length - photoErrors}/${results.length} | Змінено: ${res.changed}`
+    + ` | File errors: ${photoErrors}`
     + ` | Пропущено: ${res.skipped} | Помилки: ${res.errors}`
     + ` | Retry: ${remaining.length}`
     + (unresolved ? ` | Unresolved: ${unresolved}` : ''),

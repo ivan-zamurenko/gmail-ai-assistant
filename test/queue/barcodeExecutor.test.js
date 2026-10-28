@@ -140,3 +140,43 @@ test('invalid barcode tasks stop before config, Drive or depot ports', async () 
   }
   assert.equal(portAccesses, 0);
 });
+
+test('Drive auth and forbidden never replay; file errors remain visible with zero targets', async () => {
+  for (const code of ['unauthenticated', 'permission-denied', 'files']) {
+    let scans = 0;
+    let invalidations = 0;
+    const ports = {
+      loadConfig: () => ({ driveFolderId: 'synthetic-folder' }), getAuthToken: async () => 'synthetic-token', lookup,
+      removeCachedAuthToken: async () => { invalidations++; },
+      processLabels: async () => {
+        scans++;
+        if (code !== 'files') throw Object.assign(new Error('synthetic-secret'), { code });
+        return [{ number: null, error: 'Label failed' }];
+      },
+      reschedule: async () => assert.fail('no valid targets'),
+    };
+    const result = await executeBarcodeTask(task(false), ports);
+    assert.equal(result.status, 'error');
+    assert.equal(scans, 1);
+    assert.equal(invalidations, code === 'unauthenticated' ? 1 : 0);
+    assert.doesNotMatch(result.summary, /synthetic-secret/);
+    if (code === 'files') assert.match(result.summary, /File errors: 1/);
+  }
+});
+
+
+test('a stopped batch saves already-filed exact targets without rescheduling', async () => {
+  const storage = memoryStorage();
+  const result = await executeBarcodeTask(task(false), {
+    loadConfig: () => ({ driveFolderId: 'synthetic-folder' }), getAuthToken: async () => 'synthetic-token', lookup, storage,
+    processLabels: async options => [
+      ...(await scanOne(options)),
+      { number: null, error: 'Remote result uncertain; check before repeating [uncertain-write]', errorCode: 'uncertain-write' },
+      { number: null, error: 'Not processed: batch stopped', errorCode: 'batch-stopped' },
+    ],
+    reschedule: async () => assert.fail('stopped batch must not mutate depot'),
+  });
+  assert.equal(result.status, 'error');
+  assert.match(result.summary, /File errors: 2.*uncertain/);
+  assert.equal(storage.values[LABEL_RESCHEDULE_RECOVERY_KEY].targets[0].consNumber, '123456789');
+});

@@ -58,3 +58,16 @@ Draft привязывается к правильному thread и адрес�
 ## 9. Discord в новом baseline
 
 Бот уже есть, но Gmail pipeline к нему не подключён. Не добавлять передачу писем в tasks/Discord как побочный эффект read/draft. OWNER-D01 действует для любого будущего интерфейса. Проверка самого текста письма через Discord требует отдельного решения по доступам/данным; `/todo done` и confirm_live не approval.
+
+## S01-04 — реалізована HTTP-межа, 2026-10-28
+
+Drive adapter та Gmail request використовують src/shared/apiErrors.js. Explicit
+readOnly: максимум 3 спроби по 15 секунд (включно response body), паузи 250/500 ms.
+401 — unauthenticated, 403 — permission-denied; невідомий 403 не refresh loop.
+Тимчасові помилки читання мають bounded retry, AbortSignal зупиняє очікування.
+POST/PATCH — одна спроба; timeout/network/abort після dispatch, malformed success
+body або 5xx дають uncertain-write. Це не rollback; перед повтором потрібна сверка.
+Drive зупиняє нові ефекти після uncertain/auth/cancel, залишає partial results і
+раніше успішні exact targets для ручного продовження. Нової кнопки Cancel,
+автоматичного reconcile або persistent Drive journal тут немає. Gmail scopes
+і доступність mutation UI не змінено. Реальні API/Chrome не перевірялися.

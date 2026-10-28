@@ -27,8 +27,10 @@ export function safeErrorMessage(error, fallback = 'Unexpected error') {
   const raw = typeof error?.message === 'string' ? error.message : '';
   if (known.has(raw)) return raw;
   const status = raw.match(/(?:HTTP|Drive API|Drive) ([1-5]\d{2})\b/)?.[1];
-  const codes = new Set(['permission-denied', 'unauthenticated', 'unavailable', 'deadline-exceeded', 'resource-exhausted', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND']);
-  const candidate = error?.code ?? raw.match(/\[([a-zA-Z-]+)\]$/)?.[1];
+  const codes = new Set(['permission-denied', 'unauthenticated', 'unavailable', 'deadline-exceeded', 'resource-exhausted', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'uncertain-write', 'aborted', 'request-rejected']);
+  const candidate = error?.code ?? raw.match(/\[([a-zA-Z-]+)\](?: \[retry-exhausted\])?$/)?.[1];
+  if (candidate === 'uncertain-write') return 'Remote result uncertain; check before repeating [uncertain-write]';
+  const exhausted = error?.exhausted === true || raw.includes('[retry-exhausted]');
   const code = codes.has(candidate) ? ` [${candidate}]` : '';
-  return `${fallback}${status ? ` (HTTP ${status})` : ''}${code}`;
+  return `${fallback}${status ? ` (HTTP ${status})` : ''}${code}${exhausted ? ' [retry-exhausted]' : ''}`;
 }

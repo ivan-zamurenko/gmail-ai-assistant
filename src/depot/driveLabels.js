@@ -1,3 +1,4 @@
+import { fetchApi } from '../shared/apiErrors.js';
 /**
  * src/depot/driveLabels.js
  * ========================
@@ -21,13 +22,11 @@ function parseFolderId(input) {
   return match ? match[1] : input.trim();
 }
 
-async function driveGet(path, token) {
-  const res = await fetch(`${DRIVE_API}/${path}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`Drive API ${res.status}: GET ${path}`);
-  return res.json();
+async function driveGet(path, token, signal) {
+  return fetchApi(`${DRIVE_API}/${path}`, { readOnly: true, signal, headers: { Authorization: `Bearer ${token}` } });
 }
 
-async function listFiles(query, fields, token) {
+async function listFiles(query, fields, token, signal) {
   const files = [];
   let pageToken = '';
 
@@ -35,7 +34,7 @@ async function listFiles(query, fields, token) {
     const url = `files?q=${encodeURIComponent(query)}`
       + `&fields=nextPageToken,files(${fields})&pageSize=200`
       + (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
-    const data = await driveGet(url, token);
+    const data = await driveGet(url, token, signal);
     files.push(...(data.files ?? []));
     pageToken = data.nextPageToken ?? '';
   } while (pageToken);
@@ -43,45 +42,43 @@ async function listFiles(query, fields, token) {
   return files;
 }
 
-async function downloadBlob(fileId, token) {
-  const res = await fetch(`${DRIVE_API}/files/${fileId}?alt=media`, {
+async function downloadBlob(fileId, token, signal) {
+  return fetchApi(`${DRIVE_API}/files/${fileId}?alt=media`, {
+    readOnly: true, parse: 'blob', signal,
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!res.ok) throw new Error(`Failed to download file ${fileId}: HTTP ${res.status}`);
 
-  return res.blob();
 }
 
-async function findFolder(name, parentId, token) {
+async function findFolder(name, parentId, token, signal) {
   const found = await listFiles(
     `name='${name}' and '${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
     'id',
-    token
+    token, signal
   );
   return found[0]?.id ?? null;
 }
 
-async function createFolder(name, parentId, token) {
-  const res = await fetch(`${DRIVE_API}/files?fields=id`, {
-    method:  'POST',
+async function createFolder(name, parentId, token, signal) {
+  const res = await fetchApi(`${DRIVE_API}/files?fields=id`, {
+    method:  'POST', signal,
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body:    JSON.stringify({ name, mimeType: FOLDER_MIME, parents: [parentId] }),
   });
-  if (!res.ok) throw new Error(`Failed to create folder "${name}": HTTP ${res.status}`);
-  return (await res.json()).id;
+  return res.id;
 }
 
 // Drive moves and renames in the same request, so filing a photo costs one call.
-async function moveAndRename(fileId, fromId, toId, name, token) {
-  const res = await fetch(
+async function moveAndRename(fileId, fromId, toId, name, token, signal) {
+  await fetchApi(
     `${DRIVE_API}/files/${fileId}?addParents=${toId}&removeParents=${fromId}&fields=id`,
     {
-      method:  'PATCH',
+      method:  'PATCH', parse: 'none', signal,
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body:    JSON.stringify({ name }),
     }
   );
-  if (!res.ok) throw new Error(`Failed to file ${fileId}: HTTP ${res.status}`);
+
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────
@@ -97,7 +94,7 @@ async function moveAndRename(fileId, fromId, toId, name, token) {
  * @param {(image: unknown) => Promise<unknown[]>} options.readCodes
  */
 export async function processDriveLabels({
-  folderInput, token, verify, dryRun, onProgress, decodePhoto, readCodes,
+  folderInput, token, verify, dryRun, onProgress, decodePhoto, readCodes, signal,
 }) {
   const rootId = parseFolderId(folderInput);
 
@@ -105,15 +102,15 @@ export async function processDriveLabels({
   const photos   = await listFiles(
     `'${rootId}' in parents and mimeType contains 'image/' and trashed=false`,
     'id,name,createdTime',
-    token
+    token, signal
   );
   const folderFor = createMonthFolderResolver({
     rootId,
     dryRun,
-    findFolder: (name, parentId) => findFolder(name, parentId, token),
-    createFolder: (name, parentId) => createFolder(name, parentId, token),
+    findFolder: (name, parentId) => findFolder(name, parentId, token, signal),
+    createFolder: (name, parentId) => createFolder(name, parentId, token, signal),
     listNames: async (parentId) => (
-      await listFiles(`'${parentId}' in parents and trashed=false`, 'name', token)
+      await listFiles(`'${parentId}' in parents and trashed=false`, 'name', token, signal)
     ).map((file) => file.name),
   });
 
@@ -122,11 +119,11 @@ export async function processDriveLabels({
     verify,
     dryRun,
     onProgress,
-    loadPhoto: async (photo) => decodePhoto(await downloadBlob(photo.id, token)),
+    loadPhoto: async (photo) => decodePhoto(await downloadBlob(photo.id, token, signal)),
     readCodes,
     folderFor,
     movePhoto: (photo, folder, name) => (
-      moveAndRename(photo.id, rootId, folder.id, name, token)
+      moveAndRename(photo.id, rootId, folder.id, name, token, signal)
     ),
   });
 }

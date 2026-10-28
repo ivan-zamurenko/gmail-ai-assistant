@@ -1,47 +1,18 @@
-/**
- * utils/request.js
- * ================
- * Thin fetch wrapper used by all modules that make HTTP calls.
- *
- * Responsibility:
- *  – sets JSON Content-Type header by default
- *  – throws a descriptive error on non-2xx responses
- *  – parses and returns JSON
- *
- * All network calls go through here — never call fetch() directly.
- */
+import { fetchApi } from '../shared/apiErrors.js';
 
+/** Gmail JSON boundary. Only reads may retry; writes require reconciliation. */
 export const request = {
-  /**
-   * @param {string} url
-   * @param {{ headers?: Record<string,string> }} [options]
-   * @returns {Promise<any>}
-   */
-  async get(url, options = {}) {
-    const res = await fetch(url, {
-      method:  'GET',
-      headers: { 'Content-Type': 'application/json', ...options.headers },
+  get(url, { headers, ...options } = {}) {
+    return fetchApi(url, {
+      ...options, method: 'GET', readOnly: true,
+      headers: { 'Content-Type': 'application/json', ...headers },
     });
-    if (!res.ok) {
-      throw new Error(`request.get → HTTP ${res.status} ${res.statusText}`);
-    }
-    return res.json();
   },
-
-  /**
-   * @param {string} url
-   * @param {{ headers?: Record<string,string>, body?: object }} [options]
-   * @returns {Promise<any>}
-   */
-  async post(url, options = {}) {
-    const res = await fetch(url, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', ...options.headers },
-      body:    JSON.stringify(options.body ?? {}),
+  post(url, { headers, body, ...options } = {}) {
+    return fetchApi(url, {
+      ...options, method: 'POST', readOnly: false,
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify(body ?? {}),
     });
-    if (!res.ok) {
-      throw new Error(`request.post → HTTP ${res.status} ${res.statusText}`);
-    }
-    return res.json();
   },
 };

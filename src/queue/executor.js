@@ -88,7 +88,9 @@ function summarize(res) {
  * `{ ok, value }` to accept, `{ wrongPage, reason }` to try the next tab, or
  * `{ reason }` for a genuine depot error that should stop the search.
  */
-async function runInDepotTabs(func, args, classify) {
+const UNCERTAIN = 'Результат зміни не підтверджено. Перевір depot перед повтором [uncertain-write]';
+
+async function runInDepotTabs(func, args, classify, mutation = false) {
   const tabs = await findDepotTabs();
   if (!tabs.length) return { reason: 'Відкрий вкладку депо й залогінься' };
 
@@ -109,6 +111,7 @@ async function runInDepotTabs(func, args, classify) {
       });
       res = injection?.result;
     } catch (err) {
+      if (mutation) return { reason: UNCERTAIN };
       const safeMessage = safeErrorMessage(err, 'Depot injection failed');
       diag.push({ id: tab.id, discarded: tab.discarded, ms: Date.now() - ti, err: safeMessage });
       lastReason = /error page/i.test(err?.message ?? '')
@@ -118,6 +121,7 @@ async function runInDepotTabs(func, args, classify) {
     }
     diag.push({ id: tab.id, discarded: tab.discarded, ms: Date.now() - ti });
 
+    if (mutation && !res) return { reason: UNCERTAIN };
     const verdict = classify(res);
     if (verdict.wrongPage) { lastReason = verdict.reason; continue; }
     if (verdict.ok && verdict.value && typeof verdict.value === 'object') verdict.value._diag = diag;
@@ -151,7 +155,7 @@ function classifyLookup(res) {
   return { ok: true, value: r };
 }
 
-const injectDepot   = (args)  => runInDepotTabs(depotMain,   [args],           classifyDepot);
+const injectDepot   = (args)  => runInDepotTabs(depotMain, [args], classifyDepot, args.dryRun === false);
 const injectLookup = (conId, options) => runInDepotTabs(
   depotLookup,
   options ? [[String(conId)], options] : [[String(conId)]],

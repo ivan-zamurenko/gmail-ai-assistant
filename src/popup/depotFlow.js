@@ -284,16 +284,14 @@ export function initDepotFlow({
         onProgress:  onScanProgress,
       });
 
-      let token   = await getAuthToken();
+      const token = await getAuthToken();
       let results;
       try {
         results = await run(token);
       } catch (err) {
-        if (!err.message.includes('403')) throw err;
-        // Cached token is stale (missing Drive scope) — remove and retry with fresh one
-        await removeCachedAuthToken(token);
-        token   = await getAuthToken({ interactive: true });
-        results = await run(token);
+        if (err.code === 'unauthenticated') await removeCachedAuthToken(token);
+        // Never replay a whole batch: earlier files may already be filed.
+        throw err;
       }
 
       if (results.length === 0) {
@@ -306,9 +304,20 @@ export function initDepotFlow({
       const read   = results.filter(r => r.number).length;
       log.info(`${dryRun ? 'Would file' : 'Filed'} ${results.length - failed} of ${results.length} — read ${read}`);
 
+      const stopped = results.find(item => ['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied'].includes(item.errorCode));
+      if (stopped) {
+        const { targets } = depot.targetsFor(results.filter(item => item.number).map(item => item.number));
+        if (!dryRun && targets.length) {
+          await addRecoveryTargets(chrome.storage.local, targets);
+          await refreshRetryButton();
+        }
+        if (stopped.errorCode === 'unauthenticated') await removeCachedAuthToken(token);
+        setDepotStatus('error', `${dryRun ? 'Would file' : 'Filed'} ${results.length - failed}/${results.length} | Errors: ${failed} | Saved targets: ${dryRun ? 0 : targets.length} | ${stopped.error}`);
+        return;
+      }
       const reschedule = await rescheduleFound(results, dryRun, depot.targetsFor);
 
-      setDepotStatus('done',
+      setDepotStatus(failed ? 'error' : 'done',
         `${dryRun ? 'Dry run' : 'Filed'} ${results.length - failed}/${results.length} — read ${read}`
         + (failed ? ` | Errors: ${failed}` : '')
         + reschedule

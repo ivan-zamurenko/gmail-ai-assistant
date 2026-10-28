@@ -4,7 +4,7 @@
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **63 автоматизовані тести у 19 файлах**. Усі вони працюють
+Історична початкова базова лінія: **63 автоматизовані тести у 19 файлах**. Актуальні результати — у CURRENT та evidence задач. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -906,3 +906,16 @@ Popup harness — підставлені DOM/Chrome об’єкти, не реа
 Реальні Chrome, Discord, provider responses і розгортання не перевірено.
 Manual console tools залишають дозволені операторські результати; це не
 автоматичні технічні логи. Повний secret scanning не входить у цю перевірку.
+
+## S01-04 — API retries та uncertain writes, 2026-10-28
+
+Вісім згрупованих risk-based перевірок: три в новому request.test.js, решта
+у чинних Drive/batch/executor/barcode tests. Реальний request wrapper: 401/403,
+429/503, bounded attempts, body timeout, abort during backoff, write timeout/
+network/abort/parse і pre-aborted zero-call. Реальний Drive adapter: uncertain
+folder POST не повторюється наступним фото; signal доходить до запиту.
+Перевірено збереження partial results/targets, File errors без targets і
+відсутність live replay у другій вкладці. Existing Gmail payload/dry-run checks
+збережено. Focused 39/39. Popup auth branch перевірено review, не browser harness.
+RED використовує watchdog лише щоб baseline без timeout не зависав; ранній
+запуск із cancelled tests не оголошено успішним RED. Дані тільки synthetic.

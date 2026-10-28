@@ -70,7 +70,17 @@ export async function processLabelBatch({
       // A depot that stopped answering would rename every remaining photo to
       // unknown, so stop and keep what is already filed.
       if (err.fatal) throw err;
-      done({ from: photo.name, to: null, number: null, contested: false, error: safeErrorMessage(err, 'Label processing failed') });
+      const entry = { from: photo.name, to: null, number: null, contested: false, error: safeErrorMessage(err, 'Label processing failed') };
+      if (['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied', 'resource-exhausted', 'unavailable', 'deadline-exceeded', 'request-rejected'].includes(err.code)) entry.errorCode = err.code;
+      done(entry);
+      if (['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied'].includes(err.code)) {
+        // Stop effects, retain confirmed entries, and account for untouched files.
+        for (const pending of photos.slice(i + 1)) results.push({
+          from: pending.name, to: null, number: null, contested: false,
+          error: 'Not processed: batch stopped', errorCode: 'batch-stopped',
+        });
+        break;
+      }
     }
   }
 

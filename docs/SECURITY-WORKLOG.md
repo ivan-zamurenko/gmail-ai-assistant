@@ -441,3 +441,12 @@ into this log.
   from automatic logs. Preserved authorized operational cards and manual tools.
 - Synthetic test-first evidence only; no credentials, real customer records,
   live services or external log provider used. See .workflow/evidence/S01-03.json.
+
+## 2026-10-28 — S01-04 bounded API operations
+
+- Removed whole-batch auth replay and live cross-tab replay after lost results.
+  Forbidden does not invalidate OAuth cache; unauthenticated does.
+- Safe typed diagnostics preserve uncertain outcomes; no raw response bodies,
+  credentials or identifiers added to errors. Confirmed local recovery targets
+  remain local under the existing same-day contract.
+- Synthetic tests/review only; no live provider calls, new scopes or deployment.

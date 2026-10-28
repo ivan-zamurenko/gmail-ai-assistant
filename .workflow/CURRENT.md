@@ -1,5 +1,33 @@
 # DPD Assistance — поточна передача
 
+## S01-04 завершено локально — 2026-10-28
+
+Owner «далі», base eac6c5d, branch codex. api_retry_impl передав writer root;
+api_retry_review ACCEPT, active writer відсутній, state.active_task null.
+Drive/Gmail HTTP: safe read максимум 3 спроби по 15s, pauses 250/500ms,
+AbortSignal на request/body/backoff. Writes один раз; невідомий результат —
+uncertain-write, без blind replay. 403 не refresh; 401 invalidate без batch replay.
+Live depot injection exception/empty не повторює mutation в іншій вкладці.
+Batch зберігає partial results і раніше успішні targets; решта not processed,
+без downstream reschedule після uncertain/auth/cancel. File errors видно в summary.
+
+Вісім нових grouped regression cases, focused 39/39, full 175/175;
+lint/build/artifacts/docs/diff PASS. Evidence: [S01-04](evidence/S01-04.json).
+Root 1.1.18, bot 0.2.8, extension 6.3.0.63; queue schema 2 без змін.
+
+## Наступний крок і межі
+
+Report-first next: S02-04 — витягування номера з тексту для lookup.
+Нове доручення ще не почато. Live Chrome/depot/Google/Discord та manual reconcile
+не перевірені; popup auth branch — code review, не browser test.
+Нова кнопка Cancel не додана. Автоматичний reconcile/persistent Drive journal,
+Maps (S09-07) і delivery recovery (S09-04) залишаються окремими задачами.
+Report англійською в груповому Discord-чаті, чинна ephemeral видимість збережена.
+POD fallback постачати з bot/assets. WhatsApp API не реалізовано.
+Журнал: [WORKLOG](WORKLOG.md).
+
+## Попередня передача (історія)
+
 ## S01-03 завершено локально — 2026-10-28
 
 Власник доручив «роби». Base bd81f76, branch codex.

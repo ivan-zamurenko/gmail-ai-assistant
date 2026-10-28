@@ -137,3 +137,23 @@ test('live run creates missing folders after verification, then moves once', asy
   assert.equal(move.searchParams.get('removeParents'), ROOT);
   assert.equal(results[0].to, '2026/10/2026-10-09_123456789-p02.jpg');
 });
+
+test('Drive uncertain create stops next photo, and abort stops before network', async (t) => {
+  const net = fakeServices(t, { photos: [PHOTO, { ...PHOTO, id: 'photo-syn-2' }] });
+  const baseFetch = globalThis.fetch;
+  let creates = 0;
+  globalThis.fetch = async (url, init = {}) => {
+    if (url.startsWith(DRIVE) && init.method === 'POST') { creates++; throw new Error('synthetic-private-body'); }
+    return baseFetch(url, init);
+  };
+  const results = await run({ dryRun: false });
+  assert.equal(creates, 1);
+  assert.equal(results[0].errorCode, 'uncertain-write');
+  assert.match(results[1].error, /not processed/i);
+  assert.equal(net.requests.filter(r => r.url.includes('alt=media')).length, 1);
+  const controller = new globalThis.AbortController();
+  controller.abort();
+  const before = net.requests.length;
+  await assert.rejects(processDriveLabels({ folderInput: ROOT, token: 'synthetic-token', signal: controller.signal }), { code: 'aborted' });
+  assert.equal(net.requests.length, before);
+});

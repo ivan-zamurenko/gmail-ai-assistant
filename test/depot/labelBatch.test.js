@@ -292,3 +292,28 @@ test('batch contains photo failures but stops immediately on a fatal depot failu
   );
   assert.equal(loaded, 1);
 });
+
+test('uncertain folder creation, cancellation and auth stop new effects while preserving partial results', async () => {
+  for (const errorCode of ['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied']) {
+    let loaded = 0;
+    let folders = 0;
+    const results = await processLabelBatch({
+      photos: [1, 2, 3].map(n => ({ id: n, name: `${n}.jpg`, createdTime: '2026-10-28T10:00:00Z' })),
+      dryRun: false,
+      loadPhoto: async () => { loaded++; return {}; },
+      readCodes: async () => [], verify: async () => false,
+      folderFor: async () => {
+        if (++folders === 2) throw Object.assign(new Error('synthetic-secret'), { code: errorCode });
+        return { id: 'folder', path: '2026/10', unknown: 0, taken: new Set() };
+      },
+      movePhoto: async () => {},
+    });
+    assert.equal(loaded, 2);
+    assert.equal(folders, 2);
+    assert.equal(results.length, 3);
+    assert.equal(results[0].error, null);
+    assert.equal(results[1].errorCode, errorCode);
+    assert.match(results[2].error, /not processed/i);
+    assert.doesNotMatch(JSON.stringify(results), /synthetic-secret/);
+  }
+});

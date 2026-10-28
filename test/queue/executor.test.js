@@ -334,3 +334,27 @@ test('all mode defaults an omitted dryRun to a depot preview', async (t) => {
   assert.equal(result.status, 'done');
   assert.deepEqual(injections, [{ name: 'depotMain', args: [{ dryRun: true, mode: 'cad' }] }]);
 });
+
+test('live ambiguous injection stops; dry-run and explicit preflight rejection may try another tab', async (t) => {
+  const originalChrome = globalThis.chrome;
+  t.after(() => { globalThis.chrome = originalChrome; });
+  for (const mode of ['throw', 'empty', 'wrong-page', 'preview']) {
+    const calls = [];
+    globalThis.chrome = {
+      tabs: { query: async () => [1, 2].map(id => ({ id, url: 'http://synthetic.interlink.local/home' })), update: async () => ({}) },
+      scripting: { executeScript: async ({ target }) => {
+        calls.push(target.tabId);
+        if (target.tabId === 2) return [{ result: { changed: 1, skipped: 0, errors: 0 } }];
+        if (mode === 'throw' || mode === 'preview') throw new Error('synthetic-secret');
+        if (mode === 'wrong-page') return [{ result: { __error: 'Not the correct depot page (unexpected origin)' } }];
+        return [];
+      } },
+    };
+    const result = await executeTask({ schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'all', dryRun: mode === 'preview' } });
+    if (mode === 'throw' || mode === 'empty') {
+      assert.equal(result.status, 'error');
+      assert.match(result.summary, /uncertain|не підтверджено/i);
+      assert.deepEqual(calls, [1]);
+    } else assert.deepEqual(calls, [1, 2]);
+  }
+});

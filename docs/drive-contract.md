@@ -59,3 +59,16 @@ Live-проверка требует отдельной тестовой пап�
 `/reschedule barcodes` подключён через `src/queue/barcodeExecutor.js` в offscreen DOM. Он получает Drive token через внутренний bridge и вызывает общий scanner; depot lookup и точный reschedule выполняются в авторизованной вкладке. Не путать filing фотографий в YYYY/MM с изменением даты доставки по их номерам — это разные эффекты.
 
 S04-03/S09-11 проверяют существующие offscreen/worker компоненты и недостающие гарантии recovery; не создавать второй runner и не отключать реализованный режим по архивному описанию. Live подтверждается явным dry_run:false. Перед Save точные targets сохраняются локально для повторения server errors в тот же день; `/reschedule retry` не сканирует Drive повторно, а вчерашнюю партию удаляет. Неподтверждённый или disputed candidate не даёт права reschedule.
+
+## S01-04 — реалізована HTTP-межа, 2026-10-28
+
+Drive adapter та Gmail request використовують src/shared/apiErrors.js. Explicit
+readOnly: максимум 3 спроби по 15 секунд (включно response body), паузи 250/500 ms.
+401 — unauthenticated, 403 — permission-denied; невідомий 403 не refresh loop.
+Тимчасові помилки читання мають bounded retry, AbortSignal зупиняє очікування.
+POST/PATCH — одна спроба; timeout/network/abort після dispatch, malformed success
+body або 5xx дають uncertain-write. Це не rollback; перед повтором потрібна сверка.
+Drive зупиняє нові ефекти після uncertain/auth/cancel, залишає partial results і
+раніше успішні exact targets для ручного продовження. Нової кнопки Cancel,
+автоматичного reconcile або persistent Drive journal тут немає. Gmail scopes
+і доступність mutation UI не змінено. Реальні API/Chrome не перевірялися.

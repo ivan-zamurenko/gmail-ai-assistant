@@ -1752,6 +1752,34 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 </pre></article>
 <article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — поточна передача</h1><pre class="markdown"># DPD Assistance — поточна передача
 
+## S01-04 завершено локально — 2026-10-28
+
+Owner «далі», base eac6c5d, branch codex. api_retry_impl передав writer root;
+api_retry_review ACCEPT, active writer відсутній, state.active_task null.
+Drive/Gmail HTTP: safe read максимум 3 спроби по 15s, pauses 250/500ms,
+AbortSignal на request/body/backoff. Writes один раз; невідомий результат —
+uncertain-write, без blind replay. 403 не refresh; 401 invalidate без batch replay.
+Live depot injection exception/empty не повторює mutation в іншій вкладці.
+Batch зберігає partial results і раніше успішні targets; решта not processed,
+без downstream reschedule після uncertain/auth/cancel. File errors видно в summary.
+
+Вісім нових grouped regression cases, focused 39/39, full 175/175;
+lint/build/artifacts/docs/diff PASS. Evidence: [S01-04](evidence/S01-04.json).
+Root 1.1.18, bot 0.2.8, extension 6.3.0.63; queue schema 2 без змін.
+
+## Наступний крок і межі
+
+Report-first next: S02-04 — витягування номера з тексту для lookup.
+Нове доручення ще не почато. Live Chrome/depot/Google/Discord та manual reconcile
+не перевірені; popup auth branch — code review, не browser test.
+Нова кнопка Cancel не додана. Автоматичний reconcile/persistent Drive journal,
+Maps (S09-07) і delivery recovery (S09-04) залишаються окремими задачами.
+Report англійською в груповому Discord-чаті, чинна ephemeral видимість збережена.
+POD fallback постачати з bot/assets. WhatsApp API не реалізовано.
+Журнал: [WORKLOG](WORKLOG.md).
+
+## Попередня передача (історія)
+
 ## S01-03 завершено локально — 2026-10-28
 
 Власник доручив «роби». Base bd81f76, branch codex.
@@ -1843,6 +1871,8 @@ Report англійською, у груповому Discord-чаті, без п
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
+- 2026-10-28 | root | approved/in_progress S01-04 | Owner «далі»; diagnosis: whole-batch 403 replay and ambiguous injection replay. One writer api_retry_impl; independent review api_retry_review. Next: minimal tests before implementation.
+- 2026-10-28 | api_retry_impl → root + api_retry_review | implemented S01-04 | Bounded reads, distinct auth/forbidden, uncertain writes без replay, partial results/recovery. Test-first RED; focused39/39, full175/175 + lint/build/artifacts/docs PASS. Evidence: `.workflow/evidence/S01-04.json`; live/browser не перевірено. Next: S02-04.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3163,6 +3193,19 @@ Live-проверка требует отдельной тестовой пап�
 `/reschedule barcodes` подключён через `src/queue/barcodeExecutor.js` в offscreen DOM. Он получает Drive token через внутренний bridge и вызывает общий scanner; depot lookup и точный reschedule выполняются в авторизованной вкладке. Не путать filing фотографий в YYYY/MM с изменением даты доставки по их номерам — это разные эффекты.
 
 S04-03/S09-11 проверяют существующие offscreen/worker компоненты и недостающие гарантии recovery; не создавать второй runner и не отключать реализованный режим по архивному описанию. Live подтверждается явным dry_run:false. Перед Save точные targets сохраняются локально для повторения server errors в тот же день; `/reschedule retry` не сканирует Drive повторно, а вчерашнюю партию удаляет. Неподтверждённый или disputed candidate не даёт права reschedule.
+
+## S01-04 — реалізована HTTP-межа, 2026-10-28
+
+Drive adapter та Gmail request використовують src/shared/apiErrors.js. Explicit
+readOnly: максимум 3 спроби по 15 секунд (включно response body), паузи 250/500 ms.
+401 — unauthenticated, 403 — permission-denied; невідомий 403 не refresh loop.
+Тимчасові помилки читання мають bounded retry, AbortSignal зупиняє очікування.
+POST/PATCH — одна спроба; timeout/network/abort після dispatch, malformed success
+body або 5xx дають uncertain-write. Це не rollback; перед повтором потрібна сверка.
+Drive зупиняє нові ефекти після uncertain/auth/cancel, залишає partial results і
+раніше успішні exact targets для ручного продовження. Нової кнопки Cancel,
+автоматичного reconcile або persistent Drive journal тут немає. Gmail scopes
+і доступність mutation UI не змінено. Реальні API/Chrome не перевірялися.
 </pre></article>
 <article id="doc-44" tabindex="-1" hidden><p class="path"><a href="docs/gmail-contract.md">docs/gmail-contract.md</a></p><h1>Gmail: очередь, факты и черновики</h1><pre class="markdown"># Gmail: очередь, факты и черновики
 
@@ -3224,6 +3267,19 @@ Draft привязывается к правильному thread и адрес�
 ## 9. Discord в новом baseline
 
 Бот уже есть, но Gmail pipeline к нему не подключён. Не добавлять передачу писем в tasks/Discord как побочный эффект read/draft. OWNER-D01 действует для любого будущего интерфейса. Проверка самого текста письма через Discord требует отдельного решения по доступам/данным; `/todo done` и confirm_live не approval.
+
+## S01-04 — реалізована HTTP-межа, 2026-10-28
+
+Drive adapter та Gmail request використовують src/shared/apiErrors.js. Explicit
+readOnly: максимум 3 спроби по 15 секунд (включно response body), паузи 250/500 ms.
+401 — unauthenticated, 403 — permission-denied; невідомий 403 не refresh loop.
+Тимчасові помилки читання мають bounded retry, AbortSignal зупиняє очікування.
+POST/PATCH — одна спроба; timeout/network/abort після dispatch, malformed success
+body або 5xx дають uncertain-write. Це не rollback; перед повтором потрібна сверка.
+Drive зупиняє нові ефекти після uncertain/auth/cancel, залишає partial results і
+раніше успішні exact targets для ручного продовження. Нової кнопки Cancel,
+автоматичного reconcile або persistent Drive journal тут немає. Gmail scopes
+і доступність mutation UI не змінено. Реальні API/Chrome не перевірялися.
 </pre></article>
 <article id="doc-45" tabindex="-1" hidden><p class="path"><a href="docs/handoff.md">docs/handoff.md</a></p><h1>Передача состояния между сессиями</h1><pre class="markdown"># Передача состояния между сессиями
 
@@ -3638,7 +3694,7 @@ git diff --cached --check
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
 тестового коду.
 
-Поточна базова лінія: **63 автоматизовані тести у 19 файлах**. Усі вони працюють
+Історична початкова базова лінія: **63 автоматизовані тести у 19 файлах**. Актуальні результати — у CURRENT та evidence задач. Усі вони працюють
 локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
 
 ## Принципи
@@ -4540,6 +4596,19 @@ Popup harness — підставлені DOM/Chrome об’єкти, не реа
 Реальні Chrome, Discord, provider responses і розгортання не перевірено.
 Manual console tools залишають дозволені операторські результати; це не
 автоматичні технічні логи. Повний secret scanning не входить у цю перевірку.
+
+## S01-04 — API retries та uncertain writes, 2026-10-28
+
+Вісім згрупованих risk-based перевірок: три в новому request.test.js, решта
+у чинних Drive/batch/executor/barcode tests. Реальний request wrapper: 401/403,
+429/503, bounded attempts, body timeout, abort during backoff, write timeout/
+network/abort/parse і pre-aborted zero-call. Реальний Drive adapter: uncertain
+folder POST не повторюється наступним фото; signal доходить до запиту.
+Перевірено збереження partial results/targets, File errors без targets і
+відсутність live replay у другій вкладці. Existing Gmail payload/dry-run checks
+збережено. Focused 39/39. Popup auth branch перевірено review, не browser harness.
+RED використовує watchdog лише щоб baseline без timeout не зависав; ранній
+запуск із cancelled tests не оголошено успішним RED. Дані тільки synthetic.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -5815,12 +5884,18 @@ Evidence: `.workflow/evidence/S01-03.json`. Обновить существую�
 Сначала fixture matrix status/reason/timeout, включая 403 permissions и timeout после принятого запроса; проверить максимальное число обращений.
 
 ```sh
-node --test test/unit/api-errors.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/utils/request.test.js test/utils/errors.test.js test/depot/labelBatch.test.js test/depot/driveLabels.test.js test/gmail/labels.test.js test/queue/executor.test.js test/queue/barcodeExecutor.test.js
+node tools/checks.mjs
 ```
 
-Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
-
-После узкой проверки выполнить затронутые регрессии и обязательные lint/build проверки по [toolchain](../../docs/toolchain.md). Для injected code отдельно проверять serialization, для UI — реальный browser harness. Не выполнять real Gmail/Drive/depot/AI calls по одному разрешению редактировать код.
+Адаптація 2026-10-28: actual Drive transport у driveLabels, Gmail transport у
+utils/request; картковий api-errors.test замінено request.test.js та чинними
+regressions. Scope розширено на labelBatch, popup, barcodeExecutor, executor
+і обидва safeErrorMessage через реальні replay/summary boundaries. Повний список
+у evidence. Нових provider SDK або queue schema немає. Maps/delivery — S09-07/04.
+Згідно owner offline-first/minimal tests, локальна приймальна перевірка synthetic
+transport/Chrome ports; popup branch додатково code review. Real browser harness
+та live API відкладені, не оголошені виконаними. Автоматичного reconcile немає.
 
 ## Последовательность реализации
 

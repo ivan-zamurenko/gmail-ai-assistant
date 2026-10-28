@@ -1,5 +1,31 @@
 # DPD Assistance — поточна передача
 
+## S03-01 завершено локально — 2026-10-28
+
+Owner «далі», base 9c5888b, branch codex. lookup_impl передав writer root;
+lookup_review ACCEPT. Active writer немає, state.active_task null.
+Обидва lookup режими вимагають exact identity; fetched detail звіряє number/ID.
+Login/unsupported/empty/ambiguous різні safe reasons. Негативні malformed/login
+outcomes не містять identity fields; genuine no-scans зберігає відому identity.
+Унікальний numeric fallback ID тільки для detail. Success projection збережена.
+Production зміни тільки lookup.js; depot mutation business rules не змінені.
+
+3 нові grouped tests у чинному файлі; focused29/29, full181/181,
+lint/build/artifacts/docs/diff PASS. Evidence: [S03-01](evidence/S03-01.json).
+Root 1.1.20, extension 6.3.0.65; bot0.2.8 та queue schema2 без змін.
+
+## Наступний крок і межі
+
+Report-first next S09-04 — результат не губиться через збій Discord reply.
+Нове доручення не почато. Перевірка S03-01 synthetic DOM objects + serialized
+function у node:vm; не real HTML parser/browser/live depot. Невідомі depot
+empty-state banners відхиляються, поки немає підтвердженого fixture.
+14-digit→9-digit mapping не вигадано; потрібен exact query. Query лишається
+operational correlation field, error reasons не містять session/body/query.
+Журнал: [WORKLOG](WORKLOG.md).
+
+## Попередня передача (історія)
+
 ## S02-04 завершено локально — 2026-10-28
 
 Owner «давай», base 0eff656, branch codex. Writer root/gmail_ai_owner,

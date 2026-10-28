@@ -15,7 +15,9 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
   function safeFailure(error, fallback = 'Depot operation failed') {
     const known = new Set([
       "Refusing a cross-origin depot request",
-      "Quick search form not found — is this a depot page?"
+      "Quick search form not found — is this a depot page?",
+      "Depot login required",
+      "Unsupported depot response"
     ]);
     const raw = typeof error?.message === 'string' ? error.message : '';
     if (known.has(raw)) return raw;
@@ -29,7 +31,12 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
   const CONS_URL = '/scripts/cgiip.exe/WService=wsInterlink/woConsignmentDetails.p';
 
   const text  = (el) => (el?.textContent ?? '').replace(/\s+/g, ' ').trim();
-  const toDoc = (html) => new DOMParser().parseFromString(html, 'text/html');
+  const toDoc = (html) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    if (doc.querySelector('input[type="password"]')) throw new Error('Depot login required');
+    return doc;
+  };
+  const unsupported = () => { throw new Error('Unsupported depot response'); };
 
   // Runs in the page MAIN world: confirm the page is the depot (same rule as
   // depotTarget.js) and keep every request on its origin.
@@ -88,11 +95,15 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
 
   /** Search results link straight to the detail page — unlike the CAD list, which uses chooseItem(). */
   function parseHitList(doc) {
+    if (!doc.getElementById('MAINTABLE')) unsupported();
     const hits = new Map();
     for (const a of doc.querySelectorAll('#MAINTABLE a[href*="woConsignmentDetails.p"]')) {
       const consId = new URLSearchParams(a.getAttribute('href').split('?')[1]).get('ConsId');
-      if (consId && !hits.has(consId)) hits.set(consId, { consId, consNumber: text(a) });
+      if (!/^\d+$/.test(consId ?? '') || !text(a)) unsupported();
+      if (hits.has(consId) && hits.get(consId).consNumber !== text(a)) unsupported();
+      hits.set(consId, { consId, consNumber: text(a) });
     }
+    if (!hits.size && doc.querySelectorAll('#MAINTABLE tbody tr').length) unsupported();
     return Array.from(hits.values());
   }
 
@@ -102,13 +113,16 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
       || doc.querySelector('input[name="ConsId" i]')?.value;
     if (hidden) return hidden;
 
+    const ids = new Set();
     for (const el of doc.querySelectorAll('[href*="ConsId="], [action*="ConsId="]')) {
       const raw = el.getAttribute('href') || el.getAttribute('action') || '';
       const query = raw.split('?')[1];
       const consId = query ? new URLSearchParams(query).get('ConsId') : '';
-      if (consId) return consId;
+      if (consId && !/^\d+$/.test(consId)) unsupported();
+      if (consId) ids.add(consId);
     }
-    return '';
+    if (ids.size > 1) unsupported();
+    return [...ids][0] ?? '';
   }
 
   function fetchConsignment(consId) {
@@ -162,9 +176,10 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
   }
 
   function parseScans(doc) {
+    if (!doc.getElementById('MAINTABLE')) unsupported();
     return Array.from(doc.querySelectorAll('#MAINTABLE tbody tr')).flatMap((tr) => {
       const tds = tr.querySelectorAll('td');
-      if (tds.length < 12) return [];
+      if (tds.length < 12 || !(tds[3].getAttribute('title')?.trim() || text(tds[3])) || !text(tds[4])) unsupported();
 
       const [date = '', time = ''] = text(tds[4]).split(' ');
       const notes = tds[10].getAttribute('title')?.trim() || text(tds[10]);
@@ -221,36 +236,26 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
     const searched = await quickSearch(query);
     const t1 = Date.now();
     let detail = searched;
-    let consId = consIdFromDetail(searched);
+    let consId = '';
     const directNumber = searched.getElementById('hiddenConsBarcodeValue')?.value ?? '';
 
-    if (identityOnly && directNumber) {
+    if (directNumber) {
+      consId = consIdFromDetail(searched);
       if (directNumber !== query) return { query, ok: false, reason: '0 matches' };
-      if (!/^\d+$/.test(consId)) {
-        return { query, ok: false, reason: 'Exact result missing ConsId' };
-      }
-      return { query, ok: true, consNumber: directNumber, consId };
-    }
-
-    if (!directNumber) {
-      const hits = parseHitList(searched);
-      if (identityOnly) {
-        const exactHits = hits.filter(hit => hit.consNumber === query && /^\d+$/.test(hit.consId));
-        if (exactHits.length !== 1) {
-          return { query, ok: false, reason: `${exactHits.length} matches` };
-        }
-        return { query, ok: true, ...exactHits[0] };
-      }
-      // Quick search matches substrings, so two hits mean we cannot tell which
-      // parcel the customer meant — that is a case for a human, not a template.
+      if (!/^\d+$/.test(consId)) unsupported();
+      if (identityOnly) return { query, ok: true, consNumber: directNumber, consId };
+    } else {
+      // Approximate matches are never promoted to verified identity.
+      const hits = parseHitList(searched).filter(hit => hit.consNumber === query);
       if (hits.length !== 1) return { query, ok: false, reason: `${hits.length} matches` };
+      if (identityOnly) return { query, ok: true, ...hits[0] };
       consId = hits[0].consId;
-      detail = await fetchConsignment(hits[0].consId);
+      detail = await fetchConsignment(consId);
+      if (detail.getElementById('hiddenConsBarcodeValue')?.value !== query
+          || consIdFromDetail(detail) !== consId) unsupported();
     }
-    if (!consId) consId = consIdFromDetail(detail);
     const t2 = Date.now();
-
-    const consNumber = directNumber || detail.getElementById('hiddenConsBarcodeValue')?.value || '';
+    const consNumber = query;
     const delivery   = readBlock(detail, 'Delivery Address');
     const confirm    = readBlock(detail, 'Confirmation / Notification / Delivery Details');
     const contact    = [...delivery, ...confirm];

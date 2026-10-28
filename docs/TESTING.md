@@ -927,3 +927,15 @@ order/dedup/leading zeros; phone/timestamp/quoted/random candidates never verifi
 та excluded longer runs; type/no-coercion і exact combined size boundary.
 RED0/3 → GREEN3/3. Вони імпортують справжню pure function; мережі/листів немає.
 Runtime caller наразі відсутній, тому UI/lookup integration не заявляється.
+
+## S03-01 — lookup responses, 2026-10-28
+
+Три grouped cases додано до test/depot/lookup.test.js. Fixtures — synthetic
+DOM objects inline; VM виконує serialized production function без closure.
+Матриця: direct/list/exact/multiple/login/missing table/changed rows/detail ID
+mismatch, fallback IDs, title-only scan type, successful scan/address/drop/timing.
+Старі пусті fixture documents уточнено як known empty MAINTABLE, а не arbitrary
+HTML. Credential assertion не забороняє слово password у login selector; POD
+credentials, Authorization і third-party calls далі заборонені.
+Focused lookup+origin+verifier+executor+render 29/29. Реальні HTML parsing,
+браузерні selectors та provider responses не перевірено.

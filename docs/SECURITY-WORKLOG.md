@@ -456,3 +456,10 @@ into this log.
 - Bounded pure text extraction; numeric matches explicitly unverified and require
   separate lookup. No email contents, logging, storage or external calls added.
 - Synthetic fixtures only; no runtime caller or Gmail access enabled.
+
+## 2026-10-28 — S03-01 exact lookup responses
+
+- Reject foreign identity, ambiguous fallback IDs, login and unknown DOM shapes
+  before returning verified fields. Safe reasons omit provider body/session.
+- Kept operational query correlation and existing minimized bot projection.
+  Synthetic DOM fixtures only; no real sessions, customer data or live scraping.

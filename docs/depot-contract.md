@@ -66,3 +66,27 @@ G_CALENDAR определяет timezone depot, cut-off, нерабочие да
 Новый executor уже переиспользует depotMain/depotLookup. `/find`, `/reschedule all`, `/reschedule parcel`, `/reschedule barcodes` и `/reschedule retry` подключены. Barcodes использует отдельный offscreen executor с общими depot ports. Поэтому изменения lookup/result policy влияют и на render.js бота, а не только popup.
 
 В новом lookup есть также scans, drop и timing; runFind минимизирует их перед Firestore. Правила ограничений origin, неизвестного статуса и подтверждения apply обязательны для обоих входов. Явное dry_run:false является live-подтверждением; confirm_live отсутствует и не должен вводиться повторно. Проверка актуальных targets перед Save не требует второго подтверждения оператора. Сверять S03-04/S03-05 с S09-09, а не создавать отдельную более слабую depot policy для бота.
+
+## S03-01 — lookup response guards, 2026-10-28
+
+Обидва режими lookup вимагають exact number. Direct detail має numeric ConsId;
+список фільтрується до точного номера, fetched detail звіряється з number та ID.
+Fallback ID із посилань дозволений лише якщо всі знайдені ID однакові й numeric.
+Не додається недоведена конвертація 14-digit tracking у 9-digit consignment.
+
+HTTP200 з password input дає `Depot login required`; невідома структура —
+`Unsupported depot response`. Recognized empty MAINTABLE — `0 matches`, кілька
+точних записів — `N matches`. Таблиця з рядками без очікуваних links, malformed
+ConsId або scan row дають unsupported. Scan table обов’язкова, type (title/text)
+і date cell непорожні; calendar/timestamp semantics тут не змінено.
+Невідомі empty-state banners без підтвердженого fixture теж unsupported.
+
+Login/schema/mismatch не містять consNumber/consId, щоб downstream не прийняв
+їх за verified identity. Справді порожня Scanning History зберігає `no scans`
+і вже перевірену identity. Success scans/address/drop/timing залишено.
+Поле query збережене для operational correlation; reason не містить query,
+session або raw body. labelVerifier/executor/render не потребували зміни DTO.
+
+Перевірка — synthetic DOM contract objects у node:vm після serialization.
+Це не HTML parser/browser/live proof. Реальні depot variants потребують окремої
+перевірки; нових selectors з реальної сесії або live scraping не використовували.

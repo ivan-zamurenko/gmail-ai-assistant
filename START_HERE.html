@@ -1752,6 +1752,32 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 </pre></article>
 <article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — поточна передача</h1><pre class="markdown"># DPD Assistance — поточна передача
 
+## S03-01 завершено локально — 2026-10-28
+
+Owner «далі», base 9c5888b, branch codex. lookup_impl передав writer root;
+lookup_review ACCEPT. Active writer немає, state.active_task null.
+Обидва lookup режими вимагають exact identity; fetched detail звіряє number/ID.
+Login/unsupported/empty/ambiguous різні safe reasons. Негативні malformed/login
+outcomes не містять identity fields; genuine no-scans зберігає відому identity.
+Унікальний numeric fallback ID тільки для detail. Success projection збережена.
+Production зміни тільки lookup.js; depot mutation business rules не змінені.
+
+3 нові grouped tests у чинному файлі; focused29/29, full181/181,
+lint/build/artifacts/docs/diff PASS. Evidence: [S03-01](evidence/S03-01.json).
+Root 1.1.20, extension 6.3.0.65; bot0.2.8 та queue schema2 без змін.
+
+## Наступний крок і межі
+
+Report-first next S09-04 — результат не губиться через збій Discord reply.
+Нове доручення не почато. Перевірка S03-01 synthetic DOM objects + serialized
+function у node:vm; не real HTML parser/browser/live depot. Невідомі depot
+empty-state banners відхиляються, поки немає підтвердженого fixture.
+14-digit→9-digit mapping не вигадано; потрібен exact query. Query лишається
+operational correlation field, error reasons не містять session/body/query.
+Журнал: [WORKLOG](WORKLOG.md).
+
+## Попередня передача (історія)
+
 ## S02-04 завершено локально — 2026-10-28
 
 Owner «давай», base 0eff656, branch codex. Writer root/gmail_ai_owner,
@@ -1894,6 +1920,8 @@ Report англійською, у груповому Discord-чаті, без п
 - 2026-10-28 | api_retry_impl → root + api_retry_review | implemented S01-04 | Bounded reads, distinct auth/forbidden, uncertain writes без replay, partial results/recovery. Test-first RED; focused39/39, full175/175 + lint/build/artifacts/docs PASS. Evidence: `.workflow/evidence/S01-04.json`; live/browser не перевірено. Next: S02-04.
 - 2026-10-28 | root/gmail_ai_owner | approved S02-04 | Owner «давай»; parser has no runtime callers. Candidate DTO +100000 code-unit bound, three test-first groups; consignment_review independent. Next: RED then implementation.
 - 2026-10-28 | root/gmail_ai_owner + consignment_review | implemented S02-04 | Pure bounded candidate DTO; no runtime caller. RED0/3 → GREEN3/3; full178/178 + lint/build/docs PASS. Evidence: `.workflow/evidence/S02-04.json`; no live/UI integration. Next: S03-01.
+- 2026-10-28 | root | approved S03-01 | Owner «далі»; full lookup exactness and unknown HTML outcomes need guards. Writer lookup_impl, read-only lookup_review; minimal test-first, no live.
+- 2026-10-28 | lookup_impl → root + lookup_review | implemented S03-01 | Exact lookup/login/schema guards,3 grouped tests; RED7/9→8/9→7/9→8/9 then focused29/29; full181/181 + lint/build/docs PASS. Evidence: `.workflow/evidence/S03-01.json`; synthetic DOM/VM only, real HTML/browser untested. Next:S09-04.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3104,6 +3132,30 @@ G_CALENDAR определяет timezone depot, cut-off, нерабочие да
 Новый executor уже переиспользует depotMain/depotLookup. `/find`, `/reschedule all`, `/reschedule parcel`, `/reschedule barcodes` и `/reschedule retry` подключены. Barcodes использует отдельный offscreen executor с общими depot ports. Поэтому изменения lookup/result policy влияют и на render.js бота, а не только popup.
 
 В новом lookup есть также scans, drop и timing; runFind минимизирует их перед Firestore. Правила ограничений origin, неизвестного статуса и подтверждения apply обязательны для обоих входов. Явное dry_run:false является live-подтверждением; confirm_live отсутствует и не должен вводиться повторно. Проверка актуальных targets перед Save не требует второго подтверждения оператора. Сверять S03-04/S03-05 с S09-09, а не создавать отдельную более слабую depot policy для бота.
+
+## S03-01 — lookup response guards, 2026-10-28
+
+Обидва режими lookup вимагають exact number. Direct detail має numeric ConsId;
+список фільтрується до точного номера, fetched detail звіряється з number та ID.
+Fallback ID із посилань дозволений лише якщо всі знайдені ID однакові й numeric.
+Не додається недоведена конвертація 14-digit tracking у 9-digit consignment.
+
+HTTP200 з password input дає `Depot login required`; невідома структура —
+`Unsupported depot response`. Recognized empty MAINTABLE — `0 matches`, кілька
+точних записів — `N matches`. Таблиця з рядками без очікуваних links, malformed
+ConsId або scan row дають unsupported. Scan table обов’язкова, type (title/text)
+і date cell непорожні; calendar/timestamp semantics тут не змінено.
+Невідомі empty-state banners без підтвердженого fixture теж unsupported.
+
+Login/schema/mismatch не містять consNumber/consId, щоб downstream не прийняв
+їх за verified identity. Справді порожня Scanning History зберігає `no scans`
+і вже перевірену identity. Success scans/address/drop/timing залишено.
+Поле query збережене для operational correlation; reason не містить query,
+session або raw body. labelVerifier/executor/render не потребували зміни DTO.
+
+Перевірка — synthetic DOM contract objects у node:vm після serialization.
+Це не HTML parser/browser/live proof. Реальні depot variants потребують окремої
+перевірки; нових selectors з реальної сесії або live scraping не використовували.
 </pre></article>
 <article id="doc-42" tabindex="-1" hidden><p class="path"><a href="docs/discord/TEST_MATRIX.md">docs/discord/TEST_MATRIX.md</a></p><h1>Discord и очередь — матрица проверок</h1><pre class="markdown"># Discord и очередь — матрица проверок
 
@@ -4653,6 +4705,18 @@ order/dedup/leading zeros; phone/timestamp/quoted/random candidates never verifi
 та excluded longer runs; type/no-coercion і exact combined size boundary.
 RED0/3 → GREEN3/3. Вони імпортують справжню pure function; мережі/листів немає.
 Runtime caller наразі відсутній, тому UI/lookup integration не заявляється.
+
+## S03-01 — lookup responses, 2026-10-28
+
+Три grouped cases додано до test/depot/lookup.test.js. Fixtures — synthetic
+DOM objects inline; VM виконує serialized production function без closure.
+Матриця: direct/list/exact/multiple/login/missing table/changed rows/detail ID
+mismatch, fallback IDs, title-only scan type, successful scan/address/drop/timing.
+Старі пусті fixture documents уточнено як known empty MAINTABLE, а не arbitrary
+HTML. Credential assertion не забороняє слово password у login selector; POD
+credentials, Authorization і third-party calls далі заборонені.
+Focused lookup+origin+verifier+executor+render 29/29. Реальні HTML parsing,
+браузерні selectors та provider responses не перевірено.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -6419,7 +6483,7 @@ Evidence: `.workflow/evidence/S02-04.json`. Обновить существую�
 
 - `src/depot/lookup.js`
 - `src/depot/depotScript.js`
-- `test/unit/depot-html.test.mjs`
+- `test/depot/lookup.test.js`
 - `test/fixtures/depot/`
 
 Новые test files и отдельные новые модули создаются по необходимости этой карточки. `.workflow/CURRENT.md`, state и evidence этой задачи допустимы как служебные изменения. Расширение scope на соседний модуль сначала объяснить; не переносить весь `src` ради косметического сходства.
@@ -6441,12 +6505,18 @@ Evidence: `.workflow/evidence/S02-04.json`. Обновить существую�
 Сначала проверять 200-login и multiple-results fixtures: текущий permissive parser не должен пройти их как found.
 
 ```sh
-node --test test/unit/depot-html.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/depot/lookup.test.js test/depot/depotTarget.test.js test/depot/labelVerifier.test.js test/queue/executor.test.js test/bot/render.test.js
+node tools/checks.mjs
 ```
 
-Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
-
-После узкой проверки выполнить затронутые регрессии и обязательные lint/build проверки по [toolchain](../../docs/toolchain.md). Для injected code отдельно проверять serialization, для UI — реальный browser harness. Не выполнять real Gmail/Drive/depot/AI calls по одному разрешению редактировать код.
+Адаптація 2026-10-28: використано чинний lookup.test.js, три grouped cases і
+inline synthetic DOM fixtures. Перевіряється serialized function у node:vm,
+а не реальний HTML parser/browser. За owner offline-first/minimal-tests
+домовленістю це рівень локальної приймальної перевірки; live HTML variants
+залишені неперевіреними. Production changes лише lookup.js; depotMain business
+policy і consumers не змінювались. Operational query збережено в envelope,
+але error reason/logs не містять query/session/raw HTML. Повний контракт та
+обмеження у docs/depot-contract.md; успішна projection перевірена focused suite.
 
 ## Последовательность реализации
 

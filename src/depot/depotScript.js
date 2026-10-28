@@ -15,6 +15,30 @@
  */
 export async function depotMain({ dryRun = true, mode = 'cad', date = '', targets = [] } = {}) {
 
+  function safeFailure(error, fallback = 'Depot operation failed') {
+    const known = new Set([
+      "Manual date must use YYYY-MM-DD",
+      "Manual date is not a valid calendar date",
+      "Manual date must be a future working day",
+      "Refusing a cross-origin depot request",
+      "Pending trigger link not found — are you on the correct depot page?",
+      "Unexpected trigger href",
+      "Reschedule form not found",
+      "Reschedule rejected by server",
+      "Reschedule: server did not confirm. See console for details.",
+      "Status not found — depot page structure may have changed",
+      "Not the correct depot page (unexpected origin)",
+      "Unsupported depot mode"
+    ]);
+    const raw = typeof error?.message === 'string' ? error.message : '';
+    if (known.has(raw)) return raw;
+    const status = raw.match(/(?:HTTP|Drive API|Drive) ([1-5]\d{2})\b/)?.[1];
+    const codes = new Set(['permission-denied', 'unauthenticated', 'unavailable', 'deadline-exceeded', 'resource-exhausted', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND']);
+    const candidate = error?.code ?? raw.match(/\[([a-zA-Z-]+)\]$/)?.[1];
+    const code = codes.has(candidate) ? ` [${candidate}]` : '';
+    return `${fallback}${status ? ` (HTTP ${status})` : ''}${code}`;
+  }
+
   // ── Constants ──────────────────────────────────────────────────────────────────
 
   const STATUS = {
@@ -144,7 +168,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     if (!trigger) throw new Error('Pending trigger link not found — are you on the correct depot page?');
 
     const m = (trigger.getAttribute('href') ?? '').match(/CL\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/);
-    if (!m) throw new Error(`Unexpected trigger href: ${trigger.getAttribute('href')}`);
+    if (!m) throw new Error('Unexpected trigger href');
 
     const { session, uid } = getSessionParams();
     const typeName = CONS_LIST_TYPE[m[2]] ?? m[2];
@@ -159,7 +183,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     const headers = Array.from(doc.querySelectorAll('thead th, thead td'));
     const idx = headers.findIndex(h => /route/i.test(h.textContent ?? ''));
     if (idx === -1) {
-      console.warn(`[pending list] no "Route" header found, falling back to column 6. Headers: ${headers.map(h => h.textContent.trim()).join(' | ')}`);
+      console.warn('[pending list] ROUTE_HEADER_MISSING: falling back to column 6');
       return 5;
     }
     return idx;
@@ -248,7 +272,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         { credentials: 'include' }
       );
     } catch (e) {
-      console.warn(`[logCall] non-fatal: ${e.message}`);
+      console.warn('[logCall] non-fatal:', safeFailure(e, 'Call logging failed'));
     }
   }
 
@@ -260,8 +284,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     const formDoc = await fetchDoc(formUrl);
     const form    = formDoc.querySelector('form');
     if (!form) {
-      const preview = formDoc.body?.textContent?.trim().slice(0, 200) ?? '(empty)';
-      throw new Error(`Reschedule form not found. Page says: ${preview}`);
+      throw new Error('Reschedule form not found');
     }
 
     const actionUrl = sameOrigin(form.getAttribute('action') ?? formUrl);
@@ -298,7 +321,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
     const errEl = resultDoc.querySelector('.panel-danger p, #panel-error p, .alert-danger p, .alert-danger, .error p');
     const errMsg = errEl?.textContent.trim();
-    if (errMsg) throw new Error(`Server error: ${errMsg}`);
+    if (errMsg) throw new Error('Reschedule rejected by server');
 
     const ok = resultDoc.querySelector('.panel-success p, #panel-success p, .alert-success p, .success p');
     if (ok) return ok.textContent.trim();
@@ -308,12 +331,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     const savedDate = resultDoc.querySelector('[name="arranged-date"]')?.getAttribute('value');
     if (savedDate === tomorrowInput) return `arranged-date is now ${savedDate}`;
 
-    // Neither success nor error found — show what the page actually says.
-    // Scripts must go first, or the jQuery boilerplate fills the whole preview.
-    resultDoc.querySelectorAll('script, style').forEach(el => el.remove());
-    const visibleText = (resultDoc.body?.textContent ?? '').replace(/\s+/g, ' ').trim();
-    console.warn(`[reschedule] arranged-date came back as "${savedDate}", asked for "${tomorrowInput}"`);
-    console.warn(`[reschedule] unconfirmed response text length: ${visibleText.length}`);
+    console.warn('[reschedule] UNCONFIRMED_RESPONSE');
     throw new Error(`Reschedule: server did not confirm. See console for details.`);
   }
 
@@ -330,22 +348,19 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         if (!status) throw new Error('Status not found — depot page structure may have changed');
 
         const notes = status === STATUS.GOODS_HELD ? await getNotes(consDoc) : '';
-        const { action, reason } = classify(status, notes, todayShort);
-        console.log(`[${pkg.consNumber}] ${status} → ${action} | ${reason}`);
+        const { action } = classify(status, notes, todayShort);
 
         if (action === 'CHANGE_DATE') {
           await logCall(pkg.consId, consDoc);
-          const msg = await submitReschedule(pkg.consId, tomorrowInput);
-          console.log(`[${pkg.consNumber}] ✅ ${msg}`);
+          await submitReschedule(pkg.consId, tomorrowInput);
           changed++;
         } else {
-          console.log(`[${pkg.consNumber}] ⏭️  skipped`);
           skipped++;
         }
 
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action });
       } catch (err) {
-        console.error(`[${pkg.consNumber}] ❌ ${err.message}`);
+        console.error('[reschedule]', safeFailure(err, 'Reschedule failed'));
         errors++;
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR' });
       }
@@ -357,10 +372,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   // ── Entry point ────────────────────────────────────────────────────────────────
 
   try {
-    console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'} | ${new Date().toLocaleTimeString()}`);
 
     if (!isDepotPage()) throw new Error('Not the correct depot page (unexpected origin)');
-    if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error(`Unsupported depot mode: ${mode}`);
+    if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error('Unsupported depot mode');
+    console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'}`);
     const { todayShort, tomorrowInput } = getDates();
     const arrangedDate = mode === 'manual' ? manualDateInput(date) : tomorrowInput;
     const allRows = mode === 'cad' ? await fetchPendingList() : [];
@@ -386,12 +401,11 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         const routes = [...new Set(allRows.map(r => r.route))].filter(Boolean);
         warning = `No CAD parcels among ${allRows.length} pending. Routes seen: ${routes.join(', ') || '(all blank)'}`;
       }
-      console.warn(`⚠️ ${warning}`);
+      console.warn('[depotMain] NO_TARGETS');
       return { changed: 0, skipped: 0, errors: 0, warning };
     }
 
     if (dryRun) {
-      console.table(packages.map(({ consNumber, consId }) => ({ consNumber, consId })));
       console.log(`DRY RUN — ${packages.length} parcel(s) would be processed.`);
       return {
         dryRun: true,
@@ -406,7 +420,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     return result;
 
   } catch (err) {
-    console.error('[depotMain] fatal:', err);
-    return { __error: err?.message ?? String(err) };
+    console.error('[depotMain] fatal:', safeFailure(err));
+    return { __error: safeFailure(err) };
   }
 }

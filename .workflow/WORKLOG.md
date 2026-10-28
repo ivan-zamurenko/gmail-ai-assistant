@@ -53,5 +53,7 @@
 | 2026-10-26 | pod_fallback_impl → integrator + pod_fallback_review | Виконано | Оновлено два тести, нових немає; RED11/13 → GREEN13/13; safe warning RED12/13 → GREEN13/13. Незалежний review ACCEPT; writer передав 4 runtime/test файли. | Повний gate, docs/version; live не запускали. |
 | 2026-10-26 | Codex / integrator | Виконано | POD-FALLBACK: generated local PNG, core /find при POD error; 162/162, lint/build/artifacts/docs PASS. Лінтер виправлено явними Node URL imports/globalThis.console. Нових тестів немає. [Evidence](evidence/POD-FALLBACK-2026-10-26.json). | S01-03; timeout/Maps/delivery не змінені, live не перевірено. |
 | 2026-10-26 | Власник + Codex | Погоджено | /find/report лишаються відповіддю в чаті групи, не DM; чинна ephemeral видимість збережена. Уточнено decisions і S09-13, runtime не змінено. | Не плутати з окремим barcode DM flow. |
+| 2026-10-28 | Codex / integrator | Погоджено | S01-03 доручено safe_diagnostics_impl; base bd81f76, Git чистий. Перевірити фактичні error/log виходи, включно з bot; мінімальні тести до зміни. | Незалежний review, без live. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
+- 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.

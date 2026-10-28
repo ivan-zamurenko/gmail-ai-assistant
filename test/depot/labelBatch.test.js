@@ -262,7 +262,7 @@ test('batch contains photo failures but stops immediately on a fatal depot failu
       to: null,
       number: null,
       contested: false,
-      error: 'Synthetic unreadable image',
+      error: 'Label processing failed',
     },
     {
       from: 'GOOD-PHOTO.JPG',

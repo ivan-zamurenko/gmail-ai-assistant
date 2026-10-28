@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '../utils/errors.js';
 /**
  * popup/settingsFlow.js
  * =====================
@@ -65,7 +66,7 @@ export function initSettingsFlow({
       }
       driveFolderPicker.hidden = false;
     } catch (err) {
-      onBrowseError?.(`Browse failed: ${err.message}`);
+      onBrowseError?.(`Browse failed: ${safeErrorMessage(err, 'Drive browse failed')}`);
     } finally {
       browseDriveBtn.disabled = false;
       browseDriveBtn.textContent = '📁';

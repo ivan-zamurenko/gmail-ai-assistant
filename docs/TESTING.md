@@ -894,3 +894,15 @@ Executor очікує done/core parcel без фото й event ID при POD er
 старої навмисної відмови; warning має лише константу POD_UNAVAILABLE.
 RED11/13 → GREEN13/13, а перевірка warning RED12/13 → GREEN13/13.
 Synthetic only; реальне надсилання attachment, POD timeout і Maps не перевірено.
+
+## S01-03 — безпечна діагностика, 2026-10-28
+
+П’ять згрупованих regression cases у чинних файлах захищають невідомий
+HTML/JSON/body, дозволені HTTP/code, serialized lookup, depot console,
+реальні popup/Discord handlers із synthetic adapters. Оновлено чинний
+labelBatch expectation. Спочатку RED, потім production fix; нових test files немає.
+Збережено no-replay timeout, operational results та auth/retry routing.
+Popup harness — підставлені DOM/Chrome об’єкти, не реальний браузер.
+Реальні Chrome, Discord, provider responses і розгортання не перевірено.
+Manual console tools залишають дозволені операторські результати; це не
+автоматичні технічні логи. Повний secret scanning не входить у цю перевірку.

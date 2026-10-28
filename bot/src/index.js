@@ -1,3 +1,4 @@
+import { safeErrorMessage } from './errors.js';
 /** Running bot: configuration and adapters are wired here, outside the testable handler. */
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { loadConfig } from '../config/config.js';
@@ -14,7 +15,7 @@ client.once(Events.ClientReady, (c) => {
 });
 
 // A stray API error must never take the whole bot down.
-client.on(Events.Error, (err) => console.error('Client error:', err));
+client.on(Events.Error, (err) => console.error('Client error:', safeErrorMessage(err, 'Discord client failed')));
 client.on(Events.InteractionCreate, createInteractionHandler({
   cfg, enqueueAndWait, buildParcelEmbed,
   addTodo, listTodos, markDone, clearDone, renderList,

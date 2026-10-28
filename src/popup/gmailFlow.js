@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '../utils/errors.js';
 /**
  * popup/gmailFlow.js
  * ==================
@@ -22,7 +23,7 @@ export function initGmailFlow({
       setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage,
         'done', `${ids.length} email(s) waiting`);
     } catch (err) {
-      setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, 'error', err.message);
+      setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, 'error', safeErrorMessage(err, 'Gmail check failed'));
     } finally {
       checkLabelBtn.disabled = false;
     }

@@ -1752,23 +1752,37 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 </pre></article>
 <article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — поточна передача</h1><pre class="markdown"># DPD Assistance — поточна передача
 
-## POD-FALLBACK — 2026-10-26
+## S01-03 завершено локально — 2026-10-28
 
-Власник доручив generated 404 для відсутнього фото. Base 74a6110, branch codex.
-pod_fallback_impl передав 4 runtime/test файли інтегратору Codex/root;
-pod_fallback_review прийняв diff. Нових тестів немає, два чинні оновлені;
-focused 13/13 PASS. Core /find збережено при POD error, real photo має пріоритет,
-інакше local bot/assets/pod-unavailable.png. Safe warning POD_UNAVAILABLE.
-Версії root 1.1.16, bot 0.2.6, extension 6.3.0.61; schema 2 без змін.
-Повний gate PASS: 162/162, lint/build/artifacts/docs/diff. Продуктових writer немає.
-Evidence: [POD-FALLBACK](evidence/POD-FALLBACK-2026-10-26.json).
+Власник доручив «роби». Base bd81f76, branch codex.
+Writer safe_diagnostics_impl передав код інтегратору Codex/root;
+safe_diagnostics_review завершив незалежний read-only review без блокерів.
+Активного writer немає, state.active_task null.
 
-## Стан і межі
+Безпечні diagnostics у extension/bot: static operation/reason, HTTP/code;
+без raw body, session URLs і parcel identifiers в automatic logs.
+Operational cards/manual console results збережені. No-replay advice та
+існуючі auth/tab routing не змінено. Schema 2 без змін.
+Версії root 1.1.17, bot 0.2.7, extension 6.3.0.62.
+Test-first: п’ять нових grouped cases у чинних файлах, labelBatch expectation
+оновлено. Focused 76/76; full gate 167/167, lint/build/artifacts/docs/diff PASS.
+Evidence: [S01-03](evidence/S01-03.json). Журнал: [WORKLOG](WORKLOG.md).
 
-Це вузьке окреме доручення; S09-06/07/13 не закриті. state.active_task null.
-Report-first збережено; наступна roadmap задача S01-03. Maps та Discord delivery
-не змінені. POD timeout не додано; live надсилання не перевірено.
-Постачати bot/assets разом із ботом. Журнал — [WORKLOG](WORKLOG.md).
+## Межі та наступний крок
+
+Chrome/browser, depot, Discord startup/send і deployment не перевірено.
+Synthetic popup harness не є браузерною перевіркою. Manual console tools
+навмисно залишають дозволені operational дані; повний secret scan не заявлено.
+Наступна report-first задача S01-04: класифікація API-помилок і обмежені повтори,
+особливо без сліпого повторення mutation з непідтвердженим результатом.
+Нове доручення ще не розпочато. S09-13 report залишається попереду залежностей.
+
+## Збережені рішення
+
+POD fallback завершено раніше: local bot/assets/pod-unavailable.png, core /find
+збережено при POD error; photo timeout, Maps та delivery recovery ще окремо.
+Report англійською, у груповому Discord-чаті, без переходу в DM;
+чинна приватність /find ephemeral збережена. WhatsApp API не реалізовано.
 </pre></article>
 <article id="doc-22" tabindex="-1" hidden><p class="path"><a href=".workflow/WORKLOG.md">.workflow/WORKLOG.md</a></p><h1>Спільний журнал DPD Assistance</h1><pre class="markdown"># Спільний журнал DPD Assistance
 
@@ -1825,8 +1839,10 @@ Report-first збережено; наступна roadmap задача S01-03. M
 | 2026-10-26 | pod_fallback_impl → integrator + pod_fallback_review | Виконано | Оновлено два тести, нових немає; RED11/13 → GREEN13/13; safe warning RED12/13 → GREEN13/13. Незалежний review ACCEPT; writer передав 4 runtime/test файли. | Повний gate, docs/version; live не запускали. |
 | 2026-10-26 | Codex / integrator | Виконано | POD-FALLBACK: generated local PNG, core /find при POD error; 162/162, lint/build/artifacts/docs PASS. Лінтер виправлено явними Node URL imports/globalThis.console. Нових тестів немає. [Evidence](evidence/POD-FALLBACK-2026-10-26.json). | S01-03; timeout/Maps/delivery не змінені, live не перевірено. |
 | 2026-10-26 | Власник + Codex | Погоджено | /find/report лишаються відповіддю в чаті групи, не DM; чинна ephemeral видимість збережена. Уточнено decisions і S09-13, runtime не змінено. | Не плутати з окремим barcode DM flow. |
+| 2026-10-28 | Codex / integrator | Погоджено | S01-03 доручено safe_diagnostics_impl; base bd81f76, Git чистий. Перевірити фактичні error/log виходи, включно з bot; мінімальні тести до зміни. | Незалежний review, без live. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
+- 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4512,6 +4528,18 @@ Executor очікує done/core parcel без фото й event ID при POD er
 старої навмисної відмови; warning має лише константу POD_UNAVAILABLE.
 RED11/13 → GREEN13/13, а перевірка warning RED12/13 → GREEN13/13.
 Synthetic only; реальне надсилання attachment, POD timeout і Maps не перевірено.
+
+## S01-03 — безпечна діагностика, 2026-10-28
+
+П’ять згрупованих regression cases у чинних файлах захищають невідомий
+HTML/JSON/body, дозволені HTTP/code, serialized lookup, depot console,
+реальні popup/Discord handlers із synthetic adapters. Оновлено чинний
+labelBatch expectation. Спочатку RED, потім production fix; нових test files немає.
+Збережено no-replay timeout, operational results та auth/retry routing.
+Popup harness — підставлені DOM/Chrome об’єкти, не реальний браузер.
+Реальні Chrome, Discord, provider responses і розгортання не перевірено.
+Manual console tools залишають дозволені операторські результати; це не
+автоматичні технічні логи. Повний secret scanning не входить у цю перевірку.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -5689,12 +5717,20 @@ Evidence: `.workflow/evidence/S01-02.json`. Обновить существую�
 Передавать уникальные synthetic secret markers через ошибочные ответы и assert их отсутствие во всех captured outputs; исходные URL-containing ошибки дают RED.
 
 ```sh
-node --test test/unit/redaction.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/utils/errors.test.js test/depot/*.test.js test/queue/*.test.mjs test/discord/admission.test.mjs
+node tools/checks.mjs
 ```
 
-Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
-
-После узкой проверки выполнить затронутые регрессии и обязательные lint/build проверки по [toolchain](../../docs/toolchain.md). Для injected code отдельно проверять serialization, для UI — реальный browser harness. Не выполнять real Gmail/Drive/depot/AI calls по одному разрешению редактировать код.
+Адаптація 2026-10-28: використано чинні test files замість нового redaction.test.
+За діагностикою інтегратор розширив scope на обидва errors.js, bot diagnostics,
+queue executor, gmailFlow, labelBatch і futureDateCheck: вони передавали raw
+errors або автоматично логували ідентифікатори. Payload/schema не змінено.
+Фактичні змінені шляхи — в evidence. Owner-approved offline-first перевірка:
+serialization boundary і справжні popup/Discord handlers із synthetic adapters.
+Попередню вимогу real browser harness відкладено до live verification, згідно
+з домовленістю будувати локально; synthetic DOM не оголошено браузерним тестом.
+Це локальна приймальна перевірка, не доказ роботи розгорнутого середовища.
+Manual console operational results не входять до automatic diagnostic logs.
 
 ## Последовательность реализации
 

@@ -109,9 +109,9 @@ async function runInDepotTabs(func, args, classify) {
       });
       res = injection?.result;
     } catch (err) {
-      const safeMessage = safeErrorMessage(err);
+      const safeMessage = safeErrorMessage(err, 'Depot injection failed');
       diag.push({ id: tab.id, discarded: tab.discarded, ms: Date.now() - ti, err: safeMessage });
-      lastReason = /error page/i.test(safeMessage)
+      lastReason = /error page/i.test(err?.message ?? '')
         ? 'Депо-вкладка показує помилку — онови її (F5), перевір мережу депо й залогінься'
         : `Не дістатися депо-вкладки — ${safeMessage}`;
       continue;

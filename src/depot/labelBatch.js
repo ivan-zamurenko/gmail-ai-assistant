@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '../utils/errors.js';
 import { acceptExactConsignment, pickConsignment } from './labelBarcode.js';
 import { buildLabelName, dateOf, makeUnique } from './labelName.js';
 
@@ -69,7 +70,7 @@ export async function processLabelBatch({
       // A depot that stopped answering would rename every remaining photo to
       // unknown, so stop and keep what is already filed.
       if (err.fatal) throw err;
-      done({ from: photo.name, to: null, number: null, contested: false, error: err.message });
+      done({ from: photo.name, to: null, number: null, contested: false, error: safeErrorMessage(err, 'Label processing failed') });
     }
   }
 

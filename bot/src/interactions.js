@@ -105,7 +105,7 @@ export function createInteractionHandler({
         await interaction.editReply(`🧹 Прибрано виконаних: ${count}`);
       }
     } catch (err) {
-      await interaction.editReply(`⚠️ ${safeErrorMessage(err)}`);
+      await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Discord operation failed')}`);
     }
   }
 
@@ -131,7 +131,7 @@ export function createInteractionHandler({
           published = { ...progress, publishedAt: now };
           edits = edits
             .then(() => interaction.editReply(renderBarcodeProgress(progress, dryRun)))
-            .catch((err) => console.error('Barcode progress update failed:', safeErrorMessage(err)));
+            .catch((err) => console.error('Barcode progress update failed:', safeErrorMessage(err, 'Discord operation failed')));
         };
 
         const queued = enqueueAndWait({
@@ -148,11 +148,11 @@ export function createInteractionHandler({
           },
           async (err) => {
             await edits;
-            const message = `⚠️ Scan Drive Labels: ${safeErrorMessage(err)}`;
+            const message = `⚠️ Scan Drive Labels: ${safeErrorMessage(err, 'Discord operation failed')}`;
             await interaction.editReply(message);
             await interaction.user.send(message);
           },
-        ).catch((err) => console.error('Barcode result delivery failed:', safeErrorMessage(err)));
+        ).catch((err) => console.error('Barcode result delivery failed:', safeErrorMessage(err, 'Discord operation failed')));
         return;
       }
 
@@ -165,7 +165,7 @@ export function createInteractionHandler({
       const result = await queued;
       await replyWithResult(interaction, result);
     } catch (err) {
-      await interaction.editReply(`⚠️ ${safeErrorMessage(err)}`);
+      await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Discord operation failed')}`);
     }
   }
 
@@ -183,24 +183,23 @@ export function createInteractionHandler({
       const t1 = Date.now();
       // Split the round trip: queue pickup (listener asleep?) vs depot work itself.
       const totalMs  = t1 - t0;
-      const execMs   = result.execMs ?? 0;
+      const duration = (value) => Number.isFinite(value) && value >= 0 ? value : 0;
+      const execMs   = duration(result.execMs);
       const pickupMs = totalMs - execMs;
-      const logRef = `…${conId.slice(-4)}`;
-      console.log(`[find ${logRef}] extension: ${(totalMs / 1000).toFixed(1)}s`
+      console.log(`[find] extension: ${(totalMs / 1000).toFixed(1)}s`
         + ` (pickup ${(pickupMs / 1000).toFixed(1)}s + depot ${(execMs / 1000).toFixed(1)}s)`);
 
       if (result.parcel) {
         const tm = result.parcel.timing;
-        if (tm) console.log(`[find ${logRef}] depot phases: search ${tm.search}ms + detail ${tm.detail}ms + scans ${tm.scans}ms`);
-        if (result.parcel._diag) console.log(`[find ${logRef}] tabs:`, JSON.stringify(result.parcel._diag));
+        if (tm) console.log(`[find] depot phases: search ${duration(tm.search)}ms + detail ${duration(tm.detail)}ms + scans ${duration(tm.scans)}ms`);
         const payload = await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey);
-        console.log(`[find ${logRef}] geo+map+render: ${((Date.now() - t1) / 1000).toFixed(1)}s`);
+        console.log(`[find] geo+map+render: ${((Date.now() - t1) / 1000).toFixed(1)}s`);
         await interaction.editReply(payload);
       } else {
         await replyWithResult(interaction, result);
       }
     } catch (err) {
-      await interaction.editReply(`⚠️ ${safeErrorMessage(err)}`);
+      await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Discord operation failed')}`);
     }
   }
 

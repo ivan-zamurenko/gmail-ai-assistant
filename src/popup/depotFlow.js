@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '../utils/errors.js';
 /**
  * popup/depotFlow.js
  * ==================
@@ -126,7 +127,7 @@ export function initDepotFlow({
       if (injection.result.__error) throw new Error(injection.result.__error);
       showDepotResult(injection.result);
     } catch (err) {
-      setDepotStatus('error', err.message);
+      setDepotStatus('error', safeErrorMessage(err, 'Depot operation failed'));
     } finally {
       setDepotButtons(false);
     }
@@ -150,7 +151,7 @@ export function initDepotFlow({
             world:  'MAIN',
           });
         } catch (err) {
-          throw fatal(`Cannot reach the depot tab — ${err.message}`);
+          throw fatal(`Cannot reach the depot tab — ${safeErrorMessage(err, 'Depot operation failed')}`);
         }
         if (!injection?.result) {
           throw fatal('Depot lookup returned nothing — open the depot page in the active tab');
@@ -245,15 +246,15 @@ export function initDepotFlow({
         + (remaining.length ? ` | Still waiting: ${remaining.length}` : ''),
       );
     } catch (err) {
-      log.fail(err.message);
-      setDepotStatus('error', `${err.message} | Saved targets remain available`);
+      log.fail(safeErrorMessage(err, 'Depot operation failed'));
+      setDepotStatus('error', `${safeErrorMessage(err, 'Depot operation failed')} | Saved targets remain available`);
     } finally {
       setDepotButtons(false);
     }
   });
 
   refreshRetryButton().catch((err) => {
-    log.fail(`Cannot load saved reschedules — ${err.message}`);
+    log.fail(`Cannot load saved reschedules — ${safeErrorMessage(err, 'Depot operation failed')}`);
   });
 
   scanDriveBtn.addEventListener('click', async () => {
@@ -313,7 +314,7 @@ export function initDepotFlow({
         + reschedule
       );
     } catch (err) {
-      const message = err.fatal ? `Stopped — ${err.message}` : err.message;
+      const message = err.fatal ? `Stopped — ${safeErrorMessage(err, 'Depot operation failed')}` : safeErrorMessage(err, 'Depot operation failed');
       log.fail(message);
       setDepotStatus('error', message);
     } finally {

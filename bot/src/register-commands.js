@@ -1,3 +1,4 @@
+import { safeErrorMessage } from './errors.js';
 /**
  * bot/src/register-commands.js
  * ============================
@@ -26,6 +27,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('❌ Registration failed:', err.message);
+  console.error('❌ Registration failed:', safeErrorMessage(err, 'Command registration failed'));
   process.exit(1);
 });

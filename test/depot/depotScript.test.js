@@ -17,6 +17,7 @@ async function runReschedule(mode, {
   targets = null,
   requestedDate = '',
   formAction = '/save',
+  fetchError = null,
 } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
@@ -28,6 +29,7 @@ async function runReschedule(mode, {
   const consoleMethods = new Map(
     ['log', 'table', 'warn', 'error'].map((key) => [key, globalThis.console[key]]),
   );
+  const diagnostics = [];
   let pendingReads = 0;
   let rescheduleReads = 0;
   let saveWrites = 0;
@@ -105,6 +107,7 @@ async function runReschedule(mode, {
     };
   }
   globalThis.fetch = async (url, options = {}) => {
+    if (fetchError) throw new Error(fetchError);
     let body;
     let responseStatus = 200;
     if (options.method === 'POST' && String(url).endsWith('/save')) {
@@ -129,7 +132,7 @@ async function runReschedule(mode, {
       text: async () => body,
     };
   };
-  for (const key of consoleMethods.keys()) globalThis.console[key] = () => {};
+  for (const key of consoleMethods.keys()) globalThis.console[key] = (...args) => diagnostics.push(args);
 
   try {
     const result = await depotMain({
@@ -140,7 +143,7 @@ async function runReschedule(mode, {
         ? (targets ?? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }])
         : [],
     });
-    return { result, pendingReads, rescheduleReads, saveWrites, saveBody };
+    return { result, pendingReads, rescheduleReads, saveWrites, saveBody, diagnostics };
   } finally {
     for (const [key, state] of original) {
       if (state.exists) globalThis[key] = state.value;
@@ -363,4 +366,15 @@ test('reschedule refuses a cross-origin form action before posting session field
   assert.equal(saveWrites, 0);
   assert.equal(result.changed, 0);
   assert.equal(result.errors, 1);
+});
+
+
+test('depot diagnostics omit parcel identities and provider bodies while retaining failure', async () => {
+  const success = await runReschedule('labels');
+  assert.equal(success.result.changed, 1);
+  assert.doesNotMatch(JSON.stringify(success.diagnostics), /123456789|7654321/);
+  const failure = await runReschedule('labels', { fetchError: '<html>synthetic-secret Bearer synthetic-token</html>' });
+  assert.equal(failure.result.errors, 1);
+  assert.doesNotMatch(JSON.stringify(failure), /synthetic-secret|synthetic-token|<html>/);
+  assert.match(JSON.stringify(failure.diagnostics), /Reschedule failed/);
 });

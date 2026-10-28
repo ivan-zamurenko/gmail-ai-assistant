@@ -4,7 +4,7 @@ import { createInteractionHandler } from '../../bot/src/interactions.js';
 import { commands } from '../../bot/src/commands.js';
 
 function fixture({ command = 'reschedule', sub = 'all', guild = 'synthetic-guild', admin = true,
-  values = {}, options, userId = 'synthetic-actor' } = {}) {
+  values = {}, options, userId = 'synthetic-actor', queueResult, queueError } = {}) {
   const calls = { queue: [], todo: [], reply: [], defer: [], edit: [], dm: [] };
   const interaction = {
     isChatInputCommand: () => true,
@@ -25,7 +25,8 @@ function fixture({ command = 'reschedule', sub = 'all', guild = 'synthetic-guild
     cfg: { guildId: 'synthetic-guild' },
     enqueueAndWait: async (...args) => {
       calls.queue.push(args);
-      return { status: 'done', summary: 'Synthetic result' };
+      if (queueError) throw queueError;
+      return queueResult ?? { status: 'done', summary: 'Synthetic result' };
     },
     buildParcelEmbed: async () => ({ content: 'Synthetic parcel' }),
     addTodo: async (...args) => { calls.todo.push(['add', ...args]); },
@@ -140,4 +141,24 @@ test('malformed options and actor return safe errors before side effects', async
     await h.run();
     assertDenied(h.calls);
   }
+});
+
+
+test('find diagnostics omit tracking, provider errors and raw tab metadata', async () => {
+  const previous = console.log;
+  const logs = [];
+  console.log = (...args) => logs.push(args);
+  try {
+    const found = fixture({ command: 'find', values: { con_id: '123456789' }, queueResult: {
+      status: 'done', execMs: 1,
+      parcel: { timing: { search: 'synthetic-secret', detail: 2, scans: 3 }, _diag: [{ err: 'synthetic-secret' }] },
+    } });
+    await found.run();
+    assert.deepEqual(found.calls.edit, [{ content: 'Synthetic parcel' }]);
+    assert.doesNotMatch(JSON.stringify(logs), /6789|synthetic-secret/);
+    const failed = fixture({ command: 'find', values: { con_id: '123456789' },
+      queueError: new Error('<html>synthetic-secret UID=synthetic-user</html>') });
+    await failed.run();
+    assert.deepEqual(failed.calls.edit, ['⚠️ Discord operation failed']);
+  } finally { console.log = previous; }
 });

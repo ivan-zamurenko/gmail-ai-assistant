@@ -11,6 +11,20 @@
  */
 
 export async function depotLookup(numbers, { identityOnly = false } = {}) {
+
+  function safeFailure(error, fallback = 'Depot operation failed') {
+    const known = new Set([
+      "Refusing a cross-origin depot request",
+      "Quick search form not found — is this a depot page?"
+    ]);
+    const raw = typeof error?.message === 'string' ? error.message : '';
+    if (known.has(raw)) return raw;
+    const status = raw.match(/(?:HTTP|Drive API|Drive) ([1-5]\d{2})\b/)?.[1];
+    const codes = new Set(['permission-denied', 'unauthenticated', 'unavailable', 'deadline-exceeded', 'resource-exhausted', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND']);
+    const candidate = error?.code ?? raw.match(/\[([a-zA-Z-]+)\]$/)?.[1];
+    const code = codes.has(candidate) ? ` [${candidate}]` : '';
+    return `${fallback}${status ? ` (HTTP ${status})` : ''}${code}`;
+  }
   const SCAN_URL = '/scripts/cgiip.exe/WService=wsInterlink/woScanningHistoryList.p';
   const CONS_URL = '/scripts/cgiip.exe/WService=wsInterlink/woConsignmentDetails.p';
 
@@ -294,7 +308,7 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
     try {
       results.push(await lookupOne(query));
     } catch (err) {
-      results.push({ query, ok: false, reason: err.message });
+      results.push({ query, ok: false, reason: safeFailure(err, 'Lookup failed') });
     }
   }
   return results;

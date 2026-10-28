@@ -432,3 +432,12 @@ into this log.
   is the constant POD_UNAVAILABLE only, without identifiers or provider text.
 - Added generated local placeholder with no customer/reference data; real photos
   remain private attachments. No live sending, deployment or credentials read.
+
+## 2026-10-28 — S01-03 safe diagnostics
+
+- Replaced arbitrary diagnostic text with static operation labels, exact known
+  reasons and allowlisted HTTP/status codes across extension and bot sinks.
+- Removed parcel identifiers, raw tab diagnostics and depot response fragments
+  from automatic logs. Preserved authorized operational cards and manual tools.
+- Synthetic test-first evidence only; no credentials, real customer records,
+  live services or external log provider used. See .workflow/evidence/S01-03.json.

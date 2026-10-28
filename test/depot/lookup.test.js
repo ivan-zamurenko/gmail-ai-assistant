@@ -176,3 +176,14 @@ test('the injected lookup carries no POD credentials or third-party API calls', 
     assert.ok(!injected.includes(forbidden), `injected depotLookup contains ${forbidden}`);
   }
 });
+
+
+test('lookup failure excludes raw provider body after injected function serialization', async () => {
+  await withLookupDocument({}, async () => {
+    globalThis.fetch = async () => { throw new Error('<html>synthetic-secret UID=synthetic-user</html>'); };
+    const injected = (0, eval)(`(${depotLookup.toString()})`);
+    const result = await injected(['123456789']);
+    assert.equal(result[0].ok, false);
+    assert.equal(result[0].reason, 'Lookup failed');
+  });
+});

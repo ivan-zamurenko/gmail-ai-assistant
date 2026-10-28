@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "task_id": "S02-04",
+  "outcome": "passed",
+  "base_sha": "0eff656",
+  "branch": "codex",
+  "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/parser/consignment.test.js",
+      "exit_code": 1,
+      "result": "0/3 passed; existing function returns array, lacks DTO/input boundaries"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/parser/consignment.test.js",
+      "exit_code": 0,
+      "result": "3/3 passed"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "178/178; lint/build/artifacts/docs/diff PASS; browser NOT RUN"
+    }
+  ],
+  "review": "consignment_review ACCEPT; pure module no imports/IO/logging; no runtime caller migration needed",
+  "acceptance": {
+    "1": "none/single/multiple sets explicitly checked",
+    "2": "phone/timestamp/quoted/random matches remain verified:false and lookup-required",
+    "3": "subject/body duplicates removed, two distinct values kept in stable order; leading zero preserved",
+    "4": "invalid types without coercion; empty none; combined 100000 accepted and 100001 rejected entirely",
+    "5": "Source review confirms no IO/storage/logging; tests use production function with noNetwork preload"
+  },
+  "untested": [
+    "Real mail examples and depot verification",
+    "No runtime Gmail/report caller currently connected",
+    "9/14 heuristic is not national format validation; false positives stay unverified"
+  ],
+  "next_step": "S03-01",
+  "external_effects": [],
+  "changed_paths": [
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md",
+    ".workflow/state.json",
+    "docs/SECURITY-WORKLOG.md",
+    "docs/TESTING.md",
+    "docs/gmail-contract.md",
+    "manifest.json",
+    "package-lock.json",
+    "package.json",
+    "roadmap/tasks/S02-04.md",
+    "src/parser/consignment.js",
+    "test/parser/consignment.test.js",
+    ".workflow/evidence/S02-04.json",
+    "START_HERE.html"
+  ]
+}

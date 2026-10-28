@@ -450,3 +450,9 @@ into this log.
   credentials or identifiers added to errors. Confirmed local recovery targets
   remain local under the existing same-day contract.
 - Synthetic tests/review only; no live provider calls, new scopes or deployment.
+
+## 2026-10-28 — S02-04 parser input boundary
+
+- Bounded pure text extraction; numeric matches explicitly unverified and require
+  separate lookup. No email contents, logging, storage or external calls added.
+- Synthetic fixtures only; no runtime caller or Gmail access enabled.

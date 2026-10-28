@@ -1,5 +1,24 @@
 # DPD Assistance — поточна передача
 
+## S02-04 завершено локально — 2026-10-28
+
+Owner «давай», base 0eff656, branch codex. Writer root/gmail_ai_owner,
+consignment_review ACCEPT. Active writer відсутній, state.active_task null.
+Pure extractConsignments тепер повертає {status,candidates}, кожен candidate
+має value, verified:false, reason:lookup-required. Статуси none/single/multiple,
+invalid_input/input_too_large; combined cap 100000 UTF-16 code units.
+Збережено heuristic 9/14 digits, leading zeros, subject→body order та dedup.
+Немає runtime callers: це підготовлений модуль, не підключений Gmail/report.
+
+3 нові grouped tests, RED0/3 → GREEN3/3; full 178/178,
+lint/build/artifacts/docs/diff PASS. Evidence: [S02-04](evidence/S02-04.json).
+Root 1.1.19, extension 6.3.0.64; bot лишився 0.2.8, schema 2 без змін.
+Next report-first: S03-01 — depot HTML fixtures і перевірка lookup results.
+Нове доручення ще не почато. Real Gmail/Chrome/depot/Discord не перевірялися.
+Журнал: [WORKLOG](WORKLOG.md).
+
+## Попередня передача (історія)
+
 ## S01-04 завершено локально — 2026-10-28
 
 Owner «далі», base eac6c5d, branch codex. api_retry_impl передав writer root;

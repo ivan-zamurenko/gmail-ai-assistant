@@ -919,3 +919,11 @@ folder POST не повторюється наступним фото; signal д
 збережено. Focused 39/39. Popup auth branch перевірено review, не browser harness.
 RED використовує watchdog лише щоб baseline без timeout не зависав; ранній
 запуск із cancelled tests не оголошено успішним RED. Дані тільки synthetic.
+
+## S02-04 — consignment candidates, 2026-10-28
+
+Три згруповані synthetic тести в test/parser/consignment.test.js: cardinality/
+order/dedup/leading zeros; phone/timestamp/quoted/random candidates never verified
+та excluded longer runs; type/no-coercion і exact combined size boundary.
+RED0/3 → GREEN3/3. Вони імпортують справжню pure function; мережі/листів немає.
+Runtime caller наразі відсутній, тому UI/lookup integration не заявляється.

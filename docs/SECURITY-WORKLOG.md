@@ -463,3 +463,15 @@ into this log.
   before returning verified fields. Safe reasons omit provider body/session.
 - Kept operational query correlation and existing minimized bot projection.
   Synthetic DOM fixtures only; no real sessions, customer data or live scraping.
+
+## 2026-10-28 — S09-04 retained result recovery
+
+- Owner approved24h undelivered retention and consignment-based recovery. No
+  new datastore; existing minimized task result retained until send ACK/expiry.
+- Recovery remains requester-only, configured guild/Admin/executor scoped and
+  ephemeral. No raw parcel details or secrets added to logs. Browser rules
+  unchanged; delivery metadata is Admin-only under changedOnly constraints.
+- Startup/periodic cleanup cannot delete while bot is offline; expired results
+  are denied on read. No TTL deployment, registration, startup or live sends.
+- Five grouped synthetic regressions and independent review; real Firestore
+  rules/network behavior remains untested in this session.

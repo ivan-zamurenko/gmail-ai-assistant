@@ -64,7 +64,7 @@ MAIN получает сериализованные аргументы depot, �
 
 ## 6. Требования к delivery и recovery — ещё не реализованные гарантии
 
-Целевое требование: сохранить operation ID и terminal result до подтверждения доставки или явного перехода в recoverable состояние. Уже существующая локальная recovery-очередь точных depot targets решает другую задачу: повтор server errors текущего дня без сканирования Drive. Она не является durable журналом доставки Discord replies и не гарантирует восстановление любого claimed task. Текущий `finishWithResult()` удаляет task до успешного Discord reply; S09-04 исправляет этот порядок с тестом потерянного `editReply`.
+Целевое требование: сохранить operation ID и terminal result до подтверждения доставки или явного перехода в recoverable состояние. Уже существующая локальная recovery-очередь точных depot targets решает другую задачу: повтор server errors текущего дня без сканирования Drive. Она не является durable журналом доставки Discord replies и не гарантирует восстановление любого claimed task. До S09-04 `finishWithResult()` видаляв task до Discord reply. Тепер terminal result зберігається до окремого delivery ACK; протокол нижче.
 
 Не превращать повтор вывода сообщения в повтор depot command. Pending timeout, claimed timeout, успешное внешнее изменение с потерянным результатом и отказ показа в Discord — разные состояния. Нужны ограниченные attempts, actionable safe error и сверка внешнего результата. Exactly-once внешних depot writes не обещается.
 
@@ -104,3 +104,56 @@ Schema 2, поля й підтримані all/parcel/barcodes/retry збере�
 виконується окремо в offscreen, а не в worker executeTask.
 
 Це локальні synthetic перевірки, не доказ live Firestore rules або Discord прав.
+
+## S09-04 — реалізований протокол, 2026-10-28
+
+Execution schema2 залишається. Bot-only additive metadata
+`delivery: {version:1, guildId, deliveredAt?}` не впливає на extension claim/result.
+Extension продовжує tx.update тільки чинних allowlisted fields; metadata не
+дозволено змінювати з browser, rules не послаблюються. Старий extension сумісний
+з новим ботом. Старий бот видаляє результати до reply — паралельний запуск або
+rollback на нього не зберігає гарантію recovery. Legacy records без delivery
+metadata не показуються новою recovery-командою.
+
+Terminal execution result лишається у тому самому tasks document. Тільки після
+успішного фінального Discord send/edit бот transactionally ставить deliveredAt,
+тоді видаляє документ. Невдала доставка не ACK; невдале видалення після ACK
+підбирає sweeper. Generic error notice не ACK. Restart recovery читає той самий
+UUID внутрішньо, ніколи не enqueue. User key — exact consignment; доступ лише
+автору + configured guild + Admin + configured executor. Recovery /find —
+ephemeral group reply, не DM. Barcode existing DM route збережено.
+
+Owner retention: 24h від persisted completedAt. Expired/ACKed результат більше
+не показується. Sweeper на startup і періодично видаляє лише terminal expired/
+ACKed записи; pending/claimed не видаляє. Коли бот offline, фізичне очищення
+відкладається до запуску; Firestore TTL deployment не виконується.
+Missing/invalid timestamps не є дозволом на безстроковий показ. Maps rerender
+не повторює depot execution, але optional Maps recovery лишається S09-07.
+
+Реалізація: queueService.js — injectable queue/retention, queue.js — production
+wiring; resultRecovery.js — read-only recovery UI. `/result con_id:<number>`
+фільтрує exact 9/14 digits (без конвертації); один збіг показується, кілька —
+вибір. `/result` без номера показує також batch results, 4 на сторінку, UTC
+час і live/preview у кнопці. Фільтрація за автором у Firestore, додатково
+guild/executor/deliveryVersion/expiry; кнопки повторно перевіряють доступ.
+Команда bot-only, у wire COMMANDS не додається й не створює task.
+
+Cleanup на startup і щохвилини, без overlapping sweep. Лише terminal записи
+поточного executor (чужий явно вказаний guild виключено): deliveredAt, expired
+або invalid completion timestamp видаляються; legacy без metadata не показується,
+але terminal expiry cleanup застосовується. Для server/client clock skew
+допускається completedAt до 5 хвилин попереду; далеко future timestamp invalid.
+24h не продовжується при читанні/повторному показі. Pending/claimed можуть
+лишатись для звірки невідомого execution outcome; cleanup їх не скасовує.
+
+Cancelled повертається як terminal result із попередженням, не успіхом;
+claimed timeout далі попереджає не повторювати live. Generic error notice,
+список результатів і render failure не ACK. Невдалий ACK не замінює вже
+доставлену картку помилкою; delete failure після ACK підбирає sweep. Можливий
+дубль повідомлення при втраченому Discord підтвердженні/ACK; exactly-once
+message delivery не обіцяється, depot execution не повторюється.
+
+Локальні fakes не перевіряють реальний Firestore Emulator/rules чи Discord SDK
+мережеві виклики. Command registration, startup і deployment не виконано.
+При rollout зупинити старий бот, оновити bot code і зареєструвати command за
+окремим дозволом; extension/rules update не потрібні для additive metadata.

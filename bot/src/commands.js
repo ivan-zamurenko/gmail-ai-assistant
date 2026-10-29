@@ -72,4 +72,10 @@ export const commands = [
     .addSubcommand(s =>
       s.setName('clear')
        .setDescription('Прибрати всі виконані задачі')),
+  new SlashCommandBuilder()
+    .setName('result')
+    .setDescription('Показати збережений результат без повторної дії в depot')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addStringOption(o => o.setName('con_id').setDescription('Номер посилки; без номера — список результатів')),
+
 ];

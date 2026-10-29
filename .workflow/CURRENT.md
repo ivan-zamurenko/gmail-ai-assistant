@@ -1,5 +1,41 @@
 # DPD Assistance — поточна передача
 
+## S09-04 завершено локально — 2026-10-29
+
+Owner погодив24h та /result за consignment. Base3e76bc9, branch codex.
+delivery_impl передав writer root; delivery_review ACCEPT. Active writer немає,
+state.active_task null. Root1.1.21, bot0.2.9; extension6.3.0.65/schema2 unchanged.
+
+Terminal task зберігається до фактичного Discord send/edit і окремого ACK.
+ACK transaction ставить delivery.deliveredAt, потім delete; sweep добирає
+невдале видалення. Retention24h від completedAt, skew tolerance5min.
+Expired/ACKed не показуються; startup/minutely sweep не видаляє pending/claimed.
+Offline physical cleanup відкладено до запуску. Додано лише bot metadata,
+rules та extension не змінені. Старий бот не запускати паралельно/при rollback:
+він має delete-before-reply і не забезпечує recovery.
+
+/result con_id:<consignment> — exact 9/14 digits; один збіг показується,
+кілька — явний вибір. /result без номера — власний список, також batch,
+4 на сторінку. Список/кнопки — озвучений engineering default після optional
+питання, не окрема згода власника. Автор+guild+Admin+executor перевіряються;
+відповідь ephemeral у груповому чаті. Internal UUID не вводиться користувачем.
+Recovery не має enqueue: depot-команда не повторюється. Barcode DM збережено.
+
+5 нових grouped regressions, focused12/12; full186/186,
+lint/build/artifacts/docs/diff PASS. Evidence: [S09-04](evidence/S09-04.json).
+Журнал: [WORKLOG](WORKLOG.md).
+
+## Наступний крок і межі
+
+Report-first next S09-06 — правильні дані картки й фізичної посилки.
+Нове доручення не почато. Firebase Emulator/rules, реальний Discord, command
+registration/startup/deployment не виконано. Перед live потрібно окремо
+зареєструвати /result і запустити новий бот. Maps/render failure лишає результат,
+але Maps стійкість — S09-07. Exactly-once показу повідомлення не обіцяється:
+втрата Discord ACK може дати повторний показ, не повтор depot execution.
+
+## Попередня передача (історія)
+
 ## S03-01 завершено локально — 2026-10-28
 
 Owner «далі», base 9c5888b, branch codex. lookup_impl передав writer root;
@@ -104,3 +140,8 @@ POD fallback завершено раніше: local bot/assets/pod-unavailable.p
 збережено при POD error; photo timeout, Maps та delivery recovery ще окремо.
 Report англійською, у груповому Discord-чаті, без переходу в DM;
 чинна приватність /find ephemeral збережена. WhatsApp API не реалізовано.
+
+Scope розширено на bot/src/interactions.js, commands.js, index.js, queueService.js
+і чинні tests/discord/admission.test.mjs, test/bot/commands.test.js: фактичні
+Discord send/ACK boundaries винесені з index. Конкретний recovery UX після
+відповіді; docs/version/Git root після handoff.

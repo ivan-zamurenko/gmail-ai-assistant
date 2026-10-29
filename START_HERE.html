@@ -1032,6 +1032,16 @@ Executor пише лише технічний POD_UNAVAILABLE при provider er
 вмісту або клієнтських ідентифікаторів. Відсутність фото не означає втрату посилки.
 Це не timeout захист: завислий POD-запит поки може затримати відповідь (S01-04).
 Maps і Discord delivery recovery не змінені.
+
+## Відновлення відповіді — S09-04
+
+`/result con_id:123456789` показує власний недоставлений результат за номером
+посилки протягом 24 годин від завершення. `/result` без номера — список,
+зокрема пакетних команд. Кілька збігів — кнопки явного вибору, 4 на сторінку.
+Усі відповіді recovery приватні в чаті; Admin і поточний guild обов’язкові.
+Це лише повторний показ, не нова depot-операція. Після успішного показу результат
+видаляється. Старий barcode DM flow збережено, /find не переноситься у DM.
+Нова команда описана локально; реєстрацію та запуск у Discord ще не виконано.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1099,7 +1109,7 @@ MAIN получает сериализованные аргументы depot, �
 
 ## 6. Требования к delivery и recovery — ещё не реализованные гарантии
 
-Целевое требование: сохранить operation ID и terminal result до подтверждения доставки или явного перехода в recoverable состояние. Уже существующая локальная recovery-очередь точных depot targets решает другую задачу: повтор server errors текущего дня без сканирования Drive. Она не является durable журналом доставки Discord replies и не гарантирует восстановление любого claimed task. Текущий `finishWithResult()` удаляет task до успешного Discord reply; S09-04 исправляет этот порядок с тестом потерянного `editReply`.
+Целевое требование: сохранить operation ID и terminal result до подтверждения доставки или явного перехода в recoverable состояние. Уже существующая локальная recovery-очередь точных depot targets решает другую задачу: повтор server errors текущего дня без сканирования Drive. Она не является durable журналом доставки Discord replies и не гарантирует восстановление любого claimed task. До S09-04 `finishWithResult()` видаляв task до Discord reply. Тепер terminal result зберігається до окремого delivery ACK; протокол нижче.
 
 Не превращать повтор вывода сообщения в повтор depot command. Pending timeout, claimed timeout, успешное внешнее изменение с потерянным результатом и отказ показа в Discord — разные состояния. Нужны ограниченные attempts, actionable safe error и сверка внешнего результата. Exactly-once внешних depot writes не обещается.
 
@@ -1139,6 +1149,59 @@ Schema 2, поля й підтримані all/parcel/barcodes/retry збере�
 виконується окремо в offscreen, а не в worker executeTask.
 
 Це локальні synthetic перевірки, не доказ live Firestore rules або Discord прав.
+
+## S09-04 — реалізований протокол, 2026-10-28
+
+Execution schema2 залишається. Bot-only additive metadata
+`delivery: {version:1, guildId, deliveredAt?}` не впливає на extension claim/result.
+Extension продовжує tx.update тільки чинних allowlisted fields; metadata не
+дозволено змінювати з browser, rules не послаблюються. Старий extension сумісний
+з новим ботом. Старий бот видаляє результати до reply — паралельний запуск або
+rollback на нього не зберігає гарантію recovery. Legacy records без delivery
+metadata не показуються новою recovery-командою.
+
+Terminal execution result лишається у тому самому tasks document. Тільки після
+успішного фінального Discord send/edit бот transactionally ставить deliveredAt,
+тоді видаляє документ. Невдала доставка не ACK; невдале видалення після ACK
+підбирає sweeper. Generic error notice не ACK. Restart recovery читає той самий
+UUID внутрішньо, ніколи не enqueue. User key — exact consignment; доступ лише
+автору + configured guild + Admin + configured executor. Recovery /find —
+ephemeral group reply, не DM. Barcode existing DM route збережено.
+
+Owner retention: 24h від persisted completedAt. Expired/ACKed результат більше
+не показується. Sweeper на startup і періодично видаляє лише terminal expired/
+ACKed записи; pending/claimed не видаляє. Коли бот offline, фізичне очищення
+відкладається до запуску; Firestore TTL deployment не виконується.
+Missing/invalid timestamps не є дозволом на безстроковий показ. Maps rerender
+не повторює depot execution, але optional Maps recovery лишається S09-07.
+
+Реалізація: queueService.js — injectable queue/retention, queue.js — production
+wiring; resultRecovery.js — read-only recovery UI. `/result con_id:&lt;number&gt;`
+фільтрує exact 9/14 digits (без конвертації); один збіг показується, кілька —
+вибір. `/result` без номера показує також batch results, 4 на сторінку, UTC
+час і live/preview у кнопці. Фільтрація за автором у Firestore, додатково
+guild/executor/deliveryVersion/expiry; кнопки повторно перевіряють доступ.
+Команда bot-only, у wire COMMANDS не додається й не створює task.
+
+Cleanup на startup і щохвилини, без overlapping sweep. Лише terminal записи
+поточного executor (чужий явно вказаний guild виключено): deliveredAt, expired
+або invalid completion timestamp видаляються; legacy без metadata не показується,
+але terminal expiry cleanup застосовується. Для server/client clock skew
+допускається completedAt до 5 хвилин попереду; далеко future timestamp invalid.
+24h не продовжується при читанні/повторному показі. Pending/claimed можуть
+лишатись для звірки невідомого execution outcome; cleanup їх не скасовує.
+
+Cancelled повертається як terminal result із попередженням, не успіхом;
+claimed timeout далі попереджає не повторювати live. Generic error notice,
+список результатів і render failure не ACK. Невдалий ACK не замінює вже
+доставлену картку помилкою; delete failure після ACK підбирає sweep. Можливий
+дубль повідомлення при втраченому Discord підтвердженні/ACK; exactly-once
+message delivery не обіцяється, depot execution не повторюється.
+
+Локальні fakes не перевіряють реальний Firestore Emulator/rules чи Discord SDK
+мережеві виклики. Command registration, startup і deployment не виконано.
+При rollout зупинити старий бот, оновити bot code і зареєструвати command за
+окремим дозволом; extension/rules update не потрібні для additive metadata.
 </pre></article>
 <article id="doc-9" tabindex="-1" hidden><p class="path"><a href="docs/discord/RUNBOOK_RU.md">docs/discord/RUNBOOK_RU.md</a></p><h1>Discord + Firestore + Chrome — порядок подготовки и эксплуатации</h1><pre class="markdown"># Discord + Firestore + Chrome — порядок подготовки и эксплуатации
 
@@ -1752,6 +1815,42 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 </pre></article>
 <article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — поточна передача</h1><pre class="markdown"># DPD Assistance — поточна передача
 
+## S09-04 завершено локально — 2026-10-29
+
+Owner погодив24h та /result за consignment. Base3e76bc9, branch codex.
+delivery_impl передав writer root; delivery_review ACCEPT. Active writer немає,
+state.active_task null. Root1.1.21, bot0.2.9; extension6.3.0.65/schema2 unchanged.
+
+Terminal task зберігається до фактичного Discord send/edit і окремого ACK.
+ACK transaction ставить delivery.deliveredAt, потім delete; sweep добирає
+невдале видалення. Retention24h від completedAt, skew tolerance5min.
+Expired/ACKed не показуються; startup/minutely sweep не видаляє pending/claimed.
+Offline physical cleanup відкладено до запуску. Додано лише bot metadata,
+rules та extension не змінені. Старий бот не запускати паралельно/при rollback:
+він має delete-before-reply і не забезпечує recovery.
+
+/result con_id:&lt;consignment&gt; — exact 9/14 digits; один збіг показується,
+кілька — явний вибір. /result без номера — власний список, також batch,
+4 на сторінку. Список/кнопки — озвучений engineering default після optional
+питання, не окрема згода власника. Автор+guild+Admin+executor перевіряються;
+відповідь ephemeral у груповому чаті. Internal UUID не вводиться користувачем.
+Recovery не має enqueue: depot-команда не повторюється. Barcode DM збережено.
+
+5 нових grouped regressions, focused12/12; full186/186,
+lint/build/artifacts/docs/diff PASS. Evidence: [S09-04](evidence/S09-04.json).
+Журнал: [WORKLOG](WORKLOG.md).
+
+## Наступний крок і межі
+
+Report-first next S09-06 — правильні дані картки й фізичної посилки.
+Нове доручення не почато. Firebase Emulator/rules, реальний Discord, command
+registration/startup/deployment не виконано. Перед live потрібно окремо
+зареєструвати /result і запустити новий бот. Maps/render failure лишає результат,
+але Maps стійкість — S09-07. Exactly-once показу повідомлення не обіцяється:
+втрата Discord ACK може дати повторний показ, не повтор depot execution.
+
+## Попередня передача (історія)
+
 ## S03-01 завершено локально — 2026-10-28
 
 Owner «далі», base 9c5888b, branch codex. lookup_impl передав writer root;
@@ -1856,6 +1955,11 @@ POD fallback завершено раніше: local bot/assets/pod-unavailable.p
 збережено при POD error; photo timeout, Maps та delivery recovery ще окремо.
 Report англійською, у груповому Discord-чаті, без переходу в DM;
 чинна приватність /find ephemeral збережена. WhatsApp API не реалізовано.
+
+Scope розширено на bot/src/interactions.js, commands.js, index.js, queueService.js
+і чинні tests/discord/admission.test.mjs, test/bot/commands.test.js: фактичні
+Discord send/ACK boundaries винесені з index. Конкретний recovery UX після
+відповіді; docs/version/Git root після handoff.
 </pre></article>
 <article id="doc-22" tabindex="-1" hidden><p class="path"><a href=".workflow/WORKLOG.md">.workflow/WORKLOG.md</a></p><h1>Спільний журнал DPD Assistance</h1><pre class="markdown"># Спільний журнал DPD Assistance
 
@@ -1922,6 +2026,10 @@ Report англійською, у груповому Discord-чаті, без п
 - 2026-10-28 | root/gmail_ai_owner + consignment_review | implemented S02-04 | Pure bounded candidate DTO; no runtime caller. RED0/3 → GREEN3/3; full178/178 + lint/build/docs PASS. Evidence: `.workflow/evidence/S02-04.json`; no live/UI integration. Next: S03-01.
 - 2026-10-28 | root | approved S03-01 | Owner «далі»; full lookup exactness and unknown HTML outcomes need guards. Writer lookup_impl, read-only lookup_review; minimal test-first, no live.
 - 2026-10-28 | lookup_impl → root + lookup_review | implemented S03-01 | Exact lookup/login/schema guards,3 grouped tests; RED7/9→8/9→7/9→8/9 then focused29/29; full181/181 + lint/build/docs PASS. Evidence: `.workflow/evidence/S03-01.json`; synthetic DOM/VM only, real HTML/browser untested. Next:S09-04.
+- 2026-10-28 | root | approved/in_progress S09-04 | Owner «далі»; delete-before-reply confirmed. Retention/recovery UI question pending; prepare injectable queue and minimal test-first reproduction only.
+- 2026-10-28 | delivery_impl → root + delivery_review | prepared S09-04 | Injectable actual queue extracted; lost editReply RED0/1 confirms premature deletion; lint PASS. Retention/UX decision pending, no fix/release/commit/live yet. Next: owner answer then ACK/recovery.
+- 2026-10-28 | owner + root | approved retention | 24h from completedAt, /result by consignment instead of ID. Additive bot-only delivery protocol documented before implementation; batch/multiple UX pending. Next: core ACK/recovery.
+- 2026-10-29 | delivery_impl → root + delivery_review | implemented S09-04 |24h terminal retention, delivery ACK, /result by consignment + private selection, no reenqueue. Five grouped tests; focused12/12, full186/186 + lint/build/docs PASS. Evidence: `.workflow/evidence/S09-04.json`; no live registration/startup. Next:S09-06.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -2921,7 +3029,19 @@ Drive: synthetic photo → deterministic candidate → preview без writes →
 
 Рабочие поля и правила сохранения: [handoff](../handoff.md). Реальный checkpoint: [.workflow/CURRENT.md](../../.workflow/CURRENT.md).
 </pre></article>
-<article id="doc-40" tabindex="-1" hidden><p class="path"><a href="docs/decisions.md">docs/decisions.md</a></p><h1>Решения и источник истины</h1><pre class="markdown"># Решения и источник истины
+<article id="doc-40" tabindex="-1" hidden><p class="path"><a href="docs/decisions.md">docs/decisions.md</a></p><h1>Решения и источник истины</h1><pre class="markdown">## RESULT-RECOVERY-2026-10-28 — retention і consignment
+
+Власник погодив 24 години для недоставленого результату та `/result`, але
+замість task ID користувач вводить consignment. Після успішного показу —
+видалення. Строк від completedAt; expired result не показується, фізичне
+очищення при offline bot відкладене до запуску. Це локальна реалізація,
+не дозвіл на live registration/deployment. Для batch/multiple results запропоновано optional UX уточнення. Без додаткової
+відповіді реалізовано озвучений engineering default: `/result` без номера
+показує власні збережені результати, multiple — кнопки вибору, 4 на сторінку.
+Це вибір реалізації, не окрема дослівна згода власника. Немає довільного вибору
+першого запису; internal UUID лишається технічним ключем, не полем команди.
+
+# Решения и источник истины
 
 ## REPORT-CHANNEL-2026-10-26 — відповідь у чаті групи
 
@@ -4717,6 +4837,19 @@ HTML. Credential assertion не забороняє слово password у login 
 credentials, Authorization і third-party calls далі заборонені.
 Focused lookup+origin+verifier+executor+render 29/29. Реальні HTML parsing,
 браузерні selectors та provider responses не перевірено.
+
+## S09-04 — delivery acknowledgement/recovery, 2026-10-28
+
+П’ять grouped scenarios у test/queue/delivery.test.mjs імпортують справжній
+queueService + interaction handlers із synthetic Firestore/Discord/clock ports.
+Захищають delete-before-reply, ACK-after-send, restart,24h expiry/clock skew,
+ACK/delete failure, pending vsclaimed timeout, ownership/forged buttons,
+multiple selection/pagination, render failure і barcode DM delivery.
+Чинні schema/admission тести оновлено для result (bot-only, Admin, optional con_id).
+RED0/1;2/3;4/5;4/5 → GREEN5/5. Focused12/12. Restart/expiry нових API має
+characterization evidence, не вигаданий baseline RED.
+Це fakes actual control flow, не Firebase Emulator/реальний Discord. Startup
+cleanup wiring перевірено review; live registration/startup не виконувались.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -9102,7 +9235,7 @@ CURRENT, state и evidence текущей карточки допустимы к
 До правки поведения создать выполняемый test по критериям и воспроизвести реальный дефект. Если исходная защита уже корректна, сохранить characterization и продемонстрировать чувствительность к контролируемой неверной fixture, не ломать приложение ради RED. Отсутствующая библиотека/Emulator/Chrome — env_blocked, не functional RED.
 
 ```sh
-node --test test/queue/delivery.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/queue/delivery.test.mjs test/discord/admission.test.mjs test/bot/commands.test.js
 ```
 
 Команду запускать после создания теста/подготовки зависимости; для S09-12 show только читает карточку. Затем затронутые регрессии, сохранённый `test/`, lint и нужный build по [toolchain](../../docs/toolchain.md). Не прогонять реальный bot startup как тест imports.
@@ -9130,6 +9263,18 @@ fix(queue): [S09-04] retain undelivered command results
 ```
 
 Evidence: `.workflow/evidence/S09-04.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
+
+## Локальна реалізація, 2026-10-28
+
+Owner:24h + `/result` за consignment, не UUID. Protocol у queue-contract
+записано до реалізації. Actual handlers тепер interactions.js; scope розширено
+на queueService.js/resultRecovery.js, commands.js та existing admission/schema
+tests. Runtime schema2/rules/extension не змінені, metadata additive bot-only.
+П’ять grouped tests з actual queue+handler; restart через новий service instance
+над тим самим fake store. Firebase Emulator/Discord/live не перевірені.
+Строк рахується від completedAt, clock skew tolerance5min; offline physical
+cleanup після restart. Batch/multiple list buttons — озвучений engineering
+default після optional UX запиту, не окремий запис про згоду власника.
 </pre></article>
 <article id="doc-112" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-05.md">roadmap/tasks/S09-05.md</a></p><h1>S09-05 — Проверить listener lifecycle и границу runtime messages</h1><pre class="markdown"># S09-05 — Проверить listener lifecycle и границу runtime messages
 

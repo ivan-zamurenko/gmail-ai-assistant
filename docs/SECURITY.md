@@ -76,7 +76,9 @@ asks the worker only for exact depot lookup/reschedule operations. Photos, OAuth
 tokens, Drive identifiers, and filenames are never written to Firestore or
 Discord. The bounded result may contain up to
 25 consignment numbers and is delivered to the administrator's private DM; the
-temporary task document is deleted by the bot after completion.
+temporary task document is retained for at most 24 hours from completion for recovery,
+and deleted after confirmed delivery. Expired data is denied immediately; physical
+cleanup runs at startup/every minute while the bot is running.
 
 While a barcode task is claimed, the executor may update only a strict progress
 allowlist: stage, bounded current/total counters, bounded elapsed milliseconds,

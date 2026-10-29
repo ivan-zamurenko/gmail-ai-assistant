@@ -1,4 +1,5 @@
 /** Discord interaction boundary; importing this module never starts a client or Firebase. */
+import { createResultRecovery } from './resultRecovery.js';
 import { MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { safeErrorMessage } from './errors.js';
@@ -6,11 +7,25 @@ import { validateConsignmentNumber, validateFutureWorkday } from './validation.j
 import { renderBarcodeProgress, shouldPublishBarcodeProgress } from './barcodeProgress.js';
 
 export function createInteractionHandler({
-  cfg, enqueueAndWait, buildParcelEmbed,
-  addTodo, listTodos, markDone, clearDone, renderList,
+  cfg, enqueueAndWait, buildParcelEmbed, acknowledgeResult = async () => {},
+  addTodo, listTodos, markDone, clearDone, renderList, listResults, getResult,
 }) {
+  const actor = interaction => ({ requestedBy: interaction.user.id, guildId: interaction.guildId });
+  async function acknowledge(interaction, result) {
+    if (!result.id) return;
+    try { await acknowledgeResult(result.id, actor(interaction)); }
+    catch (err) { console.error('Result acknowledgement failed:', safeErrorMessage(err, 'Queue acknowledgement failed')); }
+  }
+  async function deliveryError(interaction, err, retained = false) {
+    try { await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Discord operation failed')}${retained ? '\nЗбережений результат можна знайти через /result; не повторюй depot-команду.' : ''}`); }
+    catch (failure) { console.error('Result delivery failed:', safeErrorMessage(failure, 'Discord operation failed')); }
+  }
+
+  const recoverResult = createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, resultMessage, cfg });
+
   async function handleInteraction(interaction) {
-    if (!interaction.isChatInputCommand()) return;
+    const recoveryButton = interaction.isButton?.() && interaction.customId?.startsWith('result:');
+    if (!interaction.isChatInputCommand() && !recoveryButton) return;
 
     // Commands are guild-scoped at registration, but keep a runtime gate too: it
     // protects us if registration changes or an interaction is ever misrouted.
@@ -19,9 +34,15 @@ export function createInteractionHandler({
       return;
     }
 
-    const touchesDepot = interaction.commandName !== 'todo';
+    const touchesDepot = recoveryButton || interaction.commandName !== 'todo';
     if (touchesDepot && !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
       await interaction.reply({ content: '⛔ Depot commands require Administrator permission.', flags: MessageFlags.Ephemeral });
+      return;
+    }
+
+    if (recoveryButton || interaction.commandName === 'result') {
+      if (typeof interaction.user?.id !== 'string' || !interaction.user.id) return;
+      await recoverResult(interaction);
       return;
     }
 
@@ -117,6 +138,7 @@ export function createInteractionHandler({
     // The depot round-trip is slower than Discord's 3-second reply window.
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+    let retained = false;
     try {
       if (mode === RESCHEDULE_MODE.BARCODES) {
         await interaction.editReply(
@@ -140,11 +162,16 @@ export function createInteractionHandler({
           requestedBy: interaction.user.id,
         }, { timeoutMs: 2 * 60 * 60_000, onProgress });
 
+        let delivered = false;
+        let terminalReceived = false;
         queued.then(
           async (result) => {
+            terminalReceived = true;
             await edits;
-            await interaction.editReply('✅ Scan Drive Labels завершено — фінальний звіт надіслано в DM.');
             await interaction.user.send(resultMessage(result));
+            delivered = true;
+            await acknowledge(interaction, result);
+            await interaction.editReply('✅ Scan Drive Labels завершено — фінальний звіт надіслано в DM.');
           },
           async (err) => {
             await edits;
@@ -152,7 +179,10 @@ export function createInteractionHandler({
             await interaction.editReply(message);
             await interaction.user.send(message);
           },
-        ).catch((err) => console.error('Barcode result delivery failed:', safeErrorMessage(err, 'Discord operation failed')));
+        ).catch(async err => {
+          console.error('Barcode result delivery failed:', safeErrorMessage(err, 'Discord operation failed'));
+          if (!delivered) await deliveryError(interaction, err, terminalReceived);
+        });
         return;
       }
 
@@ -163,9 +193,11 @@ export function createInteractionHandler({
       });
 
       const result = await queued;
+      retained = true;
       await replyWithResult(interaction, result);
+      await acknowledge(interaction, result);
     } catch (err) {
-      await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Discord operation failed')}`);
+      await deliveryError(interaction, err, retained);
     }
   }
 
@@ -174,12 +206,14 @@ export function createInteractionHandler({
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const t0 = Date.now();
+    let retained = false;
     try {
       const result = await enqueueAndWait({
         command:     COMMANDS.FIND,
         args:        { conId },
         requestedBy: interaction.user.id,
       });
+      retained = true;
       const t1 = Date.now();
       // Split the round trip: queue pickup (listener asleep?) vs depot work itself.
       const totalMs  = t1 - t0;
@@ -198,14 +232,15 @@ export function createInteractionHandler({
       } else {
         await replyWithResult(interaction, result);
       }
+      await acknowledge(interaction, result);
     } catch (err) {
-      await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Discord operation failed')}`);
+      await deliveryError(interaction, err, retained);
     }
   }
 
   /** One place that turns an extension result into the Discord reply. */
   function resultMessage(result) {
-    const icon    = result.status === STATUS.ERROR ? '❌' : '✅';
+    const icon    = result.status === STATUS.CANCELLED ? '⚠️' : result.status === STATUS.ERROR ? '❌' : '✅';
     const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
     const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
     return `${icon} ${summary}${details}`;

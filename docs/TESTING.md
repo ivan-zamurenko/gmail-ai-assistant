@@ -939,3 +939,16 @@ HTML. Credential assertion не забороняє слово password у login 
 credentials, Authorization і third-party calls далі заборонені.
 Focused lookup+origin+verifier+executor+render 29/29. Реальні HTML parsing,
 браузерні selectors та provider responses не перевірено.
+
+## S09-04 — delivery acknowledgement/recovery, 2026-10-28
+
+П’ять grouped scenarios у test/queue/delivery.test.mjs імпортують справжній
+queueService + interaction handlers із synthetic Firestore/Discord/clock ports.
+Захищають delete-before-reply, ACK-after-send, restart,24h expiry/clock skew,
+ACK/delete failure, pending vsclaimed timeout, ownership/forged buttons,
+multiple selection/pagination, render failure і barcode DM delivery.
+Чинні schema/admission тести оновлено для result (bot-only, Admin, optional con_id).
+RED0/1;2/3;4/5;4/5 → GREEN5/5. Focused12/12. Restart/expiry нових API має
+characterization evidence, не вигаданий baseline RED.
+Це fakes actual control flow, не Firebase Emulator/реальний Discord. Startup
+cleanup wiring перевірено review; live registration/startup не виконувались.

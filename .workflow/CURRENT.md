@@ -16,7 +16,8 @@ No live/depot/Discord/Maps provider/browser verification or deployment.
 
 Наступне доручення: S09-07 — Maps failure isolation та надійні посилання;
 потім S09-13 driver report з погодженням parcel/event selection.
-Command shape лишається deferred (COMMAND-SHAPE-2026-10-29 у decisions).
+Reschedule shape збережено за COMMAND-SHAPE-2026-11-01: parcel + con_id/new_date вже є.
+Manual-date bank holidays потребують уточнення; optional /result list не переузгоджено.
 Наступну задачу ще не розпочато.
 
 ---

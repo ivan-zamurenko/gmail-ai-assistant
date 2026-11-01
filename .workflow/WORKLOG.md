@@ -70,3 +70,5 @@
 - 2026-11-01 | root | approved S09-06 | Owner «Давай далі»; card bounds/order/empty risk confirmed. Writer card_impl, independent card_review. Commands change deferred; photo/drop same-event selection unresolved S09-13. Next:minimal RED.
 
 - 2026-11-01 | root + card_impl/card_review | implemented S09-06 | bounded honest private cards, explicit projection, safe truncated-address route and unknown parcel identity; reviewer ACCEPT | test-first3groups, focused17/17, full189/189, lint/build/docs/artifacts PASS; evidence/S09-06.json | next S09-07, no live verification.
+
+- 2026-11-01 | root | approved clarification | retain /reschedule and existing parcel con_id/new_date arguments; code already rejects invalid/nonfuture/weekend dates; manual bank-holiday policy pending | source inspection commands.js/validation.js/executor.js, runtime unchanged | clarify holidays; next S09-07.

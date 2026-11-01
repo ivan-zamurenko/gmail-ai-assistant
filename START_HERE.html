@@ -1859,7 +1859,8 @@ No live/depot/Discord/Maps provider/browser verification or deployment.
 
 Наступне доручення: S09-07 — Maps failure isolation та надійні посилання;
 потім S09-13 driver report з погодженням parcel/event selection.
-Command shape лишається deferred (COMMAND-SHAPE-2026-10-29 у decisions).
+Reschedule shape збережено за COMMAND-SHAPE-2026-11-01: parcel + con_id/new_date вже є.
+Manual-date bank holidays потребують уточнення; optional /result list не переузгоджено.
 Наступну задачу ще не розпочато.
 
 ---
@@ -2086,6 +2087,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-01 | root | approved S09-06 | Owner «Давай далі»; card bounds/order/empty risk confirmed. Writer card_impl, independent card_review. Commands change deferred; photo/drop same-event selection unresolved S09-13. Next:minimal RED.
 
 - 2026-11-01 | root + card_impl/card_review | implemented S09-06 | bounded honest private cards, explicit projection, safe truncated-address route and unknown parcel identity; reviewer ACCEPT | test-first3groups, focused17/17, full189/189, lint/build/docs/artifacts PASS; evidence/S09-06.json | next S09-07, no live verification.
+
+- 2026-11-01 | root | approved clarification | retain /reschedule and existing parcel con_id/new_date arguments; code already rejects invalid/nonfuture/weekend dates; manual bank-holiday policy pending | source inspection commands.js/validation.js/executor.js, runtime unchanged | clarify holidays; next S09-07.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3247,6 +3250,19 @@ S09 — инженерная декомпозиция проверки/разв�
 без відповіді; подальше «що далі» й доручення S09-06 не завершують цю зміну.
 Чинні команди/optional result list тимчасово збережені; не записувати їх як
 остаточно погоджений UX і не змінювати в S09-06.
+
+## COMMAND-SHAPE-2026-11-01 — уточнення власника
+
+Власник: команду змінювати не потрібно; потрібні аргументи для перенесення
+однієї посилки на обрану ним дату в робочий день. Зберігаємо наявний
+`/reschedule parcel con_id:&lt;consignment&gt; new_date:&lt;YYYY-MM-DD&gt;` та інші режими.
+Ці required arguments уже є в коді. Default dry_run:true; explicit false — live.
+Чинні bot/executor validators відхиляють невалідну, минулу/сьогоднішню дату
+та суботу/неділю. Чи виключати також Irish bank holidays для ручної дати —
+потребує уточнення; не плутати з наявним automatic next-working-day.
+Це закриває відкладене перейменування/спрощення reschedule з рішення
+COMMAND-SHAPE-2026-10-29; не є окремим рішенням щодо optional /result list.
+Runtime не змінено; live не запускався.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 

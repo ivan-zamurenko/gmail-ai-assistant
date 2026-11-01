@@ -257,13 +257,25 @@ async function runFind(args) {
   if (reason)  return error(reason);
   if (!res.ok) return error(findFailure(res));
 
+  // Credentials stay in the extension: the depot tab only reports the event id.
+  const podResult = res.podEventId == null ? null : await fetchPodImage(res.podEventId, config.podAuth);
+  const podBody = typeof podResult?.image?.body === 'string' && /^[A-Za-z0-9+/=]+$/.test(podResult.image.body)
+    && podResult.image.body.length <= 700_000 ? podResult.image.body : '';
+  if (podResult?.error) console.warn('[find] POD_UNAVAILABLE');
+  // POD is optional: a provider failure must not discard the confirmed parcel
+  // facts. With no image the bot renders its local unavailable-photo placeholder.
+  return projectFindResult(res, podBody);
+}
+
+/** Explicit outbound parcel contract; no depot/session objects cross this boundary. */
+export function projectFindResult(res, podBody = '') {
   // /find is an administrator-only, ephemeral operational card. Keep the payload
   // structured and bounded; arbitrary depot notes still stay inside the extension.
   const operationalValue = (value) => {
     const clean = String(value ?? '').trim();
     return /^[A-Za-z0-9][A-Za-z0-9 ._/-]{0,23}$/.test(clean) ? clean : '';
   };
-  const textValue = (value, max = 200) => Array.from(String(value ?? ''))
+  const textValue = (value, max = 200) => Array.from(typeof value === 'string' ? value : '')
     .map((char) => {
       const code = char.charCodeAt(0);
       return code < 32 || code === 127 ? ' ' : char;
@@ -272,50 +284,61 @@ async function runFind(args) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, max);
+  if (!Array.isArray(res.scans) || res.scans.length > 1000
+      || res.scans.some(scan => !scan || typeof scan !== 'object')) {
+    return error('Parcel data unavailable: unsupported or oversized scan history');
+  }
   const scans = res.scans.map((scan) => {
     const bay      = operationalValue(scan.bay);
     const sequence = operationalValue(scan.sequence);
     const onwardBc = operationalValue(scan.onwardBc);
     return {
-      parcel: scan.parcel,
-      type:   scan.type,
-      date:   scan.date,
-      time:   scan.time,
-      route:  scan.route,
+      parcel: typeof scan.parcel === 'string' && /^\d{1,6}$/.test(scan.parcel) ? scan.parcel : '',
+      type:   textValue(scan.type, 48),
+      date:   typeof scan.date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(scan.date) ? scan.date : '',
+      time:   typeof scan.time === 'string' && /^\d{2}:\d{2}(?::\d{2})?$/.test(scan.time) ? scan.time : '',
+      route:  textValue(scan.route, 24),
       ...(scan.signature && { signature: textValue(scan.signature, 80) }),
       ...(bay && { bay }),
       ...(sequence && { sequence }),
       ...(onwardBc && { onwardBc }),
     };
   });
-  // Credentials stay in the extension: the depot tab only reports the event id.
-  const podResult = res.podEventId == null ? null : await fetchPodImage(res.podEventId, config.podAuth);
-  const podBody = typeof podResult?.image?.body === 'string' && /^[A-Za-z0-9+/=]+$/.test(podResult.image.body)
-    && podResult.image.body.length <= 700_000 ? podResult.image.body : '';
-  if (podResult?.error) console.warn('[find] POD_UNAVAILABLE');
-  // POD is optional: a provider failure must not discard the confirmed parcel
-  // facts. With no image the bot renders its local unavailable-photo placeholder.
+  const address = res.address && typeof res.address === 'object' ? res.address : {};
+  const addressTruncated = address.truncated === true
+    || (address.lines != null && !Array.isArray(address.lines))
+    || (Array.isArray(address.lines) && (address.lines.length > 5
+      || address.lines.some(line => typeof line !== 'string' || line.length > 200)))
+    || [address.town, address.county].some(value => value != null
+      && (typeof value !== 'string' || value.length > 200));
+  const drop = res.drop;
+  const validDrop = drop && Number.isFinite(drop.lat) && Math.abs(drop.lat) <= 90
+    && Number.isFinite(drop.lng) && Math.abs(drop.lng) <= 180;
+  const duration = value => Number.isFinite(value) && value >= 0 && value <= 7200000 ? value : 0;
   const parcel = {
-    query:      res.query,
-    consNumber: res.consNumber,
-    arrangedDate: res.arrangedDate,
+    query:      textValue(res.query, 20),
+    consNumber: textValue(res.consNumber, 20),
+    arrangedDate: textValue(res.arrangedDate, 24),
     scans,
-    ...(podBody && { pod: { mime: 'image/jpeg', body: podBody } }),
-    drop:       res.drop,
-    timing:     res.timing,
-    _diag:      res._diag,
+    ...(typeof podBody === 'string' && podBody.length <= 700000 && /^[A-Za-z0-9+/=]+$/.test(podBody) && { pod: { mime: 'image/jpeg', body: podBody } }),
+    drop: validDrop ? { lat: drop.lat, lng: drop.lng, type: textValue(drop.type, 48), date: textValue(drop.date, 10), time: textValue(drop.time, 8) } : null,
+    timing: { search: duration(res.timing?.search), detail: duration(res.timing?.detail), scans: duration(res.timing?.scans) },
     address: {
-      contact:  textValue(res.address.contact),
-      company:  textValue(res.address.company),
-      lines:    (res.address.lines ?? []).map((line) => textValue(line)).filter(Boolean),
-      town:     textValue(res.address.town),
-      county:   textValue(res.address.county),
-      postCode: textValue(res.address.postCode, 16),
-      depot:    textValue(res.address.depot, 80),
-      mobile:   textValue(res.address.mobile, 80),
-      email:    textValue(res.address.email, 160),
+      ...(addressTruncated && { truncated: true }),
+      contact:  textValue(address.contact),
+      company:  textValue(address.company),
+      lines:    (Array.isArray(address.lines) ? address.lines : []).slice(0, 5).map((line) => textValue(line)).filter(Boolean),
+      town:     textValue(address.town),
+      county:   textValue(address.county),
+      postCode: textValue(address.postCode, 16),
+      depot:    textValue(address.depot, 80),
+      mobile:   textValue(address.mobile, 80),
+      email:    textValue(address.email, 160),
     },
   };
+  if (new TextEncoder().encode(JSON.stringify(parcel)).byteLength > 900000) {
+    return error('Parcel data unavailable: result size limit exceeded');
+  }
   return { status: STATUS.DONE, parcel };
 }
 

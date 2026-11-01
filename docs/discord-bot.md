@@ -139,3 +139,20 @@ Maps і Discord delivery recovery не змінені.
 Це лише повторний показ, не нова depot-операція. Після успішного показу результат
 видаляється. Старий barcode DM flow збережено, /find не переноситься у DM.
 Нова команда описана локально; реєстрацію та запуск у Discord ще не виконано.
+
+## Find card validation — S09-06 (2026-11-01)
+
+Private operational card preserves approved recipient/address/contact fields.
+History sorts newest first, shows at most12 events with an omitted count.
+Parcel0 is excluded when numbered physical parcels exist; unassigned events
+remain visible and prevent a confirmed headline/count. Invalid calendar/time
+values likewise show an unconfirmed status. Dates use full DD/MM/YYYY and
+HH:MM[:SS], with UTC only as an ordering key, not a timezone conversion.
+Photo/location remain consignment-level evidence and may describe different
+parcels/events; exact association belongs to S09-13. This is not the driver report.
+
+Malformed/oversized input produces bounded output: scan limit1000, embedded
+text budget6000, POD base64 limit700000, serialized parcel limit900000 UTF8
+bytes. Displayed address may be shortened; truncated navigation targets are
+omitted unless a valid Eircode exists. Existing Maps provider failure behavior
+is deferred to S09-07. No live/command-registration verification performed.

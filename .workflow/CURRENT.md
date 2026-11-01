@@ -1,3 +1,28 @@
+# S09-06 завершено локально — 2026-11-01
+
+Owner «Давай далі», base953d778, codex. Writer card_impl передав root;
+card_review ACCEPT після незалежного review. Активного writer/task немає.
+Root1.1.22, bot0.2.10, extension6.3.0.66; schema2 unchanged.
+
+Find card: sorted bounded history, honest unknown timestamps/parcel identity,
+explicit private payload whitelist/size limits, formatting/mention protection.
+Обрізана address має truncated flag і не використовується для target route;
+valid Eircode зберігає маршрут. Контакти/адреса залишаються приватними PII.
+POD/drop не прив'язані до однієї події: картка прямо повідомляє це.
+
+Три нові grouped regressions; focused17/17, full189/189;
+lint/build/artifacts/docs/diff PASS. Evidence: [S09-06](evidence/S09-06.json).
+No live/depot/Discord/Maps provider/browser verification or deployment.
+
+Наступне доручення: S09-07 — Maps failure isolation та надійні посилання;
+потім S09-13 driver report з погодженням parcel/event selection.
+Command shape лишається deferred (COMMAND-SHAPE-2026-10-29 у decisions).
+Наступну задачу ще не розпочато.
+
+---
+
+## Історична передача попередньої задачі
+
 # DPD Assistance — поточна передача
 
 ## S09-04 завершено локально — 2026-10-29

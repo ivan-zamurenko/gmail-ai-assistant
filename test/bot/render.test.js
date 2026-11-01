@@ -112,3 +112,83 @@ test('parcel card includes the POD image attachment', async () => {
   assert.equal(embeds[2].toJSON().title, 'POD photo');
   assert.equal(embeds[2].toJSON().image.url, 'attachment://pod.jpg');
 });
+
+const plainText = output => output.embeds.map(embed => JSON.stringify(embed.toJSON())).join('\n').replaceAll('\\u001b', '').replace(/\[[0-9;]*m/g, '');
+
+test('cards sort scans explicitly, count physical parcels and disclose capped history', async () => {
+  const scans = Array.from({ length: 14 }, (_, i) => ({ parcel: i === 13 ? '2' : '1', type: i === 13 ? 'Delivered' : 'Received', date: `${String(i + 1).padStart(2, '0')}/10/2026`, time: '10:00:00', route: 'R1' }));
+  scans.push({ parcel: '0', type: 'Received', date: '30/10/2026', time: '12:00:00' });
+  const output = await buildParcelEmbed({ consNumber: '123456789', address: {}, scans: [scans[13], ...scans.slice(0, 13), scans[14]] }, '');
+  const [main, history] = output.embeds.map(embed => embed.toJSON());
+  assert.match(main.title, /Delivered \(1\/2\)/);
+  const body = history.description.replaceAll('\u001b', '').replace(/\[[0-9;]*m/g, '');
+  assert.match(body, /14 Oct/);
+  assert.ok(body.indexOf('14 Oct') < body.indexOf('13 Oct'));
+  assert.match(body, /\+2 earlier/);
+  assert.doesNotMatch(body, /01 Oct|02 Oct|P0/);
+  assert.doesNotMatch(main.fields.find(field => field.name === 'Parcels').value, /Parcel 0/);
+});
+
+test('malformed and oversized card values remain honest, bounded and cannot inject Discord formatting', async () => {
+  for (const parcel of [{}, { scans: [] }, { scans: [{ parcel: '1', type: 'Delivered', date: '31/02/2026', time: '10:00:00' }] }, { scans: [{ parcel: '', type: 'Received', date: '01/11/2026', time: '' }] }]) {
+    const result = await buildParcelEmbed(parcel, '');
+    assert.match(plainText(result), /unknown|unconfirmed|no scan/i);
+    assert.doesNotMatch(plainText(result), /31 Feb|Parcel 1/);
+  }
+  const clippedAddress = await buildParcelEmbed({ address: { lines: ['1 Main Street'], truncated: true },
+    drop: { lat: 53, lng: -6 }, scans: [{ parcel: '1', type: 'Received', date: '01/11/2026', time: '12:00:00' }],
+  }, '');
+  assert.doesNotMatch(clippedAddress.embeds[0].toJSON().description, /Open route to target/);
+  const unassigned = await buildParcelEmbed({ scans: [
+    { parcel: '1', type: 'Delivered', date: '01/11/2026', time: '12:00:00' },
+    { parcel: '', type: 'Redirected', date: '01/11/2026', time: '13:00:00' },
+  ] }, '');
+  assert.match(unassigned.embeds[0].toJSON().title, /Latest status unconfirmed/);
+  assert.match(plainText(unassigned), /Unassigned.*Redirected/);
+  const hostile = '``` @everyone <@123> \u001b[31m ** [click](https://evil.test)'.repeat(300);
+  const output = await buildParcelEmbed({ consNumber: hostile, query: hostile,
+    address: { contact: hostile, company: hostile, lines: Array(20).fill(hostile), mobile: hostile, email: hostile, depot: hostile, postCode: hostile },
+    arrangedDate: hostile,
+    scans: Array.from({ length: 40 }, (_, i) => ({ parcel: String(i + 1), type: hostile, signature: hostile, date: '01/11/2026', time: '12:00:00', route: hostile, bay: hostile, sequence: hostile, onwardBc: hostile })),
+  }, '');
+  assert.deepEqual(output.allowedMentions, { parse: [] });
+  let total = 0;
+  for (const embed of output.embeds.map(item => item.toJSON())) {
+    assert.ok((embed.title?.length ?? 0) <= 256);
+    assert.ok((embed.description?.length ?? 0) <= 4096);
+    total += (embed.title?.length ?? 0) + (embed.description?.length ?? 0) + (embed.footer?.text.length ?? 0);
+    for (const field of embed.fields ?? []) { assert.ok(field.value.length <= 1024); total += field.name.length + field.value.length; }
+  }
+  assert.ok(total <= 6000);
+  assert.doesNotMatch(JSON.stringify(output.embeds.map(item => item.toJSON())), /@everyone|<@123>|\\u001b\[31m|\[click\]\(/);
+  for (const embed of output.embeds.map(item => item.toJSON())) {
+    for (const value of [embed.description, ...(embed.fields ?? []).map(field => field.value)]) {
+      if (value?.startsWith('```ansi')) assert.equal((value.match(/```/g) ?? []).length, 2);
+    }
+  }
+  const emailCard = await buildParcelEmbed({ address: { email: 'a_b@example.test' }, scans: [] }, '');
+  assert.match(plainText(emailCard), /a_b@example\.test/);
+  const unicode = '𠮷'.repeat(100);
+  const unicodeCard = await buildParcelEmbed({ address: { lines: Array(5).fill(unicode), town: unicode, county: unicode },
+    scans: Array.from({ length: 6 }, (_, i) => ({ parcel: String(i + 1), type: unicode, date: '01/11/2026', time: '12:00:00' })),
+  }, '');
+  assert.ok(unicodeCard.embeds.every(embed => (embed.toJSON().fields ?? []).every(field => field.value.length <= 1024)));
+  const undelivered = await buildParcelEmbed({ address: {}, scans: [{ parcel: '1', type: 'Undelivered', date: '01/11/2026', time: '12:00:00' }] }, '');
+  assert.notEqual(undelivered.embeds[0].toJSON().color, 0x2ecc71);
+  const mixed = await buildParcelEmbed({ address: {}, scans: [{ parcel: '1', type: 'Received', date: '01/11/2026', time: '12:00:00' }, { parcel: '1', type: 'Delivered', date: 'invalid', time: '12:00:00' }] }, '');
+  assert.match(mixed.embeds[0].toJSON().title, /unknown|unconfirmed/i);
+  const badDate = await buildParcelEmbed({ scans: Array(15).fill({ type: 'Delivered', date: '01/11/2026junk', time: '12:00:00junk' }) }, '');
+  assert.match(plainText(badDate), /Unknown time/);
+  assert.match(plainText(badDate), /3 not shown/);
+  assert.doesNotMatch(plainText(badDate), /01 Nov|earlier/);
+  const invalidParcel = await buildParcelEmbed({ scans: [
+    { parcel: '1234567', type: 'Delivered', date: '01/11/2026', time: '12:00:00' },
+    { parcel: '2', type: 'Received', date: '01/11/2026', time: '11:00:00' },
+  ] }, '');
+  assert.doesNotMatch(invalidParcel.embeds[0].toJSON().title, /\(1\/2\)/);
+  for (const lines of [[], ['𠮷'.repeat(400)], ['bad' + String.fromCharCode(0xd800)]]) {
+    const map = await buildParcelEmbed({ address: { lines }, drop: { lat: 53, lng: -6 }, scans: [] }, '');
+    assert.doesNotMatch(map.embeds[0].toJSON().description, /destination=/);
+    assert.match(map.embeds[0].toJSON().description, /Open scan location/);
+  }
+});

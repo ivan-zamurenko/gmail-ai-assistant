@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">DPD Assistance — поточна передача<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-06 завершено локально — 2026-11-01<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1042,6 +1042,23 @@ Maps і Discord delivery recovery не змінені.
 Це лише повторний показ, не нова depot-операція. Після успішного показу результат
 видаляється. Старий barcode DM flow збережено, /find не переноситься у DM.
 Нова команда описана локально; реєстрацію та запуск у Discord ще не виконано.
+
+## Find card validation — S09-06 (2026-11-01)
+
+Private operational card preserves approved recipient/address/contact fields.
+History sorts newest first, shows at most12 events with an omitted count.
+Parcel0 is excluded when numbered physical parcels exist; unassigned events
+remain visible and prevent a confirmed headline/count. Invalid calendar/time
+values likewise show an unconfirmed status. Dates use full DD/MM/YYYY and
+HH:MM[:SS], with UTC only as an ordering key, not a timezone conversion.
+Photo/location remain consignment-level evidence and may describe different
+parcels/events; exact association belongs to S09-13. This is not the driver report.
+
+Malformed/oversized input produces bounded output: scan limit1000, embedded
+text budget6000, POD base64 limit700000, serialized parcel limit900000 UTF8
+bytes. Displayed address may be shortened; truncated navigation targets are
+omitted unless a valid Eircode exists. Existing Maps provider failure behavior
+is deferred to S09-07. No live/command-registration verification performed.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1202,6 +1219,17 @@ message delivery не обіцяється, depot execution не повторю�
 мережеві виклики. Command registration, startup і deployment не виконано.
 При rollout зупинити старий бот, оновити bot code і зареєструвати command за
 окремим дозволом; extension/rules update не потрібні для additive metadata.
+
+### S09-06 find projection bounds (2026-11-01)
+
+Schema2 unchanged. Executor explicitly projects approved private address/contact,
+scan, validated drop coordinates, timing and optional POD fields; arbitrary
+lookup fields and diagnostics are excluded. Scan history over1000 entries or
+serialized parcel over900000 UTF8 bytes returns a controlled error, not silently
+truncated history. POD base64 is limited to700000 characters.
+Optional additive `parcel.address.truncated: true` means navigation address
+components were clipped/unsupported; renderer must not use that partial address
+for routing. A separately valid Eircode can still be used. This flag contains no PII.
 </pre></article>
 <article id="doc-9" tabindex="-1" hidden><p class="path"><a href="docs/discord/RUNBOOK_RU.md">docs/discord/RUNBOOK_RU.md</a></p><h1>Discord + Firestore + Chrome — порядок подготовки и эксплуатации</h1><pre class="markdown"># Discord + Firestore + Chrome — порядок подготовки и эксплуатации
 
@@ -1813,7 +1841,32 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>DPD Assistance — поточна передача</h1><pre class="markdown"># DPD Assistance — поточна передача
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-06 завершено локально — 2026-11-01</h1><pre class="markdown"># S09-06 завершено локально — 2026-11-01
+
+Owner «Давай далі», base953d778, codex. Writer card_impl передав root;
+card_review ACCEPT після незалежного review. Активного writer/task немає.
+Root1.1.22, bot0.2.10, extension6.3.0.66; schema2 unchanged.
+
+Find card: sorted bounded history, honest unknown timestamps/parcel identity,
+explicit private payload whitelist/size limits, formatting/mention protection.
+Обрізана address має truncated flag і не використовується для target route;
+valid Eircode зберігає маршрут. Контакти/адреса залишаються приватними PII.
+POD/drop не прив&#39;язані до однієї події: картка прямо повідомляє це.
+
+Три нові grouped regressions; focused17/17, full189/189;
+lint/build/artifacts/docs/diff PASS. Evidence: [S09-06](evidence/S09-06.json).
+No live/depot/Discord/Maps provider/browser verification or deployment.
+
+Наступне доручення: S09-07 — Maps failure isolation та надійні посилання;
+потім S09-13 driver report з погодженням parcel/event selection.
+Command shape лишається deferred (COMMAND-SHAPE-2026-10-29 у decisions).
+Наступну задачу ще не розпочато.
+
+---
+
+## Історична передача попередньої задачі
+
+# DPD Assistance — поточна передача
 
 ## S09-04 завершено локально — 2026-10-29
 
@@ -2030,6 +2083,9 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-10-28 | delivery_impl → root + delivery_review | prepared S09-04 | Injectable actual queue extracted; lost editReply RED0/1 confirms premature deletion; lint PASS. Retention/UX decision pending, no fix/release/commit/live yet. Next: owner answer then ACK/recovery.
 - 2026-10-28 | owner + root | approved retention | 24h from completedAt, /result by consignment instead of ID. Additive bot-only delivery protocol documented before implementation; batch/multiple UX pending. Next: core ACK/recovery.
 - 2026-10-29 | delivery_impl → root + delivery_review | implemented S09-04 |24h terminal retention, delivery ACK, /result by consignment + private selection, no reenqueue. Five grouped tests; focused12/12, full186/186 + lint/build/docs PASS. Evidence: `.workflow/evidence/S09-04.json`; no live registration/startup. Next:S09-06.
+- 2026-11-01 | root | approved S09-06 | Owner «Давай далі»; card bounds/order/empty risk confirmed. Writer card_impl, independent card_review. Commands change deferred; photo/drop same-event selection unresolved S09-13. Next:minimal RED.
+
+- 2026-11-01 | root + card_impl/card_review | implemented S09-06 | bounded honest private cards, explicit projection, safe truncated-address route and unknown parcel identity; reviewer ACCEPT | test-first3groups, focused17/17, full189/189, lint/build/docs/artifacts PASS; evidence/S09-06.json | next S09-07, no live verification.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3183,6 +3239,14 @@ production, email send, реєстрацію команд або deployment. І�
 S09 — инженерная декомпозиция проверки/развития. Неподключённые режимы вынесены в условные S09-10/S09-11. G_DISCORD_ACCESS касается конкретных сред/прав/данных, G_DISCORD_MODES — допустимости включения этих режимов. Оба pending. Не спрашивать снова, есть ли бот и нужно ли его учитывать; это уже решено.
 
 Авторизация будущего email review в Discord и проактивных сообщений не подтверждена. OWNER-D01 продолжает действовать независимо от транспорта интерфейса. Не считать успешную команду /todo или depot live confirmation разрешением email send.
+
+## COMMAND-SHAPE-2026-10-29 — відкладене узгодження
+
+Власник запропонував `/find &lt;consignment&gt;`, `/reschedule &lt;consignment&gt; &lt;date&gt;`,
+`/result &lt;consignment&gt;`. Запит про долю existing all/barcodes/retry лишився
+без відповіді; подальше «що далі» й доручення S09-06 не завершують цю зміну.
+Чинні команди/optional result list тимчасово збережені; не записувати їх як
+остаточно погоджений UX і не змінювати в S09-06.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4850,6 +4914,16 @@ RED0/1;2/3;4/5;4/5 → GREEN5/5. Focused12/12. Restart/expiry нових API м�
 characterization evidence, не вигаданий baseline RED.
 Це fakes actual control flow, не Firebase Emulator/реальний Discord. Startup
 cleanup wiring перевірено review; live registration/startup не виконувались.
+
+## S09-06 — 2026-11-01
+
+Три додані grouped regressions у `test/bot/render.test.js` та
+`test/queue/executor.test.js`: явна хронологія/фізичні посилки; malformed,
+Unicode та Discord limits/formatting; фактична whitelist-проєкція без
+внутрішніх даних. Розширення тих самих груп захищає unknown parcel identity
+та маршрут з обрізаної адреси. Спочатку відтворені дефекти, потім код.
+Combined Unicode+POD byte-cap fixture — characterization існуючого guard.
+Лише synthetic offline дані; реальний depot, Discord і Maps не перевірені.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -9378,6 +9452,16 @@ Evidence: `.workflow/evidence/S09-05.json`. Обновить существую�
 | Внешние решения | Нет для локальной реализации |
 | Статус при выдаче | todo; актуальный статус в `.workflow/state.json` |
 | Приёмка | 5 сценариев; наличие исходного кода не означает их выполнение |
+
+## Виконання — 2026-11-01
+
+Поточне рішення зберігає погоджені приватні recipient/address/contact/signature;
+твердження архіву про їх виключення нижче застаріле. Identity markers у criterion4
+означають внутрішні provider IDs/notes/diagnostics, не погоджені customer fields.
+Використані існуючі `test/bot/render.test.js` і `test/queue/executor.test.js`
+замість нових паралельних файлів; metadata/docs/version — інтегратор.
+Команда: `node --test --import ./test/helpers/noNetwork.js test/bot/render.test.js test/queue/executor.test.js`.
+Evidence: `.workflow/evidence/S09-06.json`. Live/Maps/event association не доведені.
 
 ## Baseline — что уже существует
 

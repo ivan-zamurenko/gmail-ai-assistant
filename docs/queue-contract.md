@@ -157,3 +157,14 @@ message delivery не обіцяється, depot execution не повторю�
 мережеві виклики. Command registration, startup і deployment не виконано.
 При rollout зупинити старий бот, оновити bot code і зареєструвати command за
 окремим дозволом; extension/rules update не потрібні для additive metadata.
+
+### S09-06 find projection bounds (2026-11-01)
+
+Schema2 unchanged. Executor explicitly projects approved private address/contact,
+scan, validated drop coordinates, timing and optional POD fields; arbitrary
+lookup fields and diagnostics are excluded. Scan history over1000 entries or
+serialized parcel over900000 UTF8 bytes returns a controlled error, not silently
+truncated history. POD base64 is limited to700000 characters.
+Optional additive `parcel.address.truncated: true` means navigation address
+components were clipped/unsupported; renderer must not use that partial address
+for routing. A separately valid Eircode can still be used. This flag contains no PII.

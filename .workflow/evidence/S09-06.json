@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-06",
+  "outcome": "passed",
+  "base_sha": "953d778",
+  "branch": "codex",
+  "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+  "completed_on": "2026-11-01",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/render.test.js test/queue/executor.test.js",
+      "exit_code": 1,
+      "result": "14/17 initial three behavior failures; later15/17 truncated-address checks,16/17 unknown identity check"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/render.test.js test/queue/executor.test.js",
+      "exit_code": 0,
+      "result": "17/17"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "189/189; lint/build/artifacts/docs/diff PASS; browser NOT RUN"
+    }
+  ],
+  "review": "card_review ACCEPT; parent integrated two test-first findings and inspected runtime diff",
+  "acceptance": {
+    "1": "Synthetic physical parcels/parcel0/matching count; unknown identity never guessed",
+    "2": "Explicit newest-first history,12 cap, truthful omitted count",
+    "3": "Missing address/scans, invalid timestamps, Unicode limits controlled",
+    "4": "Actual executor whitelist excludes internal identifiers/diagnostics; approved private customer fields preserved",
+    "5": "Synthetic Discord bounds/formatting/mentions and serialized UTF8 parcel cap; no network"
+  },
+  "characterization": "Combined Unicode scans+POD fixture validates byte guard added earlier in this task; no claimed RED for that fixture.",
+  "untested": [
+    "Real depot scan formats/Discord rendering and network limits",
+    "Google Maps providers, browser and Firebase live behavior",
+    "POD/drop relation to same parcel/event; S09-13",
+    "Bot startup/registration/deployment"
+  ],
+  "next_step": "S09-07",
+  "external_effects": []
+}

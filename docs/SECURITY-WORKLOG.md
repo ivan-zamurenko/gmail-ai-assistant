@@ -475,3 +475,12 @@ into this log.
   are denied on read. No TTL deployment, registration, startup or live sends.
 - Five grouped synthetic regressions and independent review; real Firestore
   rules/network behavior remains untested in this session.
+
+## 2026-11-01 — S09-06
+
+- Bounded explicit find-result whitelist; internal diagnostics, arbitrary notes
+  and provider identity fields excluded. Approved private recipient/contact,
+  address and signature remain PII, not anonymous data.
+- Disabled Discord mentions; neutralized customer-controlled formatting/control
+  characters. No real customer data, credentials or network services used.
+- Synthetic projection/render regressions; Admin/ephemeral gates unchanged.

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { executeTask, lookupLabelTarget } from '../../src/queue/executor.js';
+import { executeTask, lookupLabelTarget, projectFindResult } from '../../src/queue/executor.js';
 import { TASK_SCHEMA_VERSION } from '../../src/queue/contract.js';
 import {
   LABEL_RESCHEDULE_RECOVERY_KEY,
@@ -357,4 +357,32 @@ test('live ambiguous injection stops; dry-run and explicit preflight rejection m
       assert.deepEqual(calls, [1]);
     } else assert.deepEqual(calls, [1, 2]);
   }
+});
+
+test('find projection bounds optional values and excludes internal identity metadata', async (t) => {
+  const previous = globalThis.chrome;
+  let source = { ok: true, consNumber: '123456789', query: '123456789', consId: 'PRIVATE_ID', notes: 'PRIVATE_NOTE', _diag: { token: 'PRIVATE_DIAG' },
+    scans: [{ parcel: '1234567', type: 'Received', date: '01/11/2026junk', time: '12:00:00junk', route: 'R1', eventId: 'PRIVATE_EVENT', notes: 'PRIVATE_SCAN' }],
+    address: { contact: 'Allowed Recipient', lines: Array(30).fill('A'.repeat(500)), token: 'PRIVATE_ADDRESS' },
+    drop: { lat: 53, lng: -6, type: 'Received', date: '01/11/2026', time: '12:00:00', token: 'PRIVATE_DROP' }, timing: { search: 1, detail: 'PRIVATE_TIME', scans: 2 },
+  };
+  globalThis.chrome = { tabs: { query: async () => [{ id: 7, url: 'http://synthetic.interlink.local/home' }], update: async () => ({}) }, scripting: { executeScript: async () => [{ result: [source] }] } };
+  t.after(() => { if (previous === undefined) delete globalThis.chrome; else globalThis.chrome = previous; });
+  const task = { schemaVersion: TASK_SCHEMA_VERSION, command: 'find', args: { conId: '123456789' } };
+  const result = await executeTask(task);
+  assert.equal(result.status, 'done');
+  assert.equal(result.parcel.address.contact, 'Allowed Recipient');
+  assert.ok(result.parcel.address.lines.length <= 5);
+  assert.equal(result.parcel.address.truncated, true);
+  assert.doesNotMatch(JSON.stringify(result), /PRIVATE_/);
+  assert.equal(Object.hasOwn(result.parcel, '_diag'), false);
+  assert.equal(result.parcel.scans[0].date, '');
+  assert.equal(result.parcel.scans[0].time, '');
+  assert.equal(result.parcel.scans[0].parcel, '');
+  const oversizedScan = { ...source.scans[0], type: '𠮷'.repeat(24), signature: '𠮷'.repeat(40), route: '𠮷'.repeat(12), date: '𠮷'.repeat(5), time: '𠮷'.repeat(4), parcel: '𠮷'.repeat(3), bay: 'B'.repeat(24), sequence: 'S'.repeat(24), onwardBc: 'O'.repeat(24) };
+  const combined = projectFindResult({ ...source, scans: Array(1000).fill(oversizedScan) }, 'A'.repeat(700000));
+  assert.equal(combined.status, 'error', 'combined Unicode history and POD must fit serialized byte budget');
+  assert.match(combined.summary, /size limit/);
+  source = { ...source, scans: Array(1001).fill(oversizedScan) };
+  assert.equal((await executeTask(task)).status, 'error', 'oversized history cannot silently lose latest or parcel counts');
 });

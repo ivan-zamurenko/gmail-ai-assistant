@@ -952,3 +952,13 @@ RED0/1;2/3;4/5;4/5 → GREEN5/5. Focused12/12. Restart/expiry нових API м�
 characterization evidence, не вигаданий baseline RED.
 Це fakes actual control flow, не Firebase Emulator/реальний Discord. Startup
 cleanup wiring перевірено review; live registration/startup не виконувались.
+
+## S09-06 — 2026-11-01
+
+Три додані grouped regressions у `test/bot/render.test.js` та
+`test/queue/executor.test.js`: явна хронологія/фізичні посилки; malformed,
+Unicode та Discord limits/formatting; фактична whitelist-проєкція без
+внутрішніх даних. Розширення тих самих груп захищає unknown parcel identity
+та маршрут з обрізаної адреси. Спочатку відтворені дефекти, потім код.
+Combined Unicode+POD byte-cap fixture — characterization існуючого guard.
+Лише synthetic offline дані; реальний depot, Discord і Maps не перевірені.

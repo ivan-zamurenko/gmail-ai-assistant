@@ -48,13 +48,20 @@ export async function fetchPodImage(eventId, podAuth) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${authData.TokenType || 'Bearer'} ${authData.AccessToken}`,
+        // Match the depot client's explicit scheme, regardless of TokenType casing.
+        Authorization: `Bearer ${authData.AccessToken}`,
       },
       credentials: 'omit',
       body: JSON.stringify({ ImgType: 'POD', EventID: String(eventId), Original: false }),
     });
     if (!response.ok) return { error: `POD request HTTP ${response.status}` };
     const data = await response.json();
+    const statusValue = data.Status ?? data.status;
+    const details = data.Details ?? data.details;
+    if (typeof statusValue === 'string' && /^fail$/i.test(statusValue)
+        && typeof details === 'string' && /^authorization error(?: \d+)?$/i.test(details.trim())) {
+      return { error: 'POD image authorization rejected' };
+    }
     const images = Array.isArray(data.Image) ? data.Image : [];
     const image = images.find((item) => /^pod$/i.test(item.ImgType ?? '') && item.ImgBody);
     if (image) return { image: { mime: 'image/jpeg', body: image.ImgBody } };
@@ -73,6 +80,7 @@ export function podFailureCode(error) {
     ['POD authorization is not configured', 'AUTH_NOT_CONFIGURED'],
     ['POD authorization returned no access token', 'AUTH_TOKEN_MISSING'],
     ['POD request failed', 'REQUEST_FAILED'],
+    ['POD image authorization rejected', 'IMAGE_AUTH_REJECTED'],
   ]);
   if (fixed.has(error)) return fixed.get(error);
   if (typeof error !== 'string') return 'UNKNOWN';

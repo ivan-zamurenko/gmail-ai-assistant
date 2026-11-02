@@ -495,3 +495,7 @@ or raw exception logged. No new live requests or secret inspection performed.
 ## POD separate authorization — 2026-11-02
 
 Owner-supplied private source confirmed separate provider Basic authorization. Added optional local podAuth.basicAuthorization; private config updated, no secret committed. No provider call performed. AccessToken still acquired per POD fetch; no persisted bearer token. Temporary extracted private text removed after use.
+
+## POD image request alignment — 2026-11-02
+
+Owner image-function PDF inspected privately. Image request now uses literal Bearer scheme matching depot; returned TokenType is not interpolated. Observed provider authorization rejection maps to fixed IMAGE_AUTH_REJECTED, no raw Details logged. No live requests or credentials changes; private extracted text removed.

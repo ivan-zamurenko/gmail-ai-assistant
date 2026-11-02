@@ -1,3 +1,16 @@
+# POD image request alignment — 2026-11-02
+
+Owner PDF getPodiImage uses explicit Bearer; image HTTP200 reported auth failure.
+Root matched scheme and classified observed failure as IMAGE_AUTH_REJECTED.
+Root1.1.25/extension6.3.0.69; bot unchanged; private config unchanged.
+Existing tests RED2/4, focused14/14, full189/189 and all gates PASS.
+pod_image_review ACCEPT; no extra tests, no live provider calls.
+Evidence: [POD image](evidence/POD-IMAGE-2026-11-02.json).
+Next owner: replace work-PC dist, Reload, /find; actual photo recovery unresolved.
+Do not claim casing caused live failure until verified. No active writer.
+
+---
+
 # POD authorization fix — 2026-11-02
 
 Owner private source shows separate Basic client header. Root implemented optional

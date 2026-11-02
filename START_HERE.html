@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">POD authorization fix — 2026-11-02<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">POD image request alignment — 2026-11-02<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1074,6 +1074,10 @@ are separate. Existing fallback remains; this change does not fix the live cause
 ## POD separate authorization — 2026-11-02
 
 POD extension6.3.0.68 supports optional private podAuth.basicAuthorization, separate from body user/password. Absent field preserves previous header derivation. AccessToken is acquired on each POD fetch and not cached; RefreshToken is not used. Basic credentials have no expiry inferred from their encoding; provider rotation/revocation requires updating private config and rebuilding extension.
+
+## POD image request alignment — 2026-11-02
+
+Extension6.3.0.69 matches depot image request with explicit Bearer scheme. IMAGE_AUTH_REJECTED distinguishes observed HTTP200 authorization-failure response from absent photo. Successful real POD recovery still needs owner verification; changing scheme case is a source-alignment fix, not proven root cause.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1856,7 +1860,20 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>POD authorization fix — 2026-11-02</h1><pre class="markdown"># POD authorization fix — 2026-11-02
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>POD image request alignment — 2026-11-02</h1><pre class="markdown"># POD image request alignment — 2026-11-02
+
+Owner PDF getPodiImage uses explicit Bearer; image HTTP200 reported auth failure.
+Root matched scheme and classified observed failure as IMAGE_AUTH_REJECTED.
+Root1.1.25/extension6.3.0.69; bot unchanged; private config unchanged.
+Existing tests RED2/4, focused14/14, full189/189 and all gates PASS.
+pod_image_review ACCEPT; no extra tests, no live provider calls.
+Evidence: [POD image](evidence/POD-IMAGE-2026-11-02.json).
+Next owner: replace work-PC dist, Reload, /find; actual photo recovery unresolved.
+Do not claim casing caused live failure until verified. No active writer.
+
+---
+
+# POD authorization fix — 2026-11-02
 
 Owner private source shows separate Basic client header. Root implemented optional
 podAuth.basicAuthorization; private local config set from supplied source, no
@@ -2144,6 +2161,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-02 | root | POD authorization discrepancy confirmed | owner PDF inspected locally with redaction: page sets Authorization from separate gcAuthToken variable, while extension derives Basic from request-body user/password. PDF lacks variable definition; actual header equivalence unknown. No runtime/config change or live request | next: capture gcAuthToken and cTokenURL into private local file, never chat/Git.
 
 - 2026-11-02 | root + pod_auth_review | implemented auth fix, live verification pending | separate private Basic header, local config updated, dist6.3.0.68/root1.1.24; fresh AccessToken per fetch | test-first existing regression RED3/4, focused14/14, full189/189 gates PASS; review ACCEPT | owner update/reload/find; no live success claimed.
+
+- 2026-11-02 | root + pod_image_review | implemented request alignment | literal Bearer matches supplied depot function; HTTP200 auth rejection gets safe distinct code; dist6.3.0.69/root1.1.25 | existing tests RED2/4 GREEN14/14 full189/189 gates PASS, review ACCEPT | owner reload/find; root cause/live recovery unconfirmed.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -5007,6 +5026,10 @@ allowlisted reason code; no raw provider errors or parcel IDs. Functional RED12/
 ## POD separate authorization — 2026-11-02
 
 POD auth: existing success regression now uses different synthetic Basic client credentials and request-body credentials. RED3/4, focused GREEN14/14; no additional test case. Protects independent header/body contract. No live auth verification.
+
+## POD image request alignment — 2026-11-02
+
+Existing POD success fixture now returns lowercase TokenType while expecting exact Bearer as captured depot code. Existing failure test includes HTTP200 body authorization Error1 with lowercase status/image. RED2/4 then focused14/14. No new test cases, no live acceptance claimed.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

@@ -10,7 +10,7 @@ const AUTH = { user: 'synthetic-user', password: 'synthetic-pass', type: 'HO' };
 
 test('POD image is fetched from the extension with exact authorize and image requests', async (t) => {
   const net = useFetch(t, [
-    { method: 'POST', url: AUTHORIZE, json: { AccessToken: 'synthetic-access', TokenType: 'Bearer' } },
+    { method: 'POST', url: AUTHORIZE, json: { AccessToken: 'synthetic-access', TokenType: 'bearer' } },
     { method: 'POST', url: IMAGE, json: { Image: [{ ImgType: 'POD', ImgBody: '/9j/synthetic' }] } },
   ]);
 
@@ -43,21 +43,25 @@ test('POD failures return safe errors without credentials or tokens', async (t) 
     { method: 'POST', url: AUTHORIZE, json: {} },
     { method: 'POST', url: AUTHORIZE, json: { AccessToken: 'synthetic-access' } },
     { method: 'POST', url: IMAGE, json: { Status: 'NOT FOUND <b>', Image: [] } },
+    { method: 'POST', url: AUTHORIZE, json: { AccessToken: 'synthetic-access', TokenType: 'bearer' } },
+    { method: 'POST', url: IMAGE, json: { Code: 'other', Details: 'authorization Error 1', image: [], status: 'fail' } },
   ]);
 
   const errors = [
     await fetchPodImage('1', AUTH),
     await fetchPodImage('2', AUTH),
     await fetchPodImage('3', AUTH),
+    await fetchPodImage('5', AUTH),
   ].map((r) => r.error);
 
   assert.deepEqual(errors, [
     'POD authorize HTTP 401',
     'POD authorization returned no access token',
     'POD image unavailable (NOTFOUNDb, 0 image records)',
+    'POD image authorization rejected',
   ]);
   for (const message of errors) assert.doesNotMatch(message, /synthetic-(pass|user)|synthetic-access/);
-  assert.deepEqual(errors.map(podFailureCode), ['AUTH_HTTP_401', 'AUTH_TOKEN_MISSING', 'IMAGE_UNAVAILABLE']);
+  assert.deepEqual(errors.map(podFailureCode), ['AUTH_HTTP_401', 'AUTH_TOKEN_MISSING', 'IMAGE_UNAVAILABLE', 'IMAGE_AUTH_REJECTED']);
   assert.equal(podFailureCode('POD authorization is not configured'), 'AUTH_NOT_CONFIGURED');
   assert.equal(podFailureCode('POD event ID is missing'), 'EVENT_ID_MISSING');
   assert.equal(podFailureCode('POD event ID is invalid'), 'EVENT_ID_INVALID');

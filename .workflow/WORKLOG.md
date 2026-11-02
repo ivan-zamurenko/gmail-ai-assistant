@@ -84,3 +84,5 @@
 - 2026-11-02 | root | POD authorization discrepancy confirmed | owner PDF inspected locally with redaction: page sets Authorization from separate gcAuthToken variable, while extension derives Basic from request-body user/password. PDF lacks variable definition; actual header equivalence unknown. No runtime/config change or live request | next: capture gcAuthToken and cTokenURL into private local file, never chat/Git.
 
 - 2026-11-02 | root + pod_auth_review | implemented auth fix, live verification pending | separate private Basic header, local config updated, dist6.3.0.68/root1.1.24; fresh AccessToken per fetch | test-first existing regression RED3/4, focused14/14, full189/189 gates PASS; review ACCEPT | owner update/reload/find; no live success claimed.
+
+- 2026-11-02 | root + pod_image_review | implemented request alignment | literal Bearer matches supplied depot function; HTTP200 auth rejection gets safe distinct code; dist6.3.0.69/root1.1.25 | existing tests RED2/4 GREEN14/14 full189/189 gates PASS, review ACCEPT | owner reload/find; root cause/live recovery unconfirmed.

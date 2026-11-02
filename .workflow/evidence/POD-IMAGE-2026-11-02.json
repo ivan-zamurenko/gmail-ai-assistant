@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "POD-IMAGE-2026-11-02",
+  "outcome": "implemented; live verification pending",
+  "checks": [
+    {
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/podImage.test.js",
+      "phase": "red",
+      "exit_code": 1,
+      "result": "2/4: scheme casing and HTTP200 auth classification"
+    },
+    {
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/podImage.test.js test/queue/executor.test.js",
+      "phase": "green",
+      "exit_code": 0,
+      "result": "14/14"
+    },
+    {
+      "command": "node tools/checks.mjs",
+      "phase": "green",
+      "exit_code": 0,
+      "result": "189/189; all7stages PASS; browser NOT RUN"
+    }
+  ],
+  "review": "pod_image_review ACCEPT",
+  "untested": [
+    "Whether scheme casing caused live rejection",
+    "Actual photo retrieval after updated extension"
+  ],
+  "next_step": "Owner reload dist6.3.0.69 and /find"
+}

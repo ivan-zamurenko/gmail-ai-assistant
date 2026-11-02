@@ -974,3 +974,7 @@ allowlisted reason code; no raw provider errors or parcel IDs. Functional RED12/
 ## POD separate authorization — 2026-11-02
 
 POD auth: existing success regression now uses different synthetic Basic client credentials and request-body credentials. RED3/4, focused GREEN14/14; no additional test case. Protects independent header/body contract. No live auth verification.
+
+## POD image request alignment — 2026-11-02
+
+Existing POD success fixture now returns lowercase TokenType while expecting exact Bearer as captured depot code. Existing failure test includes HTTP200 body authorization Error1 with lowercase status/image. RED2/4 then focused14/14. No new test cases, no live acceptance claimed.

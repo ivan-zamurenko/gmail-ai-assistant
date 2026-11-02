@@ -171,3 +171,7 @@ are separate. Existing fallback remains; this change does not fix the live cause
 ## POD separate authorization — 2026-11-02
 
 POD extension6.3.0.68 supports optional private podAuth.basicAuthorization, separate from body user/password. Absent field preserves previous header derivation. AccessToken is acquired on each POD fetch and not cached; RefreshToken is not used. Basic credentials have no expiry inferred from their encoding; provider rotation/revocation requires updating private config and rebuilding extension.
+
+## POD image request alignment — 2026-11-02
+
+Extension6.3.0.69 matches depot image request with explicit Bearer scheme. IMAGE_AUTH_REJECTED distinguishes observed HTTP200 authorization-failure response from absent photo. Successful real POD recovery still needs owner verification; changing scheme case is a source-alignment fix, not proven root cause.

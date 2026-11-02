@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "POD-IMAGE-2026-11-02",
-  "outcome": "implemented; live verification pending",
+  "outcome": "implemented; owner-confirmed live success",
   "checks": [
     {
       "command": "node --test --import ./test/helpers/noNetwork.js test/depot/podImage.test.js",
@@ -24,8 +24,14 @@
   ],
   "review": "pod_image_review ACCEPT",
   "untested": [
-    "Whether scheme casing caused live rejection",
-    "Actual photo retrieval after updated extension"
+    "Other parcels and provider edge cases",
+    "Independent network trace isolating scheme casing"
   ],
-  "next_step": "Owner reload dist6.3.0.69 and /find"
+  "next_step": "S09-07 report-first roadmap",
+  "live_verification": {
+    "date": "2026-11-02",
+    "source": "owner message: Працює",
+    "scope": "POD retrieval after requested extension6.3.0.69 update and /find",
+    "independently_observed": false
+  }
 }

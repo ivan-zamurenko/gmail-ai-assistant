@@ -14,11 +14,12 @@ test('POD image is fetched from the extension with exact authorize and image req
     { method: 'POST', url: IMAGE, json: { Image: [{ ImgType: 'POD', ImgBody: '/9j/synthetic' }] } },
   ]);
 
-  const result = await fetchPodImage('123456', AUTH);
+  const basicAuthorization = `Basic ${globalThis.btoa('synthetic-client:synthetic-client-secret')}`;
+  const result = await fetchPodImage('123456', { ...AUTH, basicAuthorization });
 
   assert.deepEqual(result, { image: { mime: 'image/jpeg', body: '/9j/synthetic' } });
   assert.deepEqual(net.calls.map((c) => [c.method, c.url]), [['POST', AUTHORIZE], ['POST', IMAGE]]);
-  assert.equal(net.calls[0].headers.Authorization, `Basic ${globalThis.btoa('synthetic-user:synthetic-pass')}`);
+  assert.equal(net.calls[0].headers.Authorization, basicAuthorization);
   assert.deepEqual(net.calls[0].body, { User: 'synthetic-user', Password: 'synthetic-pass', Type: 'HO' });
   assert.equal(net.calls[1].headers.Authorization, 'Bearer synthetic-access');
   assert.deepEqual(net.calls[1].body, { ImgType: 'POD', EventID: '123456', Original: false });

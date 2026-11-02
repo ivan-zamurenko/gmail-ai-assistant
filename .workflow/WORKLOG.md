@@ -76,3 +76,11 @@
 - 2026-11-02 | root | authorized runtime start | Owner explicitly requested bot startup; Discord ClientReady observed, no startup/cleanup error observed. Running via tool session53125; initial detached attempt exited. No command registration or parcel command invoked by agent | next: owner /find smoke check; uptime beyond session not guaranteed.
 
 - 2026-11-02 | root + pod_diagnostic_review | diagnostic implemented, incident open | safe POD reason codes, extension6.3.0.67/root1.1.23, dist rebuilt; no extra test cases | RED12/14 GREEN14/14 full189/189 gates PASS, review ACCEPT; evidence/POD-DIAGNOSTICS-2026-11-02.json | owner reload+find, await reason code; actual POD cause unknown.
+
+- 2026-11-02 | root | POD diagnosis | owner reports extension authorize Status Fail/not_auth (Basic authorization rejected); local podAuth fields present, values not printed. Saved depot HTML contains getToken call but no definition; referenced scanning_history_multiple_parcels_files directory unavailable; relevant local ZIPs lack authorize implementation. No credential or runtime changes; no provider calls | next: obtain complete locally saved working page/scripts to compare Basic header vs request body.
+
+- 2026-11-02 | root | POD source inspection | new scannilgh_logs HTML and companion ZIP inspected locally; getToken call exists but definition/authorize implementation absent in HTML and archived scripts. No values disclosed, no runtime/auth changes | next: save live getToken function source locally; complete-page save was insufficient.
+
+- 2026-11-02 | root | POD authorization discrepancy confirmed | owner PDF inspected locally with redaction: page sets Authorization from separate gcAuthToken variable, while extension derives Basic from request-body user/password. PDF lacks variable definition; actual header equivalence unknown. No runtime/config change or live request | next: capture gcAuthToken and cTokenURL into private local file, never chat/Git.
+
+- 2026-11-02 | root + pod_auth_review | implemented auth fix, live verification pending | separate private Basic header, local config updated, dist6.3.0.68/root1.1.24; fresh AccessToken per fetch | test-first existing regression RED3/4, focused14/14, full189/189 gates PASS; review ACCEPT | owner update/reload/find; no live success claimed.

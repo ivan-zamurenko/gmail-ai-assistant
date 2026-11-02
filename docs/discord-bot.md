@@ -167,3 +167,7 @@ record; EVENT_ID_MISSING/INVALID: unsupported event reference; REQUEST_FAILED:
 request/encoding/parsing failure (not necessarily network); UNKNOWN: unclassified.
 Only the code may be shared for diagnosis. Depot browser login and POD API auth
 are separate. Existing fallback remains; this change does not fix the live cause.
+
+## POD separate authorization — 2026-11-02
+
+POD extension6.3.0.68 supports optional private podAuth.basicAuthorization, separate from body user/password. Absent field preserves previous header derivation. AccessToken is acquired on each POD fetch and not cached; RefreshToken is not used. Basic credentials have no expiry inferred from their encoding; provider rotation/revocation requires updating private config and rebuilding extension.

@@ -970,3 +970,7 @@ anchored HTTP status mapping, unknown/provider-text rejection and actual warning
 shape. Replaces prior constant-only warning contract with constant prefix plus
 allowlisted reason code; no raw provider errors or parcel IDs. Functional RED12/14
 (after helper stub), GREEN14/14. No live POD provider calls; root cause pending.
+
+## POD separate authorization — 2026-11-02
+
+POD auth: existing success regression now uses different synthetic Basic client credentials and request-body credentials. RED3/4, focused GREEN14/14; no additional test case. Protects independent header/body contract. No live auth verification.

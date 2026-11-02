@@ -491,3 +491,7 @@ Owner observed missing POD and generic warning during live find. Local diagnosti
 now logs constant prefix plus allowlisted code only, superseding constant-only
 warning contract. No credentials, token, provider Status text, parcel/event IDs
 or raw exception logged. No new live requests or secret inspection performed.
+
+## POD separate authorization — 2026-11-02
+
+Owner-supplied private source confirmed separate provider Basic authorization. Added optional local podAuth.basicAuthorization; private config updated, no secret committed. No provider call performed. AccessToken still acquired per POD fetch; no persisted bearer token. Temporary extracted private text removed after use.

@@ -11,6 +11,8 @@ export const LOCAL = {
     projectId: '',
   },
   podAuth: {
+    // Optional separate provider Basic header. Keep private; never an AccessToken.
+    // basicAuthorization: 'Basic <provider-client-credentials>',
     user:     '',
     password: '',
     type:     'HO',

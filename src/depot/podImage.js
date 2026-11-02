@@ -13,7 +13,7 @@ const POD_URL = 'https://papi.dpd.ie/pw/rs/mwcon/webresources/consignment/event/
 
 /**
  * @param {string} eventId - numeric depot scan event id of the delivered scan
- * @param {{ user?: string, password?: string, type?: string }} [podAuth]
+ * @param {{ user?: string, password?: string, type?: string, basicAuthorization?: string }} [podAuth]
  * @returns {Promise<{ image: { mime: string, body: string } } | { error: string }>}
  */
 export async function fetchPodImage(eventId, podAuth) {
@@ -21,12 +21,17 @@ export async function fetchPodImage(eventId, podAuth) {
   if (!/^\d{1,20}$/.test(String(eventId))) return { error: 'POD event ID is invalid' };
   if (!podAuth?.user || !podAuth?.password) return { error: 'POD authorization is not configured' };
   try {
-    const basic = globalThis.btoa(`${podAuth.user}:${podAuth.password}`);
+    // Provider client authorization is separate from the request-body user.
+    const authorization = podAuth.basicAuthorization
+      ?? `Basic ${globalThis.btoa(`${podAuth.user}:${podAuth.password}`)}`;
+    if (typeof authorization !== 'string' || !/^Basic [A-Za-z0-9+/]+={0,2}$/.test(authorization)) {
+      return { error: 'POD authorization is not configured' };
+    }
     const authorize = await fetch(AUTHORIZE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Basic ${basic}`,
+        Authorization: authorization,
       },
       credentials: 'omit',
       body: JSON.stringify({

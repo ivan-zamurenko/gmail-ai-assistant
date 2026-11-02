@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "POD-AUTH-2026-11-02",
+  "outcome": "implemented; live verification pending",
+  "checks": [
+    {
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/podImage.test.js",
+      "phase": "red",
+      "exit_code": 1,
+      "result": "3/4; Basic header wrongly derived from body credentials"
+    },
+    {
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/podImage.test.js test/queue/executor.test.js",
+      "phase": "green",
+      "exit_code": 0,
+      "result": "14/14"
+    },
+    {
+      "command": "node tools/checks.mjs",
+      "phase": "green",
+      "exit_code": 0,
+      "result": "189/189; lint/build/artifacts/docs/diff PASS; initial test btoa lint corrected to globalThis.btoa"
+    }
+  ],
+  "review": "pod_auth_review ACCEPT, no private-file reads",
+  "untested": [
+    "Live provider acceptance and real POD delivery after extension update"
+  ],
+  "private_change": "Gitignored podAuth.basicAuthorization updated from owner source; values excluded",
+  "next_step": "Work-PC dist update/reload and owner /find"
+}

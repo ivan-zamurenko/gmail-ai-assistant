@@ -1,3 +1,17 @@
+# POD authorization fix — 2026-11-02
+
+Owner private source shows separate Basic client header. Root implemented optional
+podAuth.basicAuthorization; private local config set from supplied source, no
+credentials in tracked files. Extension6.3.0.68/root1.1.24; bot unchanged.
+AccessToken fetched fresh per photo, no refresh/cache added. Provider may rotate
+Basic credentials; update private config and rebuild if revoked.
+Review pod_auth_review ACCEPT. Existing test changed first: RED3/4 then focused14/14;
+full189/189 + all gates PASS; dist rebuilt. No live provider request by agent.
+Next owner: update work-PC dist, Reload, repeat /find. Live POD recovery still
+unverified. Evidence: [POD auth](evidence/POD-AUTH-2026-11-02.json).
+
+---
+
 # POD diagnostic follow-up — 2026-11-02
 
 Safe reason-code diagnostic implemented; root cause of missing POD unresolved.

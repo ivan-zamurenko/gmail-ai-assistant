@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">POD diagnostic follow-up — 2026-11-02<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">POD authorization fix — 2026-11-02<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1070,6 +1070,10 @@ record; EVENT_ID_MISSING/INVALID: unsupported event reference; REQUEST_FAILED:
 request/encoding/parsing failure (not necessarily network); UNKNOWN: unclassified.
 Only the code may be shared for diagnosis. Depot browser login and POD API auth
 are separate. Existing fallback remains; this change does not fix the live cause.
+
+## POD separate authorization — 2026-11-02
+
+POD extension6.3.0.68 supports optional private podAuth.basicAuthorization, separate from body user/password. Absent field preserves previous header derivation. AccessToken is acquired on each POD fetch and not cached; RefreshToken is not used. Basic credentials have no expiry inferred from their encoding; provider rotation/revocation requires updating private config and rebuilding extension.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1852,7 +1856,21 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>POD diagnostic follow-up — 2026-11-02</h1><pre class="markdown"># POD diagnostic follow-up — 2026-11-02
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>POD authorization fix — 2026-11-02</h1><pre class="markdown"># POD authorization fix — 2026-11-02
+
+Owner private source shows separate Basic client header. Root implemented optional
+podAuth.basicAuthorization; private local config set from supplied source, no
+credentials in tracked files. Extension6.3.0.68/root1.1.24; bot unchanged.
+AccessToken fetched fresh per photo, no refresh/cache added. Provider may rotate
+Basic credentials; update private config and rebuild if revoked.
+Review pod_auth_review ACCEPT. Existing test changed first: RED3/4 then focused14/14;
+full189/189 + all gates PASS; dist rebuilt. No live provider request by agent.
+Next owner: update work-PC dist, Reload, repeat /find. Live POD recovery still
+unverified. Evidence: [POD auth](evidence/POD-AUTH-2026-11-02.json).
+
+---
+
+# POD diagnostic follow-up — 2026-11-02
 
 Safe reason-code diagnostic implemented; root cause of missing POD unresolved.
 Root writer finished; pod_diagnostic_review ACCEPT. Extension6.3.0.67, root1.1.23;
@@ -2118,6 +2136,14 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-02 | root | authorized runtime start | Owner explicitly requested bot startup; Discord ClientReady observed, no startup/cleanup error observed. Running via tool session53125; initial detached attempt exited. No command registration or parcel command invoked by agent | next: owner /find smoke check; uptime beyond session not guaranteed.
 
 - 2026-11-02 | root + pod_diagnostic_review | diagnostic implemented, incident open | safe POD reason codes, extension6.3.0.67/root1.1.23, dist rebuilt; no extra test cases | RED12/14 GREEN14/14 full189/189 gates PASS, review ACCEPT; evidence/POD-DIAGNOSTICS-2026-11-02.json | owner reload+find, await reason code; actual POD cause unknown.
+
+- 2026-11-02 | root | POD diagnosis | owner reports extension authorize Status Fail/not_auth (Basic authorization rejected); local podAuth fields present, values not printed. Saved depot HTML contains getToken call but no definition; referenced scanning_history_multiple_parcels_files directory unavailable; relevant local ZIPs lack authorize implementation. No credential or runtime changes; no provider calls | next: obtain complete locally saved working page/scripts to compare Basic header vs request body.
+
+- 2026-11-02 | root | POD source inspection | new scannilgh_logs HTML and companion ZIP inspected locally; getToken call exists but definition/authorize implementation absent in HTML and archived scripts. No values disclosed, no runtime/auth changes | next: save live getToken function source locally; complete-page save was insufficient.
+
+- 2026-11-02 | root | POD authorization discrepancy confirmed | owner PDF inspected locally with redaction: page sets Authorization from separate gcAuthToken variable, while extension derives Basic from request-body user/password. PDF lacks variable definition; actual header equivalence unknown. No runtime/config change or live request | next: capture gcAuthToken and cTokenURL into private local file, never chat/Git.
+
+- 2026-11-02 | root + pod_auth_review | implemented auth fix, live verification pending | separate private Basic header, local config updated, dist6.3.0.68/root1.1.24; fresh AccessToken per fetch | test-first existing regression RED3/4, focused14/14, full189/189 gates PASS; review ACCEPT | owner update/reload/find; no live success claimed.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4977,6 +5003,10 @@ anchored HTTP status mapping, unknown/provider-text rejection and actual warning
 shape. Replaces prior constant-only warning contract with constant prefix plus
 allowlisted reason code; no raw provider errors or parcel IDs. Functional RED12/14
 (after helper stub), GREEN14/14. No live POD provider calls; root cause pending.
+
+## POD separate authorization — 2026-11-02
+
+POD auth: existing success regression now uses different synthetic Basic client credentials and request-body credentials. RED3/4, focused GREEN14/14; no additional test case. Protects independent header/body contract. No live auth verification.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

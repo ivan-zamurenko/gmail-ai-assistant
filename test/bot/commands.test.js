@@ -5,10 +5,10 @@ import { commands } from '../../bot/src/commands.js';
 
 test('Discord command schema includes depot, todo and retained-result recovery commands', () => {
   assert.deepEqual(commands.map((command) => command.toJSON().name), [
-    'reschedule', 'find', 'todo', 'result',
+    'reschedule', 'find', 'todo', 'report', 'result',
   ]);
 
-  const recovery = commands[3].toJSON();
+  const recovery = commands.find(c => c.name === 'result').toJSON();
   assert.equal(recovery.default_member_permissions, '8');
   assert.equal(recovery.options[0].name, 'con_id');
   assert.equal(Boolean(recovery.options[0].required), false);

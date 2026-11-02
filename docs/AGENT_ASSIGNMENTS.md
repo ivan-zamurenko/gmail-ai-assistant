@@ -151,3 +151,9 @@ Checkout / branch / base SHA:
 Спілкуйся українською, дотримуйся мінімального test-first, передавай короткі
 підсумки інтегратору. Питання про специфіку DPD не вирішуй припущеннями.
 ```
+
+### Report-first update — 2026-11-02
+
+Owner prioritized immediate S09-13 with direct Maps links (no provider calls).
+S09-07 is no longer its hard dependency; /find Maps isolation remains open.
+Do not infer S09-07 completion from report implementation.

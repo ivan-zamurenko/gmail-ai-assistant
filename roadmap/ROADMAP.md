@@ -140,7 +140,7 @@ Provider выбирает владелец; schema и hostile synthetic cases м
 | [S09-10](tasks/S09-10.md) | Подключить parcel только после решения о режиме | S09-09, S03-02 | G_DISCORD_MODES, G_CALENDAR, G_DEPOT_POLICY |
 | [S09-11](tasks/S09-11.md) | Подключить barcodes через проверенный набор отправлений | S09-09, S04-04 | G_DISCORD_MODES, G_DRIVE_POLICY, G_DEPOT_POLICY |
 | [S09-12](tasks/S09-12.md) | Провести разрешённый пилот существующего бота | S09-03, S09-04, S09-05, S09-06, S09-07, S09-08, S09-09 | G_DISCORD_ACCESS, G_TEST_ACCOUNTS, G_PRIVACY, G_DEPOT_POLICY |
-| [S09-13](tasks/S09-13.md) | Англомовний driver report: delivery point, правильна адреса, POD і Maps; без історії сканів | S09-02, S09-04, S09-06, S09-07 | Offline без gates; live — окремий допуск |
+| [S09-13](tasks/S09-13.md) | Англомовний driver report: delivery point, правильна адреса, POD і Maps; без історії сканів | S09-02, S09-04, S09-06 | Offline без gates; live — окремий допуск |
 
 ## Границы готовности
 

@@ -282,4 +282,11 @@ test('serialized successful lookup preserves scan, address, drop and timing fiel
   assert.equal(result.address.contact, 'Synthetic Recipient');
   assert.deepEqual(Object.keys(result.timing), ['search', 'detail', 'scans']);
   assert.equal(count, 2);
+  for (const query of ['mlat=53', 'mlat=&mlon=-6', 'mlat=91&mlon=-6', 'mlat=53&mlon=181']) {
+    row.querySelector = () => ({ getAttribute: () => `https://openstreetmap.org/?${query}` });
+    const invalid = await lookupFixtures([fixtureDoc({ number: '123456789', id: '1' }), fixtureDoc({ table: true, rows: [row] })]);
+    assert.equal(invalid.result.scans[0].coords, null);
+    assert.equal(invalid.result.drop, null);
+  }
+
 });

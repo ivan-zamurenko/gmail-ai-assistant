@@ -168,3 +168,28 @@ truncated history. POD base64 is limited to700000 characters.
 Optional additive `parcel.address.truncated: true` means navigation address
 components were clipped/unsupported; renderer must not use that partial address
 for routing. A separately valid Eircode can still be used. This flag contains no PII.
+
+### Report command — S09-13 (2026-11-02)
+
+Additive `command: report`, schema2 unchanged; old executor rejects unknown
+command safely. Upgrade extension and bot together for this feature. Existing
+Firestore terminal `parcel` map means no rules deployment required.
+Args: `{conId, selection?: {parcel,type,date,time}, choiceTaskId?: taskUUID}`.
+Only bot sets choiceTaskId after authorized retained-record read; extension
+does not use it for depot work, recovery uses it to ACK the original choices.
+Result `parcel.report`: version1; state choose with consNumber/candidates, or
+state ready with consNumber/address/event. Event carries physical parcel,type,
+date,time,signature and validated coords; no raw depot event IDs/notes. Optional
+parcel.pod matches selected Delivered event only. Carded never uses Delivered POD.
+
+Candidates are exact Delivered/Carded events with valid physical IDs/calendar
+timestamps. Max1000 scans/25 candidates; duplicate tuples stop. Choice re-fetches
+lookup and requires one exact tuple match; no mutation occurs. Complete address
+whitelist: contact/company/lines/town/county/postCode/mobile (no email); max10
+lines, each scalar/line/signature<=1000 UTF16 units, oversized returns error.
+POD cap700000 base64 chars. Result stays comfortably below existing payload cap.
+
+Choices remain in existing24h retained store until final delivery, and are
+renderable via /result. Callback IDs contain taskUUID/index only; getResult
+rechecks requester,guild,executor,expiry after guild/Admin gate. ACK after final
+send; failed send retains both records. /result final ACK also cleans choices.

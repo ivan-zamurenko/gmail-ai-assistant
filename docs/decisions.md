@@ -173,3 +173,12 @@ S09 — инженерная декомпозиция проверки/разв�
 Це закриває відкладене перейменування/спрощення reschedule з рішення
 COMMAND-SHAPE-2026-10-29; не є окремим рішенням щодо optional /result list.
 Runtime не змінено; live не запускався.
+
+## REPORT-ENTRY-2026-11-02 — owner approved
+
+Separate `/report con_id:<number>`; keep /find full card. When multiple physical
+parcels/events qualify, explicit operator selection before report. Only Delivered
+and Carded location evidence; Carded is attempted delivery, never assumed parcel
+collection location. First implementation direct Maps URLs, no enrichment calls;
+S09-07 remains open for /find. English private report, full plain URLs for manual
+copy; photo separately. No live registration/start authorized by this implementation.

@@ -175,3 +175,28 @@ POD extension6.3.0.68 supports optional private podAuth.basicAuthorization, sepa
 ## POD image request alignment — 2026-11-02
 
 Extension6.3.0.69 matches depot image request with explicit Bearer scheme. IMAGE_AUTH_REJECTED distinguishes observed HTTP200 authorization-failure response from absent photo. Successful real POD recovery still needs owner verification; changing scheme case is a source-alignment fix, not proven root cause.
+
+## Driver report — S09-13 (2026-11-02)
+
+`/report con_id:<9 or14 digits>` gives an English, Administrator-only ephemeral
+report in the group chat. /find remains the full operational card. One eligible
+event renders directly; multiple events show four choices per page, up to25.
+Choose parcel and timestamp explicitly. Photos/GPS/signature come from the same
+selected event. Carded is an attempted delivery point, never a collection point.
+Goods Held and other scan types cannot supply report coordinates.
+
+Output: consignment/physical parcel, recorded point/date/time/signature, correct
+recipient/company/address/Eircode/phone, full clickable map URLs, photo or404.
+No history/email/internal logs; no arbitrary depot notes. Maps URLs make no
+provider request, need no API key; mobile app/browser behavior follows
+[Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started).
+Delivered route uses recorded GPS to valid Eircode/full address with driving mode.
+Carded or missing coordinates has no redelivery route. No nearby Eircode is guessed.
+
+Text can be copied to WhatsApp; photo copied separately. Auto URL previews and
+mentions are suppressed. Text over1900 chars is attached as driver-report.txt
+without losing address. /result recovers choices or final report without a new
+lookup; pressing a selection performs a fresh read-only lookup for that event.
+
+Versions root1.1.26/bot0.2.11/extension6.3.0.70. Offline validation only; command
+registration, restart, real Discord/mobile report verification not yet performed.

@@ -1,3 +1,4 @@
+import { renderDriverReport } from './driverReport.js';
 /** Discord interaction boundary; importing this module never starts a client or Firebase. */
 import { createResultRecovery } from './resultRecovery.js';
 import { MessageFlags, PermissionFlagsBits } from 'discord.js';
@@ -24,8 +25,9 @@ export function createInteractionHandler({
   const recoverResult = createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, resultMessage, cfg });
 
   async function handleInteraction(interaction) {
+    const reportButton = interaction.isButton?.() && interaction.customId?.startsWith('report:');
     const recoveryButton = interaction.isButton?.() && interaction.customId?.startsWith('result:');
-    if (!interaction.isChatInputCommand() && !recoveryButton) return;
+    if (!interaction.isChatInputCommand() && !recoveryButton && !reportButton) return;
 
     // Commands are guild-scoped at registration, but keep a runtime gate too: it
     // protects us if registration changes or an interaction is ever misrouted.
@@ -40,6 +42,10 @@ export function createInteractionHandler({
       return;
     }
 
+    if (reportButton) {
+      await handleReportButton(interaction);
+      return;
+    }
     if (recoveryButton || interaction.commandName === 'result') {
       if (typeof interaction.user?.id !== 'string' || !interaction.user.id) return;
       await recoverResult(interaction);
@@ -61,6 +67,8 @@ export function createInteractionHandler({
 
     if (interaction.commandName === 'todo') {
       await handleTodo(interaction, request);
+    } else if (interaction.commandName === COMMANDS.REPORT) {
+      await handleReport(interaction, { conId: request.conId });
     } else if (interaction.commandName === COMMANDS.FIND) {
       await handleFind(interaction, request.conId);
     } else {
@@ -85,7 +93,7 @@ export function createInteractionHandler({
       }
       return { sub };
     }
-    if (command === COMMANDS.FIND) {
+    if (command === COMMANDS.FIND || command === COMMANDS.REPORT) {
       const conId = interaction.options.getString('con_id');
       if (typeof conId !== 'string') return invalid;
       const error = validateConsignmentNumber(conId);
@@ -199,6 +207,50 @@ export function createInteractionHandler({
     } catch (err) {
       await deliveryError(interaction, err, retained);
     }
+  }
+
+  async function showReport(interaction, result) {
+    const report = result.parcel?.report;
+    await interaction.editReply(report
+      ? renderDriverReport(result.parcel, { resultId: result.id }) : resultMessage(result));
+    if (report?.state !== 'choose') await acknowledge(interaction, result);
+    return report?.state === 'ready';
+  }
+
+  async function handleReport(interaction, args, sourceId, deferred = false) {
+    if (!deferred) await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    let retained = false;
+    try {
+      const result = await enqueueAndWait({ command: COMMANDS.REPORT, args: { ...args, ...(sourceId && { choiceTaskId: sourceId }) }, requestedBy: interaction.user.id });
+      retained = true;
+      const delivered = await showReport(interaction, result);
+      if (delivered && sourceId) await acknowledge(interaction, { id: sourceId });
+    } catch (err) { await deliveryError(interaction, err, retained); }
+  }
+
+  async function handleReportButton(interaction) {
+    const match = /^report:(select|page):([A-Za-z0-9-]{1,80}):(\d{1,2})$/.exec(interaction.customId);
+    if (!match || typeof interaction.user?.id !== 'string' || !interaction.user.id) {
+      await interaction.reply({ content: 'Report selection unavailable.', flags: MessageFlags.Ephemeral });
+      return;
+    }
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    // getResult rechecks original requester, guild, executor and 24-hour expiry.
+    let source;
+    try { source = await getResult(match[2], actor(interaction)); }
+    catch { /* No record or failed authorization never triggers a lookup. */ }
+    const report = source?.parcel?.report;
+    const index = Number(match[3]);
+    if (report?.state !== 'choose' || !report.candidates?.[index]) {
+      await interaction.editReply('Report selection expired or unavailable. Use /report again.');
+      return;
+    }
+    if (match[1] === 'page') {
+      try { await interaction.editReply(renderDriverReport(source.parcel, { resultId: source.id, offset: index })); }
+      catch (err) { await deliveryError(interaction, err, true); }
+      return;
+    }
+    await handleReport(interaction, { conId: report.consNumber, selection: report.candidates[index] }, source.id, true);
   }
 
   /** Looks up one consignment and shows its latest status — read-only, no date. */

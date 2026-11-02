@@ -9,6 +9,7 @@
 export const COMMANDS = {
   RESCHEDULE:  'reschedule',
   FIND:        'find',
+  REPORT:      'report',
 };
 
 // Sub-modes of /reschedule, carried in task.args.mode.

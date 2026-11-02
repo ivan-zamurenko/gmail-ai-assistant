@@ -978,3 +978,13 @@ POD auth: existing success regression now uses different synthetic Basic client 
 ## POD image request alignment — 2026-11-02
 
 Existing POD success fixture now returns lowercase TokenType while expecting exact Bearer as captured depot code. Existing failure test includes HTTP200 body authorization Error1 with lowercase status/image. RED2/4 then focused14/14. No new test cases, no live acceptance claimed.
+
+## S09-13 — minimal driver-report regressions
+
+Three new groups in test/bot/driverReport.test.js: pure exact event selection
+plus actual executor Carded projection; bounded copyable text/Maps/missing data;
+actual handler ownership/retained-choice ACK/recovery. Existing admission,
+command schemas and lookup fixture extended. RED0/3 initial stubs, later1/3
+for address/defer defects, then36/36 focused. GPS parser checks are characterization
+after its small fix, not claimed RED. Delivered event-to-POD adapter correlation
+is source-reviewed; no real provider/Discord/mobile requests in this task.

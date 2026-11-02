@@ -1,3 +1,27 @@
+# S09-13 implemented — 2026-11-02
+
+Owner approved separate /report con_id and explicit parcel/event choice.
+report_impl handed off to root; report_contract_review ACCEPT. No active writer.
+Root1.1.26/bot0.2.11/extension6.3.0.70, additive REPORT/schema2 unchanged.
+English private report, full address/phone, same-event Delivered GPS/POD/signature;
+Carded attempted point only. Max25 choices,4/page, existing24h retained storage;
+/result restores choices/final reports. Direct Maps URLs, no provider calls.
+Long text becomes .txt attachment without address clipping. /find remains intact.
+
+Three new grouped regressions; test-first RED0/3 then1/3, focused36/36, full192/192;
+lint/build/artifacts/docs/diff PASS. GPS parser fixture is characterization;
+Delivered fetch pairing source-reviewed, real report not yet tested.
+Evidence: [S09-13](evidence/S09-13.json). Synthetic text preview inspected.
+
+Local build ready. Registration of /report and bot restart NOT performed yet;
+needs separate activation per task card. User must update work-PC dist6.3.0.70.
+After activation test /report with actual parcel; no live success claimed.
+S09-07 remains open for /find optional Maps; removed as report hard dependency
+because report has no enrichment calls. Next development step S09-07.
+
+---
+
+
 # POD image request alignment — 2026-11-02
 
 Owner PDF getPodiImage uses explicit Bearer; image HTTP200 reported auth failure.

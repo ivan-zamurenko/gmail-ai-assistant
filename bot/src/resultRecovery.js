@@ -1,3 +1,4 @@
+import { renderDriverReport } from './driverReport.js';
 /** Recovery displays retained results only: there is deliberately no enqueue port. */
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
 import { validateConsignmentNumber } from './validation.js';
@@ -37,7 +38,7 @@ export function createResultRecovery({ listResults, getResult, acknowledgeResult
         else if (matches.length) {
           offset = Math.min(Math.floor(offset / PAGE_SIZE) * PAGE_SIZE, Math.floor((matches.length - 1) / PAGE_SIZE) * PAGE_SIZE);
           const components = matches.slice(offset, offset + PAGE_SIZE).map(record => {
-            const number = record.args?.conId ?? record.parcel?.consNumber ?? '';
+            const number = record.args?.conId ?? record.parcel?.consNumber ?? record.parcel?.report?.consNumber ?? '';
             const mode = record.command === 'reschedule' ? `${record.args?.mode ?? ''} ${record.args?.dryRun === false ? 'LIVE' : 'preview'}` : '';
             const label = `${record.command} ${mode} ${number} · ${new Date(record.completedAt.toMillis()).toISOString().slice(0, 16).replace('T', ' ')} UTC`;
             return new ActionRowBuilder().addComponents(button(`result:show:${record.id}`, label.slice(0, 80)));
@@ -54,10 +55,16 @@ export function createResultRecovery({ listResults, getResult, acknowledgeResult
         await interaction.editReply('Збереженого результату немає або минуло 24 години. Depot-команду не повторено.');
         return;
       }
-      const payload = result.parcel ? await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey) : resultMessage(result);
+      const report = result.parcel?.report;
+      const payload = report ? renderDriverReport(result.parcel, { resultId: result.id })
+        : result.parcel ? await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey) : resultMessage(result);
       await interaction.editReply(payload);
+      if (report?.state === 'choose') return;
       // A failed ACK must not overwrite the successfully delivered card.
-      try { await acknowledgeResult(result.id, actor); }
+      try {
+        await acknowledgeResult(result.id, actor);
+        if (report?.state === 'ready' && result.args?.choiceTaskId) await acknowledgeResult(result.args.choiceTaskId, actor);
+      }
       catch (err) { console.error('Recovery acknowledgement failed:', safeErrorMessage(err, 'Queue acknowledgement failed')); }
     } catch (err) {
       try { await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Result recovery failed')}. Результат не підтверджено як доставлений; depot-команду не повторено.`); }

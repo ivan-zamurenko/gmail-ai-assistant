@@ -88,3 +88,7 @@
 - 2026-11-02 | root + pod_image_review | implemented request alignment | literal Bearer matches supplied depot function; HTTP200 auth rejection gets safe distinct code; dist6.3.0.69/root1.1.25 | existing tests RED2/4 GREEN14/14 full189/189 gates PASS, review ACCEPT | owner reload/find; root cause/live recovery unconfirmed.
 
 - 2026-11-02 | owner + root | live success confirmed | Owner reports POD works after6.3.0.69; photo incident closed for tested scenario, owner-reported not independent network inspection | evidence/POD-IMAGE-2026-11-02.json; no PII recorded or runtime changes | next S09-07 then S09-13.
+
+- 2026-11-02 | owner + root | approved S09-13 | separate /report, explicit parcel/event selection; direct Maps links first version, Carded attempted only | decision REPORT-ENTRY-2026-11-02 | report_impl sole writer, contract reviewer read-only; minimal tests first.
+
+- 2026-11-02 | report_impl + root + report_contract_review | implemented S09-13 offline | /report, exact event choice, English text/POD/direct Maps, recoverable24h;3newgroups | RED0/3 then1/3, focused36/36 full192/192 gates PASS, review ACCEPT; evidence/S09-13.json | activate/register+restart separately then owner update dist6.3.0.70/live test; S09-07 remains open.

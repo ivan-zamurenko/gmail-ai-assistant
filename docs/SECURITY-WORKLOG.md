@@ -499,3 +499,12 @@ Owner-supplied private source confirmed separate provider Basic authorization. A
 ## POD image request alignment — 2026-11-02
 
 Owner image-function PDF inspected privately. Image request now uses literal Bearer scheme matching depot; returned TokenType is not interpolated. Observed provider authorization rejection maps to fixed IMAGE_AUTH_REJECTED, no raw Details logged. No live requests or credentials changes; private extracted text removed.
+
+## 2026-11-02 — S09-13 report
+
+- Reused Administrator/ephemeral/requester/guild/executor/24h retained boundary.
+- Selection buttons carry internal task ID/index only; depot IDs/notes stay local.
+- Report projects approved recipient/address/phone, event GPS/time/signature;
+  remains PII, not anonymous. No email, provider headers or raw errors in output.
+- No new Maps provider transmission, persistence policy or Firestore rule change.
+- Synthetic fixtures only; no live registration/start/parcel command by agents.

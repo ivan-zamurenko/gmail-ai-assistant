@@ -1095,8 +1095,7 @@
       "depends_on": [
         "S09-02",
         "S09-04",
-        "S09-06",
-        "S09-07"
+        "S09-06"
       ],
       "gates": [],
       "path": "roadmap/tasks/S09-13.md",

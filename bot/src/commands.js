@@ -73,6 +73,11 @@ export const commands = [
       s.setName('clear')
        .setDescription('Прибрати всі виконані задачі')),
   new SlashCommandBuilder()
+    .setName('report')
+    .setDescription('Create a driver recovery and redelivery report')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addStringOption(o => o.setName('con_id').setDescription('Consignment number').setRequired(true)),
+  new SlashCommandBuilder()
     .setName('result')
     .setDescription('Показати збережений результат без повторної дії в depot')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)

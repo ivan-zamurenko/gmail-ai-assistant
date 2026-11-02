@@ -211,9 +211,10 @@ export async function depotLookup(numbers, { identityOnly = false } = {}) {
     const link = tr.querySelector('a[href*="openstreetmap.org"]');
     if (!link) return null;
     const p   = new URLSearchParams(link.getAttribute('href').split('?')[1] ?? '');
+    if (!p.get('mlat')?.trim() || !p.get('mlon')?.trim()) return null;
     const lat = Number(p.get('mlat'));
     const lng = Number(p.get('mlon'));
-    return Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng) ? { lat, lng } : null;
+    return Number.isFinite(lat) && Math.abs(lat) <= 90 && Number.isFinite(lng) && Math.abs(lng) <= 180 ? { lat, lng } : null;
   }
 
   /** Dates are DD/MM/YYYY, so sorting them as strings would put 10/08 before 07/08. */

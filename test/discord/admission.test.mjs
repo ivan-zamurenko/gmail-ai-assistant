@@ -48,12 +48,12 @@ function assertDenied(calls) {
 }
 
 test('wrong guild and non-admin depot actors are denied before effects', async () => {
-  for (const command of ['find', 'reschedule', 'todo', 'result']) {
+  for (const command of ['find', 'report', 'reschedule', 'todo', 'result']) {
     const h = fixture({ command, guild: 'other-guild' });
     await h.run();
     assertDenied(h.calls);
   }
-  for (const command of ['find', 'reschedule', 'result']) {
+  for (const command of ['find', 'report', 'reschedule', 'result']) {
     const h = fixture({ command, admin: false });
     await h.run();
     assertDenied(h.calls);
@@ -62,7 +62,7 @@ test('wrong guild and non-admin depot actors are denied before effects', async (
 
 test('registered depot modes enqueue once with safe defaults and explicit false confirmation', async () => {
   const schema = commands.map(command => command.toJSON());
-  assert.deepEqual(schema.map(command => command.name), ['reschedule', 'find', 'todo', 'result']);
+  assert.deepEqual(schema.map(command => command.name), ['reschedule', 'find', 'todo', 'report', 'result']);
   assert.equal(schema[0].default_member_permissions, '8');
   assert.equal(schema[1].default_member_permissions, '8');
   assert.ok(!schema[2].default_member_permissions);

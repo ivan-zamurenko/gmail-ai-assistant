@@ -1,3 +1,4 @@
+import { reportSelection } from '../depot/reportSelection.js';
 /**
  * src/queue/executor.js
  * =====================
@@ -267,6 +268,55 @@ async function runFind(args) {
   return projectFindResult(res, podBody);
 }
 
+/** Report selection is read-only; chosen tuples are rechecked against fresh depot scans. */
+async function runReport(args) {
+  const { result: res, reason } = await injectLookup(args.conId);
+  if (reason) return error(reason);
+  if (!res?.ok) return error(findFailure(res));
+  const selected = reportSelection(res.scans, args.selection);
+  if (selected.error) return error(selected.error);
+  if (selected.candidates) return { status: STATUS.DONE, parcel: { report: {
+    version: 1, state: 'choose', consNumber: args.conId, candidates: selected.candidates,
+  } } };
+  const event = selected.event;
+  const podResult = event.type === 'Delivered' && event.eventId
+    ? await fetchPodImage(event.eventId, config.podAuth) : null;
+  if (podResult?.error) console.warn('[report] POD_UNAVAILABLE', podFailureCode(podResult.error));
+  // Preserve the complete approved address. Oversized values require manual review,
+  // never a silently shortened destination. Arbitrary depot fields stay local.
+  const sourceAddress = res.address && typeof res.address === 'object' ? res.address : {};
+  const address = {};
+  for (const key of ['contact', 'company', 'town', 'county', 'postCode', 'mobile']) {
+    const value = sourceAddress[key];
+    if (value != null && (typeof value !== 'string' || value.length > 1000)) return error('Report address unavailable; manual review required.');
+    address[key] = value ?? '';
+  }
+  const lines = sourceAddress.lines ?? [];
+  if (!Array.isArray(lines) || lines.length > 10 || lines.some(line => typeof line !== 'string' || line.length > 1000)) {
+    return error('Report address unavailable; manual review required.');
+  }
+  address.lines = lines;
+  if (sourceAddress.truncated === true) address.truncated = true;
+  if (event.signature != null && (typeof event.signature !== 'string' || event.signature.length > 1000)) {
+    return error('Report signature unavailable; manual review required.');
+  }
+  const podBody = podResult?.image?.body;
+  const pod = typeof podBody === 'string' && podBody.length <= 700000 && /^[A-Za-z0-9+/=]+$/.test(podBody)
+    ? { mime: 'image/jpeg', body: podBody } : null;
+  const coords = event.coords;
+  const validCoords = coords && Number.isFinite(coords.lat) && Math.abs(coords.lat) <= 90
+    && Number.isFinite(coords.lng) && Math.abs(coords.lng) <= 180;
+  return { status: STATUS.DONE, parcel: {
+    ...(pod && { pod }),
+    report: { version: 1, state: 'ready', consNumber: args.conId,
+      address,
+      event: { parcel: String(Number(event.parcel)), type: event.type, date: event.date, time: event.time,
+        signature: event.type === 'Delivered' ? event.signature ?? '' : '',
+        coords: validCoords ? { lat: coords.lat, lng: coords.lng } : null },
+    },
+  } };
+}
+
 /** Explicit outbound parcel contract; no depot/session objects cross this boundary. */
 export function projectFindResult(res, podBody = '') {
   // /find is an administrator-only, ephemeral operational card. Keep the payload
@@ -348,12 +398,12 @@ export async function executeTask(task) {
     return error('Непідтримувана версія queue task');
   }
 
-  if (task.command === COMMANDS.FIND) {
+  if (task.command === COMMANDS.FIND || task.command === COMMANDS.REPORT) {
     const conId = task.args?.conId;
     if (typeof conId !== 'string' || !/^\d{9}(?:\d{5})?$/.test(conId)) {
       return error('Некоректний номер посилки');
     }
-    return runFind(task.args);
+    return task.command === COMMANDS.REPORT ? runReport(task.args) : runFind(task.args);
   }
 
   if (task.command !== COMMANDS.RESCHEDULE) {

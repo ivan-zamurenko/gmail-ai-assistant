@@ -59,3 +59,20 @@ export async function fetchPodImage(eventId, podAuth) {
     return { error: 'POD request failed' };
   }
 }
+
+/** Fixed diagnostic vocabulary; never expose provider text or identifiers in logs. */
+export function podFailureCode(error) {
+  const fixed = new Map([
+    ['POD event ID is missing', 'EVENT_ID_MISSING'],
+    ['POD event ID is invalid', 'EVENT_ID_INVALID'],
+    ['POD authorization is not configured', 'AUTH_NOT_CONFIGURED'],
+    ['POD authorization returned no access token', 'AUTH_TOKEN_MISSING'],
+    ['POD request failed', 'REQUEST_FAILED'],
+  ]);
+  if (fixed.has(error)) return fixed.get(error);
+  if (typeof error !== 'string') return 'UNKNOWN';
+  const http = /^POD (authorize|request) HTTP ([1-5][0-9]{2})$/.exec(error);
+  if (http) return `${http[1] === 'authorize' ? 'AUTH' : 'IMAGE'}_HTTP_${http[2]}`;
+  if (/^POD image unavailable \([A-Za-z0-9_-]{0,24}, \d+ image records\)$/.test(error)) return 'IMAGE_UNAVAILABLE';
+  return 'UNKNOWN';
+}

@@ -274,7 +274,10 @@ test('find injects only the number; the POD photo is requested by the extension'
   assert.deepEqual(delivered.parcel.scans, notDelivered.parcel.scans);
   assert.equal(JSON.stringify(delivered).includes('555'), false, 'event id stays local even when POD fails');
   assert.doesNotMatch(JSON.stringify(delivered), /POD (request|authorization)/);
-  assert.deepEqual(warnings, [['[find] POD_UNAVAILABLE']]);
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0][0], '[find] POD_UNAVAILABLE');
+  assert.match(warnings[0][1] ?? '', /^(AUTH_NOT_CONFIGURED|REQUEST_FAILED)$/);
+  assert.equal(warnings[0].length, 2);
 
   assert.deepEqual(injections, [[['123456789']], [['123456789']]]);
 });

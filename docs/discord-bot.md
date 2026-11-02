@@ -156,3 +156,14 @@ text budget6000, POD base64 limit700000, serialized parcel limit900000 UTF8
 bytes. Displayed address may be shortened; truncated navigation targets are
 omitted unless a valid Eircode exists. Existing Maps provider failure behavior
 is deferred to S09-07. No live/command-registration verification performed.
+
+### POD failure diagnosis (2026-11-02)
+
+Extension6.3.0.67 logs `[find] POD_UNAVAILABLE <code>` in its service-worker
+console. AUTH_NOT_CONFIGURED: missing local API credentials; AUTH_HTTP_401/403:
+authorization refused; AUTH_TOKEN_MISSING: successful response lacks token;
+IMAGE_HTTP_<status>: image request rejected; IMAGE_UNAVAILABLE: no matching POD
+record; EVENT_ID_MISSING/INVALID: unsupported event reference; REQUEST_FAILED:
+request/encoding/parsing failure (not necessarily network); UNKNOWN: unclassified.
+Only the code may be shared for diagnosis. Depot browser login and POD API auth
+are separate. Existing fallback remains; this change does not fix the live cause.

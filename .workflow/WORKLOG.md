@@ -72,3 +72,7 @@
 - 2026-11-01 | root + card_impl/card_review | implemented S09-06 | bounded honest private cards, explicit projection, safe truncated-address route and unknown parcel identity; reviewer ACCEPT | test-first3groups, focused17/17, full189/189, lint/build/docs/artifacts PASS; evidence/S09-06.json | next S09-07, no live verification.
 
 - 2026-11-01 | root | approved clarification | retain /reschedule and existing parcel con_id/new_date arguments; code already rejects invalid/nonfuture/weekend dates; manual bank-holiday policy pending | source inspection commands.js/validation.js/executor.js, runtime unchanged | clarify holidays; next S09-07.
+
+- 2026-11-02 | root | authorized runtime start | Owner explicitly requested bot startup; Discord ClientReady observed, no startup/cleanup error observed. Running via tool session53125; initial detached attempt exited. No command registration or parcel command invoked by agent | next: owner /find smoke check; uptime beyond session not guaranteed.
+
+- 2026-11-02 | root + pod_diagnostic_review | diagnostic implemented, incident open | safe POD reason codes, extension6.3.0.67/root1.1.23, dist rebuilt; no extra test cases | RED12/14 GREEN14/14 full189/189 gates PASS, review ACCEPT; evidence/POD-DIAGNOSTICS-2026-11-02.json | owner reload+find, await reason code; actual POD cause unknown.

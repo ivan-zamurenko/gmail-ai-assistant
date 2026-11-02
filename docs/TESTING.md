@@ -962,3 +962,11 @@ Unicode та Discord limits/formatting; фактична whitelist-проєкц�
 та маршрут з обрізаної адреси. Спочатку відтворені дефекти, потім код.
 Combined Unicode+POD byte-cap fixture — characterization існуючого guard.
 Лише synthetic offline дані; реальний depot, Discord і Maps не перевірені.
+
+## POD diagnostics follow-up — 2026-11-02
+
+Existing podImage/executor tests extended, no new test cases: fixed reason codes,
+anchored HTTP status mapping, unknown/provider-text rejection and actual warning
+shape. Replaces prior constant-only warning contract with constant prefix plus
+allowlisted reason code; no raw provider errors or parcel IDs. Functional RED12/14
+(after helper stub), GREEN14/14. No live POD provider calls; root cause pending.

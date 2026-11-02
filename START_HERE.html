@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-06 завершено локально — 2026-11-01<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">POD diagnostic follow-up — 2026-11-02<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1059,6 +1059,17 @@ text budget6000, POD base64 limit700000, serialized parcel limit900000 UTF8
 bytes. Displayed address may be shortened; truncated navigation targets are
 omitted unless a valid Eircode exists. Existing Maps provider failure behavior
 is deferred to S09-07. No live/command-registration verification performed.
+
+### POD failure diagnosis (2026-11-02)
+
+Extension6.3.0.67 logs `[find] POD_UNAVAILABLE &lt;code&gt;` in its service-worker
+console. AUTH_NOT_CONFIGURED: missing local API credentials; AUTH_HTTP_401/403:
+authorization refused; AUTH_TOKEN_MISSING: successful response lacks token;
+IMAGE_HTTP_&lt;status&gt;: image request rejected; IMAGE_UNAVAILABLE: no matching POD
+record; EVENT_ID_MISSING/INVALID: unsupported event reference; REQUEST_FAILED:
+request/encoding/parsing failure (not necessarily network); UNKNOWN: unclassified.
+Only the code may be shared for diagnosis. Depot browser login and POD API auth
+are separate. Existing fallback remains; this change does not fix the live cause.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1841,7 +1852,21 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-06 завершено локально — 2026-11-01</h1><pre class="markdown"># S09-06 завершено локально — 2026-11-01
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>POD diagnostic follow-up — 2026-11-02</h1><pre class="markdown"># POD diagnostic follow-up — 2026-11-02
+
+Safe reason-code diagnostic implemented; root cause of missing POD unresolved.
+Root writer finished; pod_diagnostic_review ACCEPT. Extension6.3.0.67, root1.1.23;
+bot unchanged0.2.10, no restart needed. Updated dist built locally.
+Existing tests extended only: RED12/14, GREEN14/14, full189/189; gates PASS.
+Evidence: [POD diagnostic](evidence/POD-DIAGNOSTICS-2026-11-02.json).
+Next: owner replaces dist on work PC, reloads extension, repeats /find and
+shares ONLY `[find] POD_UNAVAILABLE &lt;code&gt;`. No secret/provider bodies requested.
+No new live API calls, registration, deployment or depot mutations by agent.
+S09-07 not started; missing photo incident remains open.
+
+---
+
+# S09-06 завершено локально — 2026-11-01
 
 Owner «Давай далі», base953d778, codex. Writer card_impl передав root;
 card_review ACCEPT після незалежного review. Активного writer/task немає.
@@ -2089,6 +2114,10 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-01 | root + card_impl/card_review | implemented S09-06 | bounded honest private cards, explicit projection, safe truncated-address route and unknown parcel identity; reviewer ACCEPT | test-first3groups, focused17/17, full189/189, lint/build/docs/artifacts PASS; evidence/S09-06.json | next S09-07, no live verification.
 
 - 2026-11-01 | root | approved clarification | retain /reschedule and existing parcel con_id/new_date arguments; code already rejects invalid/nonfuture/weekend dates; manual bank-holiday policy pending | source inspection commands.js/validation.js/executor.js, runtime unchanged | clarify holidays; next S09-07.
+
+- 2026-11-02 | root | authorized runtime start | Owner explicitly requested bot startup; Discord ClientReady observed, no startup/cleanup error observed. Running via tool session53125; initial detached attempt exited. No command registration or parcel command invoked by agent | next: owner /find smoke check; uptime beyond session not guaranteed.
+
+- 2026-11-02 | root + pod_diagnostic_review | diagnostic implemented, incident open | safe POD reason codes, extension6.3.0.67/root1.1.23, dist rebuilt; no extra test cases | RED12/14 GREEN14/14 full189/189 gates PASS, review ACCEPT; evidence/POD-DIAGNOSTICS-2026-11-02.json | owner reload+find, await reason code; actual POD cause unknown.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4940,6 +4969,14 @@ Unicode та Discord limits/formatting; фактична whitelist-проєкц�
 та маршрут з обрізаної адреси. Спочатку відтворені дефекти, потім код.
 Combined Unicode+POD byte-cap fixture — characterization існуючого guard.
 Лише synthetic offline дані; реальний depot, Discord і Maps не перевірені.
+
+## POD diagnostics follow-up — 2026-11-02
+
+Existing podImage/executor tests extended, no new test cases: fixed reason codes,
+anchored HTTP status mapping, unknown/provider-text rejection and actual warning
+shape. Replaces prior constant-only warning contract with constant prefix plus
+allowlisted reason code; no raw provider errors or parcel IDs. Functional RED12/14
+(after helper stub), GREEN14/14. No live POD provider calls; root cause pending.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

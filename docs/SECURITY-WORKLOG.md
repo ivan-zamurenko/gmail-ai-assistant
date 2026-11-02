@@ -484,3 +484,10 @@ into this log.
 - Disabled Discord mentions; neutralized customer-controlled formatting/control
   characters. No real customer data, credentials or network services used.
 - Synthetic projection/render regressions; Admin/ephemeral gates unchanged.
+
+## 2026-11-02 — POD diagnostic follow-up
+
+Owner observed missing POD and generic warning during live find. Local diagnostic
+now logs constant prefix plus allowlisted code only, superseding constant-only
+warning contract. No credentials, token, provider Status text, parcel/event IDs
+or raw exception logged. No new live requests or secret inspection performed.

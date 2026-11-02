@@ -13,7 +13,7 @@
 
 import { depotMain }       from '../depot/depotScript.js';
 import { depotLookup }     from '../depot/lookup.js';
-import { fetchPodImage }   from '../depot/podImage.js';
+import { fetchPodImage, podFailureCode }   from '../depot/podImage.js';
 import { isDepotUrl }      from '../depot/depotTarget.js';
 import {
   applyRecoveryResult,
@@ -261,7 +261,7 @@ async function runFind(args) {
   const podResult = res.podEventId == null ? null : await fetchPodImage(res.podEventId, config.podAuth);
   const podBody = typeof podResult?.image?.body === 'string' && /^[A-Za-z0-9+/=]+$/.test(podResult.image.body)
     && podResult.image.body.length <= 700_000 ? podResult.image.body : '';
-  if (podResult?.error) console.warn('[find] POD_UNAVAILABLE');
+  if (podResult?.error) console.warn('[find] POD_UNAVAILABLE', podFailureCode(podResult.error));
   // POD is optional: a provider failure must not discard the confirmed parcel
   // facts. With no image the bot renders its local unavailable-photo placeholder.
   return projectFindResult(res, podBody);

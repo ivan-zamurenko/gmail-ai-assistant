@@ -1,3 +1,17 @@
+# POD diagnostic follow-up — 2026-11-02
+
+Safe reason-code diagnostic implemented; root cause of missing POD unresolved.
+Root writer finished; pod_diagnostic_review ACCEPT. Extension6.3.0.67, root1.1.23;
+bot unchanged0.2.10, no restart needed. Updated dist built locally.
+Existing tests extended only: RED12/14, GREEN14/14, full189/189; gates PASS.
+Evidence: [POD diagnostic](evidence/POD-DIAGNOSTICS-2026-11-02.json).
+Next: owner replaces dist on work PC, reloads extension, repeats /find and
+shares ONLY `[find] POD_UNAVAILABLE <code>`. No secret/provider bodies requested.
+No new live API calls, registration, deployment or depot mutations by agent.
+S09-07 not started; missing photo incident remains open.
+
+---
+
 # S09-06 завершено локально — 2026-11-01
 
 Owner «Давай далі», base953d778, codex. Writer card_impl передав root;

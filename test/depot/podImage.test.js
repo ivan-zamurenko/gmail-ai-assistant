@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { useFetch } from '../helpers/harness.js';
-import { fetchPodImage } from '../../src/depot/podImage.js';
+import { fetchPodImage, podFailureCode } from '../../src/depot/podImage.js';
 
 const AUTHORIZE = 'https://api2.dpd.ie/common/api/authorize';
 const IMAGE = 'https://papi.dpd.ie/pw/rs/mwcon/webresources/consignment/event/image/';
@@ -56,6 +56,15 @@ test('POD failures return safe errors without credentials or tokens', async (t) 
     'POD image unavailable (NOTFOUNDb, 0 image records)',
   ]);
   for (const message of errors) assert.doesNotMatch(message, /synthetic-(pass|user)|synthetic-access/);
+  assert.deepEqual(errors.map(podFailureCode), ['AUTH_HTTP_401', 'AUTH_TOKEN_MISSING', 'IMAGE_UNAVAILABLE']);
+  assert.equal(podFailureCode('POD authorization is not configured'), 'AUTH_NOT_CONFIGURED');
+  assert.equal(podFailureCode('POD event ID is missing'), 'EVENT_ID_MISSING');
+  assert.equal(podFailureCode('POD event ID is invalid'), 'EVENT_ID_INVALID');
+  assert.equal(podFailureCode('POD request HTTP 403'), 'IMAGE_HTTP_403');
+  assert.equal(podFailureCode('POD request failed'), 'REQUEST_FAILED');
+  for (const value of ['secret-token', 'POD request HTTP 401 secret-token', null, {}]) {
+    assert.equal(podFailureCode(value), 'UNKNOWN');
+  }
 });
 
 test('a network failure becomes a generic POD error', async (t) => {

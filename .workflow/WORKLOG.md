@@ -92,3 +92,5 @@
 - 2026-11-02 | owner + root | approved S09-13 | separate /report, explicit parcel/event selection; direct Maps links first version, Carded attempted only | decision REPORT-ENTRY-2026-11-02 | report_impl sole writer, contract reviewer read-only; minimal tests first.
 
 - 2026-11-02 | report_impl + root + report_contract_review | implemented S09-13 offline | /report, exact event choice, English text/POD/direct Maps, recoverable24h;3newgroups | RED0/3 then1/3, focused36/36 full192/192 gates PASS, review ACCEPT; evidence/S09-13.json | activate/register+restart separately then owner update dist6.3.0.70/live test; S09-07 remains open.
+
+- 2026-11-02 | find_layout + root + find_layout_review | implemented find presentation | organized overview/photo/plain history, Delivered/Carded-only GPS; root1.1.27/bot0.2.12 | RED1/8 GREEN8/8 full193/193 gates PASS, review ACCEPT, synthetic preview | live restart/report registration pending; next S09-07.

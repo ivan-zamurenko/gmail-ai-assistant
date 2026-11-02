@@ -200,3 +200,7 @@ lookup; pressing a selection performs a fresh read-only lookup for that event.
 
 Versions root1.1.26/bot0.2.11/extension6.3.0.70. Offline validation only; command
 registration, restart, real Discord/mobile report verification not yet performed.
+
+## Find high-level presentation — 2026-11-02
+
+/find presentation refreshed: headline status/count, latest event, grouped delivery address/contact/details, recorded location, map, POD, then plain chronological history (up to12). Empty optional fields, ANSI and duplicate address/searched-as removed. Evidence uncertainty remains in footer. GPS only with explicit Delivered/Carded drop.type; unknown/other types are not inferred from headline. Carded has no redelivery route. Distance labelled straight-line; route target encoded cap500 to protect1024 field size. /report behavior unchanged. Bot0.2.12/root1.1.27; extension remains6.3.0.70. Runtime restart/registration pending.

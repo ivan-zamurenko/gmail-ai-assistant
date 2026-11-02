@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-13 implemented — 2026-11-02<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Find presentation completed locally — 2026-11-02<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1103,6 +1103,10 @@ lookup; pressing a selection performs a fresh read-only lookup for that event.
 
 Versions root1.1.26/bot0.2.11/extension6.3.0.70. Offline validation only; command
 registration, restart, real Discord/mobile report verification not yet performed.
+
+## Find high-level presentation — 2026-11-02
+
+/find presentation refreshed: headline status/count, latest event, grouped delivery address/contact/details, recorded location, map, POD, then plain chronological history (up to12). Empty optional fields, ANSI and duplicate address/searched-as removed. Evidence uncertainty remains in footer. GPS only with explicit Delivered/Carded drop.type; unknown/other types are not inferred from headline. Carded has no redelivery route. Distance labelled straight-line; route target encoded cap500 to protect1024 field size. /report behavior unchanged. Bot0.2.12/root1.1.27; extension remains6.3.0.70. Runtime restart/registration pending.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1910,7 +1914,25 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-13 implemented — 2026-11-02</h1><pre class="markdown"># S09-13 implemented — 2026-11-02
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Find presentation completed locally — 2026-11-02</h1><pre class="markdown"># Find presentation completed locally — 2026-11-02
+
+Owner requested organized high-level /find. Writer find_layout handed off root;
+find_layout_review ACCEPT. Root1.1.27/bot0.2.12; extension unchanged6.3.0.70.
+Plain structured overview -&gt; photo -&gt; history; status/time first, grouped address/
+contacts/details, no ANSI/empty noise, honest source note. Only explicit Delivered/
+Carded drop types show GPS; Carded no redelivery route. /report unchanged.
+
+One new grouped regression; RED1/8 then GREEN8/8; full193/193 and7gates PASS.
+Synthetic preview inspected; no actual Discord/mobile verification.
+Evidence: [find layout](evidence/FIND-PRESENTATION-2026-11-02.json).
+No active writer. Bot restart and /report registration remain pending; don&#39;t
+claim visible live update. Next: activate completed bot changes, owner smoke test;
+S09-07 legacy Maps robustness remains next development work.
+
+---
+
+
+# S09-13 implemented — 2026-11-02
 
 Owner approved separate /report con_id and explicit parcel/event choice.
 report_impl handed off to root; report_contract_review ACCEPT. No active writer.
@@ -2245,6 +2267,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-02 | owner + root | approved S09-13 | separate /report, explicit parcel/event selection; direct Maps links first version, Carded attempted only | decision REPORT-ENTRY-2026-11-02 | report_impl sole writer, contract reviewer read-only; minimal tests first.
 
 - 2026-11-02 | report_impl + root + report_contract_review | implemented S09-13 offline | /report, exact event choice, English text/POD/direct Maps, recoverable24h;3newgroups | RED0/3 then1/3, focused36/36 full192/192 gates PASS, review ACCEPT; evidence/S09-13.json | activate/register+restart separately then owner update dist6.3.0.70/live test; S09-07 remains open.
+
+- 2026-11-02 | find_layout + root + find_layout_review | implemented find presentation | organized overview/photo/plain history, Delivered/Carded-only GPS; root1.1.27/bot0.2.12 | RED1/8 GREEN8/8 full193/193 gates PASS, review ACCEPT, synthetic preview | live restart/report registration pending; next S09-07.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -5137,6 +5161,10 @@ command schemas and lookup fixture extended. RED0/3 initial stubs, later1/3
 for address/defer defects, then36/36 focused. GPS parser checks are characterization
 after its small fix, not claimed RED. Delivered event-to-POD adapter correlation
 is source-reviewed; no real provider/Discord/mobile requests in this task.
+
+## Find high-level presentation — 2026-11-02
+
+Find presentation: existing7 render regressions updated FIRST for explicitly requested layout while preserving chronology, unknown identity/time, privacy, Unicode bounds and POD. One new hierarchy/empty/noANSI/drop-type group. RED1/8, GREEN8/8. New test originally overconstrained footer to absent; corrected to no redundant searched-as while requiring uncertainty (test specification correction, not runtime defect). Long map target and maximal grouped-address checks added after guard as characterization.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

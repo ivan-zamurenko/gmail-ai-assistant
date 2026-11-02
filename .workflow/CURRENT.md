@@ -1,3 +1,21 @@
+# Find presentation completed locally — 2026-11-02
+
+Owner requested organized high-level /find. Writer find_layout handed off root;
+find_layout_review ACCEPT. Root1.1.27/bot0.2.12; extension unchanged6.3.0.70.
+Plain structured overview -> photo -> history; status/time first, grouped address/
+contacts/details, no ANSI/empty noise, honest source note. Only explicit Delivered/
+Carded drop types show GPS; Carded no redelivery route. /report unchanged.
+
+One new grouped regression; RED1/8 then GREEN8/8; full193/193 and7gates PASS.
+Synthetic preview inspected; no actual Discord/mobile verification.
+Evidence: [find layout](evidence/FIND-PRESENTATION-2026-11-02.json).
+No active writer. Bot restart and /report registration remain pending; don't
+claim visible live update. Next: activate completed bot changes, owner smoke test;
+S09-07 legacy Maps robustness remains next development work.
+
+---
+
+
 # S09-13 implemented — 2026-11-02
 
 Owner approved separate /report con_id and explicit parcel/event choice.

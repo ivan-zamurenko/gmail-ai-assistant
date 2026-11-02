@@ -508,3 +508,7 @@ Owner image-function PDF inspected privately. Image request now uses literal Bea
   remains PII, not anonymous. No email, provider headers or raw errors in output.
 - No new Maps provider transmission, persistence policy or Firestore rule change.
 - Synthetic fixtures only; no live registration/start/parcel command by agents.
+
+## Find high-level presentation — 2026-11-02
+
+Find presentation retains Administrator/ephemeral and mention neutralization. Explicit Delivered/Carded filter prevents using other/unknown drop types for Maps output. No new fields/provider flows or retention changes. Source uncertainty preserved. Synthetic fixtures only; no live calls or private data used.

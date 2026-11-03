@@ -12,5 +12,11 @@
   "artifact": "/tmp/DPD-Assistance-6.3.0.88.zip",
   "sha256": "138c87b3f02cc390ed6fd95defe48e966f092d7a63853a8af197627097037691",
   "live": "Work-PC verification pending",
-  "merge": "Owner explicitly authorized codex into main; pending PR checks/merge"
+  "merge": {
+    "state": "MERGED",
+    "pr": "https://github.com/ivan-zamurenko/gmail-ai-assistant/pull/2",
+    "commit": "75c967a0ce2411ab5a107028724cf6a1de17ef65",
+    "checks": "Both GitHub checks passed"
+  },
+  "activation": "bot0.2.26 online, no startup error markers"
 }

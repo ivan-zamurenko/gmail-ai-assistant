@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-07 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S01-05 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -196,7 +196,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 - **Two-process architecture over a shared queue.** Discord bot (Node) and Chrome extension (browser) exchange tasks via Firestore. A versioned contract keeps them decoupled; a version skew degrades gracefully instead of crashing.
 - **Real-world computer vision.** Reads DPD labels from hand-held phone photos using local **ZXing-C++ WebAssembly** (PDF417 + Code128), with the proven JavaScript crop/rotation reader as a fallback; the current private 69-photo set remains **69/69 parseable** — plus a **Gemini Vision** fallback.
 - **Works within MV3&#39;s hard limits.** The depot session lives in the tab URL (not cookies), so a service worker can&#39;t reach it alone; work is dispatched into the live tab via `executeScript` in the **MAIN world** (the depot rejects POSTs from an isolated world). The queue is polled with `chrome.alarms` because MV3 kills idle workers.
-- **Secrets never ship.** The extension carries no service account; it authenticates to Firestore with **anonymous Firebase Auth** and is fenced off by security rules. All keys live in gitignored config, accessed through a single config facade.
+- **Separate runtime credentials.** Discord tokens and service accounts stay in the Node bot. The extension uses **anonymous Firebase Auth** and security rules. Its static local configuration is embedded in `dist`; gitignore keeps values out of Git, not out of browser bundles.
 - **Domain-correct logic.** Next-working-day calculation skips weekends and Irish bank holidays; delivery truth is read from scanning history, not the (often stale) arranged date.
 - **Modular by default.** UI orchestrates, services hold business rules, adapters hide providers (Drive / Gmail / Gemini / Firestore) — swapping a provider touches one module. Bundled with **esbuild**, linted with **ESLint 9** flat config.
 
@@ -1935,7 +1935,27 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-07 completed offline — 2026-11-03</h1><pre class="markdown"># S09-07 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S01-05 completed offline — 2026-11-03</h1><pre class="markdown"># S01-05 completed offline — 2026-11-03
+
+Owner authorized autonomous small tasks, journal and one commit/push per task.
+Root sole writer finished; config_review reviewed, no active writer.
+Root1.1.30/bot0.2.15/extension6.3.0.71. Strict config shapes/required bot fields,
+safe import/service-account errors, shared Drive folder parser before requests.
+Private configs untouched; no identity/scopes/settings UI changes.
+
+Two new test groups; RED0/2 then compatibility RED1/2, focused15/15.
+Full197/197 and7gates PASS; evidence: [S01-05](evidence/S01-05.json).
+Actual Firebase setup tested with synthetic fs/Admin; bundle markers synthetic.
+No live services, bot restart, registration or work-PC smoke test.
+Malformed configured folder now fails config loading; empty folder allowed.
+
+Next: small authorized roadmap task after fresh status review. Approved report
+Eircode override/current-location links/map remain pending implementation;
+existing report registration and live smoke test still pending.
+
+---
+
+# S09-07 completed offline — 2026-11-03
 
 Owner approved local progress while work PC unavailable. maps_impl handed off
 to root; maps_review ACCEPT. No active writer. Root1.1.29/bot0.2.14;
@@ -2324,6 +2344,11 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | implemented link polish | /find map links on separate 👉 lines; root1.1.28/bot0.2.13 | existing test RED7/8 then full193/193 gates PASS | runtime activation still pending.
 
 - 2026-11-03 | maps_impl + root + maps_review | completed S09-07 offline | bounded Maps failures preserve card/POD/links; no-request gates, safe logs; root1.1.29/bot0.2.14 | RED14/16 then15/16, focused16/16 full195/195 allgates PASS; review ACCEPT; evidence/S09-07.json | live activation/work-PC smoke test deferred.
+
+- 2026-11-03 | owner + root | approved autonomous small tasks | one verified task, journal, commit/push; no repeated approval for local work | decisions AUTONOMOUS-SMALL-TASKS-2026-11-03; report Eircode fallback confirmed separately | selected S01-05, root sole writer/config_review read-only.
+- 2026-11-03 | root | S01-05 test-first and implementation | two grouped config/Drive tests RED0/2; compatibility regression RED1/2 caught omitted POD header; fixed, focused15/15 | synthetic only, no private config changes | independent review and full gates next.
+
+- 2026-11-03 | root + config_review | completed S01-05 offline | config/Drive fail-fast and safe errors, two new groups, existing build regression extended; root1.1.30/bot0.2.15/extension6.3.0.71 | focused15/15 full197/197 gates PASS; evidence/S01-05.json | commit/push codex, no runtime activation.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3317,6 +3342,28 @@ Drive: synthetic photo → deterministic candidate → preview без writes →
 Зеркала bot/src/contract.js и src/queue/contract.js изменять согласованно. Bot result delivery, depot effect и Gmail draft — разные подтверждения. Не вводить второй набор статусов под теми же именами без миграции. `/todo` использует отдельную коллекцию; её done не означает одобрение почты.
 
 Существующие find/all/parcel/barcodes/retry используют общие depot границы с popup. Неизвестные modes отклоняются; реализованные parcel/barcodes не объявляются unavailable по историческому snapshot. S09-04/S09-05 покрывают lost reply/restart; S09-09 — свежесть preview и отсутствие повторного live action.
+
+## S01-05 — current configuration boundary (2026-11-03)
+
+Bot local.js is Node-only: required nonblank strings, numeric Discord IDs,
+Firebase service-account path and executor UID are checked before adapters/login.
+Missing or broken bot local module and service-account errors use fixed messages
+without values. serviceAccountPath remains relative to bot root (absolute paths
+still supported); no credential file is rewritten or migrated. Optional Maps key
+may be absent/empty. Credential validity itself still needs live verification.
+
+Extension statically imports src/config/local.js: gitignore does NOT remove its
+values from dist. Never put bot tokens/service accounts there. Loader validates
+known shapes and projects known nested fields; unknown legacy source fields are
+not deleted. Optional missing fields remain optional; contact strings default
+to empty. Omitted POD basicAuthorization stays undefined to preserve the existing
+derived-header fallback. Firebase completeness/auth is still checked by its SDK.
+Malformed configured folder values fail loadConfig, including executor startup;
+an empty folder remains allowed until a Drive workflow needs it.
+Drive accepts plain IDs or https://drive.google.com folder URLs (including
+drive/u/0/folders); malformed input is rejected before API access. No settings
+backend/UI was activated: settingsFlow still has no caller. geminiApiKey presence
+does not enable an AI workflow. Manifest identity and Gmail scopes unchanged.
 </pre></article>
 <article id="doc-39" tabindex="-1" hidden><p class="path"><a href="docs/copilot/CURRENT.template.md">docs/copilot/CURRENT.template.md</a></p><h1>Checkpoint для Copilot</h1><pre class="markdown"># Checkpoint для Copilot
 
@@ -3513,6 +3560,23 @@ and Carded location evidence; Carded is attempted delivery, never assumed parcel
 collection location. First implementation direct Maps URLs, no enrichment calls;
 S09-07 remains open for /find. English private report, full plain URLs for manual
 copy; photo separately. No live registration/start authorized by this implementation.
+
+## AUTONOMOUS-SMALL-TASKS-2026-11-03 — owner approved
+
+Owner authorizes small independent roadmap tasks without repeated approval,
+one verified task at a time, with shared journal, commit and push to codex.
+Consult on unresolved DPD behavior or material product choices. This does not
+activate services, register commands, deploy or merge main automatically.
+
+## REPORT-DESTINATION-2026-11-03 — owner confirmed, not yet implemented
+
+Optional /report eircode overrides the system Eircode for this report only.
+If omitted, use the system Eircode; if absent/invalid (e.g. placeholder), request
+a correct one. No depot mutation. Agreed driver layout: recipient/address/phone/
+time, separate current-location navigation to recorded pickup and correct delivery,
+map with both points, POD. Preserve exact event selection and distinguish Carded
+attempts from parcel collection. Implementation/activation remains pending;
+WhatsApp clipboard/export interaction is still a proposal, not completed behavior.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -5231,6 +5295,19 @@ Success PNG attachment, failed static map and m/km rendering added afterward as
 characterization. Existing reverse fixtures use real synthetic Response objects
 with explicit status/MIME to exercise streaming reads. PNG validity is structural,
 not full decoding; no real API/key/parcel data used.
+
+## S01-05 — configuration boundary
+
+Two grouped tests in test/unit/config-boundaries.test.mjs compile actual loaders
+with synthetic local modules: safe bot negatives/import failure, optional browser
+config/contact/POD compatibility, and invalid Drive input with zero fetch.
+Existing build test now places synthetic bot/service-account markers outside
+the browser graph and checks exclusion, preserved local config and identity/scopes.
+These build assertions characterize existing isolation, not a previously broken
+bundler. No actual private files are imported by the config fixture loader.
+Actual Firebase setup module runs with synthetic fs/Admin adapters to verify
+bot-root path resolution and redaction of JSON/SDK errors (characterization after
+implementation). No live credentials, SDK authentication, Discord or browser startup tested.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

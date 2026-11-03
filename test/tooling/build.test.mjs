@@ -50,7 +50,17 @@ async function waitFor(check, what, timeoutMs = 20_000) {
 
 test('one-off build emits every manifest entry point and console helpers', async (t) => {
   const root = await makeWorkspace(t);
+  await mkdir(join(root, 'bot/config'), { recursive: true });
+  await writeFile(join(root, 'bot/config/local.js'), 'export const LOCAL = {discordToken: "BOT_PRIVATE_MARKER"};');
+  await writeFile(join(root, 'bot/config/serviceAccount.json'), '{"private_key":"SERVICE_PRIVATE_MARKER"}');
+  const originalConfig = await readFile(join(root, 'src/config/local.js'), 'utf8');
   const result = runBuild(root);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(await readFile(join(root, 'src/config/local.js'), 'utf8'), originalConfig);
+  for (const entry of ['background/background', 'popup/popup', 'offscreen/offscreen']) {
+    const bundle = await readFile(join(root, `dist/src/${entry}.js`), 'utf8');
+    assert.doesNotMatch(bundle, /BOT_PRIVATE_MARKER|SERVICE_PRIVATE_MARKER/);
+  }
   assert.equal(result.status, 0, result.stderr);
 
   const dist = join(root, 'dist');
@@ -60,6 +70,9 @@ test('one-off build emits every manifest entry point and console helpers', async
   assert.equal(built.name, source.name.replace(SOURCE_MARKER, ''));
   assert.equal(built.key, source.key, 'extension identity must not change');
   assert.equal(built.version, source.version);
+  assert.deepEqual(built.oauth2.scopes, source.oauth2.scopes);
+  assert.ok(built.oauth2.scopes.includes('https://www.googleapis.com/auth/gmail.readonly'));
+  assert.ok(!built.oauth2.scopes.includes('https://www.googleapis.com/auth/gmail.modify'));
 
   const required = [
     built.background.service_worker,

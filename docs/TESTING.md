@@ -1003,3 +1003,16 @@ Success PNG attachment, failed static map and m/km rendering added afterward as
 characterization. Existing reverse fixtures use real synthetic Response objects
 with explicit status/MIME to exercise streaming reads. PNG validity is structural,
 not full decoding; no real API/key/parcel data used.
+
+## S01-05 — configuration boundary
+
+Two grouped tests in test/unit/config-boundaries.test.mjs compile actual loaders
+with synthetic local modules: safe bot negatives/import failure, optional browser
+config/contact/POD compatibility, and invalid Drive input with zero fetch.
+Existing build test now places synthetic bot/service-account markers outside
+the browser graph and checks exclusion, preserved local config and identity/scopes.
+These build assertions characterize existing isolation, not a previously broken
+bundler. No actual private files are imported by the config fixture loader.
+Actual Firebase setup module runs with synthetic fs/Admin adapters to verify
+bot-root path resolution and redaction of JSON/SDK errors (characterization after
+implementation). No live credentials, SDK authentication, Discord or browser startup tested.

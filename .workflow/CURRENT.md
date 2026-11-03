@@ -1,3 +1,23 @@
+# S01-05 completed offline — 2026-11-03
+
+Owner authorized autonomous small tasks, journal and one commit/push per task.
+Root sole writer finished; config_review reviewed, no active writer.
+Root1.1.30/bot0.2.15/extension6.3.0.71. Strict config shapes/required bot fields,
+safe import/service-account errors, shared Drive folder parser before requests.
+Private configs untouched; no identity/scopes/settings UI changes.
+
+Two new test groups; RED0/2 then compatibility RED1/2, focused15/15.
+Full197/197 and7gates PASS; evidence: [S01-05](evidence/S01-05.json).
+Actual Firebase setup tested with synthetic fs/Admin; bundle markers synthetic.
+No live services, bot restart, registration or work-PC smoke test.
+Malformed configured folder now fails config loading; empty folder allowed.
+
+Next: small authorized roadmap task after fresh status review. Approved report
+Eircode override/current-location links/map remain pending implementation;
+existing report registration and live smoke test still pending.
+
+---
+
 # S09-07 completed offline — 2026-11-03
 
 Owner approved local progress while work PC unavailable. maps_impl handed off

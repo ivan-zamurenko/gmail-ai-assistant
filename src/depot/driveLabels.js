@@ -16,11 +16,7 @@ import { createMonthFolderResolver } from './monthFolders.js';
 const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
-// Accepts a full Drive URL or a plain folder ID.
-function parseFolderId(input) {
-  const match = input.match(/\/folders\/([a-zA-Z0-9_-]+)/);
-  return match ? match[1] : input.trim();
-}
+import { parseFolderId } from '../config/folderId.js';
 
 async function driveGet(path, token, signal) {
   return fetchApi(`${DRIVE_API}/${path}`, { readOnly: true, signal, headers: { Authorization: `Bearer ${token}` } });

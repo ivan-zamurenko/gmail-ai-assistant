@@ -98,3 +98,8 @@
 - 2026-11-03 | root | implemented link polish | /find map links on separate 👉 lines; root1.1.28/bot0.2.13 | existing test RED7/8 then full193/193 gates PASS | runtime activation still pending.
 
 - 2026-11-03 | maps_impl + root + maps_review | completed S09-07 offline | bounded Maps failures preserve card/POD/links; no-request gates, safe logs; root1.1.29/bot0.2.14 | RED14/16 then15/16, focused16/16 full195/195 allgates PASS; review ACCEPT; evidence/S09-07.json | live activation/work-PC smoke test deferred.
+
+- 2026-11-03 | owner + root | approved autonomous small tasks | one verified task, journal, commit/push; no repeated approval for local work | decisions AUTONOMOUS-SMALL-TASKS-2026-11-03; report Eircode fallback confirmed separately | selected S01-05, root sole writer/config_review read-only.
+- 2026-11-03 | root | S01-05 test-first and implementation | two grouped config/Drive tests RED0/2; compatibility regression RED1/2 caught omitted POD header; fixed, focused15/15 | synthetic only, no private config changes | independent review and full gates next.
+
+- 2026-11-03 | root + config_review | completed S01-05 offline | config/Drive fail-fast and safe errors, two new groups, existing build regression extended; root1.1.30/bot0.2.15/extension6.3.0.71 | focused15/15 full197/197 gates PASS; evidence/S01-05.json | commit/push codex, no runtime activation.

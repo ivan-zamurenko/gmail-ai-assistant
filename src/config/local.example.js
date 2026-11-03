@@ -1,5 +1,6 @@
 // Template for the gitignored local.js. Copy this file to local.js and fill it
-// in — local.js holds secrets/contacts and never reaches the repo.
+// in — local.js stays out of Git, but its values are embedded in dist.
+// Never put Discord tokens or Firebase service-account credentials here.
 export const LOCAL = {
   geminiApiKey:  '',
   driveFolderId: '',

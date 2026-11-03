@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "task_id": "S01-05",
+  "outcome": "passed",
+  "base_sha": "fb2f7d4",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/unit/config-boundaries.test.mjs",
+      "exit_code": 1,
+      "result": "0/2; later1/2 omitted POD header compatibility regression",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/unit/config-boundaries.test.mjs test/depot/driveLabels.test.js test/depot/podImage.test.js test/tooling/build.test.mjs",
+      "exit_code": 0,
+      "result": "15/15",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "197/197;7gates PASS; browser NOT RUN",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant"
+    }
+  ],
+  "review": "config_review no blocking defects; requested Firebase setup execution coverage added to existing group",
+  "acceptance": {
+    "1": "Synthetic missing/broken module, wrong shape/required placeholders fail safely; optional Maps omitted/empty; no bot fields needed in browser config",
+    "2": "Config never rewritten; build preserves local source; actual Firebase setup with fake fs/Admin resolves bot-root path",
+    "3": "Existing build test extended with synthetic Node-only secret markers absent browser entry bundles, safe error markers",
+    "4": "Strict shared folder ID/Google Drive folder URL parser and zero-fetch negative cases; static import explicitly documented",
+    "5": "Build preserves manifest identity/scopes; settingsFlow and AI activation untouched/documented"
+  },
+  "characterization": "New build isolation assertions and actual Firebase setup error/path checks added after implementation; no RED claimed for those",
+  "untested": [
+    "Live credentials and Firebase/Discord authentication",
+    "Work-PC Chrome/depot behavior",
+    "Activation/restart/registration"
+  ],
+  "residual_risk": [
+    "Browser local config values are embedded in dist; arbitrary secrets pasted there cannot be protected by gitignore",
+    "Malformed configured folder blocks config load; blank folder remains optional"
+  ],
+  "external_effects": [],
+  "next_step": "Review next small authorized roadmap task; report destination enhancement pending"
+}

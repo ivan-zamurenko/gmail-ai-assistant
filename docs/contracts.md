@@ -82,3 +82,25 @@ Drive: synthetic photo → deterministic candidate → preview без writes →
 Зеркала bot/src/contract.js и src/queue/contract.js изменять согласованно. Bot result delivery, depot effect и Gmail draft — разные подтверждения. Не вводить второй набор статусов под теми же именами без миграции. `/todo` использует отдельную коллекцию; её done не означает одобрение почты.
 
 Существующие find/all/parcel/barcodes/retry используют общие depot границы с popup. Неизвестные modes отклоняются; реализованные parcel/barcodes не объявляются unavailable по историческому snapshot. S09-04/S09-05 покрывают lost reply/restart; S09-09 — свежесть preview и отсутствие повторного live action.
+
+## S01-05 — current configuration boundary (2026-11-03)
+
+Bot local.js is Node-only: required nonblank strings, numeric Discord IDs,
+Firebase service-account path and executor UID are checked before adapters/login.
+Missing or broken bot local module and service-account errors use fixed messages
+without values. serviceAccountPath remains relative to bot root (absolute paths
+still supported); no credential file is rewritten or migrated. Optional Maps key
+may be absent/empty. Credential validity itself still needs live verification.
+
+Extension statically imports src/config/local.js: gitignore does NOT remove its
+values from dist. Never put bot tokens/service accounts there. Loader validates
+known shapes and projects known nested fields; unknown legacy source fields are
+not deleted. Optional missing fields remain optional; contact strings default
+to empty. Omitted POD basicAuthorization stays undefined to preserve the existing
+derived-header fallback. Firebase completeness/auth is still checked by its SDK.
+Malformed configured folder values fail loadConfig, including executor startup;
+an empty folder remains allowed until a Drive workflow needs it.
+Drive accepts plain IDs or https://drive.google.com folder URLs (including
+drive/u/0/folders); malformed input is rejected before API access. No settings
+backend/UI was activated: settingsFlow still has no caller. geminiApiKey presence
+does not enable an AI workflow. Manifest identity and Gmail scopes unchanged.

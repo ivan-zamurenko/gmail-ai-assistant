@@ -182,3 +182,20 @@ and Carded location evidence; Carded is attempted delivery, never assumed parcel
 collection location. First implementation direct Maps URLs, no enrichment calls;
 S09-07 remains open for /find. English private report, full plain URLs for manual
 copy; photo separately. No live registration/start authorized by this implementation.
+
+## AUTONOMOUS-SMALL-TASKS-2026-11-03 — owner approved
+
+Owner authorizes small independent roadmap tasks without repeated approval,
+one verified task at a time, with shared journal, commit and push to codex.
+Consult on unresolved DPD behavior or material product choices. This does not
+activate services, register commands, deploy or merge main automatically.
+
+## REPORT-DESTINATION-2026-11-03 — owner confirmed, not yet implemented
+
+Optional /report eircode overrides the system Eircode for this report only.
+If omitted, use the system Eircode; if absent/invalid (e.g. placeholder), request
+a correct one. No depot mutation. Agreed driver layout: recipient/address/phone/
+time, separate current-location navigation to recorded pickup and correct delivery,
+map with both points, POD. Preserve exact event selection and distinguish Carded
+attempts from parcel collection. Implementation/activation remains pending;
+WhatsApp clipboard/export interaction is still a proposal, not completed behavior.

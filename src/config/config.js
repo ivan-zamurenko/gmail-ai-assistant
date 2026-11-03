@@ -1,30 +1,36 @@
-/**
- * config/config.js
- * ================
- * Runtime config, sourced from the gitignored local.js (copy local.example.js).
- * Keeps the API key, Drive folder and author contacts out of the public repo.
- */
-
+/** Static browser configuration: values are embedded in dist, despite gitignore. */
 import { LOCAL } from './local.js';
+import { parseFolderId } from './folderId.js';
 
-/**
- * @typedef {Object} Config
- * @property {string} geminiApiKey   - Google Gemini API key
- * @property {string} driveFolderId  - Google Drive folder ID or link with label photos
- * @property {{ apiKey: string, projectId: string }} firebase - shared task-queue project
- */
+const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const fail = key => { throw new Error(`Config ${key} invalid — check src/config/local.js`); };
+function text(value, key, fallback = '') {
+  if (value === undefined) return fallback;
+  if (typeof value !== 'string') fail(key);
+  return value;
+}
+function section(key, fields) {
+  const value = LOCAL[key];
+  if (value === undefined) return undefined;
+  if (!record(value)) fail(key);
+  return Object.fromEntries(fields.filter(field => value[field] !== undefined).map(field => [field, text(value[field], `${key}.${field}`)]));
+}
+function checkRoot() {
+  if (!record(LOCAL)) fail('shape');
+}
 
-/** @returns {Config} */
 export function loadConfig() {
+  checkRoot();
+  const folder = text(LOCAL.driveFolderId, 'driveFolderId').trim();
   return {
-    geminiApiKey:  LOCAL.geminiApiKey,
-    driveFolderId: LOCAL.driveFolderId,
-    firebase:      LOCAL.firebase,
-    podAuth:       LOCAL.podAuth,
+    geminiApiKey: text(LOCAL.geminiApiKey, 'geminiApiKey'),
+    driveFolderId: folder ? parseFolderId(folder) : '',
+    firebase: section('firebase', ['apiKey', 'projectId']),
+    podAuth: section('podAuth', ['basicAuthorization', 'user', 'password', 'type']),
   };
 }
 
-/** Author details shown in the popup footer. */
 export function getContact() {
-  return LOCAL.contact;
+  checkRoot();
+  return { brand: '', email: '', phone: '', ...section('contact', ['brand', 'email', 'phone']) };
 }

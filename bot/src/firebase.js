@@ -15,14 +15,15 @@ import { loadConfig } from '../config/config.js';
 const cfg = loadConfig();
 
 const BOT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const serviceAccount = JSON.parse(
-  readFileSync(resolve(BOT_ROOT, cfg.firebase.serviceAccountPath), 'utf8'),
-);
-
-// projectId is read from serviceAccount.json by cert() — no need to repeat it.
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+try {
+  const serviceAccount = JSON.parse(
+    readFileSync(resolve(BOT_ROOT, cfg.firebase.serviceAccountPath), 'utf8'),
+  );
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+} catch {
+  // JSON parser/SDK errors may quote private key material or local paths.
+  throw new Error('Config firebase service account invalid — check the configured JSON file');
+}
 
 export const db = admin.firestore();
 export { admin };

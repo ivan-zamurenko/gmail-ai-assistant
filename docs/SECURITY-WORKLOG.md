@@ -519,3 +519,12 @@ Bounded optional requests including response body, streamed byte caps, redirect
 rejection and validated coordinates/schema. Diagnostics use fixed codes only;
 synthetic key-leak regression covers output/logs. No new provider/cache/retention,
 secrets reads or live requests. Invalid/missing inputs skip enrichment entirely.
+
+## 2026-11-03 — S01-05 configuration
+
+Validated known config types/required bot fields and Drive folder targets before
+external use. Bot import/service-account errors no longer expose raw parser/SDK
+messages. Synthetic bundle markers confirm separate Node-only credentials stay
+out of extension entry points; this does not protect secrets incorrectly pasted
+into browser local.js. Private configs not read/edited; no credentials rotated,
+permissions/scopes changed, or external services invoked.

@@ -1,25 +1,30 @@
-/**
- * bot/config/config.js
- * ====================
- * Facade over the gitignored local.js — one place that reads secrets and fails
- * loudly if something is missing, so no module hunts for its own env values.
- */
-import { LOCAL } from './local.js';
+/** Node-only configuration. A broken/missing local module must not print secrets. */
+let LOCAL;
+try {
+  ({ LOCAL } = await import('./local.js'));
+} catch {
+  throw new Error('Config bot/config/local.js unavailable — copy local.example.js and check its syntax');
+}
 
-const REQUIRED = ['discordToken', 'applicationId', 'guildId'];
+const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const fail = key => { throw new Error(`Config ${key} invalid — check bot/config/local.js`); };
+const required = (value, key) => {
+  if (typeof value !== 'string' || !value.trim() || value !== value.trim()
+      || /^YOUR_/i.test(value) || /[\x00-\x1f\x7f]/.test(value)) fail(key);
+};
 
 export function loadConfig() {
-  for (const key of REQUIRED) {
-    const value = LOCAL[key];
-    if (!value || value.startsWith('YOUR_')) {
-      throw new Error(`Config "${key}" not set — fill bot/config/local.js (copy from local.example.js)`);
-    }
+  if (!record(LOCAL)) fail('shape');
+  for (const key of ['discordToken', 'applicationId', 'guildId']) required(LOCAL[key], key);
+  for (const key of ['applicationId', 'guildId']) {
+    if (!/^\d{17,20}$/.test(LOCAL[key])) fail(key);
   }
-  if (!LOCAL.firebase?.serviceAccountPath) {
-    throw new Error('Config "firebase.serviceAccountPath" not set — fill bot/config/local.js');
+  if (!record(LOCAL.firebase)) fail('firebase');
+  for (const key of ['serviceAccountPath', 'executorUid']) required(LOCAL.firebase[key], `firebase.${key}`);
+  if (LOCAL.firebase.executorUid.length > 128) fail('firebase.executorUid');
+  if (LOCAL.googleMapsApiKey !== undefined && LOCAL.googleMapsApiKey !== '') {
+    required(LOCAL.googleMapsApiKey, 'googleMapsApiKey');
   }
-  if (!LOCAL.firebase?.executorUid || LOCAL.firebase.executorUid.startsWith('YOUR_')) {
-    throw new Error('Config "firebase.executorUid" not set — copy the UID printed by the extension');
-  }
+  // Preserve legacy/unknown fields; validation never edits the source file.
   return LOCAL;
 }

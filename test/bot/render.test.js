@@ -93,7 +93,8 @@ test('parcel card shows scan GPS when dropped Eircode is unavailable', async () 
   const { embeds } = await buildParcelEmbed(parcel, '');
   const main = embeds[0].toJSON();
   assert.match(main.fields.find(field => field.name === 'Recorded location').value, /52\.037612, -9\.994881/);
-  assert.match(main.fields.find(field => field.name === 'Recorded location').value, /Open scan location/);
+  assert.match(main.fields.find(field => field.name === 'Recorded location').value, /👉 \[Open scan location\]/);
+  assert.match(main.fields.find(field => field.name === 'Recorded location').value, /\n👉 \[Route to address\]/);
   assert.doesNotMatch(JSON.stringify(main), /dropped ≈ —/);
 });
 

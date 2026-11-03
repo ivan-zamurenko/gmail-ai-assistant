@@ -1,3 +1,13 @@
+# Find link polish — 2026-11-03
+
+Owner requested 👉 markers. /find map links now each on their own marked line.
+Root1.1.28/bot0.2.13, extension unchanged6.3.0.70. Existing test expectation first:
+RED7/8, full193/193 and all gates PASS. No new tests or data semantics.
+No active writer; live bot restart/report registration still pending.
+Evidence: [link polish](evidence/FIND-LINKS-2026-11-03.json).
+
+---
+
 # Find presentation completed locally — 2026-11-02
 
 Owner requested organized high-level /find. Writer find_layout handed off root;

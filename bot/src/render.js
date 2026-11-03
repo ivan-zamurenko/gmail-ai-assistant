@@ -251,8 +251,8 @@ export async function buildParcelEmbed(parcel, apiKey) {
     }
     if (attempted) location.push('Parcel not confirmed at this location.');
     const destination = eircode ?? originalTarget;
-    location.push(`[Open scan location](https://www.google.com/maps/search/?api=1&query=${parcel.drop.lat},${parcel.drop.lng})`
-      + (!attempted && destination ? ` · [Route to address](https://www.google.com/maps/dir/?api=1&origin=${parcel.drop.lat},${parcel.drop.lng}&destination=${destination}&travelmode=driving)` : ''));
+    location.push(`👉 [Open scan location](https://www.google.com/maps/search/?api=1&query=${parcel.drop.lat},${parcel.drop.lng})`
+      + (!attempted && destination ? `\n👉 [Route to address](https://www.google.com/maps/dir/?api=1&origin=${parcel.drop.lat},${parcel.drop.lng}&destination=${destination}&travelmode=driving)` : ''));
     fields.push({ name: 'Recorded location', value: location.join('\n') });
   }
   const historyStr = historyBlock(scans, multi || unknownIdentity);

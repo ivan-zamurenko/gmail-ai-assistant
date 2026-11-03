@@ -94,3 +94,5 @@
 - 2026-11-02 | report_impl + root + report_contract_review | implemented S09-13 offline | /report, exact event choice, English text/POD/direct Maps, recoverable24h;3newgroups | RED0/3 then1/3, focused36/36 full192/192 gates PASS, review ACCEPT; evidence/S09-13.json | activate/register+restart separately then owner update dist6.3.0.70/live test; S09-07 remains open.
 
 - 2026-11-02 | find_layout + root + find_layout_review | implemented find presentation | organized overview/photo/plain history, Delivered/Carded-only GPS; root1.1.27/bot0.2.12 | RED1/8 GREEN8/8 full193/193 gates PASS, review ACCEPT, synthetic preview | live restart/report registration pending; next S09-07.
+
+- 2026-11-03 | root | implemented link polish | /find map links on separate 👉 lines; root1.1.28/bot0.2.13 | existing test RED7/8 then full193/193 gates PASS | runtime activation still pending.

@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Find presentation completed locally — 2026-11-02<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Find link polish — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1914,7 +1914,17 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Find presentation completed locally — 2026-11-02</h1><pre class="markdown"># Find presentation completed locally — 2026-11-02
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Find link polish — 2026-11-03</h1><pre class="markdown"># Find link polish — 2026-11-03
+
+Owner requested 👉 markers. /find map links now each on their own marked line.
+Root1.1.28/bot0.2.13, extension unchanged6.3.0.70. Existing test expectation first:
+RED7/8, full193/193 and all gates PASS. No new tests or data semantics.
+No active writer; live bot restart/report registration still pending.
+Evidence: [link polish](evidence/FIND-LINKS-2026-11-03.json).
+
+---
+
+# Find presentation completed locally — 2026-11-02
 
 Owner requested organized high-level /find. Writer find_layout handed off root;
 find_layout_review ACCEPT. Root1.1.27/bot0.2.12; extension unchanged6.3.0.70.
@@ -2269,6 +2279,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-02 | report_impl + root + report_contract_review | implemented S09-13 offline | /report, exact event choice, English text/POD/direct Maps, recoverable24h;3newgroups | RED0/3 then1/3, focused36/36 full192/192 gates PASS, review ACCEPT; evidence/S09-13.json | activate/register+restart separately then owner update dist6.3.0.70/live test; S09-07 remains open.
 
 - 2026-11-02 | find_layout + root + find_layout_review | implemented find presentation | organized overview/photo/plain history, Delivered/Carded-only GPS; root1.1.27/bot0.2.12 | RED1/8 GREEN8/8 full193/193 gates PASS, review ACCEPT, synthetic preview | live restart/report registration pending; next S09-07.
+
+- 2026-11-03 | root | implemented link polish | /find map links on separate 👉 lines; root1.1.28/bot0.2.13 | existing test RED7/8 then full193/193 gates PASS | runtime activation still pending.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 

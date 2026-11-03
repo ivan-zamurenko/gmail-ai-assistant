@@ -32,7 +32,7 @@ test('live targets are persisted and merged without losing a same-day failed bat
 
   assert.deepEqual(merged, [first, second]);
   assert.deepEqual(await loadRecoveryTargets(storage), [first, second]);
-  assert.equal(storage.values[LABEL_RESCHEDULE_RECOVERY_KEY].version, 2);
+  assert.equal(storage.values[LABEL_RESCHEDULE_RECOVERY_KEY].version, 3);
   assert.equal(storage.values[LABEL_RESCHEDULE_RECOVERY_KEY].runDay, recoveryDay());
 });
 
@@ -78,4 +78,19 @@ test('confirmed and skipped targets clear while errors remain recoverable', asyn
   });
   assert.deepEqual(await loadRecoveryTargets(storage), []);
   assert.equal(storage.values[LABEL_RESCHEDULE_RECOVERY_KEY], undefined);
+});
+
+// The host can still be on Monday while Ireland has entered Tuesday.
+test('retry expires at Irish midnight and never accepts a legacy local-day record', async () => {
+  const before = new Date('2026-06-01T22:59:59Z');
+  const after = new Date('2026-06-01T23:00:00Z');
+  assert.equal(recoveryDay(before), '2026-06-01');
+  assert.equal(recoveryDay(after), '2026-06-02');
+  const storage = memoryStorage();
+  await addRecoveryTargets(storage, [first], { now: before });
+  assert.deepEqual(await loadRecoveryTargets(storage, { now: after }), []);
+  const legacy = memoryStorage({ [LABEL_RESCHEDULE_RECOVERY_KEY]: {
+    version: 2, runDay: '2026-06-02', targets: [first],
+  } });
+  assert.deepEqual(await loadRecoveryTargets(legacy, { now: after }), []);
 });

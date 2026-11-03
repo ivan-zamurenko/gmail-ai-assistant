@@ -1,3 +1,31 @@
+# S03-02 completed offline — 2026-11-03
+
+Root integrator finished; calendar_review ACCEPT. No active writer.
+Root1.1.57/bot0.2.27/extension6.3.0.89; previous runtime remains unchanged.
+Irish timezone/no cutoff; weekends and2026–27 public/bank holidays excluded for
+manual/automatic dates. Unknown coverage fails closed. Preview date/version,
+self-contained MAIN freshness guards, recoveryv3/old records expire, retry day
+preserved across async reads/confirmation. Status/logCall behavior unchanged.
+Test-first; full230/230 PASS7, reviewer independent35/35. Evidence/S03-02.json.
+No real Chrome/depot/service calls, bot restart or merge. Work-PC unavailable.
+Next: work-PC update/live smoke when available; S03-03 owner status/logCall rules.
+Documentation checks passed; ready for scoped codex commit/push.
+
+---
+
+# S03-02 calendar implementation — 2026-11-03
+
+Root sole writer/integrator, codex base39a9015; calendar_review read-only.
+Owner approved Europe/Dublin, next working day without cutoff, all public/bank
+holidays and weekends excluded for automatic/manual dates. Offline work only.
+Scope: shared calendar, depot injection args/freshness, bot/executor validators,
+popup preview, Irish-day recovery, focused regressions, versions/docs/evidence.
+Shared helper and caller changes are needed to keep one calendar policy while
+preserving self-contained Chrome injection. No status policy changes.
+Next: test-first calendar cases, implementation, independent review and gates.
+
+---
+
 # Find status update merged and activated — 2026-11-03
 
 No active writer. Owner-authorized PR #2 merged into main:75c967a; source commitb4b8470. Both GitHub checks passed; local full223/223 PASS7. Bot0.2.26 online; extension6.3.0.88/root1.1.56.

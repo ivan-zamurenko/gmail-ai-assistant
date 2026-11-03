@@ -13,10 +13,12 @@
  *           targets?: Array<{consNumber, consId, type}> }} options
  * @returns {{ dryRun?, count?, changed?, skipped?, errors?, results?, warning?, __error? }}
  */
-export async function depotMain({ dryRun = true, mode = 'cad', date = '', targets = [] } = {}) {
+export async function depotMain({ dryRun = true, mode = 'cad', date = '', targets = [], calendar } = {}) {
 
   function safeFailure(error, fallback = 'Depot operation failed') {
     const known = new Set([
+      "Calendar plan missing or invalid; refresh the operation",
+      "Calendar plan expired at Irish midnight; refresh the operation",
       "Manual date must use YYYY-MM-DD",
       "Manual date is not a valid calendar date",
       "Manual date must be a future working day",
@@ -48,12 +50,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     OFD:        'OFD',
   };
 
-  // Update every January. Format: 'DD/MM/YY'
-  const IRISH_HOLIDAYS = new Set([
-    '01/01/26', '02/02/26', '17/03/26', '06/04/26', '04/05/26',
-    '01/06/26', '03/08/26', '26/10/26', '25/12/26', '26/12/26',
-  ]);
-
   // Type codes used by lookupConsignmentList() on the depot page
   const CONS_LIST_TYPE = {
     P: 'Pending', PA: 'PendingAlert', IFU: 'IFUMisdirects', IFUA: 'IFUMisdirectsAlert',
@@ -67,43 +63,30 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   // ── Date helpers ───────────────────────────────────────────────────────────────
 
-  const pad = n => String(n).padStart(2, '0');
-
-  function toDateKey(d) {
-    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${String(d.getFullYear()).slice(-2)}`;
-  }
-
-  function isNonWorkingDay(d) {
-    return d.getDay() === 0 || d.getDay() === 6 || IRISH_HOLIDAYS.has(toDateKey(d));
-  }
-
-  function getDates() {
-    const today = new Date();
-    const next  = new Date(today);
-    next.setDate(today.getDate() + 1);
-    while (isNonWorkingDay(next)) next.setDate(next.getDate() + 1);
-    return {
-      todayShort:    toDateKey(today),
-      tomorrowInput: `${pad(next.getDate())}/${pad(next.getMonth() + 1)}/${next.getFullYear()}`,
+  // Calendar policy is computed once in the trusted extension caller. MAIN
+  // receives a plain snapshot, never code/closures. Recheck its day before IO
+  // and each mutation; crossing Irish midnight requires a fresh operator run.
+  const plan = calendar && { ...calendar };
+  function assertCalendarPlan() {
+    const validDate = value => {
+      if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const parsed = new Date(`${value}T00:00:00Z`);
+      return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
     };
-  }
-
-  function manualDateInput(value) {
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
-    if (!match) throw new Error('Manual date must use YYYY-MM-DD');
-
-    const [, yearText, monthText, dayText] = match;
-    const year = Number(yearText), month = Number(monthText), day = Number(dayText);
-    const selected = new Date(year, month - 1, day);
-    if (selected.getFullYear() !== year || selected.getMonth() !== month - 1 || selected.getDate() !== day) {
-      throw new Error('Manual date is not a valid calendar date');
+    if (!plan || plan.version !== 'IE-BPFI-2026-2027-v1' || plan.timeZone !== 'Europe/Dublin'
+        || !validDate(plan.today) || !validDate(plan.targetDate) || plan.targetDate <= plan.today
+        || !['2026', '2027'].includes(plan.today.slice(0, 4))
+        || !['2026', '2027'].includes(plan.targetDate.slice(0, 4))
+        || (mode === 'manual' && date !== plan.targetDate)) {
+      throw new Error('Calendar plan missing or invalid; refresh the operation');
     }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (selected <= today || isNonWorkingDay(selected)) {
-      throw new Error('Manual date must be a future working day');
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Dublin', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date());
+    const part = type => parts.find(p => p.type === type).value;
+    if (`${part('year')}-${part('month')}-${part('day')}` !== plan.today) {
+      throw new Error('Calendar plan expired at Irish midnight; refresh the operation');
     }
-    return `${dayText}/${monthText}/${yearText}`;
   }
 
   // ── Classify ───────────────────────────────────────────────────────────────────
@@ -248,6 +231,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         for (const el of form.elements) {
           if (el.name && el.type === 'hidden') body.set(el.name, el.value);
         }
+        assertCalendarPlan();
         await fetch(sameOrigin(form.getAttribute('action')), {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -261,11 +245,13 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([/\w][^'"]+)['"]/
       );
       if (om) {
+        assertCalendarPlan();
         await fetch(sameOrigin(om[1]), { credentials: 'include' });
         return;
       }
 
       // Fallback: standard endpoint
+      assertCalendarPlan();
       await fetch(
         `/scripts/cgiip.exe/WService=wsInterlink/woLogCall.p` +
         `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}&UID=${encodeURIComponent(uid)}`,
@@ -309,6 +295,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     body.set('btnSave', 'Save');
     body.delete('arranged-cancel');
 
+    assertCalendarPlan();
     const res = await fetch(actionUrl, {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -351,6 +338,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         const { action } = classify(status, notes, todayShort);
 
         if (action === 'CHANGE_DATE') {
+          assertCalendarPlan();
           await logCall(pkg.consId, consDoc);
           await submitReschedule(pkg.consId, tomorrowInput);
           changed++;
@@ -376,8 +364,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     if (!isDepotPage()) throw new Error('Not the correct depot page (unexpected origin)');
     if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error('Unsupported depot mode');
     console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'}`);
-    const { todayShort, tomorrowInput } = getDates();
-    const arrangedDate = mode === 'manual' ? manualDateInput(date) : tomorrowInput;
+    assertCalendarPlan();
+    const [year, month, day] = plan.today.split('-');
+    const todayShort = `${day}/${month}/${year.slice(-2)}`;
+    const arrangedDate = plan.targetDate.split('-').reverse().join('/');
     const allRows = mode === 'cad' ? await fetchPendingList() : [];
     const exactTargets = Array.isArray(targets) ? targets : [];
     const packages = mode === 'cad'
@@ -411,7 +401,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         dryRun: true,
         count:  packages.length,
         packages: packages.map(({ consNumber, consId }) => ({ consNumber, consId })),
-        ...(mode === 'manual' && { date: arrangedDate }),
+        date: arrangedDate,
+        calendarVersion: plan.version,
+        calendarTimeZone: plan.timeZone,
       };
     }
 

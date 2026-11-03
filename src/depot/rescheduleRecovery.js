@@ -1,3 +1,4 @@
+import { irishDay } from '../../shared/depotCalendar.js';
 /**
  * Persistent recovery queue for Drive-label reschedules.
  *
@@ -10,10 +11,8 @@
 
 export const LABEL_RESCHEDULE_RECOVERY_KEY = 'label_reschedule_recovery_v1';
 
-export function recoveryDay(date = new Date()) {
-  const pad = value => String(value).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
+// v3 expires ambiguous v2 records whose day depended on the host timezone.
+export const recoveryDay = irishDay;
 
 function normalizeTargets(targets) {
   const unique = new Map();
@@ -42,7 +41,7 @@ export function remainingRecoveryTargets(targets, result) {
 export async function loadRecoveryTargets(storage, { now = new Date() } = {}) {
   const stored = await storage.get(LABEL_RESCHEDULE_RECOVERY_KEY);
   const batch = stored?.[LABEL_RESCHEDULE_RECOVERY_KEY];
-  if (batch?.version !== 2 || batch.runDay !== recoveryDay(now)) {
+  if (batch?.version !== 3 || batch.runDay !== recoveryDay(now)) {
     if (batch) await storage.remove(LABEL_RESCHEDULE_RECOVERY_KEY);
     return [];
   }
@@ -58,7 +57,7 @@ async function replaceRecoveryTargets(storage, targets, now) {
 
   await storage.set({
     [LABEL_RESCHEDULE_RECOVERY_KEY]: {
-      version: 2,
+      version: 3,
       runDay: recoveryDay(now),
       updatedAt: now.toISOString(),
       targets: normalized,

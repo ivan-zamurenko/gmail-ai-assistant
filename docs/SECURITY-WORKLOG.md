@@ -608,3 +608,13 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | owner-approved GPS eligibility extended to Failed Delivery/Incorrect Address under existing bounded per-scan projection; no additional identifiers/permissions or providers. Return to depot excluded from GPS; red badge only. No live depot calls initiated. Owner explicitly authorized codex commit and merge into main.
 
 - 2026-11-03 | root | authorized Mac bot0.2.26 restart after gates; process/cwd checked, Discord online confirmed without identity/config output; cleanup timers reset as documented.
+
+## 2026-11-03 — S03-02
+
+- Calendar plans contain only dates/version/timezone; no credentials or parcel
+  data added. Trusted extension callers calculate plans; MAIN checks freshness
+  before writes without eval, imports, external code, or automatic replay.
+- Recovery v3 expires legacy local-day records and preserves retry day across
+  async reads/confirmation. No permission/OAuth/queue/rules changes.
+- Synthetic local tests only; no live services, customer data, or manual private-config inspection
+  for this work. Build uses existing private configuration without displaying it.

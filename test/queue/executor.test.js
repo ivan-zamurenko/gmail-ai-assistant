@@ -1,7 +1,15 @@
-import test from 'node:test';
+import test, { beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { executeTask, lookupLabelTarget, projectFindResult } from '../../src/queue/executor.js';
+import { prepareDepotArgs } from '../../shared/depotCalendar.js';
+
+const RealDate = Date;
+beforeEach(() => { globalThis.Date = class extends RealDate {
+  constructor(...args) { super(...(args.length ? args : ['2026-11-03T12:00:00Z'])); }
+}; });
+afterEach(() => { globalThis.Date = RealDate; });
+
 import { TASK_SCHEMA_VERSION } from '../../src/queue/contract.js';
 import {
   LABEL_RESCHEDULE_RECOVERY_KEY,
@@ -35,6 +43,9 @@ test('invalid or unversioned tasks cannot reach a depot command', async (t) => {
     } },
     { schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: {
       mode: 'parcel', conId: '123456789', newDate: 'not-a-date', dryRun: true,
+    } },
+    { schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: {
+      mode: 'parcel', conId: '123456789', newDate: '2026-12-29', dryRun: true,
     } },
   ];
   for (const task of tasks) {
@@ -88,12 +99,12 @@ test('manual parcel task resolves one exact target before depot dry-run', async 
 
     assert.equal(result.status, 'done');
     assert.deepEqual(calls.map((call) => call.name), ['depotLookup', 'depotMain']);
-    assert.deepEqual(calls[1].args, [{
+    assert.deepEqual(calls[1].args, [prepareDepotArgs({
       dryRun: true,
       mode: 'manual',
       date: newDate,
       targets: [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }],
-    }]);
+    })]);
   } finally {
     if (originalChrome === undefined) delete globalThis.chrome;
     else globalThis.chrome = originalChrome;
@@ -134,7 +145,7 @@ test('retry task uses only today saved exact targets without Drive or barcode lo
   const target = { consNumber: '123456789', consId: '7654321', type: 'PopUp' };
   const stored = {
     [LABEL_RESCHEDULE_RECOVERY_KEY]: {
-      version: 2,
+      version: 3,
       runDay: recoveryDay(),
       updatedAt: new Date().toISOString(),
       targets: [target],
@@ -175,7 +186,7 @@ test('retry task uses only today saved exact targets without Drive or barcode lo
     assert.equal(result.status, 'done');
     assert.deepEqual(calls, [{
       name: 'depotMain',
-      args: [{ dryRun: true, mode: 'labels', targets: [target] }],
+      args: [prepareDepotArgs({ dryRun: true, mode: 'labels', targets: [target], expectedDay: recoveryDay() })],
     }]);
     assert.deepEqual(stored[LABEL_RESCHEDULE_RECOVERY_KEY].targets, [target]);
   } finally {
@@ -184,13 +195,33 @@ test('retry task uses only today saved exact targets without Drive or barcode lo
   }
 });
 
+test('retry storage read crossing Irish midnight cannot promote targets to a new day', async (t) => {
+  const originalChrome = globalThis.chrome;
+  t.after(() => { globalThis.chrome = originalChrome; });
+  const now = '2026-11-03T23:59:59Z';
+  globalThis.Date = class extends RealDate { constructor(...args) { super(...(args.length ? args : [now])); } };
+  let injections = 0;
+  globalThis.chrome = {
+    storage: { local: {
+      get: async key => {
+        globalThis.Date = class extends RealDate { constructor(...args) { super(...(args.length ? args : ['2026-11-04T00:00:01Z'])); } };
+        return { [key]: { version: 3, runDay: '2026-11-03', targets: [{ consNumber: '123456789', consId: '1001' }] } };
+      },
+      remove: async () => {},
+    } },
+    tabs: { query: async () => { injections++; return []; } },
+  };
+  await executeTask({ schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'retry', dryRun: false } });
+  assert.equal(injections, 0);
+});
+
 test('retry task deletes a previous-day batch without reaching the depot', async () => {
   const originalChrome = globalThis.chrome;
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const stored = {
     [LABEL_RESCHEDULE_RECOVERY_KEY]: {
-      version: 2,
+      version: 3,
       runDay: recoveryDay(yesterday),
       updatedAt: yesterday.toISOString(),
       targets: [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }],
@@ -331,7 +362,7 @@ test('all mode defaults an omitted dryRun to a depot preview', async (t) => {
     schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'all' },
   });
   assert.equal(result.status, 'done');
-  assert.deepEqual(injections, [{ name: 'depotMain', args: [{ dryRun: true, mode: 'cad' }] }]);
+  assert.deepEqual(injections, [{ name: 'depotMain', args: [prepareDepotArgs({ dryRun: true, mode: 'cad' })] }]);
 });
 
 test('live ambiguous injection stops; dry-run and explicit preflight rejection may try another tab', async (t) => {

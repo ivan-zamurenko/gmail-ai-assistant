@@ -1,3 +1,4 @@
+import { irishDay, manualDateMessage, prepareDepotArgs } from '../../shared/depotCalendar.js';
 import { reportSelection } from '../depot/reportSelection.js';
 /**
  * src/queue/executor.js
@@ -73,7 +74,7 @@ function summarize(res) {
   // Order matters: an empty scan returns a warning with no count, so it must be
   // checked before the dry-run line that reads res.count.
   if (res.warning) return res.warning;
-  if (res.dryRun)  return `Dry run: оброблено б ${res.count} посилок(и)`;
+  if (res.dryRun)  return `Dry run: оброблено б ${res.count} посилок(и)` + (res.date ? ` | Дата: ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})` : '');
   return `Готово — Змінено: ${res.changed} | Пропущено: ${res.skipped} | Помилки: ${res.errors}`;
 }
 
@@ -156,7 +157,12 @@ function classifyLookup(res) {
   return { ok: true, value: r };
 }
 
-const injectDepot   = (args)  => runInDepotTabs(depotMain, [args], classifyDepot, args.dryRun === false);
+const injectDepot = async (args) => {
+  let prepared;
+  try { prepared = prepareDepotArgs(args); }
+  catch (err) { return { reason: safeErrorMessage(err, 'Calendar preparation failed') }; }
+  return runInDepotTabs(depotMain, [prepared], classifyDepot, args.dryRun === false);
+};
 const injectLookup = (conId, options) => runInDepotTabs(
   depotLookup,
   options ? [[String(conId)], options] : [[String(conId)]],
@@ -185,21 +191,7 @@ async function runCad(dryRun) {
   return done(summarize(res), detailsFor(res));
 }
 
-function manualDateError(value) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '');
-  if (!match) return 'Некоректна дата — використовуй YYYY-MM-DD';
-  const [, yearText, monthText, dayText] = match;
-  const year = Number(yearText), month = Number(monthText), day = Number(dayText);
-  const selected = new Date(year, month - 1, day);
-  if (selected.getFullYear() !== year || selected.getMonth() !== month - 1 || selected.getDate() !== day) {
-    return 'Некоректна календарна дата';
-  }
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (selected <= today) return 'Дата має бути пізніше за сьогодні';
-  if (selected.getDay() === 0 || selected.getDay() === 6) return 'Дата не може бути вихідним днем';
-  return null;
-}
+const manualDateError = manualDateMessage;
 
 async function runParcel({ conId, newDate, dryRun }) {
   const { result: lookup, reason: lookupReason } = await injectLookup(conId);
@@ -219,12 +211,13 @@ async function runParcel({ conId, newDate, dryRun }) {
 }
 
 async function runRetry(dryRun) {
+  const expectedDay = irishDay();
   const targets = await loadRecoveryTargets(chrome.storage.local);
   if (targets.length === 0) {
     return done('Немає server errors із сьогоднішнього Scan Drive Labels');
   }
 
-  const { result: res, reason } = await injectDepot({ dryRun, mode: 'labels', targets });
+  const { result: res, reason } = await injectDepot({ dryRun, mode: 'labels', targets, expectedDay });
   if (reason) return error(`${reason} | ${targets.length} посилок залишено для retry`);
 
   if (dryRun) {

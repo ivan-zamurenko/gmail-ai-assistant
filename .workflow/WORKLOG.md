@@ -189,3 +189,9 @@
 - 2026-11-03 | root | status update activated | exact bot process/cwd checked, bot0.2.26 restarted and Discord online; no startup error markers | extension6.3.0.88 awaits work-PC update; next owner-authorized PR merge.
 
 - 2026-11-03 | root | owner-authorized merge completed | PR #2 merged into main after both GitHub checks passed; implementation b4b8470, merge75c967a; local codex fast-forwarded to merged main | bot0.2.26 online, extension6.3.0.88 ready | next owner work-PC reload/fresh find; live new-status GPS still unverified.
+
+- 2026-11-03 | owner + root | approved S03-02 | Irish timezone, next working day without cutoff, all public/bank holidays and weekends excluded; BPFI source inspected for2026–27 | root sole writer/calendar_review read-only | next test-first offline implementation; no live activation.
+
+- 2026-11-03 | root + calendar_review | S03-02 implemented offline | shared2026–27 Irish calendar, aligned manual gates, dated previews, self-contained injection freshness, recoveryv3 | calendar RED0/2→GREEN4/4; recovery RED3/5→GREEN5/5; reviewer found midnight retry race, regression reproduced then fixed; focused38/38 before added popup check | next final gates/review; no runtime activation.
+
+- 2026-11-03 | root + calendar_review | S03-02 completed offline | Irish calendar shared across validators/callers; bounded coverage, dated previews, mutation freshness, recoveryv3 and retry midnight guards | full230/230 PASS7, independent35/35/review ACCEPT; evidence/S03-02.json | commit/push codex; no restart/merge/work-PC activation.

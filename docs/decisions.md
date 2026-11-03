@@ -232,3 +232,17 @@ Overview lists parcel statuses without merged history. Selecting a physical parc
 
 ## Find failed-attempt scans and merge authorization — 2026-11-03
 Owner confirmed exact statuses Incorrect Address and Return to depot and requested implementation, commit and merge. Find allows GPS for Delivered, Carded, Failed Delivery, Incorrect Address; all except Delivered are labelled attempted delivery, no parcel-presence claim. Return to depot means driver returned parcel to depot: red badge, no attempt GPS from that scan. Report eligibility unchanged. Explicit owner authorization supersedes default no-main-merge restriction for this codex integration.
+
+## CALENDAR-2026-11-03
+
+Власник підтвердив Europe/Dublin незалежно від timezone пристрою; автоматично
+обирається наступний робочий день без cut-off. Для automatic і manual виключаємо
+суботу, неділю, всі public holidays та банківські вихідні Республіки Ірландія.
+Інженерне джерело: BPFI Bank Holidays 2025–2027, перевірено 2026-11-03:
+https://bpfi.ie/wp-content/uploads/2025/10/Bank-Holidays-2025-2027-1.pdf
+Включає Good Friday та додаткові Christmas bank closures (2026: 28–29 грудня;
+2027: 27–29 грудня). Це погоджений операційний фільтр, не опис трудових прав.
+Реалізація обмежена перевіреними 2026–2027 роками; невідомий календар зупиняє
+операцію. Новий рік потребує перевірки джерела й оновлення версії даних.
+Довільні локальні закриття depot не вигадуємо. Погодження не змінює статусну
+policy/logCall і не дозволяє live-пілот. Work-PC недоступний.

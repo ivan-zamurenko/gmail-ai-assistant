@@ -3,6 +3,11 @@
  */
 export function safeErrorMessage(error, fallback = 'Unexpected error') {
   const known = new Set([
+    "Calendar coverage unavailable; update the Irish calendar",
+    "Calendar plan missing or invalid; refresh the operation",
+    "Calendar plan expired at Irish midnight; refresh the operation",
+    "Manual date must be in the future",
+    "Manual date must be a working day (no weekends or holidays)",
     "Manual date must use YYYY-MM-DD",
     "Manual date is not a valid calendar date",
     "Manual date must be a future working day",

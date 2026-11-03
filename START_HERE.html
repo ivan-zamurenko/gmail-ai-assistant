@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Find status update merged and activated — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S03-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -210,7 +210,9 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 ## What It Does
 
 ### 1 · Reschedule future-dated parcels
-Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews every change before anything is written.
+Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews the target list and date before anything is written; it does not establish each parcel’s status eligibility.
+
+Automatic and manually selected dates use **Europe/Dublin**, excluding weekends and Irish public/bank holidays (including Good Friday and Christmas bank closures). The verified calendar covers **2026–2027**; dates outside coverage stop with an update message. Dry-run shows the target date and calendar version. Retry expires at Irish midnight; old recovery records from before this calendar release are discarded rather than reinterpreted.
 
 ### 2 · Scan parcel labels from Google Drive
 Drivers photograph labels into a shared Drive folder; the extension reads each photo&#39;s barcode (local ZXing decoders), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; server errors can be retried from the popup or Discord on the same processing day without downloading Drive photos or decoding barcodes again. A previous-day recovery batch expires instead of being moved to a new &quot;tomorrow&quot;.
@@ -2051,7 +2053,35 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Find status update merged and activated — 2026-11-03</h1><pre class="markdown"># Find status update merged and activated — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S03-02 completed offline — 2026-11-03</h1><pre class="markdown"># S03-02 completed offline — 2026-11-03
+
+Root integrator finished; calendar_review ACCEPT. No active writer.
+Root1.1.57/bot0.2.27/extension6.3.0.89; previous runtime remains unchanged.
+Irish timezone/no cutoff; weekends and2026–27 public/bank holidays excluded for
+manual/automatic dates. Unknown coverage fails closed. Preview date/version,
+self-contained MAIN freshness guards, recoveryv3/old records expire, retry day
+preserved across async reads/confirmation. Status/logCall behavior unchanged.
+Test-first; full230/230 PASS7, reviewer independent35/35. Evidence/S03-02.json.
+No real Chrome/depot/service calls, bot restart or merge. Work-PC unavailable.
+Next: work-PC update/live smoke when available; S03-03 owner status/logCall rules.
+Documentation checks passed; ready for scoped codex commit/push.
+
+---
+
+# S03-02 calendar implementation — 2026-11-03
+
+Root sole writer/integrator, codex base39a9015; calendar_review read-only.
+Owner approved Europe/Dublin, next working day without cutoff, all public/bank
+holidays and weekends excluded for automatic/manual dates. Offline work only.
+Scope: shared calendar, depot injection args/freshness, bot/executor validators,
+popup preview, Irish-day recovery, focused regressions, versions/docs/evidence.
+Shared helper and caller changes are needed to keep one calendar policy while
+preserving self-contained Chrome injection. No status policy changes.
+Next: test-first calendar cases, implementation, independent review and gates.
+
+---
+
+# Find status update merged and activated — 2026-11-03
 
 No active writer. Owner-authorized PR #2 merged into main:75c967a; source commitb4b8470. Both GitHub checks passed; local full223/223 PASS7. Bot0.2.26 online; extension6.3.0.88/root1.1.56.
 Find Failed Delivery/Incorrect Address GPS are attempts; Return to depot red/no GPS; report unchanged. Artifact /tmp/DPD-Assistance-6.3.0.88.zip. Next owner update loaded dist/reload and fresh find; new-status GPS live verification pending.
@@ -2843,6 +2873,12 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | status update activated | exact bot process/cwd checked, bot0.2.26 restarted and Discord online; no startup error markers | extension6.3.0.88 awaits work-PC update; next owner-authorized PR merge.
 
 - 2026-11-03 | root | owner-authorized merge completed | PR #2 merged into main after both GitHub checks passed; implementation b4b8470, merge75c967a; local codex fast-forwarded to merged main | bot0.2.26 online, extension6.3.0.88 ready | next owner work-PC reload/fresh find; live new-status GPS still unverified.
+
+- 2026-11-03 | owner + root | approved S03-02 | Irish timezone, next working day without cutoff, all public/bank holidays and weekends excluded; BPFI source inspected for2026–27 | root sole writer/calendar_review read-only | next test-first offline implementation; no live activation.
+
+- 2026-11-03 | root + calendar_review | S03-02 implemented offline | shared2026–27 Irish calendar, aligned manual gates, dated previews, self-contained injection freshness, recoveryv3 | calendar RED0/2→GREEN4/4; recovery RED3/5→GREEN5/5; reviewer found midnight retry race, regression reproduced then fixed; focused38/38 before added popup check | next final gates/review; no runtime activation.
+
+- 2026-11-03 | root + calendar_review | S03-02 completed offline | Irish calendar shared across validators/callers; bounded coverage, dated previews, mutation freshness, recoveryv3 and retry midnight guards | full230/230 PASS7, independent35/35/review ACCEPT; evidence/S03-02.json | commit/push codex; no restart/merge/work-PC activation.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4149,6 +4185,20 @@ Overview lists parcel statuses without merged history. Selecting a physical parc
 
 ## Find failed-attempt scans and merge authorization — 2026-11-03
 Owner confirmed exact statuses Incorrect Address and Return to depot and requested implementation, commit and merge. Find allows GPS for Delivered, Carded, Failed Delivery, Incorrect Address; all except Delivered are labelled attempted delivery, no parcel-presence claim. Return to depot means driver returned parcel to depot: red badge, no attempt GPS from that scan. Report eligibility unchanged. Explicit owner authorization supersedes default no-main-merge restriction for this codex integration.
+
+## CALENDAR-2026-11-03
+
+Власник підтвердив Europe/Dublin незалежно від timezone пристрою; автоматично
+обирається наступний робочий день без cut-off. Для automatic і manual виключаємо
+суботу, неділю, всі public holidays та банківські вихідні Республіки Ірландія.
+Інженерне джерело: BPFI Bank Holidays 2025–2027, перевірено 2026-11-03:
+https://bpfi.ie/wp-content/uploads/2025/10/Bank-Holidays-2025-2027-1.pdf
+Включає Good Friday та додаткові Christmas bank closures (2026: 28–29 грудня;
+2027: 27–29 грудня). Це погоджений операційний фільтр, не опис трудових прав.
+Реалізація обмежена перевіреними 2026–2027 роками; невідомий календар зупиняє
+операцію. Новий рік потребує перевірки джерела й оновлення версії даних.
+Довільні локальні закриття depot не вигадуємо. Погодження не змінює статусну
+policy/logCall і не дозволяє live-пілот. Work-PC недоступний.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4242,6 +4292,34 @@ session або raw body. labelVerifier/executor/render не потребувал
 Перевірка — synthetic DOM contract objects у node:vm після serialization.
 Це не HTML parser/browser/live proof. Реальні depot variants потребують окремої
 перевірки; нових selectors з реальної сесії або live scraping не використовували.
+
+## S03-02 — Irish working calendar, 2026-11-03
+
+Owner decision CALENDAR-2026-11-03: Europe/Dublin for automatic/manual dates;
+next working day regardless of hour, excluding weekends and Irish public/bank
+closures. `shared/depotCalendar.js` owns the bounded versioned 2026–2027 snapshot
+(BPFI source linked in decisions). Unknown coverage fails closed; no runtime API.
+Good Friday and Christmas banking closures are included. This is the owner&#39;s
+operational rule, not a claim about depot-specific opening hours.
+
+Bot and executor share manual validation. Extension callers prepare a plain
+calendar plan before MAIN injection; depotMain is still self-contained. MAIN
+checks real ISO dates, version/timezone, manual-date agreement and Irish-day
+freshness at entry and immediately before mutations. A day change stops writes;
+it never silently recomputes/replays the batch. Plans are internal extension
+arguments, not accepted from Discord/Firestore. Keep the supported plan version
+in depotMain aligned with the shared calendar when publishing a new snapshot.
+
+Dry-run shows target date, timezone and calendar version; it still does not prove
+parcel status eligibility. Recovery v3 uses Irish days; old v2 local-day records
+expire rather than being reinterpreted. Retry keeps the day across storage reads
+and popup confirmation, so old targets cannot become a new-day batch.
+
+Synthetic unit/VM/bundled-popup tests only; no real browser/depot run. Existing
+console-only futureDateCheck diagnostic still formats its note-date locally;
+it is not used by these reschedule execution paths. Status/logCall policy remains
+unchanged and awaits S03-03. Bot activation/work-PC extension installation remain
+separate from this offline implementation.
 </pre></article>
 <article id="doc-42" tabindex="-1" hidden><p class="path"><a href="docs/discord/TEST_MATRIX.md">docs/discord/TEST_MATRIX.md</a></p><h1>Discord и очередь — матрица проверок</h1><pre class="markdown"># Discord и очередь — матрица проверок
 
@@ -6185,6 +6263,23 @@ S09-18 existing regression protects automatic content-script path scope, clipboa
 Existing render expectations now require status/details → history → recipient → evidence. One new grouped render regression protects selected parcel isolation, old Bay not current, unassigned identity uncertainty and paging. Two grouped findViews regressions protect fixed expiry, actor/channel authorization, attachment clearing, no re-enqueue/ACK on navigation, and /result integration. Synthetic fixtures only; real Discord component editing/attachment replacement remains a live smoke boundary.
 
 Find visual follow-up updates existing render/projection/view groups (no added test groups): no mixed overview history, distinct selected scan paragraphs, badges/colors, no POD request/attachment, eligible per-row coordinate whitelist, single-pin map failure/key isolation, cross-parcel suppression, conflicting point/status ties, sole-parcel pagination with unassigned scans. Local synthetic HTML visual preview is approximate; live Discord/map display still needs owner smoke.
+
+### S03-02 — Irish calendar and midnight boundaries
+
+`test/depot/calendar.test.js` uses the production shared calendar with fixed
+clocks: public/bank closures, Friday/weekend, Easter/Christmas runs, year boundary,
+unknown coverage refusal, manual dates, and Dublin DST/midnight under three host
+TZ values. VM serialization exercises a successful depot preview with date/version
+and rejects absent/stale/mismatched plans before IO. A bundled popup callback with
+synthetic DOM/storage proves a live retry confirmation held across midnight cannot
+rewrite old targets or inject a new-day action; Drive/config ports are stubbed.
+
+Existing bot/executor/depot/recovery groups cover consistent holiday admission,
+fixed-clock submitted dates, no save after form loading spans midnight, retry
+storage reads crossing midnight, Irish-day expiry and refusal of legacy v2 records.
+No live Chrome/depot/Discord or private data is needed. This does not validate
+actual depot opening hours, the separate console diagnostic, or future holiday
+announcements beyond the bounded calendar snapshot.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -8042,7 +8137,7 @@ Lookup используется и ботом. Contract включает scans/d
 ## Разрешённая область изменений
 
 - `src/depot/depotScript.js`
-- `test/unit/depot-calendar.test.mjs`
+- `test/depot/calendar.test.js`
 - `docs/depot-contract.md`
 - `docs/decisions.md`
 
@@ -8065,7 +8160,7 @@ Lookup используется и ботом. Contract включает scans/d
 Ожидаемые значения берутся из решения владельца; сначала воспроизвести границу года и отсутствие calendar coverage без реальных delivery changes.
 
 ```sh
-node --test test/unit/depot-calendar.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/depot/calendar.test.js
 ```
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
@@ -8101,6 +8196,14 @@ Evidence: `.workflow/evidence/S03-02.json`. Обновить существую�
 ## Адаптация к bot baseline v1.2
 
 Согласованный calendar/timezone должен быть общим для будущего parcel handler и depot logic. Текущий validateFutureWorkday использует local timezone процесса Node и не заменяет depot holidays policy.
+
+## Current delivery scope — 2026-11-03
+
+Owner approved G_CALENDAR (docs/decisions.md CALENDAR-2026-11-03). Shared policy
+also requires `shared/depotCalendar.js`, bot validation, executor/popup callers,
+recovery Irish-day migration, safe error labels and existing test groups. These
+are one calendar integration; queue schema/status policy remain unchanged.
+The test file above now exists; earlier ZIP absence notes are historical.
 </pre></article>
 <article id="doc-84" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-03.md">roadmap/tasks/S03-03.md</a></p><h1>S03-03 — Зафиксировать eligibility policy статусов</h1><pre class="markdown"># S03-03 — Зафиксировать eligibility policy статусов
 

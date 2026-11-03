@@ -1,3 +1,4 @@
+import { irishDay, prepareDepotArgs } from '../../shared/depotCalendar.js';
 import { safeErrorMessage } from '../utils/errors.js';
 /**
  * popup/depotFlow.js
@@ -64,7 +65,7 @@ export function initDepotFlow({
 
   function showDepotResult(result) {
     if (result.dryRun) {
-      setDepotStatus('done', `Dry run: ${result.count} parcel(s) would be processed`);
+      setDepotStatus('done', `Dry run: ${result.count} parcel(s) would be processed | ${result.date} (${result.calendarTimeZone}; ${result.calendarVersion})`);
     } else if (result.warning) {
       setDepotStatus('done', result.warning);
     } else {
@@ -118,7 +119,7 @@ export function initDepotFlow({
       const [injection] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func:   depotMain,
-        args:   [{ dryRun: dryRunToggle.checked, mode: 'cad' }],
+        args:   [prepareDepotArgs({ dryRun: dryRunToggle.checked, mode: 'cad' })],
         // The depot rejects POSTs from an isolated world; MAIN makes them
         // ordinary page requests, exactly like running the snippet in the console.
         world:  'MAIN',
@@ -162,13 +163,17 @@ export function initDepotFlow({
     });
   }
 
-  async function runExactReschedule(targets, dryRun) {
-    log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${targets.length} parcel(s) to tomorrow...`);
+  async function runExactReschedule(targets, dryRun, expectedDay) {
+    // Capture before persistence/tab awaits, and reject retry confirmation that
+    // outlived its original Irish day before it can re-add old targets.
+    const operationNow = new Date();
+    const prepared = prepareDepotArgs({ dryRun, mode: 'labels', targets, expectedDay }, operationNow);
+    log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${targets.length} parcel(s) to the next Irish working day...`);
 
     // Persist before the live attempt. If the popup closes or every request
     // fails, the exact targets remain reusable without reading Drive again.
     if (!dryRun) {
-      await addRecoveryTargets(chrome.storage.local, targets);
+      await addRecoveryTargets(chrome.storage.local, targets, { now: operationNow });
       await refreshRetryButton();
     }
 
@@ -176,7 +181,7 @@ export function initDepotFlow({
     const [injection] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func:   depotMain,
-      args:   [{ dryRun, mode: 'labels', targets }],
+      args:   [prepared],
       world:  'MAIN',
     });
 
@@ -187,7 +192,7 @@ export function initDepotFlow({
       return ` | Reschedule failed | Retry saved: ${remaining.length}`;
     }
     if (res.dryRun) {
-      log.info(`Dry run — ${res.count} parcel(s) would be rescheduled`);
+      log.info(`Dry run — ${res.count} parcel(s) would be rescheduled | ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})`);
       return ` | Would reschedule ${res.count}`;
     }
     if (res.warning) {
@@ -224,6 +229,7 @@ export function initDepotFlow({
   }
 
   retryRescheduleBtn.addEventListener('click', async () => {
+    const expectedDay = irishDay();
     const targets = await refreshRetryButton();
     if (targets.length === 0) {
       setDepotStatus('done', 'No failed reschedules are waiting');
@@ -239,7 +245,7 @@ export function initDepotFlow({
     setDepotStatus('running', 'Retrying saved reschedules — Drive will not be scanned');
     setDepotButtons(true);
     try {
-      const result = await runExactReschedule(targets, dryRun);
+      const result = await runExactReschedule(targets, dryRun, expectedDay);
       const remaining = await refreshRetryButton();
       setDepotStatus('done',
         `${dryRun ? 'Retry preview complete' : 'Retry complete'}${result}`

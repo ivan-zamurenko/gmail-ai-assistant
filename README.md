@@ -39,7 +39,9 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 ## What It Does
 
 ### 1 · Reschedule future-dated parcels
-Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews every change before anything is written.
+Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews the target list and date before anything is written; it does not establish each parcel’s status eligibility.
+
+Automatic and manually selected dates use **Europe/Dublin**, excluding weekends and Irish public/bank holidays (including Good Friday and Christmas bank closures). The verified calendar covers **2026–2027**; dates outside coverage stop with an update message. Dry-run shows the target date and calendar version. Retry expires at Irish midnight; old recovery records from before this calendar release are discarded rather than reinterpreted.
 
 ### 2 · Scan parcel labels from Google Drive
 Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (local ZXing decoders), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; server errors can be retried from the popup or Discord on the same processing day without downloading Drive photos or decoding barcodes again. A previous-day recovery batch expires instead of being moved to a new "tomorrow".

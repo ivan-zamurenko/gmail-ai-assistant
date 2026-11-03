@@ -13,4 +13,8 @@ test('manual reschedule input requires an explicit parcel number and real future
 
   assert.match(validateFutureWorkday('2026-02-30'), /календарна/);
   assert.match(validateFutureWorkday('2000-01-03'), /пізніше/);
+  const now = new Date('2026-04-01T12:00:00Z');
+  assert.match(validateFutureWorkday('2026-04-03', now), /свят/);
+  assert.equal(validateFutureWorkday('2026-04-07', now), null);
+  assert.match(validateFutureWorkday('2028-01-04', now), /календар/);
 });

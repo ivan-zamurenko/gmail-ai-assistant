@@ -1136,3 +1136,20 @@ S09-18 existing regression protects automatic content-script path scope, clipboa
 Existing render expectations now require status/details → history → recipient → evidence. One new grouped render regression protects selected parcel isolation, old Bay not current, unassigned identity uncertainty and paging. Two grouped findViews regressions protect fixed expiry, actor/channel authorization, attachment clearing, no re-enqueue/ACK on navigation, and /result integration. Synthetic fixtures only; real Discord component editing/attachment replacement remains a live smoke boundary.
 
 Find visual follow-up updates existing render/projection/view groups (no added test groups): no mixed overview history, distinct selected scan paragraphs, badges/colors, no POD request/attachment, eligible per-row coordinate whitelist, single-pin map failure/key isolation, cross-parcel suppression, conflicting point/status ties, sole-parcel pagination with unassigned scans. Local synthetic HTML visual preview is approximate; live Discord/map display still needs owner smoke.
+
+### S03-02 — Irish calendar and midnight boundaries
+
+`test/depot/calendar.test.js` uses the production shared calendar with fixed
+clocks: public/bank closures, Friday/weekend, Easter/Christmas runs, year boundary,
+unknown coverage refusal, manual dates, and Dublin DST/midnight under three host
+TZ values. VM serialization exercises a successful depot preview with date/version
+and rejects absent/stale/mismatched plans before IO. A bundled popup callback with
+synthetic DOM/storage proves a live retry confirmation held across midnight cannot
+rewrite old targets or inject a new-day action; Drive/config ports are stubbed.
+
+Existing bot/executor/depot/recovery groups cover consistent holiday admission,
+fixed-clock submitted dates, no save after form loading spans midnight, retry
+storage reads crossing midnight, Irish-day expiry and refusal of legacy v2 records.
+No live Chrome/depot/Discord or private data is needed. This does not validate
+actual depot opening hours, the separate console diagnostic, or future holiday
+announcements beyond the bounded calendar snapshot.

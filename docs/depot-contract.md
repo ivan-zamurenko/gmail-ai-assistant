@@ -90,3 +90,31 @@ session або raw body. labelVerifier/executor/render не потребувал
 Перевірка — synthetic DOM contract objects у node:vm після serialization.
 Це не HTML parser/browser/live proof. Реальні depot variants потребують окремої
 перевірки; нових selectors з реальної сесії або live scraping не використовували.
+
+## S03-02 — Irish working calendar, 2026-11-03
+
+Owner decision CALENDAR-2026-11-03: Europe/Dublin for automatic/manual dates;
+next working day regardless of hour, excluding weekends and Irish public/bank
+closures. `shared/depotCalendar.js` owns the bounded versioned 2026–2027 snapshot
+(BPFI source linked in decisions). Unknown coverage fails closed; no runtime API.
+Good Friday and Christmas banking closures are included. This is the owner's
+operational rule, not a claim about depot-specific opening hours.
+
+Bot and executor share manual validation. Extension callers prepare a plain
+calendar plan before MAIN injection; depotMain is still self-contained. MAIN
+checks real ISO dates, version/timezone, manual-date agreement and Irish-day
+freshness at entry and immediately before mutations. A day change stops writes;
+it never silently recomputes/replays the batch. Plans are internal extension
+arguments, not accepted from Discord/Firestore. Keep the supported plan version
+in depotMain aligned with the shared calendar when publishing a new snapshot.
+
+Dry-run shows target date, timezone and calendar version; it still does not prove
+parcel status eligibility. Recovery v3 uses Irish days; old v2 local-day records
+expire rather than being reinterpreted. Retry keeps the day across storage reads
+and popup confirmation, so old targets cannot become a new-day batch.
+
+Synthetic unit/VM/bundled-popup tests only; no real browser/depot run. Existing
+console-only futureDateCheck diagnostic still formats its note-date locally;
+it is not used by these reschedule execution paths. Status/logCall policy remains
+unchanged and awaits S03-03. Bot activation/work-PC extension installation remain
+separate from this offline implementation.

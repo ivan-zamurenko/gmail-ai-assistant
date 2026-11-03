@@ -1,7 +1,16 @@
-import test from 'node:test';
+import test, { beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { depotMain } from '../../src/depot/depotScript.js';
+import { depotMain as injectedDepotMain } from '../../src/depot/depotScript.js';
+
+import { prepareDepotArgs } from '../../shared/depotCalendar.js';
+const depotMain = args => injectedDepotMain(prepareDepotArgs(args));
+const RealDate = Date;
+beforeEach(() => { globalThis.Date = class extends RealDate {
+  constructor(...args) { super(...(args.length ? args : ['2026-11-03T12:00:00Z'])); }
+}; });
+afterEach(() => { globalThis.Date = RealDate; });
+
 
 function fakeText(textContent = '') {
   return { textContent };
@@ -10,7 +19,8 @@ function fakeText(textContent = '') {
 async function runReschedule(mode, {
   status = 'PENDING',
   notes = '',
-  now = null,
+  now = '2026-11-03T12:00:00Z',
+  crossMidnight = false,
   saveStatus = 200,
   saveStatuses = null,
   saveConfirmation = 'success',
@@ -123,6 +133,7 @@ async function runReschedule(mode, {
     else if (String(url).endsWith('/notes')) body = 'notes';
     else if (String(url).includes('woRearrangeConsignment.p')) {
       rescheduleReads += 1;
+      if (crossMidnight) now = '2026-11-04T00:00:00Z';
       body = 'form';
     }
     else throw new Error(`Unexpected synthetic request: ${url}`);
@@ -196,6 +207,9 @@ test('label dry-run uses exact verified targets without reading Pending List', a
       dryRun: true,
       count: 1,
       packages: [{ consNumber: '012345678', consId: '7654321' }],
+      date: prepareDepotArgs({}).calendar.targetDate.split('-').reverse().join('/'),
+      calendarVersion: 'IE-BPFI-2026-2027-v1',
+      calendarTimeZone: 'Europe/Dublin',
     });
   } finally {
     globalThis.console.log = original.log;
@@ -274,9 +288,7 @@ test('GOODS HELD without qualifying notes never reaches reschedule', async () =>
 });
 
 test('GOODS HELD with today qualifying note reaches reschedule once', async () => {
-  const now = new Date();
-  const pad = (number) => String(number).padStart(2, '0');
-  const today = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${String(now.getFullYear()).slice(-2)}`;
+  const today = '03/11/26';
   const labels = await runReschedule('labels', {
     status: 'GOODS HELD',
     notes: `Del. date changed FROM 01/01/20 TO ${today}`,
@@ -291,7 +303,7 @@ test('GOODS HELD with today qualifying note reaches reschedule once', async () =
 
 test('Friday reschedule submits the following Monday', async () => {
   const labels = await runReschedule('labels', {
-    now: '2026-08-28T12:00:00',
+    now: '2026-08-28T12:00:00Z',
   });
   const submitted = new globalThis.URLSearchParams(labels.saveBody);
 
@@ -301,7 +313,7 @@ test('Friday reschedule submits the following Monday', async () => {
 
 test('reschedule skips an Irish bank holiday', async () => {
   const labels = await runReschedule('labels', {
-    now: '2026-03-16T12:00:00',
+    now: '2026-03-16T12:00:00Z',
   });
   const submitted = new globalThis.URLSearchParams(labels.saveBody);
 
@@ -311,7 +323,7 @@ test('reschedule skips an Irish bank holiday', async () => {
 
 test('manual reschedule submits the exact operator-selected date', async () => {
   const manual = await runReschedule('manual', {
-    now: '2026-09-01T12:00:00',
+    now: '2026-09-01T12:00:00Z',
     requestedDate: '2026-09-03',
   });
   const submitted = new globalThis.URLSearchParams(manual.saveBody);
@@ -377,4 +389,13 @@ test('depot diagnostics omit parcel identities and provider bodies while retaini
   assert.equal(failure.result.errors, 1);
   assert.doesNotMatch(JSON.stringify(failure), /synthetic-secret|synthetic-token|<html>/);
   assert.match(JSON.stringify(failure.diagnostics), /Reschedule failed/);
+});
+
+test('Irish midnight during form loading prevents the subsequent save', async () => {
+  const labels = await runReschedule('labels', { crossMidnight: true });
+  assert.equal(labels.rescheduleReads, 1);
+  assert.equal(labels.saveWrites, 0);
+  assert.equal(labels.result.changed, 0);
+  assert.equal(labels.result.errors, 1);
+  assert.match(JSON.stringify(labels.diagnostics), /Calendar plan expired/);
 });

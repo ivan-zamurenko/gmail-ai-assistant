@@ -590,3 +590,5 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | S09-17 activated through authorized Mac bot restart after full checks; exact process cwd verified. No WhatsApp/depot message sent by agent. Restart resets existing UI-cleanup timers as documented.
 
 - 2026-11-03 | root | S09-18 owner approved extension copy helper. Adds activeTab/clipboardWrite only, no permanent Discord host or clipboardRead. Explicit user activation, same-message read/copy on click, bounded allowlisted credential-free attachment fetch, no tokens/API/WhatsApp sending/history persistence. Privileged offscreen runtime guard unchanged. Test fixtures synthetic; no private config inspection.
+
+- 2026-11-03 | root | caption presentation follow-up: pure shared formatting, Unicode emoji extraction, full URL preserved. No new permissions or outbound data. Authorized Mac bot restart after gates; Discord ready; existing cleanup timers reset as documented. Synthetic data only.

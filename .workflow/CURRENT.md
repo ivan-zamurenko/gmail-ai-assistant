@@ -1,3 +1,10 @@
+# WhatsApp caption formatting ready — 2026-11-03
+
+Extension6.3.0.83/root1.1.49/bot0.2.22. Shared pure formatter adds WhatsApp bold headings, preserves emoji/newlines/URLs; Discord emoji IMG alt recovered. Bot restarted and Discord ready; extension update on work PC pending. Full gates221/221, reviewer ACCEPT.
+Next: update loaded dist, reload extension/Discord, enable helper and copy caption into WhatsApp. Actual styled caption display not yet owner-verified. Bot deployment must include repository shared/ directory. No active writer.
+
+---
+
 # Discord copy styling ready — 2026-11-03
 
 Extension6.3.0.82/root1.1.48: scoped polished copy buttons with distinct icons and success state. Existing test expectations first RED then GREEN; full gates221/221, synthetic headless Chrome preview inspected. No bot changes/restart.

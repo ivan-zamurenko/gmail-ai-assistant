@@ -215,3 +215,6 @@ Owner uses WhatsApp Web on work PC. Combined image/text clipboard probe showed a
 
 ## DISCORD-COPY-EXTENSION-2026-11-03 — owner approved
 Owner wants copy buttons directly beside report in Discord Web, without HTML downloads; approved Chrome extension approach. Explicit activation via popup on active discord.com/channels tab, activeTab+clipboardWrite; no permanent Discord origin grant or clipboardRead. Buttons copy image then caption separately, no WhatsApp automation. Refresh requires reactivation. Desktop Discord unsupported. Existing HTML export stays fallback for long reports or unsupported DOM/CORS.
+
+### WhatsApp caption styling — 2026-11-03
+Owner confirmed preserving report text styling/emojis when pasted into WhatsApp. One pure shared/whatsappCaption.js formatter adds WhatsApp single-asterisk bold to known headings/labels, preserves values, newlines and full URLs. Used by extension Copy Caption and bot HTML export; native Discord report remains plain. Extension extracts emoji IMG alt and BR/text nodes rather than losing emoji via innerText. Shared module ships with repository for Node bot and is bundled into extension, no browser/runtime dependency. Existing downloaded HTML is unchanged; generate a new report.

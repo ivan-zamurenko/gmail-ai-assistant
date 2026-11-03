@@ -1,3 +1,4 @@
+import { formatWhatsAppCaption } from '../../shared/whatsappCaption.js';
 import { readReport, imagePng } from './reportCopy.js';
 import { installCopyStyles } from './copyStyles.js';
 
@@ -21,7 +22,7 @@ export function createReportControls({
     status.setAttribute('role', 'status');
     for (const [kind, label, action, success, copied] of [
       ['image', 'Копіювати картинку', () => copyImage(report.url), 'Картинку скопійовано — встав у WhatsApp.', 'Картинку скопійовано'],
-      ['caption', 'Копіювати підпис', () => copyText(report.caption), 'Підпис скопійовано — встав у поле під картинкою.', 'Підпис скопійовано'],
+      ['caption', 'Копіювати підпис', () => copyText(formatWhatsAppCaption(report.caption)), 'Підпис скопійовано — встав у поле під картинкою.', 'Підпис скопійовано'],
     ]) {
       const button = doc.createElement('button'); button.type = 'button'; button.textContent = label;
       button.className = 'dpd-copy-button';

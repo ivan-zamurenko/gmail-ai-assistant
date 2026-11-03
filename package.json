@@ -1,15 +1,15 @@
 {
   "name": "gmail-ai-assistant",
-  "version": "1.1.48",
-  "description": "Chrome Extension — Gmail AI Assistant (Manifest V3)",
+  "version": "1.1.49",
+  "description": "Chrome Extension \u2014 Gmail AI Assistant (Manifest V3)",
   "type": "module",
   "private": true,
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
     "test": "node --test --import ./test/helpers/noNetwork.js test/*/*.test.js test/*/*.test.mjs tools/tests/*.test.mjs",
-    "lint": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" build.js",
-    "lint:fix": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" build.js --fix",
+    "lint": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" \"shared/**/*.js\" build.js",
+    "lint:fix": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" \"shared/**/*.js\" build.js --fix",
     "test:rules": "node tools/run-firestore-rules.mjs"
   },
   "devDependencies": {

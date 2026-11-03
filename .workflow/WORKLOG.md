@@ -159,3 +159,7 @@
 - 2026-11-03 | root | S09-18 styling follow-up | owner-requested scoped Discord button styling, distinct icons, focus/hover/reduced-motion and copied state | existing regression RED1/2 -> GREEN2/2; synthetic Chrome screenshot visually checked | build/checks then extension6.3.0.82 package; no bot restart.
 
 - 2026-11-03 | root | S09-18 style ready | full gates221/221; extension6.3.0.82 packaged outside Git | source/evidence committed; no new permissions or bot restart | next: owner update existing dist/reload and re-enable Discord helper.
+
+- 2026-11-03 | root | caption style follow-up | owner approved WhatsApp bold headings, emoji and paragraph preservation; shared pure formatter for both export routes, emoji DOM extraction fixed | existing tests RED then GREEN3/3 | full gates, extension6.3.0.83 package and bot0.2.22 restart next.
+
+- 2026-11-03 | root | caption formatting ready | extension6.3.0.83/root1.1.49/bot0.2.22;221/221 full gates/reviewer ACCEPT; abbreviated URL regression fixed test-first; synthetic build fixture now includes shared/ source | bot restarted and ready; extension archive outside Git | next: work-PC update and WhatsApp styled-caption smoke.

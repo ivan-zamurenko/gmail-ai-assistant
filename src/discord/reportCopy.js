@@ -9,21 +9,27 @@ export function attachmentUrl(value) {
   } catch { return null; }
 }
 
+// Discord renders Unicode emoji as images; innerText alone drops their alt text.
+function reportText(node) {
+  if (node.nodeType === 3) return node.nodeValue ?? '';
+  if (node.tagName === 'BR') return '\n';
+  if (node.tagName === 'IMG') return node.getAttribute('alt') ?? '';
+  if (node.tagName === 'A') {
+    try {
+      const url = new URL(node.href);
+      if (url.origin === 'https://www.google.com' && url.pathname.startsWith('/maps/')) return url.href;
+    } catch { /* Keep ordinary visible text. */ }
+  }
+  if (!node.childNodes) return node.innerText ?? node.textContent ?? '';
+  return [...node.childNodes].map(reportText).join('') + (['DIV','P'].includes(node.tagName) ? '\n' : '');
+}
+
 export function readReport(row) {
   if (!row.isConnected) return null;
   const contents = row.querySelectorAll('[id^="message-content-"]');
   if (contents.length !== 1) return null;
   const content = contents[0];
-  let caption = content.innerText ?? content.textContent ?? '';
-  // Preserve full navigation URLs if Discord visually abbreviates a link.
-  for (const link of content.querySelectorAll('a[href]')) {
-    try {
-      const url = new URL(link.href);
-      if (url.origin === 'https://www.google.com' && url.pathname.startsWith('/maps/') && link.innerText) {
-        caption = caption.replace(link.innerText, url.href);
-      }
-    } catch { /* Ignore non-navigation markup. */ }
-  }
+  let caption = reportText(content);
   caption = caption.trim();
   if (caption.length > 1900 || !/^Parcel recovery & redelivery\s+Consignment: (?:\d{14}|\d{9}) · Parcel \S+/.test(caption)
       || !caption.includes('https://www.google.com/maps/dir/')) return null;

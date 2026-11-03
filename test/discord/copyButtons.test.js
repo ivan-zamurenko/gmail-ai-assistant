@@ -18,6 +18,14 @@ test('report copy binds one row and bounds trusted image reads before decoding',
   assert.equal(attachmentUrl(url), url);
   for (const bad of ['https://evil.invalid/driver-report.jpg',url.replace('https:', 'http:'),url.replace('cdn.discordapp.com','cdn.discordapp.com.evil.invalid'),url+'#fragment',url.replace('/driver-report.jpg','/other.jpg')]) assert.equal(attachmentUrl(bad), null);
   const f=rowFixture();assert.equal(readReport(f.row).caption,caption);
+  const nav = {tagName:'A',href:caption.split('\n').at(-1),innerText:'https://www.google.com/maps/dir/'};
+  f.content.childNodes=[{nodeType:3,nodeValue:caption.slice(0,caption.lastIndexOf('https:'))},nav];
+  f.content.querySelectorAll=()=>[nav];
+  assert.equal(readReport(f.row).caption,caption,'abbreviated link expanded exactly once');
+  f.content.querySelectorAll=()=>[];
+  f.content.childNodes = [{nodeType:3,nodeValue:caption+'\n'}, {tagName:'IMG',getAttribute:()=> '📦'}, {nodeType:3,nodeValue:' Delivery recorded'}, {tagName:'BR'}, {tagName:'IMG',getAttribute:()=> '🏠'}, {nodeType:3,nodeValue:' Deliver to'}];
+  assert.ok(readReport(f.row).caption.endsWith('📦 Delivery recorded\n🏠 Deliver to'), 'Discord image-rendered emoji and line breaks survive copying');
+  delete f.content.childNodes;
   f.content.innerText='Driver report attached as text';assert.equal(readReport(f.row),null);
   f.content.innerText=caption;f.row.querySelectorAll=selector=>selector.startsWith('[id')?[f.content,f.content]:[f.link];assert.equal(readReport(f.row),null);
   const jpeg=new Uint8Array([255,216,255,192,0,11,8,0,10,0,20,1,1,17,0,255,217]);
@@ -35,7 +43,7 @@ test('controls are unique, copy fresh paired data and reject recycled or removed
  mount(f.row);mount(f.row);assert.equal(f.row.children.length,1);
  let controls=f.row.children[0].children;
  await controls[0].callbacks.click();await controls[1].callbacks.click();
- assert.deepEqual(calls,[['image',url],['text',caption]]);
+ assert.deepEqual(calls,[['image',url],['text',caption.replace('Parcel recovery & redelivery','*Parcel recovery & redelivery*').replace('Consignment:','*Consignment:*').replace('Deliver to','🏠 *Deliver to*')]]);
  assert.equal(controls[0].textContent,'Картинку скопійовано');
  assert.equal(controls[1].textContent,'Підпис скопійовано');
  f.row.children[0].remove();mount(f.row);assert.equal(f.row.children.length,2,'restore controls removed by Discord re-render');

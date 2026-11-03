@@ -1,3 +1,4 @@
+import { formatWhatsAppCaption } from '../../shared/whatsappCaption.js';
 /** Standalone local export. Customer values enter escaped text/data only. */
 const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -5,6 +6,7 @@ const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 export function buildWhatsAppPage({ image, caption }) {
   if (!Buffer.isBuffer(image) || image.length > 3 * 1024 * 1024
       || typeof caption !== 'string' || Buffer.byteLength(caption) > 64000) throw new Error('Export size limit');
+  caption = formatWhatsAppCaption(caption);
   const mime = image.subarray(0, 3).equals(Buffer.from([255, 216, 255])) ? 'image/jpeg'
     : image.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) ? 'image/png' : null;
   if (!mime) throw new Error('Unsupported export image');

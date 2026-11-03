@@ -49,5 +49,16 @@
     "gates": "PASS7,221/221 tests",
     "artifact": "/tmp/DPD-Assistance-6.3.0.82.zip",
     "sha256": "0ac051d75256c1a81a439e3e0bc18f3e088c600e794bc171617f4a2f7221d6fb"
+  },
+  "caption_followup": {
+    "scope": "WhatsApp-format headings, preserve emoji/paragraphs/full URLs; shared pure function with bot HTML",
+    "red": "formatting1/3, emoji1/2",
+    "focused": "3/3",
+    "live": "WhatsApp styled caption not yet verified",
+    "gates": "PASS7,221/221",
+    "review": "discord_copy_review ACCEPT; abbreviated URL regression RED1/2 -> GREEN3/3",
+    "artifact": "/tmp/DPD-Assistance-6.3.0.83.zip",
+    "sha256": "cd1a28c5452475ee790253165888896019a3765e57179f1e8ef427a105922bb8",
+    "activation": "bot0.2.22 restarted, Discord ready; extension6.3.0.83 awaits work-PC update"
   }
 }

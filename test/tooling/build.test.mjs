@@ -19,7 +19,7 @@ const PRIVATE_CONFIG = join(REPO, 'src', 'config', 'local.js');
 async function makeWorkspace(t) {
   const root = await mkdtemp(join(tmpdir(), 'dpd-build-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  for (const path of ['build.js', 'manifest.json', 'package.json', 'assets']) {
+  for (const path of ['build.js', 'manifest.json', 'package.json', 'assets', 'shared']) {
     await cp(join(REPO, path), join(root, path), { recursive: true });
   }
   await cp(join(REPO, 'src'), join(root, 'src'), {

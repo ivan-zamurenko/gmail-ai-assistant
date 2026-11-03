@@ -274,3 +274,6 @@ The helper recognizes one message-content node and one exact driver-report.jpg a
 
 ### S09-18 button styling follow-up — 2026-11-03
 Owner requested more polished controls. Scoped CSS adds DPD red image action, neutral caption action, distinct vector icons, rounded corners, hover/keyboard focus, reduced-motion support and green copied state. Copy behavior/access unchanged; loading/errors remain clear. Synthetic preview visually checked in isolated headless Chrome, not live Discord.
+
+### WhatsApp caption styling — 2026-11-03
+Owner confirmed preserving report text styling/emojis when pasted into WhatsApp. One pure shared/whatsappCaption.js formatter adds WhatsApp single-asterisk bold to known headings/labels, preserves values, newlines and full URLs. Used by extension Copy Caption and bot HTML export; native Discord report remains plain. Extension extracts emoji IMG alt and BR/text nodes rather than losing emoji via innerText. Shared module ships with repository for Node bot and is bundled into extension, no browser/runtime dependency. Existing downloaded HTML is unchanged; generate a new report.

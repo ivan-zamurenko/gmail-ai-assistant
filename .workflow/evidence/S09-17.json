@@ -33,5 +33,12 @@
     "Authorized Mac bot restart after checks; Discord ready; no command registration or WhatsApp send"
   ],
   "next_step": "Owner fresh /report, download/open open-for-whatsapp.html in Chrome, copy image then caption",
-  "review": "share_export_review ACCEPT, independent4/4"
+  "review": "share_export_review ACCEPT, independent4/4",
+  "retired_by_owner": {
+    "date": "2026-11-03",
+    "scope": "Stop generating HTML; remove exporter and obsolete group; image/text/long .txt and extension copy remain",
+    "red": "driverReport2/3",
+    "green": "full gates PASS7,220/220",
+    "activation": "bot0.2.23 restarted, Discord ready; extension unchanged6.3.0.83"
+  }
 }

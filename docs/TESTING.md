@@ -1125,3 +1125,5 @@ Existing renderer expectations first require actual HTML attachment. One grouped
 Two grouped synthetic tests cover same-message identity, ambiguous/placeholder rejection, strict attachment URLs and credential-free no-redirect image fetch, JPEG dimension rejection before decode, unique buttons and stale-row rejection. No new DOM dependency; fake DOM models the selector contract only. Built IIFE parsed as classic JS separately. Real Discord markup/CORS/browser clipboard and installation require owner smoke.
 
 - 2026-11-03 caption follow-up: extended existing Discord copy/HTML groups first (formatting RED1/3, emoji RED1/2) then GREEN3/3. Checks WhatsApp headings, blank lines, copied full caption, retained IMG-alt emoji/BR and existing URL safety. No new groups. Real WhatsApp styled-caption display remains owner smoke.
+
+- 2026-11-03 HTML export retired by owner: existing report attachment expectation changed first RED2/3, then verified without HTML. Removed obsolete whatsappExport module and its sole test group; extension formatter/copy regressions preserved.

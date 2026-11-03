@@ -182,3 +182,5 @@ New bot replies are automatically removed on a best-effort basis: private replie
 For easier WhatsApp Web transfer, open the report attachment `open-for-whatsapp.html` locally in Chrome. Copy/paste the image first, then copy/paste the caption using the two buttons. No WhatsApp API or automatic sending; saved report files remain after Discord cleanup.
 
 Discord Web copy buttons: update the extension, open the Discord chat, click DPD extension → “Увімкнути копіювання report у Discord”. Use the two buttons beside report to copy image then caption. Re-enable after page refresh. This requires Chrome Web Discord, not the desktop Discord application; HTML export remains available as fallback.
+
+Owner update2026-11-03: HTML report export has been removed. Use the extension copy buttons in Discord Web; unusually long reports still attach complete .txt text. Earlier HTML-export instructions describe retired behavior.

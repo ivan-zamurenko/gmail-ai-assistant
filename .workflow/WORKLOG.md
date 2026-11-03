@@ -163,3 +163,7 @@
 - 2026-11-03 | root | caption style follow-up | owner approved WhatsApp bold headings, emoji and paragraph preservation; shared pure formatter for both export routes, emoji DOM extraction fixed | existing tests RED then GREEN3/3 | full gates, extension6.3.0.83 package and bot0.2.22 restart next.
 
 - 2026-11-03 | root | caption formatting ready | extension6.3.0.83/root1.1.49/bot0.2.22;221/221 full gates/reviewer ACCEPT; abbreviated URL regression fixed test-first; synthetic build fixture now includes shared/ source | bot restarted and ready; extension archive outside Git | next: work-PC update and WhatsApp styled-caption smoke.
+
+- 2026-11-03 | root | owner-requested HTML export removal | /report stops generating HTML; removed unused exporter and its obsolete test, retained image/text/long .txt and extension copy | test-first RED2/3 | full gates and bot0.2.23 restart next; extension unchanged.
+
+- 2026-11-03 | root | HTML removal activated | full gates220/220; bot0.2.23 restarted and Discord ready; S09-17 evidence marked superseded by owner | extension remains6.3.0.83 | next: fresh /report, no work-PC update.

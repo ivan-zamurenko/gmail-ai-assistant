@@ -1,3 +1,10 @@
+# HTML report export removed — 2026-11-03
+
+Owner explicitly requested removal. Bot0.2.23/root1.1.50 now sends image+caption, no HTML; long .txt fallback retained. Unused exporter/test removed; shared formatter and extension copy buttons remain. Extension6.3.0.83 unchanged. Full gates220/220; Mac bot restarted, Discord ready. S09-17 completion historical, now superseded; no old-message or downloaded-file purge.
+Next: fresh /report. No active writer.
+
+---
+
 # WhatsApp caption formatting ready — 2026-11-03
 
 Extension6.3.0.83/root1.1.49/bot0.2.22. Shared pure formatter adds WhatsApp bold headings, preserves emoji/newlines/URLs; Discord emoji IMG alt recovered. Bot restarted and Discord ready; extension update on work PC pending. Full gates221/221, reviewer ACCEPT.

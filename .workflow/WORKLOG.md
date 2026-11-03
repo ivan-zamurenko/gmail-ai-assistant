@@ -135,3 +135,7 @@
 - 2026-11-03 | root | completed S09-15 offline | One local map/POD image and copy-ready caption without operator notes; contained pixels, bounded decode and metadata stripping. Independent review ACCEPT. | test-first Report expectation RED 2/3, image module RED 0/1; focused GREEN 15/15; focused/full gates PASS; evidence/S09-15.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | S09-15 activated | bot0.2.18 restarted on Mac after216/216 + full gates; Discord ready, no startup error markers; command schema and extension unchanged | owner-approved restart, no WhatsApp send/depot action | next: fresh /report and manual image+caption transfer trial.
+
+- 2026-11-03 | root | S09-15 layout follow-up | owner requested side-by-side map/POD and scanned point legend; existing regression changed first RED0/1 then focused4/4 | no new test groups, no image crop | full gates then Mac bot restart.
+
+- 2026-11-03 | root | S09-15 horizontal layout activated | full gates PASS7/216 tests; synthetic preview checked, Mac bot0.2.19 restarted and Discord ready | no extension/command changes | next: owner fresh /report.

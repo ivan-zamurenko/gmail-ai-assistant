@@ -578,3 +578,5 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | S09-15: map/POD composition local in bot memory with bounded decoding; no disk persistence/customer preview fixtures or new outbound service. Metadata removed, original evidence not regenerated/cropped. Caption stays under existing Admin/ephemeral/recovery protections. Operator note removed per owner request; no WhatsApp send, clipboard, rules or depot mutation.
 
 - 2026-11-03 | root | S09-15 runtime: reused owner-authorized Mac bot restart after passing gates; verified process cwd and Discord ready without printing identity/config. No command registration, rules deploy or outbound customer report initiated by agent.
+
+- 2026-11-03 | root | authorized report-layout restart on Mac after gates; exact project process verified. No customer fixture or image regeneration, no new outbound service, no depot action.

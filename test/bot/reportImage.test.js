@@ -14,17 +14,27 @@ test('report image preserves complete map/POD, strips metadata and survives miss
   assert.ok(result.length < 8 * 1024 * 1024);
   const meta = await sharp(result).metadata();
   assert.equal(meta.format, 'jpeg');
-  assert.equal(meta.width, 1000);
-  assert.equal(meta.height, 1178, 'EXIF orientation applied before sizing');
+  assert.equal(meta.width, 1600);
+  assert.equal(meta.height, 864, 'two square panels beneath one legend');
   assert.equal(meta.exif, undefined);
   const { data, info } = await sharp(result).raw().toBuffer({ resolveWithObject: true });
   let red = 0, green = 0, blue = 0;
+  let leftRed = 0, rightBlue = 0;
+  const blueBounds = { minX: Infinity, maxX: 0, minY: Infinity, maxY: 0 };
   for (let i = 0; i < data.length; i += info.channels) {
-    if (data[i] > 200 && data[i + 1] < 60 && data[i + 2] < 60) red++;
+    const x = (i / info.channels) % info.width;
+    const y = Math.floor(i / info.channels / info.width);
+    if (data[i] > 200 && data[i + 1] < 60 && data[i + 2] < 60) { red++; if (x < 800) leftRed++; }
     if (data[i + 1] > 200 && data[i] < 60 && data[i + 2] < 60) green++;
-    if (data[i + 2] > 200 && data[i] < 60 && data[i + 1] < 60) blue++;
+    if (data[i + 2] > 200 && data[i] < 60 && data[i + 1] < 60) {
+      blue++; if (x >= 800) rightBlue++;
+      blueBounds.minX = Math.min(blueBounds.minX, x); blueBounds.maxX = Math.max(blueBounds.maxX, x);
+      blueBounds.minY = Math.min(blueBounds.minY, y); blueBounds.maxY = Math.max(blueBounds.maxY, y);
+    }
   }
   assert.ok(red > 10000 && green > 1000 && blue > 10000, 'both images and map bottom attribution strip must survive');
+  assert.ok(leftRed > 10000 && rightBlue > 10000, 'map left and POD right');
+  assert.ok(blueBounds.maxX - blueBounds.minX > blueBounds.maxY - blueBounds.minY, 'EXIF orientation applied');
   for (const input of [{}, { map: Buffer.from('broken'), pod: Buffer.from('broken') }, { pod: Buffer.alloc(8 * 1024 * 1024 + 1) }]) {
     assert.equal((await sharp(await composeReportImage(input)).metadata()).format, 'jpeg');
   }

@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-15 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-15 horizontal layout activated — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1163,6 +1163,9 @@ Local checks passed; updated slash-command registration, bot activation and real
 Supersedes S09-14 separate photos/operator note: ready /report automatically returns one driver-report.jpg (map above POD, contain/no crop) and clean plain driver caption with full URLs. No preparation button, extra state or command schema change. Map legend and unavailable-media notices live inside the image. Manual override no longer adds operator text; destination Eircode remains report-only and street address unchanged.
 Forward by saving the single JPEG and pasting Copy Text as its WhatsApp caption. Not automatic transfer: images/text still require these two actions. Links remain text links, never baked into image. Long output retains complete driver-report.txt rather than clipping address; exceptional long captions may require a separate text message.
 Image adapter accepts bounded JPEG/PNG/WebP, auto-orients, strips EXIF and uses404 for absent/invalid POD. Complete composition failure logs only a fixed code and sends existing placeholder plus useful caption. No new provider call beyond existing bounded Maps enrichment. Live device rendering to verify with owner.
+
+## Report layout follow-up — 2026-11-03
+Owner requested map left/POD right in one image, dark background and exact legend: red scanned point · blue delivery address. S09-15 follow-up uses1600x864 canvas, two792px contain panels with16px gap and72px header. No crop or change to caption/navigation. Supersedes vertical layout; no command/extension changes.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1992,7 +1995,13 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-15 completed offline — 2026-11-03</h1><pre class="markdown"># S09-15 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-15 horizontal layout activated — 2026-11-03</h1><pre class="markdown"># S09-15 horizontal layout activated — 2026-11-03
+
+Owner-requested map left/POD right; legend: scanned point · delivery address. Bot0.2.19 on Mac, Discord ready after restart. Full gates PASS7,216 tests; existing layout test RED then GREEN, synthetic preview inspected. No command/extension change. Next: fresh /report owner check. No active writer.
+
+---
+
+# S09-15 completed offline — 2026-11-03
 
 Root integrator. One local map/POD image and copy-ready caption without operator notes; contained pixels, bounded decode and metadata stripping. Independent review ACCEPT.
 Evidence: [S09-15](evidence/S09-15.json). No active writer.
@@ -2577,6 +2586,10 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S09-15 offline | One local map/POD image and copy-ready caption without operator notes; contained pixels, bounded decode and metadata stripping. Independent review ACCEPT. | test-first Report expectation RED 2/3, image module RED 0/1; focused GREEN 15/15; focused/full gates PASS; evidence/S09-15.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | S09-15 activated | bot0.2.18 restarted on Mac after216/216 + full gates; Discord ready, no startup error markers; command schema and extension unchanged | owner-approved restart, no WhatsApp send/depot action | next: fresh /report and manual image+caption transfer trial.
+
+- 2026-11-03 | root | S09-15 layout follow-up | owner requested side-by-side map/POD and scanned point legend; existing regression changed first RED0/1 then focused4/4 | no new test groups, no image crop | full gates then Mac bot restart.
+
+- 2026-11-03 | root | S09-15 horizontal layout activated | full gates PASS7/216 tests; synthetic preview checked, Mac bot0.2.19 restarted and Discord ready | no extension/command changes | next: owner fresh /report.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3845,6 +3858,9 @@ WhatsApp clipboard/export interaction is still a proposal, not completed behavio
 ## REPORT-WHATSAPP-2026-11-03 — owner approved, S09-15
 Owner wants no manual text cleanup and all photos together, visible directly in WhatsApp chat; no PDF. /report automatically produces one map+POD JPEG and plain English caption with full navigation URLs. This removes the extra preparation button/state. Operator-only manual-Eircode note removed at owner request; override still affects report only, depot street address unchanged. No WhatsApp sending/API or clipboard access. Manual transfer: save one image, Copy Text, paste as its WhatsApp caption. Long reports retain full .txt export; arbitrary long captions/mobile rendering are not guaranteed.
 Previous /report pilot: owner says it appears to work; not evidence for every edge case. Bot always runs on Mac, extension on work PC. Existing explicit restart authorization applies to this trial; no command registration/schema change required.
+
+## Report layout follow-up — 2026-11-03
+Owner requested map left/POD right in one image, dark background and exact legend: red scanned point · blue delivery address. S09-15 follow-up uses1600x864 canvas, two792px contain panels with16px gap and72px header. No crop or change to caption/navigation. Supersedes vertical layout; no command/extension changes.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 

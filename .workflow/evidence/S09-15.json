@@ -34,5 +34,15 @@
     "Existing authorized Mac bot restarted after checks; Discord ready confirmed; no command registration, WhatsApp send or depot mutation"
   ],
   "next_step": "Owner runs fresh /report and forwards one image with copied text as WhatsApp caption",
-  "review": "whatsapp_review ACCEPT, independent focused4/4; synthetic visual preview inspected locally"
+  "review": "whatsapp_review ACCEPT, independent focused4/4; synthetic visual preview inspected locally",
+  "layout_followup": {
+    "date": "2026-11-03",
+    "request": "Map left, POD right; scanned point legend",
+    "red": "Existing reportImage regression0/1 before code change",
+    "focused": "reportImage + driverReport4/4",
+    "dimensions": "1600x864; contain without crop",
+    "gates": "PASS7,216/216",
+    "visual": "Synthetic side-by-side preview inspected",
+    "activation": "Mac bot0.2.19 restarted; Discord ready"
+  }
 }

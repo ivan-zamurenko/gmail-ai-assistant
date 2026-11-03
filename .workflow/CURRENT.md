@@ -1,3 +1,9 @@
+# S09-15 horizontal layout activated — 2026-11-03
+
+Owner-requested map left/POD right; legend: scanned point · delivery address. Bot0.2.19 on Mac, Discord ready after restart. Full gates PASS7,216 tests; existing layout test RED then GREEN, synthetic preview inspected. No command/extension change. Next: fresh /report owner check. No active writer.
+
+---
+
 # S09-15 completed offline — 2026-11-03
 
 Root integrator. One local map/POD image and copy-ready caption without operator notes; contained pixels, bounded decode and metadata stripping. Independent review ACCEPT.

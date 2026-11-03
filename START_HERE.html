@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S05-01 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S04-01 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1935,7 +1935,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S05-01 completed offline — 2026-11-03</h1><pre class="markdown"># S05-01 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-01 completed offline — 2026-11-03</h1><pre class="markdown"># S04-01 completed offline — 2026-11-03
+
+Root integrator. Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review.
+Evidence: [S04-01](evidence/S04-01.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S05-01 completed offline — 2026-11-03
 
 Root integrator. Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review.
 Evidence: [S05-01](evidence/S05-01.json). No active writer.
@@ -2382,6 +2391,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S02-02 offline | Conflicting numbers or physical parcels remain ambiguous; no lookup/folder/move, safe candidate metadata, modulo10 compatibility retained. drive_audit implementation/root review. | test-first 17/19 initial and18/19 metadata;32/32 focused GREEN; focused/full gates PASS; evidence/S02-02.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S05-01 offline | Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review. | test-first 5/8 RED to8/8 GREEN; focused/full gates PASS; evidence/S05-01.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S04-01 offline | Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review. | test-first 5/7 RED to7/7 GREEN;focused26/26; focused/full gates PASS; evidence/S04-01.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3853,6 +3864,18 @@ PDF parcel stays unknown. Unsupported decoder formats are ignored.
 Batch returns ambiguous before lookup, folder planning, rename or move in both
 preview and live; the file remains in its source folder for manual review.
 Existing UI/Discord error counts include this outcome; no automatic resolve UI.
+
+## S04-01 — folder listing boundary
+
+Read selected folder metadata before listing (must match ID, folder MIME, not
+trashed). Enumerate direct children only; no recursion. Limits50 pages/5000 IDs,
+options capped100/10000; loops, incompleteSearch and malformed responses fail
+before downloading the root list. Duplicate IDs use the first snapshot entry.
+Only jpeg/png/webp/gif/bmp/avif with valid name/date, nontrashed and exact parent
+are decoded. Unsupported/foreign/malformed metadata return explicit skipped
+errors; no download/filing. Folder URLs accept optional usp, no other query/hash.
+This is enumeration protection, not S04-02 stale-plan/atomicity guarantees.
+Source: [Drive files.list](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/list).
 </pre></article>
 <article id="doc-44" tabindex="-1" hidden><p class="path"><a href="docs/gmail-contract.md">docs/gmail-contract.md</a></p><h1>Gmail: очередь, факты и черновики</h1><pre class="markdown"># Gmail: очередь, факты и черновики
 
@@ -5392,6 +5415,14 @@ Existing list test now covers three pages/dedup; two new grouped tests cover
 loop/page/message budgets/schema/errors and actual gmailFlow with synthetic DOM.
 Missing label, empty, partial and API403 differ; all enumerating requests GET.
 RED5/8 to GREEN8/8; no mailbox/Chrome execution.
+
+## S04-01 — Drive enumeration
+
+Two grouped cases added to existing driveLabels tests: multipage/dedup/filter
+and metadata403/404, late page failure, schema/loop/budget/incompleteSearch.
+Real adapter with fake fetch asserts no media or mutation before complete
+validated listing. Existing fixtures now provide requested metadata. RED5/7,
+GREEN7/7; focused26/26. No live Drive/browser/image decoding verified.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -7614,7 +7645,7 @@ Evidence: `.workflow/evidence/S03-05.json`. Обновить существую�
 Fake Drive list возвращает несколько страниц, token loop и forbidden; assertions проверяют полный набор и максимальное число calls.
 
 ```sh
-node --test test/unit/drive-list.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js
 ```
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.

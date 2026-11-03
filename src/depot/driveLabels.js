@@ -12,30 +12,58 @@ import { fetchApi } from '../shared/apiErrors.js';
 
 import { processLabelBatch } from './labelBatch.js';
 import { createMonthFolderResolver } from './monthFolders.js';
+import { parseFolderId } from '../config/folderId.js';
 
 const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
-import { parseFolderId } from '../config/folderId.js';
+const IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/avif']);
+const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const identifier = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(value);
 
 async function driveGet(path, token, signal) {
   return fetchApi(`${DRIVE_API}/${path}`, { readOnly: true, signal, headers: { Authorization: `Bearer ${token}` } });
 }
 
-async function listFiles(query, fields, token, signal) {
-  const files = [];
-  let pageToken = '';
+function listingLimits(input = {}) {
+  if (!record(input)) throw new Error('Drive listing limits invalid');
+  const { maxPages = 50, maxFiles = 5000 } = input;
+  if (!Number.isInteger(maxPages) || maxPages < 1 || maxPages > 100
+      || !Number.isInteger(maxFiles) || maxFiles < 1 || maxFiles > 10000) {
+    throw new Error('Drive listing limits invalid');
+  }
+  return { maxPages, maxFiles };
+}
 
-  do {
+async function listFiles(query, fields, token, signal, limits) {
+  const files = new Map();
+  const tokens = new Set();
+  let pageToken = '';
+  const incomplete = reason => { throw new Error(`Drive listing incomplete [${reason}]`); };
+
+  for (let page = 0; page < limits.maxPages; page++) {
     const url = `files?q=${encodeURIComponent(query)}`
-      + `&fields=nextPageToken,files(${fields})&pageSize=200`
+      + `&fields=nextPageToken,incompleteSearch,files(${fields})&pageSize=200`
       + (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
     const data = await driveGet(url, token, signal);
-    files.push(...(data.files ?? []));
+    if (!record(data) || (data.files !== undefined && !Array.isArray(data.files))
+        || (data.files?.length ?? 0) > 200
+        || data.files?.some(file => !record(file) || !identifier(file.id))
+        || (data.nextPageToken !== undefined && (typeof data.nextPageToken !== 'string' || data.nextPageToken.length > 2048))
+        || (data.incompleteSearch !== undefined && typeof data.incompleteSearch !== 'boolean')) {
+      throw new Error('Drive listing invalid');
+    }
+    if (data.incompleteSearch) incomplete('incomplete_search');
+    for (const file of data.files ?? []) {
+      if (!files.has(file.id)) files.set(file.id, file);
+      if (files.size > limits.maxFiles) incomplete('file_limit');
+    }
     pageToken = data.nextPageToken ?? '';
-  } while (pageToken);
-
-  return files;
+    if (!pageToken) return [...files.values()];
+    if (tokens.has(pageToken)) incomplete('repeated_page_token');
+    tokens.add(pageToken);
+  }
+  incomplete('page_limit');
 }
 
 async function downloadBlob(fileId, token, signal) {
@@ -46,11 +74,11 @@ async function downloadBlob(fileId, token, signal) {
 
 }
 
-async function findFolder(name, parentId, token, signal) {
+async function findFolder(name, parentId, token, signal, limits) {
   const found = await listFiles(
     `name='${name}' and '${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
     'id',
-    token, signal
+    token, signal, limits
   );
   return found[0]?.id ?? null;
 }
@@ -90,27 +118,52 @@ async function moveAndRename(fileId, fromId, toId, name, token, signal) {
  * @param {(image: unknown) => Promise<unknown[]>} options.readCodes
  */
 export async function processDriveLabels({
-  folderInput, token, verify, dryRun, onProgress, decodePhoto, readCodes, signal,
+  folderInput, token, verify, dryRun, onProgress, decodePhoto, readCodes, signal, listLimits,
 }) {
   const rootId = parseFolderId(folderInput);
+  const limits = listingLimits(listLimits);
 
   onProgress?.(0, 1, 'listing');
-  const photos   = await listFiles(
+  const folder = await driveGet(`files/${rootId}?fields=id,mimeType,trashed`, token, signal);
+  if (!record(folder) || folder.id !== rootId || folder.mimeType !== FOLDER_MIME || folder.trashed !== false) {
+    throw new Error('Drive folder invalid or unavailable');
+  }
+  const listed = await listFiles(
     `'${rootId}' in parents and mimeType contains 'image/' and trashed=false`,
-    'id,name,createdTime',
-    token, signal
+    'id,name,createdTime,mimeType,trashed,parents',
+    token, signal, limits
   );
+  const photos = [];
+  const skipped = [];
+  for (const file of listed) {
+    const validName = typeof file.name === 'string' && file.name.length > 0 && file.name.length <= 1000;
+    const validDate = typeof file.createdTime === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(file.createdTime)
+      && Number.isFinite(Date.parse(file.createdTime));
+    if (validName && validDate && IMAGE_MIMES.has(file.mimeType) && file.trashed === false
+        && Array.isArray(file.parents) && file.parents.length === 1 && file.parents[0] === rootId) {
+      photos.push(file);
+    } else {
+      skipped.push({
+        from: validName ? file.name : 'Unnamed file', to: null, number: null, contested: false,
+        status: 'skipped', errorCode: 'unsupported-drive-item',
+        error: 'Skipped: unsupported image or invalid folder metadata',
+      });
+    }
+  }
   const folderFor = createMonthFolderResolver({
     rootId,
     dryRun,
-    findFolder: (name, parentId) => findFolder(name, parentId, token, signal),
+    findFolder: (name, parentId) => findFolder(name, parentId, token, signal, limits),
     createFolder: (name, parentId) => createFolder(name, parentId, token, signal),
     listNames: async (parentId) => (
-      await listFiles(`'${parentId}' in parents and trashed=false`, 'name', token, signal)
-    ).map((file) => file.name),
+      await listFiles(`'${parentId}' in parents and trashed=false`, 'id,name', token, signal, limits)
+    ).map((file) => {
+      if (typeof file.name !== 'string' || !file.name || file.name.length > 1000) throw new Error('Drive listing invalid');
+      return file.name;
+    }),
   });
 
-  return processLabelBatch({
+  const results = await processLabelBatch({
     photos,
     verify,
     dryRun,
@@ -122,4 +175,5 @@ export async function processDriveLabels({
       moveAndRename(photo.id, rootId, folder.id, name, token, signal)
     ),
   });
+  return [...results, ...skipped];
 }

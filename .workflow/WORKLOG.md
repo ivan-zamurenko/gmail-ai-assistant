@@ -109,3 +109,5 @@
 - 2026-11-03 | root | completed S02-02 offline | Conflicting numbers or physical parcels remain ambiguous; no lookup/folder/move, safe candidate metadata, modulo10 compatibility retained. drive_audit implementation/root review. | test-first 17/19 initial and18/19 metadata;32/32 focused GREEN; focused/full gates PASS; evidence/S02-02.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S05-01 offline | Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review. | test-first 5/8 RED to8/8 GREEN; focused/full gates PASS; evidence/S05-01.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S04-01 offline | Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review. | test-first 5/7 RED to7/7 GREEN;focused26/26; focused/full gates PASS; evidence/S04-01.json | separate commit/push, next independent task.

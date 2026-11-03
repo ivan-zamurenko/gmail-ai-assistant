@@ -1,3 +1,12 @@
+# S04-01 completed offline — 2026-11-03
+
+Root integrator. Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review.
+Evidence: [S04-01](evidence/S04-01.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
 # S05-01 completed offline — 2026-11-03
 
 Root integrator. Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review.

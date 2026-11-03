@@ -1031,3 +1031,11 @@ Existing list test now covers three pages/dedup; two new grouped tests cover
 loop/page/message budgets/schema/errors and actual gmailFlow with synthetic DOM.
 Missing label, empty, partial and API403 differ; all enumerating requests GET.
 RED5/8 to GREEN8/8; no mailbox/Chrome execution.
+
+## S04-01 — Drive enumeration
+
+Two grouped cases added to existing driveLabels tests: multipage/dedup/filter
+and metadata403/404, late page failure, schema/loop/budget/incompleteSearch.
+Real adapter with fake fetch asserts no media or mutation before complete
+validated listing. Existing fixtures now provide requested metadata. RED5/7,
+GREEN7/7; focused26/26. No live Drive/browser/image decoding verified.

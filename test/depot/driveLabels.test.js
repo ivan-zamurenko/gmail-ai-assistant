@@ -21,6 +21,9 @@ function fakeServices(t, { folders = {}, names = {}, photos }) {
     requests.push({ method, url: input, host: url.host });
     const json = (body) => ({ ok: true, status: 200, json: async () => body });
 
+    if (url.origin + url.pathname === `${DRIVE}/${ROOT}` && method === 'GET') {
+      return json({ id: ROOT, mimeType: 'application/vnd.google-apps.folder', trashed: false });
+    }
     if (input === DEPOT_LOOKUP && method === 'POST') return json({ found: true });
     if (url.origin + url.pathname === DRIVE && method === 'GET') {
       const q = url.searchParams.get('q') ?? '';
@@ -31,7 +34,7 @@ function fakeServices(t, { folders = {}, names = {}, photos }) {
         return json({ files: id ? [{ id }] : [] });
       }
       const listing = q.match(/^'([^']+)' in parents and trashed=false$/);
-      if (listing) return json({ files: (names[listing[1]] ?? []).map((name) => ({ name })) });
+      if (listing) return json({ files: (names[listing[1]] ?? []).map((name, index) => ({ id: `existing-${index}`, name })) });
     }
     if (url.pathname.startsWith('/drive/v3/files/') && url.searchParams.get('alt') === 'media' && method === 'GET') {
       return { ok: true, status: 200, blob: async () => new globalThis.Blob(['synthetic-image']) };
@@ -66,7 +69,7 @@ function run({ dryRun, readCodes = async () => BARCODE }) {
   });
 }
 
-const PHOTO = { id: 'photo-syn-1', name: 'DRIVER-PHOTO.JPG', createdTime: '2026-10-09T12:00:00.000Z' };
+const PHOTO = { mimeType: 'image/jpeg', trashed: false, parents: [ROOT], id: 'photo-syn-1', name: 'DRIVER-PHOTO.JPG', createdTime: '2026-10-09T12:00:00.000Z' };
 
 test('dry-run with missing YYYY/MM folders sends only Drive GETs and plans the path', async (t) => {
   const net = fakeServices(t, { photos: [PHOTO] });
@@ -156,4 +159,77 @@ test('Drive uncertain create stops next photo, and abort stops before network', 
   const before = net.requests.length;
   await assert.rejects(processDriveLabels({ folderInput: ROOT, token: 'synthetic-token', signal: controller.signal }), { code: 'aborted' });
   assert.equal(net.requests.length, before);
+});
+
+// Real Drive adapter; only provider responses are synthetic.
+function listingServices(t, { pages = [], folderStatus = 200, folder = {}, failPage = -1 } = {}) {
+  const calls = [];
+  let page = 0;
+  t.mock.method(globalThis, 'fetch', async (input, init = {}) => {
+    const url = new globalThis.URL(input);
+    calls.push({ url, method: init.method ?? 'GET' });
+    const json = (body, status = 200) => ({ ok: status === 200, status, json: async () => body });
+    if (url.pathname === `/drive/v3/files/${ROOT}`) {
+      return json({ id: ROOT, mimeType: 'application/vnd.google-apps.folder', trashed: false, ...folder }, folderStatus);
+    }
+    if (url.searchParams.get('alt') === 'media') {
+      return { ok: true, status: 200, blob: async () => new globalThis.Blob(['synthetic']) };
+    }
+    const query = url.searchParams.get('q') ?? '';
+    if (query.startsWith("name='")) return json({ files: [] });
+    const index = page++;
+    if (index === failPage) return json({}, 403);
+    if (index >= pages.length) throw new Error('Unexpected extra page');
+    return json(pages[index]);
+  });
+  return calls;
+}
+const scanOptions = overrides => ({
+  folderInput: ROOT, token: 'synthetic-token', dryRun: true,
+  verify: async () => true, decodePhoto: async () => ({}), readCodes: () => BARCODE,
+  ...overrides,
+});
+
+test('Drive complete snapshot deduplicates pages and reports excluded images without downloading them', async t => {
+  const calls = listingServices(t, { pages: [
+    { files: [PHOTO, { ...PHOTO, id: 'svg', mimeType: 'image/svg+xml' }], nextPageToken: 'next/encoded?' },
+    { files: [PHOTO, { ...PHOTO, id: 'photo-2' },
+      { ...PHOTO, id: 'trashed', trashed: true }, { ...PHOTO, id: 'foreign', parents: ['other-folder'] },
+      { ...PHOTO, id: 'shortcut', mimeType: 'application/vnd.google-apps.shortcut' },
+      { ...PHOTO, id: 'missing-type', mimeType: undefined }] },
+  ] });
+  const results = await processDriveLabels(scanOptions());
+  assert.equal(results.filter(item => !item.error).length, 2);
+  assert.equal(results.filter(item => item.status === 'skipped').length, 5);
+  assert.ok(results.filter(item => item.status === 'skipped').every(item => item.to === null && item.number === null && item.errorCode === 'unsupported-drive-item'));
+  const downloads = calls.filter(call => call.url.searchParams.get('alt') === 'media');
+  assert.deepEqual(downloads.map(call => call.url.pathname), ['/drive/v3/files/photo-syn-1', '/drive/v3/files/photo-2']);
+  assert.equal(calls[0].url.pathname, `/drive/v3/files/${ROOT}`);
+  assert.equal(calls[2].url.searchParams.get('pageToken'), 'next/encoded?');
+  assert.ok(calls.every(call => call.method === 'GET'));
+});
+
+test('Drive rejects inaccessible folders and incomplete or malformed pagination before downloads', async t => {
+  for (const scenario of [
+    { folderStatus: 403, error: /HTTP 403/ }, { folderStatus: 404, error: /HTTP 404/ },
+    { folder: { mimeType: 'image/jpeg' }, error: /Drive folder invalid/ },
+    { pages: [{ files: [PHOTO], nextPageToken: 'loop' }, { files: [PHOTO], nextPageToken: 'loop' }], error: /repeated_page_token/ },
+    { pages: [{ files: [PHOTO], nextPageToken: 'next' }], options: { listLimits: { maxPages: 1 } }, error: /page_limit/ },
+    { pages: [{ files: [PHOTO, { ...PHOTO, id: 'photo-2' }] }], options: { listLimits: { maxFiles: 1 } }, error: /file_limit/ },
+    { pages: [{ files: [PHOTO], nextPageToken: 'next' }], failPage: 1, error: /HTTP 403/ },
+    { pages: [{ files: [PHOTO], incompleteSearch: true }], error: /incomplete_search/ },
+    ...[null, { files: 'PRIVATE_MARKER' }, { files: [null] }, { files: [PHOTO], nextPageToken: {} }].map(page => ({ pages: [page], error: /Drive listing invalid/ })),
+  ]) {
+    const calls = listingServices(t, scenario);
+    await assert.rejects(processDriveLabels(scanOptions(scenario.options)), scenario.error);
+    assert.equal(calls.filter(call => call.url.searchParams.get('alt') === 'media').length, 0);
+    assert.ok(calls.every(call => call.method === 'GET'));
+    t.mock.restoreAll();
+  }
+  const calls = listingServices(t);
+  for (const options of [
+    { folderInput: 'https://drive.google.com/folders/root-syn?q=other' },
+    { listLimits: { maxPages: Infinity } }, { listLimits: { maxFiles: 0 } },
+  ]) await assert.rejects(processDriveLabels(scanOptions(options)), /invalid/);
+  assert.equal(calls.length, 0);
 });

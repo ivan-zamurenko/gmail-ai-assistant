@@ -99,3 +99,15 @@ PDF parcel stays unknown. Unsupported decoder formats are ignored.
 Batch returns ambiguous before lookup, folder planning, rename or move in both
 preview and live; the file remains in its source folder for manual review.
 Existing UI/Discord error counts include this outcome; no automatic resolve UI.
+
+## S04-01 — folder listing boundary
+
+Read selected folder metadata before listing (must match ID, folder MIME, not
+trashed). Enumerate direct children only; no recursion. Limits50 pages/5000 IDs,
+options capped100/10000; loops, incompleteSearch and malformed responses fail
+before downloading the root list. Duplicate IDs use the first snapshot entry.
+Only jpeg/png/webp/gif/bmp/avif with valid name/date, nontrashed and exact parent
+are decoded. Unsupported/foreign/malformed metadata return explicit skipped
+errors; no download/filing. Folder URLs accept optional usp, no other query/hash.
+This is enumeration protection, not S04-02 stale-plan/atomicity guarantees.
+Source: [Drive files.list](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/list).

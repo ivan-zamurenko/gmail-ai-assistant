@@ -1,3 +1,10 @@
+# Bot activated — 2026-11-03
+
+Owner authorized registration/restart. Mac bot0.2.17 online, five guild commands registered including /report. Previous command schema saved locally for rollback. Owner reports work-PC extension6.3.0.80. Permanent topology: bot on Mac, depot Chrome extension on work PC.
+Next: owner runs /report and checks event selection, POD/map, optional Eircode. Real report/depot roundtrip remains unverified; no rules deployment. No active code writer.
+
+---
+
 # Автономний прохід завершено — 2026-11-03
 
 **29/55 done, 26 відкладено; no_ready_task.** Root integrator, codex. No active writer.

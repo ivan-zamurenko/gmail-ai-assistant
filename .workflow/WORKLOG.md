@@ -129,3 +129,5 @@
 - 2026-11-03 | root | completed S09-14 offline | Report-only Eircode override, independent device-location navigation, optional map plus POD with explicit fallback; event/recovery and todo preserved. | test-first Existing report/command expectations RED 1/4, fallback RED 3/4; focused GREEN 24/24; focused/full gates PASS; evidence/S09-14.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed full roadmap audit | 54 initial cards reviewed + approved S09-14; 12 independently executable tasks committed/pushed, 29/55 done, 26 deferred with exact reasons | docs/ROADMAP_REVIEW_2026-11-03.md; next=no_ready_task; full gates215 tests + emulator2 | no active writer; await policy/access for remaining tasks.
+
+- 2026-11-03 | root | live activation authorized by owner | saved previous guild command schema locally, registered5 commands including /report, restarted existing Mac bot0.2.17; Discord ready confirmed, no startup error markers | work-PC extension owner reports6.3.0.80; bot always runs on Mac | next: owner /report smoke; depot actions and rules deployment not performed.

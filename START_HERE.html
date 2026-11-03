@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Автономний прохід завершено — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Bot activated — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1984,7 +1984,14 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Автономний прохід завершено — 2026-11-03</h1><pre class="markdown"># Автономний прохід завершено — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Bot activated — 2026-11-03</h1><pre class="markdown"># Bot activated — 2026-11-03
+
+Owner authorized registration/restart. Mac bot0.2.17 online, five guild commands registered including /report. Previous command schema saved locally for rollback. Owner reports work-PC extension6.3.0.80. Permanent topology: bot on Mac, depot Chrome extension on work PC.
+Next: owner runs /report and checks event selection, POD/map, optional Eircode. Real report/depot roundtrip remains unverified; no rules deployment. No active code writer.
+
+---
+
+# Автономний прохід завершено — 2026-11-03
 
 **29/55 done, 26 відкладено; no_ready_task.** Root integrator, codex. No active writer.
 12 задач цього проходу завершено й окремо закомічено/запушено, остання S09-14 `b98facc`.
@@ -2545,6 +2552,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S09-14 offline | Report-only Eircode override, independent device-location navigation, optional map plus POD with explicit fallback; event/recovery and todo preserved. | test-first Existing report/command expectations RED 1/4, fallback RED 3/4; focused GREEN 24/24; focused/full gates PASS; evidence/S09-14.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed full roadmap audit | 54 initial cards reviewed + approved S09-14; 12 independently executable tasks committed/pushed, 29/55 done, 26 deferred with exact reasons | docs/ROADMAP_REVIEW_2026-11-03.md; next=no_ready_task; full gates215 tests + emulator2 | no active writer; await policy/access for remaining tasks.
+
+- 2026-11-03 | root | live activation authorized by owner | saved previous guild command schema locally, registered5 commands including /report, restarted existing Mac bot0.2.17; Discord ready confirmed, no startup error markers | work-PC extension owner reports6.3.0.80; bot always runs on Mac | next: owner /report smoke; depot actions and rules deployment not performed.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 

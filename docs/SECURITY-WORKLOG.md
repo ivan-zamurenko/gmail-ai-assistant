@@ -572,3 +572,5 @@ policy override; human review always required. Synthetic adversarial evidence
 only, free prose remains unverified; no external AI data transmission.
 
 - 2026-11-03 | root | S09-14: report-only validated Eircode retained in existing task args and 24h recovery; Admin/requester/guild protections preserved. Optional map uses existing server adapter, no keys/provider URLs exposed. No private configs read, live requests or deployment. Synthetic tests only.
+
+- 2026-11-03 | root | owner explicitly authorized command registration and bot restart in existing configured guild. Previous schema saved outside Git with restrictive file permissions; no credentials/customer data printed. Discord ready confirmed. No rules deploy or depot command executed.

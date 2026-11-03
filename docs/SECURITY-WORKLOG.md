@@ -528,3 +528,11 @@ messages. Synthetic bundle markers confirm separate Node-only credentials stay
 out of extension entry points; this does not protect secrets incorrectly pasted
 into browser local.js. Private configs not read/edited; no credentials rotated,
 permissions/scopes changed, or external services invoked.
+
+## 2026-11-03 — S09-03 Emulator enforcement
+
+Actual loopback/demo-project rules checks found malformed/oversized expired
+cancellation summary allowed; fixed with type and500-character limit. Full
+local matrix passes, permissive control demonstrates denial sensitivity.
+Pinned public emulator/dependency downloaded; no production credentials/config,
+deploy, client data or live project used. Nested parcel map-only gap documented.

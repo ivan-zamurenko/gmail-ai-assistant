@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S04-01 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-03 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1324,6 +1324,16 @@ Choices remain in existing24h retained store until final delivery, and are
 renderable via /result. Callback IDs contain taskUUID/index only; getResult
 rechecks requester,guild,executor,expiry after guild/Admin gate. ACK after final
 send; failed send retains both records. /result final ACK also cleans choices.
+
+## S09-03 — actual local rules evidence
+
+Firestore Emulator1.22.0 with exact rules-unit-testing5.0.0 tests assigned UID,
+query scope, browser create/delete/todo denial, immutable fields, deadline
+claim/cancel, no terminal rewrite and result bounds. Expired cancellation now
+requires string summary&lt;=500 (observed RED fixed). Nested parcel remains only
+map-validated by rules; executor/renderer whitelist/limits remain compensation,
+not a substitute for a future versioned shared nested schema. Admin SDK bypass
+is used only for synthetic seed. No rules deployed or live credentials used.
 </pre></article>
 <article id="doc-9" tabindex="-1" hidden><p class="path"><a href="docs/discord/RUNBOOK_RU.md">docs/discord/RUNBOOK_RU.md</a></p><h1>Discord + Firestore + Chrome — порядок подготовки и эксплуатации</h1><pre class="markdown"># Discord + Firestore + Chrome — порядок подготовки и эксплуатации
 
@@ -1935,7 +1945,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-01 completed offline — 2026-11-03</h1><pre class="markdown"># S04-01 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-03 completed offline — 2026-11-03</h1><pre class="markdown"># S09-03 completed offline — 2026-11-03
+
+Root integrator. Actual local Emulator enforcement; expired cancellation summary type/size fixed. Two groups and sensitivity control, nested parcel schema gap retained; no deploy.
+Evidence: [S09-03](evidence/S09-03.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S04-01 completed offline — 2026-11-03
 
 Root integrator. Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review.
 Evidence: [S04-01](evidence/S04-01.json). No active writer.
@@ -2393,6 +2412,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S05-01 offline | Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review. | test-first 5/8 RED to8/8 GREEN; focused/full gates PASS; evidence/S05-01.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S04-01 offline | Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review. | test-first 5/7 RED to7/7 GREEN;focused26/26; focused/full gates PASS; evidence/S04-01.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S09-03 offline | Actual local Emulator enforcement; expired cancellation summary type/size fixed. Two groups and sensitivity control, nested parcel schema gap retained; no deploy. | test-first Actual Emulator1/2 RED to2/2 GREEN; focused/full gates PASS; evidence/S09-03.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -5423,6 +5444,23 @@ and metadata403/404, late page failure, schema/loop/budget/incompleteSearch.
 Real adapter with fake fetch asserts no media or mutation before complete
 validated listing. Existing fixtures now provide requested metadata. RED5/7,
 GREEN7/7; focused26/26. No live Drive/browser/image decoding verified.
+
+## S09-03 — explicit Firestore Emulator suite
+
+`npm run test:rules -- --download` downloads checksum-pinned Emulator1.22.0 once
+to the OS temporary cache; later `npm run test:rules` is offline. Requires Java21
+and loopback socket permission. `FIRESTORE_EMULATOR_JAR` may point to the same
+verified JAR. Runner uses direct Java, random loopback port and unique demo project;
+no Firebase CLI, login, service account or real project. Tests reject nonlocal
+hosts/projects. Runner terminates child processes and removes its temporary data.
+
+Two groups in test/emulator/firestore-rules.emulator.mjs are intentionally outside
+ordinary npm test; absence of an Emulator is an explicit failure, never skip.
+RED1/2 -&gt; GREEN2/2. A permissive-rule control in a separate demo project proves
+denial assertion sensitivity. Time boundary uses server-generated reached expiry,
+not exact equality between separate requests. No browser/live evidence claimed.
+References: [Firebase local testing](https://firebase.google.com/docs/rules/unit-tests),
+[demo projects](https://firebase.google.com/docs/emulator-suite/connect_firestore).
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -9719,7 +9757,7 @@ CURRENT, state и evidence текущей карточки допустимы к
 До правки поведения создать выполняемый test по критериям и воспроизвести реальный дефект. Если исходная защита уже корректна, сохранить characterization и продемонстрировать чувствительность к контролируемой неверной fixture, не ломать приложение ради RED. Отсутствующая библиотека/Emulator/Chrome — env_blocked, не functional RED.
 
 ```sh
-node --test test/queue/firestore-rules.test.mjs
+npm run test:rules
 ```
 
 Команду запускать после создания теста/подготовки зависимости; для S09-12 show только читает карточку. Затем затронутые регрессии, сохранённый `test/`, lint и нужный build по [toolchain](../../docs/toolchain.md). Не прогонять реальный bot startup как тест imports.

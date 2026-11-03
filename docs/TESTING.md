@@ -1039,3 +1039,20 @@ and metadata403/404, late page failure, schema/loop/budget/incompleteSearch.
 Real adapter with fake fetch asserts no media or mutation before complete
 validated listing. Existing fixtures now provide requested metadata. RED5/7,
 GREEN7/7; focused26/26. No live Drive/browser/image decoding verified.
+
+## S09-03 — explicit Firestore Emulator suite
+
+`npm run test:rules -- --download` downloads checksum-pinned Emulator1.22.0 once
+to the OS temporary cache; later `npm run test:rules` is offline. Requires Java21
+and loopback socket permission. `FIRESTORE_EMULATOR_JAR` may point to the same
+verified JAR. Runner uses direct Java, random loopback port and unique demo project;
+no Firebase CLI, login, service account or real project. Tests reject nonlocal
+hosts/projects. Runner terminates child processes and removes its temporary data.
+
+Two groups in test/emulator/firestore-rules.emulator.mjs are intentionally outside
+ordinary npm test; absence of an Emulator is an explicit failure, never skip.
+RED1/2 -> GREEN2/2. A permissive-rule control in a separate demo project proves
+denial assertion sensitivity. Time boundary uses server-generated reached expiry,
+not exact equality between separate requests. No browser/live evidence claimed.
+References: [Firebase local testing](https://firebase.google.com/docs/rules/unit-tests),
+[demo projects](https://firebase.google.com/docs/emulator-suite/connect_firestore).

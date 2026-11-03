@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-03",
+  "outcome": "passed",
+  "base_sha": "2af9e21",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Actual local Emulator enforcement; expired cancellation summary type/size fixed. Two groups and sensitivity control, nested parcel schema gap retained; no deploy.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "FIRESTORE_EMULATOR_JAR=/tmp/dpd-s09-emulator/cloud-firestore-emulator-v1.22.0.jar npm run test:rules",
+      "exit_code": 1,
+      "result": "Actual Emulator1/2 RED to2/2 GREEN"
+    },
+    {
+      "phase": "green",
+      "command": "FIRESTORE_EMULATOR_JAR=/tmp/dpd-s09-emulator/cloud-firestore-emulator-v1.22.0.jar npm run test:rules",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS (full offline gates)"
+    }
+  ],
+  "untested": [
+    "Live services/credentials",
+    "Real Chrome/Discord/depot interaction"
+  ],
+  "external_effects": [],
+  "next_step": "Continue independently executable roadmap tasks; defer owner policy/live gates"
+}

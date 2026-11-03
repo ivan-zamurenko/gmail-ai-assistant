@@ -193,3 +193,13 @@ Choices remain in existing24h retained store until final delivery, and are
 renderable via /result. Callback IDs contain taskUUID/index only; getResult
 rechecks requester,guild,executor,expiry after guild/Admin gate. ACK after final
 send; failed send retains both records. /result final ACK also cleans choices.
+
+## S09-03 — actual local rules evidence
+
+Firestore Emulator1.22.0 with exact rules-unit-testing5.0.0 tests assigned UID,
+query scope, browser create/delete/todo denial, immutable fields, deadline
+claim/cancel, no terminal rewrite and result bounds. Expired cancellation now
+requires string summary<=500 (observed RED fixed). Nested parcel remains only
+map-validated by rules; executor/renderer whitelist/limits remain compensation,
+not a substitute for a future versioned shared nested schema. Admin SDK bypass
+is used only for synthetic seed. No rules deployed or live credentials used.

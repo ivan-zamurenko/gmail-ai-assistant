@@ -295,3 +295,5 @@ Navigation retains up to16 snapshots in Mac bot memory for at most14min from ori
 
 ### Find visual follow-up — bot0.2.25 / extension6.3.0.87
 Overview has separate parcel summaries and no combined scan history. Selected parcel history uses bold separated scan entries and colored status badges/border; sole parcel opens automatically. Yellow Goods Held, light green Delivered, red failed/Carded, pink Pending. No POD/placeholder in find. Optional map is one scan pin, no geocoding needed; only bound Delivered/Carded coordinates with valid time and no same-time conflicting status/location. Old extension/results lack per-scan coordinates: card still works but map is omitted. Update work-PC dist to6.3.0.87 for maps and to stop find POD requests. /report unchanged.
+
+Find bot0.2.26/extension6.3.0.88 supports red Failed Delivery/Incorrect Address with attempted-delivery GPS. Return to depot is red but does not contribute GPS. /report still uses Delivered/Carded only.

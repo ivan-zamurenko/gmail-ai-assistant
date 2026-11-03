@@ -1,6 +1,6 @@
 {
   "name": "gmail-ai-assistant",
-  "version": "1.1.55",
+  "version": "1.1.56",
   "description": "Chrome Extension \u2014 Gmail AI Assistant (Manifest V3)",
   "type": "module",
   "private": true,

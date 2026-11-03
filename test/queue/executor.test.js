@@ -389,6 +389,12 @@ test('find projection bounds optional values and excludes internal identity meta
   assert.deepEqual(projected[0].coords,{lat:53,lng:-6});
   assert.deepEqual(projected[1].coords,{lat:54,lng:-7});
   assert.ok(projected.slice(2).every(scan=>!scan.coords));
+  for (const type of ['Failed Delivery', 'Incorrect Address']) {
+    const scan = projectFindResult({...source,scans:[{parcel:'1',type,coords:{lat:53,lng:-6}}]}).parcel.scans[0];
+    assert.deepEqual(scan.coords,{lat:53,lng:-6});
+  }
+  assert.equal(projectFindResult({...source,scans:[{parcel:'1',type:'Return to depot',coords:{lat:53,lng:-6}}]}).parcel.scans[0].coords,undefined);
+
   const oversizedScan = { ...source.scans[0], type: '𠮷'.repeat(24), signature: '𠮷'.repeat(40), route: '𠮷'.repeat(12), date: '𠮷'.repeat(5), time: '𠮷'.repeat(4), parcel: '𠮷'.repeat(3), bay: 'B'.repeat(24), sequence: 'S'.repeat(24), onwardBc: 'O'.repeat(24) };
   const combined = projectFindResult({ ...source, scans: Array(1000).fill(oversizedScan) }, 'A'.repeat(700000));
   assert.equal(combined.status, 'error', 'combined Unicode history and POD must fit serialized byte budget');

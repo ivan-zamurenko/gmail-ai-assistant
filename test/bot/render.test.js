@@ -186,7 +186,7 @@ test('malformed and oversized card values remain honest, bounded and cannot inje
 
 
 test('status colors and badges distinguish depot outcomes without changing source labels', async () => {
- for (const [type,color,badge] of [['Goods Held',0xf1c40f,'🟨'],['Delivered',0x90ee90,'🟩'],['Failed Delivered',0xe74c3c,'🟥'],['Carded',0xe74c3c,'🟥'],['Pending',0xff8fcb,'🩷']]) {
+ for (const [type,color,badge] of [['Goods Held',0xf1c40f,'🟨'],['Delivered',0x90ee90,'🟩'],['Failed Delivered',0xe74c3c,'🟥'],['Carded',0xe74c3c,'🟥'],['Failed Delivery',0xe74c3c,'🟥'],['Incorrect Address',0xe74c3c,'🟥'],['Return to depot',0xe74c3c,'🟥'],['Pending',0xff8fcb,'🩷']]) {
   const output=await buildParcelEmbed({scans:[{parcel:'1',type,date:'03/11/2026',time:'10:00:00'}]},'');
   assert.equal(output.embeds[0].toJSON().color,color);
   assert.ok(output.embeds[0].toJSON().description.includes(`${badge} **${type}**`));
@@ -209,11 +209,18 @@ test('scan Maps fail independently and never geocode or expose a key', async t =
  globalThis.fetch=async url=>{assert.match(String(url),/staticmap/);assert.doesNotMatch(String(url),/label:D|path=/);return new globalThis.Response(png,{headers:{'content-type':'image/png'}});};
  const ready=await buildParcelEmbed(parcel,key);assert.equal(ready.files[0].name,'scan-location.png');assert.ok(ready.files[0].attachment.equals(png));
  calls=0;globalThis.fetch=async()=>{calls++;throw new Error('unexpected');};
- for (const type of ['Goods Held','Pending']) {
+ for (const type of ['Goods Held','Pending','Return to depot']) {
   const excluded=await buildParcelEmbed({...parcel,scans:[{...parcel.scans[0],type}]},key);
   assert.doesNotMatch(plainText(excluded),/maps\/|53.000000/);
  }
  await buildParcelEmbed(parcel,'');assert.equal(calls,0);
+ for (const type of ['Failed Delivery','Incorrect Address']) {
+  const attempt=await buildParcelEmbed({...parcel,scans:[{...parcel.scans[0],type}]},'');
+  assert.match(plainText(attempt),/Open scan location/);
+  assert.match(plainText(attempt),/Attempted delivery/);
+  assert.doesNotMatch(plainText(attempt),/Historical delivery scan/);
+ }
+
 });
 
 test('operator find pages history, isolates selected parcels and never carries an old bay forward', async () => {

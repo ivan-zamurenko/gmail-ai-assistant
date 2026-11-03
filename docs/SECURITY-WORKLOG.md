@@ -604,3 +604,7 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | owner-approved find scan map: only bounded Delivered/Carded GPS with physical parcel identity passes result projection; event/session metadata stays local. Single-point Maps request uses existing server-side bounded adapter and keeps key out of Discord. Removed find POD service request/rendering. No new permissions, no live depot calls by agent; legacy unbound drop never used for selected map.
 
 - 2026-11-03 | root | authorized find-separation activation: verified exact Node process and bot cwd before restart; bot0.2.25 online, no startup errors; no identity/config printed or live depot calls initiated. Existing in-memory timers reset on restart. Extension artifact stored outside Git for intended work PC.
+
+- 2026-11-03 | root | owner-approved GPS eligibility extended to Failed Delivery/Incorrect Address under existing bounded per-scan projection; no additional identifiers/permissions or providers. Return to depot excluded from GPS; red badge only. No live depot calls initiated. Owner explicitly authorized codex commit and merge into main.
+
+- 2026-11-03 | root | authorized Mac bot0.2.26 restart after gates; process/cwd checked, Discord online confirmed without identity/config output; cleanup timers reset as documented.

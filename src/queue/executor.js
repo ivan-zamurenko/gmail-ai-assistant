@@ -346,7 +346,7 @@ export function projectFindResult(res, podBody = '') {
       ...(bay && { bay }),
       ...(sequence && { sequence }),
       ...(onwardBc && { onwardBc }),
-      ...(['Delivered', 'Carded'].includes(scan.type)
+      ...(['Delivered', 'Carded', 'Failed Delivery', 'Incorrect Address'].includes(scan.type)
         && typeof scan.parcel === 'string' && /^\d{1,6}$/.test(scan.parcel) && Number(scan.parcel) > 0
         && Number.isFinite(scan.coords?.lat) && Math.abs(scan.coords.lat) <= 90
         && Number.isFinite(scan.coords?.lng) && Math.abs(scan.coords.lng) <= 180

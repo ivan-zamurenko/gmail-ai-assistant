@@ -229,3 +229,6 @@ Owner decision2026-11-03: automatic Discord report copy controls and compact ico
 
 ## Find visual separation — owner approved 2026-11-03
 Overview lists parcel statuses without merged history. Selecting a physical parcel shows only its scans; a sole parcel opens directly. Scan entries use separated paragraphs, bold timestamps/status and badges: Goods Held yellow, Delivered light green, Failed Delivered/Carded red, Pending pink. POD and missing-photo placeholder removed from find; report keeps POD. Map shows only latest unambiguous valid Delivered/Carded scan of selected parcel, with historical/attempt disclaimer; no global drop fallback.
+
+## Find failed-attempt scans and merge authorization — 2026-11-03
+Owner confirmed exact statuses Incorrect Address and Return to depot and requested implementation, commit and merge. Find allows GPS for Delivered, Carded, Failed Delivery, Incorrect Address; all except Delivered are labelled attempted delivery, no parcel-presence claim. Return to depot means driver returned parcel to depot: red badge, no attempt GPS from that scan. Report eligibility unchanged. Explicit owner authorization supersedes default no-main-merge restriction for this codex integration.

@@ -1,3 +1,16 @@
+# Find status update ready; owner authorized merge — 2026-11-03
+
+Root integrator; implementation complete and reviewed. Root1.1.56/bot0.2.26/extension6.3.0.88. New find GPS: Failed Delivery/Incorrect Address (attempted only); Return to depot red without GPS. Report unchanged. Tests20/20 focused, full223/223 PASS7; find_map_review ACCEPT.
+Artifact /tmp/DPD-Assistance-6.3.0.88.zip; evidence/FIND-STATUS-2026-11-03.json. Owner explicitly requested commit and merge codex→main including accumulated approved changes. Next: PR checks/merge, bot activation and owner work-PC reload. No additional feature work.
+
+---
+
+# Active find status extension and owner-authorized merge — 2026-11-03
+
+Root writer, basebb8ecca. Owner explicitly requests commit and merge into main. Scope find GPS statuses Failed Delivery/Incorrect Address, red Return to depot without GPS, tests/versions/docs and PR merge after checks. Report eligibility unchanged.
+
+---
+
 # Find separation/statuses activated — 2026-11-03
 
 Root writer complete; find_map_review ACCEPT. Root1.1.55/bot0.2.25/extension6.3.0.87. Mac bot restarted and online; no startup errors. No command registration changes.

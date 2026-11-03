@@ -218,3 +218,5 @@ operator reload/rebinding may be required. This is not automatic lease recovery.
 
 ### Additive find result coordinates — 2026-11-03
 Optional parcel.scans[].coords = {lat:number,lng:number} preserves row association. Producer whitelist: exact Delivered/Carded, positive1–6-digit parcel identity, finite lat[-90,90]/lng[-180,180]. No extra coordinate properties/event IDs/notes forwarded. Consumer validates again and requires valid timestamp; mixed history is never mapped as selected parcel. No fallback to global drop. Existing schema2/command shape unchanged: old consumers ignore field, new consumers omit map when field absent. /find no longer fetches POD; existing optional POD projector support remains for legacy tests/results, renderer ignores it.
+
+Find GPS whitelist extended in extension6.3.0.88: exact Failed Delivery and Incorrect Address join Delivered/Carded. Same per-scan parcel/finite-coordinate checks; Return to depot excluded. Optional field and schema2 compatibility unchanged.

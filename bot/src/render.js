@@ -12,7 +12,7 @@ function statusStyle(status) {
   const s = (status || '').toLowerCase();
   if (/^delivered\b/.test(s)) return { color: 0x90ee90, badge: '🟩' };
   if (/goods held/.test(s)) return { color: 0xf1c40f, badge: '🟨' };
-  if (/fail|carded/.test(s)) return { color: 0xe74c3c, badge: '🟥' };
+  if (/fail|carded|incorrect address|return to depot/.test(s)) return { color: 0xe74c3c, badge: '🟥' };
   if (/pending/.test(s)) return { color: 0xff8fcb, badge: '🩷' };
   return { color: 0x95a5a6, badge: '⬜' };
 }
@@ -82,7 +82,7 @@ function normalize(parcel) {
       parcel: typeof scan.parcel === 'string' && /^\d{1,6}$/.test(scan.parcel) ? scan.parcel : '', type: clean(scan.type, 48) || 'Unknown status',
       date: validTime ? scan.date : '', time: validTime ? scan.time : '', route: clean(scan.route, 16),
       signature: clean(scan.signature, 80),
-      coords: ['Delivered', 'Carded'].includes(scan.type) && numberedParcel(scan.parcel) && validCoords(scan.coords) ? { lat: scan.coords.lat, lng: scan.coords.lng } : null,
+      coords: ['Delivered', 'Carded', 'Failed Delivery', 'Incorrect Address'].includes(scan.type) && numberedParcel(scan.parcel) && validCoords(scan.coords) ? { lat: scan.coords.lat, lng: scan.coords.lng } : null,
       bay: clean(scan.bay || /Bay:\s*([^,|]+)/i.exec(typeof scan.notes === 'string' ? scan.notes : '')?.[1], 12),
       sequence: clean(scan.sequence || /Sequence:\s*([^,|]+)/i.exec(typeof scan.notes === 'string' ? scan.notes : '')?.[1], 12),
       onwardBc: clean(onwardBc(scan), 20),
@@ -263,7 +263,7 @@ export async function buildParcelEmbed(parcel, apiKey, { parcelNumber, page = 0 
       .setDescription(`${badgeFor(latestLocation.type)} · ${shortDate(latestLocation.date)} ${hms(latestLocation.time)}\n`
         + `${coord(point.lat)}, ${coord(point.lng)}\n\n`
         + `👉 [Open scan location](https://www.google.com/maps/search/?api=1&query=${point.lat},${point.lng})`)
-      .setFooter({ text: latestLocation.type === 'Carded' ? 'Attempted delivery — parcel not confirmed at this point.' : 'Historical delivery scan — not a confirmed current location.' });
+      .setFooter({ text: latestLocation.type !== 'Delivered' ? 'Attempted delivery — parcel not confirmed at this point.' : 'Historical delivery scan — not a confirmed current location.' });
     const png = await scanMapImage(point, apiKey);
     if (png) {
       files.push(new AttachmentBuilder(png, { name: 'scan-location.png' }));

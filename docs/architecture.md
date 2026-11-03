@@ -71,3 +71,16 @@ Claim не означает exactly-once внешней операции; epheme
 
 [Статичний аудит модулів 2026-10-26](audit/MODULE_BOUNDARIES_2026-10-26.md):
 структура частково модульна; POD/Maps/delivery/retry ще потребують ізоляції збоїв.
+
+## S07-02 — local capability states
+
+Configured/implemented/declared permission/externally verified are separate.
+Popup summarizes missing Drive config, missing declared permission, unsupported
+AI/draft workflows and connections checked only on explicit use. No provider
+health check or settings mutation runs to build this summary. Saved Gemini key
+does not enable AI. Gmail adapters enforce manifest identity/readonly scope
+before auth/request. Dormant moveLabels helper now refuses before IO because
+label-changing workflow/policy/scopes are not enabled; no runtime caller existed.
+This checks declared configuration, not live OAuth consent/provider access;
+normal runtime authentication/errors remain the actual external check.
+Existing settingsFlow still has no caller; no secret migrated or removed.

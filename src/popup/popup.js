@@ -6,7 +6,8 @@
 
 import { initDepotFlow }    from './depotFlow.js';
 import { initGmailFlow }    from './gmailFlow.js';
-import { getContact }       from '../config/config.js';
+import { capabilitySummary } from '../config/capabilities.js';
+import { loadConfig, getContact }       from '../config/config.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,15 @@ initDepotFlow({
 initGmailFlow({
   gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn,
 });
+
+// Local capability checks do not authenticate or contact providers.
+try {
+  document.getElementById('capabilitySummary').textContent = capabilitySummary({
+    config: loadConfig(), manifest: chrome.runtime.getManifest(),
+  });
+} catch {
+  document.getElementById('capabilitySummary').textContent = 'Local configuration needs attention. AI replies are not available yet.';
+}
 
 // ── Footer: author details, kept in the gitignored local config ───────────────
 

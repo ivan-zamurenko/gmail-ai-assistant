@@ -1,3 +1,4 @@
+import { requireCapability } from '../config/capabilities.js';
 /**
  * gmail/labels.js
  * ===============
@@ -12,6 +13,7 @@ import { CONSTANTS }    from '../utils/constants.js';
 const API = CONSTANTS.GMAIL_API_BASE;
 
 async function authHeader() {
+  requireCapability('gmailRead', { manifest: chrome.runtime.getManifest() });
   return { Authorization: `Bearer ${await getAuthToken()}` };
 }
 
@@ -67,9 +69,6 @@ export async function listByLabel(labelId, { maxPages = 20, maxMessages = 1000, 
   return result('page_limit');
 }
 
-export async function moveLabels(messageId, { add = [], remove = [] }) {
-  await request.post(`${API}/messages/${messageId}/modify`, {
-    headers: await authHeader(),
-    body:    { addLabelIds: add, removeLabelIds: remove },
-  });
+export async function moveLabels() {
+  requireCapability('gmailModify');
 }

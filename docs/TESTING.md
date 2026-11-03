@@ -1072,3 +1072,12 @@ and depotLookup-shaped read port: source projection, stale/changed facts, forged
 source, ambiguity/unlinked zero lookup, failures and data minimization. Functional
 stub RED0/2 then source guard RED1/2, focused7/7. No live authorization or UI
 pipeline tested; human-link confirmation must come from a future trusted caller.
+
+## S07-02 — truthful capabilities
+
+One new grouped capability test checks config/permission/unsupported/external
+states, secret-free text and actual Gmail boundary zero requests. Existing modify
+regression now expects refusal because current workflow is read-only; current
+403/401 cases use the read endpoint. Synthetic Chrome manifest added to harness.
+RED0/1 -> focused11/11, no settings write/provider probe. Actual popup visual/
+Chrome permission-grant behavior not tested; declared scope is not live consent.

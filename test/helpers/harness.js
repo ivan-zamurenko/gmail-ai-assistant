@@ -52,7 +52,7 @@ export function useFetch(t, routes) {
 export function useChrome(t, { storage = {}, token = 'synthetic-token', tokenError } = {}) {
   const data = globalThis.structuredClone(storage);
   const tokenRequests = [];
-  const runtime = { lastError: undefined };
+  const runtime = { lastError: undefined, getManifest: () => ({ permissions: ['identity'], oauth2: { scopes: ['https://www.googleapis.com/auth/gmail.readonly'] } }) };
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'chrome');
 
   globalThis.chrome = {

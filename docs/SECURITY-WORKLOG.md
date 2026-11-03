@@ -543,3 +543,9 @@ S05-02/S05-03 use synthetic data only. No automatic mailbox reads, attachment
 fetches, HTML execution or downstream effects. Case lookup requires explicit
 trusted author linkage; only exact minimal scan facts/source IDs projected.
 Untrusted text cannot supply authorization. No credentials/PII logged or exported.
+
+## 2026-11-03 — S07-02 availability guards
+
+Gmail read checks declared scope/identity before auth; unused modify helper now
+refuses before IO until workflow approval. Summary never exposes config values
+or probes providers. Secrets/scopes/user files unchanged; synthetic tests only.

@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S05-03 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S07-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -166,10 +166,9 @@ Gmail-відповіді потребують перевірки людиною;
 <article id="doc-1" tabindex="-1" hidden><p class="path"><a href="README.md">README.md</a></p><h1>README.md</h1><pre class="markdown">&lt;div align=&quot;center&quot;&gt;
   &lt;img src=&quot;assets/icon128.png&quot; width=&quot;80&quot; alt=&quot;DPD Assistance&quot;&gt;
   &lt;h1&gt;DPD Assistance&lt;/h1&gt;
-  &lt;p&gt;&lt;strong&gt;Chrome Extension + Discord Bot · Logistics Automation · Computer Vision · AI&lt;/strong&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Chrome Extension + Discord Bot · Logistics Automation · Computer Vision · AI planned&lt;/strong&gt;&lt;/p&gt;
 
   ![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-MV3-blue?logo=googlechrome)
-  ![Gemini](https://img.shields.io/badge/Google%20Gemini-Flash%20Vision-8E75B2?logo=googlegemini)
   ![ZXing](https://img.shields.io/badge/ZXing-PDF417%20%2F%20Code128-000000)
   ![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase)
   ![Discord](https://img.shields.io/badge/Discord.js-Bot-5865F2?logo=discord&amp;logoColor=white)
@@ -194,11 +193,11 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 ## Engineering Highlights
 
 - **Two-process architecture over a shared queue.** Discord bot (Node) and Chrome extension (browser) exchange tasks via Firestore. A versioned contract keeps them decoupled; a version skew degrades gracefully instead of crashing.
-- **Real-world computer vision.** Reads DPD labels from hand-held phone photos using local **ZXing-C++ WebAssembly** (PDF417 + Code128), with the proven JavaScript crop/rotation reader as a fallback; the current private 69-photo set remains **69/69 parseable** — plus a **Gemini Vision** fallback.
+- **Real-world computer vision.** Reads DPD labels from hand-held phone photos using local **ZXing-C++ WebAssembly** (PDF417 + Code128), with the proven JavaScript crop/rotation reader as a fallback; the current private 69-photo set remains **69/69 parseable**.
 - **Works within MV3&#39;s hard limits.** The depot session lives in the tab URL (not cookies), so a service worker can&#39;t reach it alone; work is dispatched into the live tab via `executeScript` in the **MAIN world** (the depot rejects POSTs from an isolated world). The queue is polled with `chrome.alarms` because MV3 kills idle workers.
 - **Separate runtime credentials.** Discord tokens and service accounts stay in the Node bot. The extension uses **anonymous Firebase Auth** and security rules. Its static local configuration is embedded in `dist`; gitignore keeps values out of Git, not out of browser bundles.
 - **Domain-correct logic.** Next-working-day calculation skips weekends and Irish bank holidays; delivery truth is read from scanning history, not the (often stale) arranged date.
-- **Modular by default.** UI orchestrates, services hold business rules, adapters hide providers (Drive / Gmail / Gemini / Firestore) — swapping a provider touches one module. Bundled with **esbuild**, linted with **ESLint 9** flat config.
+- **Modular by default.** UI orchestrates, services hold business rules, adapters hide providers (Drive / Gmail / Firestore) — swapping a provider touches one module. Bundled with **esbuild**, linted with **ESLint 9** flat config.
 
 ---
 
@@ -208,7 +207,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews every change before anything is written.
 
 ### 2 · Scan parcel labels from Google Drive
-Drivers photograph labels into a shared Drive folder; the extension reads each photo&#39;s barcode (ZXing, with Gemini Vision fallback), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; server errors can be retried from the popup or Discord on the same processing day without downloading Drive photos or decoding barcodes again. A previous-day recovery batch expires instead of being moved to a new &quot;tomorrow&quot;.
+Drivers photograph labels into a shared Drive folder; the extension reads each photo&#39;s barcode (local ZXing decoders), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; server errors can be retried from the popup or Discord on the same processing day without downloading Drive photos or decoding barcodes again. A previous-day recovery batch expires instead of being moved to a new &quot;tomorrow&quot;.
 
 &gt; **Real label used during development:**
 &gt;
@@ -245,7 +244,7 @@ marker is removed only inside depot Quick Search. Normal 9- and 14-digit numbers
 are searched unchanged, and ambiguous results still stop for manual review.
 
 ### 4 · Gmail auto-reply *(in progress)*
-Reads a queued customer email, grounds the answer in live depot data (status, delivery date, address), and prepares a reply as a draft first — automation gated behind human review.
+The popup reads the labelled queue count. Message normalization and source-linked case modules are prepared and tested offline; automatic processing, AI generation and draft creation are not connected. Future replies require human review.
 
 ---
 
@@ -271,7 +270,7 @@ flowchart LR
 | Extension | Chrome MV3, `chrome.scripting` (MAIN world), `chrome.alarms`, `chrome.identity` |
 | Bot | Node.js, `discord.js` |
 | Queue | Firebase Firestore (REST + anonymous Auth from the extension, Admin SDK from the bot) |
-| Vision / OCR | `@zxing/library` (PDF417 · Code128) + Google Gemini Flash Vision |
+| Vision / OCR | Local ZXing JavaScript + WebAssembly (PDF417 · Code128) |
 | Google APIs | Drive v3, Gmail, OAuth 2.0 via `chrome.identity`; Geocoding + Maps Static (bot side) |
 | Build / Quality | esbuild bundling, ESLint 9 flat config |
 | UI | Vanilla JS + CSS (Apple-inspired) |
@@ -301,7 +300,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 | Status | Milestone | Notes |
 |:---:|---|---|
 | ✅ | Reschedule future-dated parcels | CAD scan, dry-run, Irish-holiday aware |
-| ✅ | Drive label scanning | ZXing + Gemini, 69/69 on the current private validation set, auto-filing |
+| ✅ | Drive label scanning | Local ZXing, historical 69/69 on the current private validation set, auto-filing |
 | ✅ | Discord bot + Firestore queue | `/reschedule`, `/todo`, distributed contract |
 | ✅ | Extension queue listener | service-worker poll → depot tab → result |
 | ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |
@@ -320,7 +319,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 **Extension**
 1. `npm install` → `npm run build` (bundles to `dist/`)
 2. `chrome://extensions` → **Developer mode** → **Load unpacked** → select `dist/`
-3. Copy `src/config/local.example.js` → `local.js`; add Gemini key, Drive folder, and Firebase web config (`apiKey`, `projectId`)
+3. Copy `src/config/local.example.js` → `local.js`; add Drive folder and Firebase web config (`apiKey`, `projectId`)
 
 **Bot**
 1. `cd bot &amp;&amp; npm install`
@@ -337,7 +336,7 @@ I work at a DPD Ireland depot. The management system has no batch tooling, so I 
 
 ---
 
-*Chrome MV3 · Discord.js · Firebase · ZXing · Google Gemini · Google APIs*
+*Chrome MV3 · Discord.js · Firebase · ZXing · Google APIs*
 </pre></article>
 <article id="doc-2" tabindex="-1" hidden><p class="path"><a href="INSTALL_RU.md">INSTALL_RU.md</a></p><h1>Установка комплекта без потери существующей работы</h1><pre class="markdown"># Установка комплекта без потери существующей работы
 
@@ -1945,7 +1944,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S05-03 completed offline — 2026-11-03</h1><pre class="markdown"># S05-03 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S07-02 completed offline — 2026-11-03</h1><pre class="markdown"># S07-02 completed offline — 2026-11-03
+
+Root integrator. Truthful local capability summary and Gmail operation guards; saved key cannot enable AI, dormant label mutations refused before IO, no settings changes.
+Evidence: [S07-02](evidence/S07-02.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S05-03 completed offline — 2026-11-03
 
 Root integrator. Prepared source-linked case context with explicit author linkage, exact lookup and freshness; no automatic Gmail/depot workflow. mail_audit implementation/root review.
 Evidence: [S05-03](evidence/S05-03.json). No active writer.
@@ -2436,6 +2444,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S05-02 offline | Bounded plain/nested MIME and exact read-only message adapter; HTML/unsupported encoding require review, attachment metadata only. Prepared module, no automatic mailbox reading. | test-first 0/2 functional RED;review0/2 unnamed attachment/charset;GREEN10/10; focused/full gates PASS; evidence/S05-02.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S05-03 offline | Prepared source-linked case context with explicit author linkage, exact lookup and freshness; no automatic Gmail/depot workflow. mail_audit implementation/root review. | test-first 0/2 stub RED and1/2 forged source;7/7 GREEN; focused/full gates PASS; evidence/S05-03.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S07-02 offline | Truthful local capability summary and Gmail operation guards; saved key cannot enable AI, dormant label mutations refused before IO, no settings changes. | test-first 0/1 functional RED to11/11 focused GREEN; focused/full gates PASS; evidence/S07-02.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -2861,6 +2871,19 @@ Claim не означает exactly-once внешней операции; epheme
 
 [Статичний аудит модулів 2026-10-26](audit/MODULE_BOUNDARIES_2026-10-26.md):
 структура частково модульна; POD/Maps/delivery/retry ще потребують ізоляції збоїв.
+
+## S07-02 — local capability states
+
+Configured/implemented/declared permission/externally verified are separate.
+Popup summarizes missing Drive config, missing declared permission, unsupported
+AI/draft workflows and connections checked only on explicit use. No provider
+health check or settings mutation runs to build this summary. Saved Gemini key
+does not enable AI. Gmail adapters enforce manifest identity/readonly scope
+before auth/request. Dormant moveLabels helper now refuses before IO because
+label-changing workflow/policy/scopes are not enabled; no runtime caller existed.
+This checks declared configuration, not live OAuth consent/provider access;
+normal runtime authentication/errors remain the actual external check.
+Existing settingsFlow still has no caller; no secret migrated or removed.
 </pre></article>
 <article id="doc-31" tabindex="-1" hidden><p class="path"><a href="docs/audit/BASELINE.md">docs/audit/BASELINE.md</a></p><h1>Аудит исходного DPD Assistance</h1><pre class="markdown"># Аудит исходного DPD Assistance
 
@@ -4045,6 +4068,10 @@ compares source IDs and the exact normalized scan snapshot, default5min (max1h
 caller bound); future timestamps fail. This is an engineering freshness default,
 not calendar policy. A fresh result authorizes no mutation/send. These modules
 are prepared interfaces, not a connected automatic mailbox/depot pipeline.
+
+S07-02: moveLabels is explicitly unavailable before IO until an approved mutating
+workflow/scope exists. Earlier descriptions of its POST transport are historical.
+Read adapters check declared Gmail readonly/identity capability before auth.
 </pre></article>
 <article id="doc-45" tabindex="-1" hidden><p class="path"><a href="docs/handoff.md">docs/handoff.md</a></p><h1>Передача состояния между сессиями</h1><pre class="markdown"># Передача состояния между сессиями
 
@@ -5527,6 +5554,15 @@ and depotLookup-shaped read port: source projection, stale/changed facts, forged
 source, ambiguity/unlinked zero lookup, failures and data minimization. Functional
 stub RED0/2 then source guard RED1/2, focused7/7. No live authorization or UI
 pipeline tested; human-link confirmation must come from a future trusted caller.
+
+## S07-02 — truthful capabilities
+
+One new grouped capability test checks config/permission/unsupported/external
+states, secret-free text and actual Gmail boundary zero requests. Existing modify
+regression now expects refusal because current workflow is read-only; current
+403/401 cases use the read endpoint. Synthetic Chrome manifest added to harness.
+RED0/1 -&gt; focused11/11, no settings write/provider probe. Actual popup visual/
+Chrome permission-grant behavior not tested; declared scope is not live consent.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

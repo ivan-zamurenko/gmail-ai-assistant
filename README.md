@@ -1,10 +1,9 @@
 <div align="center">
   <img src="assets/icon128.png" width="80" alt="DPD Assistance">
   <h1>DPD Assistance</h1>
-  <p><strong>Chrome Extension + Discord Bot · Logistics Automation · Computer Vision · AI</strong></p>
+  <p><strong>Chrome Extension + Discord Bot · Logistics Automation · Computer Vision · AI planned</strong></p>
 
   ![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-MV3-blue?logo=googlechrome)
-  ![Gemini](https://img.shields.io/badge/Google%20Gemini-Flash%20Vision-8E75B2?logo=googlegemini)
   ![ZXing](https://img.shields.io/badge/ZXing-PDF417%20%2F%20Code128-000000)
   ![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase)
   ![Discord](https://img.shields.io/badge/Discord.js-Bot-5865F2?logo=discord&logoColor=white)
@@ -29,11 +28,11 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 ## Engineering Highlights
 
 - **Two-process architecture over a shared queue.** Discord bot (Node) and Chrome extension (browser) exchange tasks via Firestore. A versioned contract keeps them decoupled; a version skew degrades gracefully instead of crashing.
-- **Real-world computer vision.** Reads DPD labels from hand-held phone photos using local **ZXing-C++ WebAssembly** (PDF417 + Code128), with the proven JavaScript crop/rotation reader as a fallback; the current private 69-photo set remains **69/69 parseable** — plus a **Gemini Vision** fallback.
+- **Real-world computer vision.** Reads DPD labels from hand-held phone photos using local **ZXing-C++ WebAssembly** (PDF417 + Code128), with the proven JavaScript crop/rotation reader as a fallback; the current private 69-photo set remains **69/69 parseable**.
 - **Works within MV3's hard limits.** The depot session lives in the tab URL (not cookies), so a service worker can't reach it alone; work is dispatched into the live tab via `executeScript` in the **MAIN world** (the depot rejects POSTs from an isolated world). The queue is polled with `chrome.alarms` because MV3 kills idle workers.
 - **Separate runtime credentials.** Discord tokens and service accounts stay in the Node bot. The extension uses **anonymous Firebase Auth** and security rules. Its static local configuration is embedded in `dist`; gitignore keeps values out of Git, not out of browser bundles.
 - **Domain-correct logic.** Next-working-day calculation skips weekends and Irish bank holidays; delivery truth is read from scanning history, not the (often stale) arranged date.
-- **Modular by default.** UI orchestrates, services hold business rules, adapters hide providers (Drive / Gmail / Gemini / Firestore) — swapping a provider touches one module. Bundled with **esbuild**, linted with **ESLint 9** flat config.
+- **Modular by default.** UI orchestrates, services hold business rules, adapters hide providers (Drive / Gmail / Firestore) — swapping a provider touches one module. Bundled with **esbuild**, linted with **ESLint 9** flat config.
 
 ---
 
@@ -43,7 +42,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews every change before anything is written.
 
 ### 2 · Scan parcel labels from Google Drive
-Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (ZXing, with Gemini Vision fallback), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; server errors can be retried from the popup or Discord on the same processing day without downloading Drive photos or decoding barcodes again. A previous-day recovery batch expires instead of being moved to a new "tomorrow".
+Drivers photograph labels into a shared Drive folder; the extension reads each photo's barcode (local ZXing decoders), normalises standard 9-digit labels and legacy 8-digit parcel cards, verifies them in the depot, reschedules each exact verified consignment directly (without relying on Pending List), and files processed photos under `YYYY/MM`. Before a live reschedule it persists the exact targets locally; server errors can be retried from the popup or Discord on the same processing day without downloading Drive photos or decoding barcodes again. A previous-day recovery batch expires instead of being moved to a new "tomorrow".
 
 > **Real label used during development:**
 >
@@ -80,7 +79,7 @@ marker is removed only inside depot Quick Search. Normal 9- and 14-digit numbers
 are searched unchanged, and ambiguous results still stop for manual review.
 
 ### 4 · Gmail auto-reply *(in progress)*
-Reads a queued customer email, grounds the answer in live depot data (status, delivery date, address), and prepares a reply as a draft first — automation gated behind human review.
+The popup reads the labelled queue count. Message normalization and source-linked case modules are prepared and tested offline; automatic processing, AI generation and draft creation are not connected. Future replies require human review.
 
 ---
 
@@ -106,7 +105,7 @@ flowchart LR
 | Extension | Chrome MV3, `chrome.scripting` (MAIN world), `chrome.alarms`, `chrome.identity` |
 | Bot | Node.js, `discord.js` |
 | Queue | Firebase Firestore (REST + anonymous Auth from the extension, Admin SDK from the bot) |
-| Vision / OCR | `@zxing/library` (PDF417 · Code128) + Google Gemini Flash Vision |
+| Vision / OCR | Local ZXing JavaScript + WebAssembly (PDF417 · Code128) |
 | Google APIs | Drive v3, Gmail, OAuth 2.0 via `chrome.identity`; Geocoding + Maps Static (bot side) |
 | Build / Quality | esbuild bundling, ESLint 9 flat config |
 | UI | Vanilla JS + CSS (Apple-inspired) |
@@ -136,7 +135,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 | Status | Milestone | Notes |
 |:---:|---|---|
 | ✅ | Reschedule future-dated parcels | CAD scan, dry-run, Irish-holiday aware |
-| ✅ | Drive label scanning | ZXing + Gemini, 69/69 on the current private validation set, auto-filing |
+| ✅ | Drive label scanning | Local ZXing, historical 69/69 on the current private validation set, auto-filing |
 | ✅ | Discord bot + Firestore queue | `/reschedule`, `/todo`, distributed contract |
 | ✅ | Extension queue listener | service-worker poll → depot tab → result |
 | ✅ | Console-style per-parcel reports in Discord | dry-run list + live actions |
@@ -155,7 +154,7 @@ Each half is independently deployable: update the bot **or** the extension witho
 **Extension**
 1. `npm install` → `npm run build` (bundles to `dist/`)
 2. `chrome://extensions` → **Developer mode** → **Load unpacked** → select `dist/`
-3. Copy `src/config/local.example.js` → `local.js`; add Gemini key, Drive folder, and Firebase web config (`apiKey`, `projectId`)
+3. Copy `src/config/local.example.js` → `local.js`; add Drive folder and Firebase web config (`apiKey`, `projectId`)
 
 **Bot**
 1. `cd bot && npm install`
@@ -172,4 +171,4 @@ I work at a DPD Ireland depot. The management system has no batch tooling, so I 
 
 ---
 
-*Chrome MV3 · Discord.js · Firebase · ZXing · Google Gemini · Google APIs*
+*Chrome MV3 · Discord.js · Firebase · ZXing · Google APIs*

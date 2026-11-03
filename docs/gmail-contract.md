@@ -123,3 +123,7 @@ compares source IDs and the exact normalized scan snapshot, default5min (max1h
 caller bound); future timestamps fail. This is an engineering freshness default,
 not calendar policy. A fresh result authorizes no mutation/send. These modules
 are prepared interfaces, not a connected automatic mailbox/depot pipeline.
+
+S07-02: moveLabels is explicitly unavailable before IO until an approved mutating
+workflow/scope exists. Earlier descriptions of its POST transport are historical.
+Read adapters check declared Gmail readonly/identity capability before auth.

@@ -44,30 +44,22 @@ test('listByLabel enumerates unique ids across pages and distinguishes an empty 
   assert.deepEqual(net.unused(), []);
 });
 
-test('moveLabels posts the exact modify payload', async (t) => {
-  useChrome(t, { token: 'synthetic-token-2' });
-  const net = useFetch(t, [
-    { method: 'POST', url: `${API}/messages/msg-syn-001/modify`, json: { id: 'msg-syn-001' } },
-  ]);
-
-  await moveLabels('msg-syn-001', { add: ['Label_SYN_2'], remove: ['Label_SYN_1'] });
-
-  assert.deepEqual(net.calls, [{
-    method: 'POST',
-    url: `${API}/messages/msg-syn-001/modify`,
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer synthetic-token-2' },
-    body: { addLabelIds: ['Label_SYN_2'], removeLabelIds: ['Label_SYN_1'] },
-  }]);
+test('label mutations remain unavailable until the approved workflow exists', async (t) => {
+  const chrome = useChrome(t);
+  const net = useFetch(t, []);
+  await assert.rejects(moveLabels('msg-syn-001', { add: ['Label_SYN_2'] }), /not available/);
+  assert.deepEqual(net.calls, []);
+  assert.deepEqual(chrome.tokenRequests, []);
 });
 
 test('a non-2xx Gmail response is an error carrying the status', async (t) => {
   useChrome(t);
   useFetch(t, [
-    { method: 'POST', url: `${API}/messages/msg-syn-002/modify`, status: 403, json: {} },
+    { url: `${API}/labels`, status: 403, json: {} },
     { url: `${API}/labels`, status: 401, json: {} },
   ]);
 
-  await assert.rejects(moveLabels('msg-syn-002', { add: ['Label_SYN_2'] }), /HTTP 403/);
+  await assert.rejects(findLabelId('AI-Reply'), /HTTP 403/);
   await assert.rejects(findLabelId('AI-Reply'), /HTTP 401/);
 });
 

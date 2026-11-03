@@ -167,3 +167,9 @@
 - 2026-11-03 | root | owner-requested HTML export removal | /report stops generating HTML; removed unused exporter and its obsolete test, retained image/text/long .txt and extension copy | test-first RED2/3 | full gates and bot0.2.23 restart next; extension unchanged.
 
 - 2026-11-03 | root | HTML removal activated | full gates220/220; bot0.2.23 restarted and Discord ready; S09-17 evidence marked superseded by owner | extension remains6.3.0.83 | next: fresh /report, no work-PC update.
+
+- 2026-11-03 | root | duplicate copy controls fix | screenshot showed legacy gray + new styled toolbar; retire stale controls in place and disconnect future prior observer instances | existing regression RED1/2 -> GREEN2/2 | full gates/package6.3.0.84; bot unchanged.
+
+- 2026-11-03 | root | duplicate fix ready | extension6.3.0.84 packaged locally;220/220 full gates | no bot restart, no new permissions | next: owner reload/enable, verify one toolbar.
+
+- 2026-11-03 | root | duplicate fix review complete | reviewer ACCEPT; stopped controller re-enable edge covered test-first RED1/2 then fixed; final full gates220/220 and archive rebuilt | evidence/S09-18.json | owner install6.3.0.84.

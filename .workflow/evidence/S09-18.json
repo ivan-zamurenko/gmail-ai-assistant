@@ -60,5 +60,15 @@
     "artifact": "/tmp/DPD-Assistance-6.3.0.83.zip",
     "sha256": "cd1a28c5452475ee790253165888896019a3765e57179f1e8ef427a105922bb8",
     "activation": "bot0.2.22 restarted, Discord ready; extension6.3.0.83 awaits work-PC update"
+  },
+  "duplicate_followup": {
+    "reason": "Owner screenshot: legacy gray and styled controls coexist",
+    "regression": "Existing group RED1/2 ->GREEN2/2",
+    "gates": "PASS7,220/220",
+    "scope": "Retire legacy UI in place, update CSS, future controller stop/handoff; bot unchanged",
+    "artifact": "/tmp/DPD-Assistance-6.3.0.84.zip",
+    "sha256": "435e093e57b5d109dc1b495e3f82412d140ecc31deddebf062e38afeb51c4fa5",
+    "live": "Work-PC old-context migration not yet verified",
+    "review": "discord_copy_review ACCEPT; stopped-controller re-enable regression added RED1/2 then fixed, full gates220/220"
   }
 }

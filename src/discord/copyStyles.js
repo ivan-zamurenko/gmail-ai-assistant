@@ -1,6 +1,7 @@
 /** Scoped styles: never change Discord's own buttons or message layout. */
 const icon = path => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`)}")`;
 export const COPY_STYLES = `
+[data-dpd-copy][data-dpd-copy-obsolete="true"] { display:none!important; }
 [data-dpd-copy] { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:12px 0 6px; }
 [data-dpd-copy] .dpd-copy-button {
  appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:9px;
@@ -27,7 +28,8 @@ export const COPY_STYLES = `
 `;
 
 export function installCopyStyles(doc) {
-  if (doc.getElementById?.('dpd-report-copy-style')) return;
+  const existing = doc.getElementById?.('dpd-report-copy-style');
+  if (existing) { if (existing.textContent !== COPY_STYLES) existing.textContent = COPY_STYLES; return; }
   const style = doc.createElement('style');
   style.id = 'dpd-report-copy-style'; style.textContent = COPY_STYLES;
   doc.head?.append(style);

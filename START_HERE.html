@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">HTML report export removed — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Duplicate copy controls fixed — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1200,6 +1200,9 @@ Owner confirmed preserving report text styling/emojis when pasted into WhatsApp.
 
 ### HTML export removed — owner decision 2026-11-03
 Owner requested no generated HTML attachment. /report now returns image and caption only, plus existing .txt fallback for unusually long reports. open-for-whatsapp.html generation/module retired; S09-17 remains historical completed work, superseded by this decision. Discord Web extension copy buttons and WhatsApp caption formatter remain; extension version unchanged6.3.0.83. Previously downloaded HTML/files and already sent messages are not removed.
+
+### Duplicate toolbar cleanup — 2026-11-03
+Owner showed old gray and new styled controls simultaneously after extension updates. New mount retires legacy direct-child toolbars visually in place (avoids old observers recreating removed nodes), updates installed scoped CSS, and uses versioned controller/DOM stop event for future observer handoff across surviving contexts. Ctrl+R clears legacy page contexts completely; re-enable helper afterward. Only extension-created toolbars affected; no message/depot changes.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -2029,7 +2032,14 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>HTML report export removed — 2026-11-03</h1><pre class="markdown"># HTML report export removed — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Duplicate copy controls fixed — 2026-11-03</h1><pre class="markdown"># Duplicate copy controls fixed — 2026-11-03
+
+Extension6.3.0.84/root1.1.51 retires legacy toolbar UI and adds controller handoff; bot0.2.23 unchanged. Existing regression RED1/2 -&gt; GREEN2/2; full gates220/220. No active writer.
+Next: owner updates loaded dist and reloads extension/Discord, then enables helper. Ctrl+R alone clears legacy page contexts immediately. No bot restart needed.
+
+---
+
+# HTML report export removed — 2026-11-03
 
 Owner explicitly requested removal. Bot0.2.23/root1.1.50 now sends image+caption, no HTML; long .txt fallback retained. Unused exporter/test removed; shared formatter and extension copy buttons remain. Extension6.3.0.83 unchanged. Full gates220/220; Mac bot restarted, Discord ready. S09-17 completion historical, now superseded; no old-message or downloaded-file purge.
 Next: fresh /report. No active writer.
@@ -2703,6 +2713,12 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | owner-requested HTML export removal | /report stops generating HTML; removed unused exporter and its obsolete test, retained image/text/long .txt and extension copy | test-first RED2/3 | full gates and bot0.2.23 restart next; extension unchanged.
 
 - 2026-11-03 | root | HTML removal activated | full gates220/220; bot0.2.23 restarted and Discord ready; S09-17 evidence marked superseded by owner | extension remains6.3.0.83 | next: fresh /report, no work-PC update.
+
+- 2026-11-03 | root | duplicate copy controls fix | screenshot showed legacy gray + new styled toolbar; retire stale controls in place and disconnect future prior observer instances | existing regression RED1/2 -&gt; GREEN2/2 | full gates/package6.3.0.84; bot unchanged.
+
+- 2026-11-03 | root | duplicate fix ready | extension6.3.0.84 packaged locally;220/220 full gates | no bot restart, no new permissions | next: owner reload/enable, verify one toolbar.
+
+- 2026-11-03 | root | duplicate fix review complete | reviewer ACCEPT; stopped controller re-enable edge covered test-first RED1/2 then fixed; final full gates220/220 and archive rebuilt | evidence/S09-18.json | owner install6.3.0.84.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 

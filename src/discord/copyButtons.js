@@ -13,6 +13,13 @@ export function createReportControls({
   const mounted = new WeakMap();
   return function mount(row) {
     const report = readReport(row), previous = mounted.get(row);
+    // Legacy extension contexts can retain observers until page refresh. Hide their
+    // controls in place so they do not continually recreate removed toolbars.
+    for (const child of [...row.children]) {
+      if (child !== previous?.toolbar && child.parentNode === row && child.getAttribute('data-dpd-copy') === 'true') {
+        child.setAttribute('data-dpd-copy-obsolete', 'true');
+      }
+    }
     if (previous && previous.toolbar.parentNode === row && report?.caption === previous.caption && report?.url === previous.url) return;
     if (previous) { previous.toolbar.remove(); mounted.delete(row); }
     if (!report) return;
@@ -46,17 +53,27 @@ export function createReportControls({
 
 export function startDiscordCopy() {
   if (globalThis.location.origin !== 'https://discord.com' || !globalThis.location.pathname.startsWith('/channels/')) return;
-  if (globalThis.__dpdReportCopy) { globalThis.__dpdReportCopy.scan(); return; }
+  if (globalThis.__dpdReportCopy?.version === 2) { globalThis.__dpdReportCopy.scan(); return; }
+  globalThis.__dpdReportCopy?.stop?.();
+  // DOM event also retires helpers surviving in an older isolated context.
+  document.dispatchEvent(new globalThis.Event('dpd-report-copy-stop'));
   const mount = createReportControls();
-  let timer;
+  let timer, stopped = false;
   const scan = () => {
+    if (stopped) return;
     for (const row of document.querySelectorAll('[id^="chat-messages-"]')) mount(row);
   };
   const observer = new globalThis.MutationObserver(() => {
     if (timer) return;
     timer = setTimeout(() => { timer = null; scan(); }, 150);
   });
-  globalThis.__dpdReportCopy = { scan };
+  const stop = () => {
+    stopped = true; clearTimeout(timer); observer.disconnect();
+    document.removeEventListener('dpd-report-copy-stop', stop);
+    if (globalThis.__dpdReportCopy?.stop === stop) delete globalThis.__dpdReportCopy;
+  };
+  document.addEventListener('dpd-report-copy-stop', stop);
+  globalThis.__dpdReportCopy = { version: 2, scan, stop };
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'id'] });
   scan();
 }

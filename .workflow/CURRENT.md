@@ -1,3 +1,10 @@
+# Duplicate copy controls fixed — 2026-11-03
+
+Extension6.3.0.84/root1.1.51 retires legacy toolbar UI and adds controller handoff; bot0.2.23 unchanged. Existing regression RED1/2 -> GREEN2/2; full gates220/220. No active writer.
+Next: owner updates loaded dist and reloads extension/Discord, then enables helper. Ctrl+R alone clears legacy page contexts immediately. No bot restart needed.
+
+---
+
 # HTML report export removed — 2026-11-03
 
 Owner explicitly requested removal. Bot0.2.23/root1.1.50 now sends image+caption, no HTML; long .txt fallback retained. Unused exporter/test removed; shared formatter and extension copy buttons remain. Extension6.3.0.83 unchanged. Full gates220/220; Mac bot restarted, Discord ready. S09-17 completion historical, now superseded; no old-message or downloaded-file purge.

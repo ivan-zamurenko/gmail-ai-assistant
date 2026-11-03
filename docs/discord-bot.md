@@ -280,3 +280,6 @@ Owner confirmed preserving report text styling/emojis when pasted into WhatsApp.
 
 ### HTML export removed — owner decision 2026-11-03
 Owner requested no generated HTML attachment. /report now returns image and caption only, plus existing .txt fallback for unusually long reports. open-for-whatsapp.html generation/module retired; S09-17 remains historical completed work, superseded by this decision. Discord Web extension copy buttons and WhatsApp caption formatter remain; extension version unchanged6.3.0.83. Previously downloaded HTML/files and already sent messages are not removed.
+
+### Duplicate toolbar cleanup — 2026-11-03
+Owner showed old gray and new styled controls simultaneously after extension updates. New mount retires legacy direct-child toolbars visually in place (avoids old observers recreating removed nodes), updates installed scoped CSS, and uses versioned controller/DOM stop event for future observer handoff across surviving contexts. Ctrl+R clears legacy page contexts completely; re-enable helper afterward. Only extension-created toolbars affected; no message/depot changes.

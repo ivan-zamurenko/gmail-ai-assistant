@@ -1117,3 +1117,6 @@ Existing report group changed first (RED2/3) to require one image and no operato
 
 ## S09-16: response lifetime
 Two small groups with injected clock/scheduler: fixed14min private deadline incl defer/edits, late-edit rejection, failed-send no cleanup,30min ordinary/DM, private followup deadline and fixed-code failure handling. Existing barcode delivery group extended first to prove error-DM survives expired progress; success ACK boundary retained. No real waiting/token/Discord in tests. Runtime restart and network failure are documented best-effort boundaries, not durable deletion guarantees.
+
+## S09-17: local share export
+Existing renderer expectations first require actual HTML attachment. One grouped regression checks escaped hostile caption, fixed image data URI/CSP, size rejection and executes static browser script in a synthetic VM: separate PNG/text writes, exact full caption and safe permission error. No live clipboard/network in automated tests. Owner confirmed earlier synthetic local-file two-button workflow on work-PC WhatsApp Web; actual report-export smoke still pending.

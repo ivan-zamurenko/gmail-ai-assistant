@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-17",
+  "outcome": "passed",
+  "base_sha": "9180a33",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Standalone local WhatsApp export with separate image/caption buttons; escaped text, no network, bounded attachments; existing report preserved.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/whatsappExport.test.js test/bot/driverReport.test.js",
+      "exit_code": 1,
+      "result": "RED2/4 before module/integration; focused GREEN4/4"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/whatsappExport.test.js test/bot/driverReport.test.js",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS7 stages,219/219 tests; browser NOT RUN"
+    }
+  ],
+  "untested": [
+    "Actual Discord HTML attachment download/open and real report copy on work PC; synthetic two-button trial owner-confirmed"
+  ],
+  "external_effects": [
+    "Authorized Mac bot restart after checks; Discord ready; no command registration or WhatsApp send"
+  ],
+  "next_step": "Owner fresh /report, download/open open-for-whatsapp.html in Chrome, copy image then caption",
+  "review": "share_export_review ACCEPT, independent4/4"
+}

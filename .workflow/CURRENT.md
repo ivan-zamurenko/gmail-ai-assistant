@@ -1,3 +1,13 @@
+# S09-17 completed offline — 2026-11-03
+
+Root integrator. Standalone local WhatsApp export with separate image/caption buttons; escaped text, no network, bounded attachments; existing report preserved.
+Evidence: [S09-17](evidence/S09-17.json). No active writer.
+Bot0.2.21 restarted on Mac; Discord ready. No extension or command registration changes.
+Next: owner fresh /report, download open-for-whatsapp.html, open in Chrome and try actual report. Synthetic two-button workflow confirmed; actual attachment still needs smoke.
+Roadmap32/58 done; no active writer. Downloaded files survive Discord cleanup.
+
+---
+
 # S09-16 completed offline — 2026-11-03
 
 Root integrator. All new replies auto-cleanup: fixed private14min and normal/DM30min; late edit fails honestly, long barcode final/error DM survives progress expiry.

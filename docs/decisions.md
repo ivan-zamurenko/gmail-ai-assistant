@@ -209,3 +209,6 @@ Owner requested map left/POD right in one image, dark background and exact legen
 
 ## RESPONSE-CLEANUP-2026-11-03 — owner approved
 All new bot replies: ephemeral delete14min from interaction creation (Discord token15min limit); ordinary channel replies/DM delete30min after send. Edits do not extend deadline. No prior-message purge or change to private access. Memory timers best-effort, lost on restart; no interaction credentials persisted. This UI cleanup is independent of24h undelivered result recovery. Successfully ACKed results do not reappear in /result after auto-delete. Owner confirmed14/30 split after limitation explained.
+
+## REPORT-COPY-2026-11-03 — two-button workflow verified by owner
+Owner uses WhatsApp Web on work PC. Combined image/text clipboard probe showed an image; two-button synthetic local page confirmed working by owner. S09-17 integrates that workflow as open-for-whatsapp.html attached to ready /report. Download/open in Chrome, copy image/paste, then copy caption/paste into image caption. No native Discord clipboard button, no hosting/WhatsApp API/direct send. Existing direct report image/text remain. Local downloaded PII file survives Discord cleanup.

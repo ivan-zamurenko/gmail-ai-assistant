@@ -62,7 +62,8 @@ test('driver report uses effective Eircode, current-location routes and optional
   }
   assert.deepEqual(output.allowedMentions, { parse: [] });
   assert.equal(output.files[0].name, 'driver-report.jpg');
-  assert.equal(output.files.length, 1);
+  assert.deepEqual(output.files.map(file => file.name), ['driver-report.jpg', 'open-for-whatsapp.html']);
+  assert.match(output.files[1].attachment.toString(), /Synthetic recipient/);
   const manual = await renderDriverReport({ report }, { eircode: 'd01 a1f2' });
   assert.match(manual.content, /D01A1F2/);
   assert.doesNotMatch(manual.content, /D02AF30/);
@@ -96,7 +97,7 @@ test('driver report uses effective Eircode, current-location routes and optional
   assert.match(requests[0], /address=D01A1F2/);
   assert.match(requests[1], /53,-6/);
   assert.match(requests[1], /54,-7/);
-  assert.deepEqual(withMap.files.map(file => file.name), ['driver-report.jpg']);
+  assert.deepEqual(withMap.files.map(file => file.name), ['driver-report.jpg', 'open-for-whatsapp.html']);
   assert.doesNotMatch(withMap.content, /PRIVATE_MAPS_KEY/);
   globalThis.fetch = async () => { throw new Error('PRIVATE_MAPS_KEY'); };
   t.mock.method(globalThis.console, 'warn', () => {});

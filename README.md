@@ -178,3 +178,5 @@ I work at a DPD Ireland depot. The management system has no batch tooling, so I 
 WhatsApp forwarding: `/report` now returns one combined map/POD JPEG and a clean caption. Save the image, copy the report text and paste it as the WhatsApp image caption. Navigation URLs stay clickable text; no automatic WhatsApp send.
 
 New bot replies are automatically removed on a best-effort basis: private replies14min from command/button invocation, normal messages and DMs30min after sending. Timers require the Mac bot to stay running and reset on restart. Existing messages are not purged.
+
+For easier WhatsApp Web transfer, open the report attachment `open-for-whatsapp.html` locally in Chrome. Copy/paste the image first, then copy/paste the caption using the two buttons. No WhatsApp API or automatic sending; saved report files remain after Discord cleanup.

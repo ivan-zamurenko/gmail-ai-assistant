@@ -584,3 +584,7 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | S09-16 owner approved UI deletion of all new replies at14/30min. In-memory timers only, no persisted tokens/content/IDs, no logs with raw errors. Existing Admin/ephemeral and24h undelivered recovery unchanged. No retrospective purge or depot retries. Cleanup failure safely logged by fixed code; restart loses timers.
 
 - 2026-11-03 | root | S09-16 activated via authorized Mac bot restart after full gates, exact cwd verified. No message history purge, rules deployment or depot action; token/content not logged or persisted.
+
+- 2026-11-03 | root | S09-17: owner-tested local two-button export integrated. Caption HTML-escaped in text node, no interpolation in script; fixed MIME/base64 image, restrictive CSP, bounded combined attachments. No new outbound service, clipboard read, persistent server copy or automatic WhatsApp send. Downloaded HTML contains report PII/photo and survives Discord cleanup; page/docs explain this. Only synthetic fixtures used.
+
+- 2026-11-03 | root | S09-17 activated through authorized Mac bot restart after full checks; exact process cwd verified. No WhatsApp/depot message sent by agent. Restart resets existing UI-cleanup timers as documented.

@@ -3,6 +3,7 @@ import { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Messag
 import { fileURLToPath, URL, URLSearchParams } from 'node:url';
 import { normEircode, geocode, mapImage } from './geo.js';
 import { composeReportImage } from './reportImage.js';
+import { buildWhatsAppPage } from './whatsappExport.js';
 
 const PLACEHOLDER = fileURLToPath(new URL('../assets/pod-unavailable.png', import.meta.url));
 const clean = value => typeof value === 'string' ? value.replace(/[\x00-\x1f\x7f]/g, ' ')
@@ -52,6 +53,10 @@ export async function renderDriverReport(parcel, { resultId, offset = 0, eircode
     image = new AttachmentBuilder(PLACEHOLDER, { name: 'images-unavailable.png' });
   }
   const files = [image];
+  try {
+    files.push(new AttachmentBuilder(buildWhatsAppPage({ image: image.attachment, caption: text }),
+      { name: 'open-for-whatsapp.html', description: 'Відкрити для WhatsApp: дві кнопки копіювання' }));
+  } catch { console.warn('[report] WHATSAPP_EXPORT_UNAVAILABLE'); }
   if (text.length > 1900) files.push(new AttachmentBuilder(Buffer.from(text), { name: 'driver-report.txt' }));
   return { ...common, content: text.length <= 1900 ? text : 'Driver report attached as text to preserve the complete address and links.', files, components: [] };
 

@@ -1168,6 +1168,23 @@
         "docs/SECURITY.md"
       ],
       "acceptance_count": 5
+    },
+    {
+      "id": "S09-17",
+      "title": "WhatsApp export з двома кнопками копіювання",
+      "stage": "S09",
+      "depends_on": [
+        "S09-15"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-17.md",
+      "context": [
+        "bot/src/driverReport.js",
+        "docs/decisions.md",
+        "docs/SECURITY.md",
+        "docs/TESTING.md"
+      ],
+      "acceptance_count": 5
     }
   ]
 }

@@ -243,8 +243,8 @@
       "block_reason": null
     },
     "S09-08": {
-      "status": "todo",
-      "evidence": null,
+      "status": "done",
+      "evidence": ".workflow/evidence/S09-08.json",
       "block_reason": null
     },
     "S09-09": {

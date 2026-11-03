@@ -119,3 +119,5 @@
 - 2026-11-03 | root | completed S05-03 offline | Prepared source-linked case context with explicit author linkage, exact lookup and freshness; no automatic Gmail/depot workflow. mail_audit implementation/root review. | test-first 0/2 stub RED and1/2 forged source;7/7 GREEN; focused/full gates PASS; evidence/S05-03.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S07-02 offline | Truthful local capability summary and Gmail operation guards; saved key cannot enable AI, dormant label mutations refused before IO, no settings changes. | test-first 0/1 functional RED to11/11 focused GREEN; focused/full gates PASS; evidence/S07-02.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S09-08 offline | Stable todo selection after successful display, transactional ownership, bounded replies/no mentions and honest partial clear. drive_audit isolated implementation/root review. | test-first 0/2 extracted baseline;review1/2 own-property error map;GREEN9/9; focused/full gates PASS; evidence/S09-08.json | separate commit/push, next independent task.

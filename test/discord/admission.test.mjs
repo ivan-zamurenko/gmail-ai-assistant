@@ -32,7 +32,7 @@ function fixture({ command = 'reschedule', sub = 'all', guild = 'synthetic-guild
     addTodo: async (...args) => { calls.todo.push(['add', ...args]); },
     listTodos: async (...args) => { calls.todo.push(['list', ...args]); return []; },
     markDone: async (...args) => { calls.todo.push(['done', ...args]); return null; },
-    clearDone: async (...args) => { calls.todo.push(['clear', ...args]); return 0; },
+    clearDone: async (...args) => { calls.todo.push(['clear', ...args]); return { removed: 0, failed: 0 }; },
     renderList: () => 'Synthetic list',
   });
   return { calls, interaction, run: () => handler(interaction) };

@@ -1,3 +1,12 @@
+# S09-08 completed offline — 2026-11-03
+
+Root integrator. Stable todo selection after successful display, transactional ownership, bounded replies/no mentions and honest partial clear. drive_audit isolated implementation/root review.
+Evidence: [S09-08](evidence/S09-08.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
 # S07-02 completed offline — 2026-11-03
 
 Root integrator. Truthful local capability summary and Gmail operation guards; saved key cannot enable AI, dormant label mutations refused before IO, no settings changes.

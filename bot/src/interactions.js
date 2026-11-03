@@ -1,3 +1,4 @@
+import { todoDisplayText, todoErrorMessage } from './todoService.js';
 import { renderDriverReport } from './driverReport.js';
 /** Discord interaction boundary; importing this module never starts a client or Firebase. */
 import { createResultRecovery } from './resultRecovery.js';
@@ -9,7 +10,7 @@ import { renderBarcodeProgress, shouldPublishBarcodeProgress } from './barcodePr
 
 export function createInteractionHandler({
   cfg, enqueueAndWait, buildParcelEmbed, acknowledgeResult = async () => {},
-  addTodo, listTodos, markDone, clearDone, renderList, listResults, getResult,
+  addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList = () => {}, listResults, getResult,
 }) {
   const actor = interaction => ({ requestedBy: interaction.user.id, guildId: interaction.guildId });
   async function acknowledge(interaction, result) {
@@ -85,7 +86,7 @@ export function createInteractionHandler({
       if (!['add', 'list', 'done', 'clear'].includes(sub)) return invalid;
       if (sub === 'add') {
         const text = interaction.options.getString('text');
-        return typeof text === 'string' && text.trim() ? { sub, text } : invalid;
+        return typeof text === 'string' && text.trim() && text.length <= 500 ? { sub, text } : invalid;
       }
       if (sub === 'done') {
         const number = interaction.options.getInteger('number');
@@ -120,21 +121,26 @@ export function createInteractionHandler({
     // Defer first: a cold Firestore call can exceed Discord's 3-second reply window.
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+    const send = content => interaction.editReply({ content, allowedMentions: { parse: [] } });
     try {
       if (sub === 'add') {
         await addTodo(userId, text);
-        await interaction.editReply(`✅ Додано: ${text}`);
+        await send(`✅ Додано: ${todoDisplayText(text.trim())}`);
       } else if (sub === 'list') {
-        await interaction.editReply(renderList(await listTodos(userId)));
+        const todos = await listTodos(userId);
+        await send(renderList(todos));
+        rememberTodoList(userId, todos);
       } else if (sub === 'done') {
-        const todo   = await markDone(userId, number);
-        await interaction.editReply(todo ? `✅ Виконано: ${todo.text}` : `⚠️ Немає задачі №${number}`);
+        const todo = await markDone(userId, number);
+        await send(todo ? `✅ Виконано: ${todoDisplayText(todo.text)}` : `⚠️ Немає задачі №${number}`);
       } else if (sub === 'clear') {
-        const count = await clearDone(userId);
-        await interaction.editReply(`🧹 Прибрано виконаних: ${count}`);
+        const { removed, failed, hasMore } = await clearDone(userId);
+        await send(`🧹 Підтверджено видалення: ${removed}`
+          + (failed ? `\n⚠️ Не підтверджено: ${failed}. Онови список через /todo list.` : '')
+          + (hasMore ? '\n⚠️ Перевірено лише перші 100 записів; очищення часткове.' : ''));
       }
     } catch (err) {
-      await interaction.editReply(`⚠️ ${safeErrorMessage(err, 'Discord operation failed')}`);
+      await send(`⚠️ ${todoErrorMessage(err) ?? safeErrorMessage(err, 'Discord operation failed')}`);
     }
   }
 

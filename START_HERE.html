@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S07-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-08 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1127,6 +1127,19 @@ codes TIMEOUT/HTTP/INVALID_RESPONSE/SIZE_LIMIT/NO_RESULT/REQUEST_FAILED only;
 no key, URL, coordinates or raw exceptions logged.
 Root1.1.29/bot0.2.14; extension unchanged6.3.0.70. Offline validated; no live
 Google/Discord check, registration or runtime restart in this task.
+
+## S09-08 — personal checklist consistency
+
+/todo done N resolves the last successfully delivered list in this bot session,
+not a fresh positional query. Snapshot holds at most20 IDs+fingerprints for10min,
+max1000 users; expiry/restart/stale record asks /todo list. Transactions recheck
+actual document ID, userId and state; sender ID comes only from interaction.
+List reads at most101 records, shows up to20 bounded rows and indicates partial
+results; missing timestamps shown explicitly. Add text1..500, soft100-item limit
+(not a transactionally enforced quota). Clear rechecks ownership/done per record
+and reports confirmed removals/failed/partial counts. All replies disable mentions.
+Stored todos are not automatically expired/deleted; /todo is unrelated to email
+approval, queue or depot. No command shape change or live activation.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1944,7 +1957,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S07-02 completed offline — 2026-11-03</h1><pre class="markdown"># S07-02 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-08 completed offline — 2026-11-03</h1><pre class="markdown"># S09-08 completed offline — 2026-11-03
+
+Root integrator. Stable todo selection after successful display, transactional ownership, bounded replies/no mentions and honest partial clear. drive_audit isolated implementation/root review.
+Evidence: [S09-08](evidence/S09-08.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S07-02 completed offline — 2026-11-03
 
 Root integrator. Truthful local capability summary and Gmail operation guards; saved key cannot enable AI, dormant label mutations refused before IO, no settings changes.
 Evidence: [S07-02](evidence/S07-02.json). No active writer.
@@ -2446,6 +2468,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S05-03 offline | Prepared source-linked case context with explicit author linkage, exact lookup and freshness; no automatic Gmail/depot workflow. mail_audit implementation/root review. | test-first 0/2 stub RED and1/2 forged source;7/7 GREEN; focused/full gates PASS; evidence/S05-03.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S07-02 offline | Truthful local capability summary and Gmail operation guards; saved key cannot enable AI, dormant label mutations refused before IO, no settings changes. | test-first 0/1 functional RED to11/11 focused GREEN; focused/full gates PASS; evidence/S07-02.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S09-08 offline | Stable todo selection after successful display, transactional ownership, bounded replies/no mentions and honest partial clear. drive_audit isolated implementation/root review. | test-first 0/2 extracted baseline;review1/2 own-property error map;GREEN9/9; focused/full gates PASS; evidence/S09-08.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -5563,6 +5587,15 @@ regression now expects refusal because current workflow is read-only; current
 403/401 cases use the read endpoint. Synthetic Chrome manifest added to harness.
 RED0/1 -&gt; focused11/11, no settings write/provider probe. Actual popup visual/
 Chrome permission-grant behavior not tested; declared scope is not live consent.
+
+## S09-08 — todo safety
+
+Two new grouped tests in test/discord/todo.test.mjs use pure Firestore adapter
+fakes and actual handler: user scope, stable IDs, concurrent clear/stale/expiry,
+failed Discord send does not update snapshot, bounded output/mentions and partial
+clear. Mechanical extraction baseline RED0/2; own-property error-map review RED1/2;
+GREEN9/9 with admission/commands. No Firebase/Discord live calls; transactional
+contention is modeled, not an Admin SDK concurrency benchmark.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

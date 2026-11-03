@@ -4,7 +4,7 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { loadConfig } from '../config/config.js';
 import { enqueueAndWait, acknowledgeResult, sweepResults, listResults, getResult } from './queue.js';
 import { buildParcelEmbed } from './render.js';
-import { addTodo, listTodos, markDone, clearDone, renderList } from './todo.js';
+import { addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList } from './todo.js';
 import { createInteractionHandler } from './interactions.js';
 
 const cfg = loadConfig();
@@ -18,7 +18,7 @@ client.once(Events.ClientReady, (c) => {
 client.on(Events.Error, (err) => console.error('Client error:', safeErrorMessage(err, 'Discord client failed')));
 const handleInteraction = createInteractionHandler({
   cfg, enqueueAndWait, acknowledgeResult, buildParcelEmbed, listResults, getResult,
-  addTodo, listTodos, markDone, clearDone, renderList,
+  addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList,
 });
 client.on(Events.InteractionCreate, interaction => {
   handleInteraction(interaction).catch(err => console.error('Interaction failed:', safeErrorMessage(err, 'Discord operation failed')));

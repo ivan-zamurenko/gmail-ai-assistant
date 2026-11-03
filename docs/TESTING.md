@@ -1081,3 +1081,12 @@ regression now expects refusal because current workflow is read-only; current
 403/401 cases use the read endpoint. Synthetic Chrome manifest added to harness.
 RED0/1 -> focused11/11, no settings write/provider probe. Actual popup visual/
 Chrome permission-grant behavior not tested; declared scope is not live consent.
+
+## S09-08 — todo safety
+
+Two new grouped tests in test/discord/todo.test.mjs use pure Firestore adapter
+fakes and actual handler: user scope, stable IDs, concurrent clear/stale/expiry,
+failed Discord send does not update snapshot, bounded output/mentions and partial
+clear. Mechanical extraction baseline RED0/2; own-property error-map review RED1/2;
+GREEN9/9 with admission/commands. No Firebase/Discord live calls; transactional
+contention is modeled, not an Admin SDK concurrency benchmark.

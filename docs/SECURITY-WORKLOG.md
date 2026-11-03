@@ -549,3 +549,10 @@ Untrusted text cannot supply authorization. No credentials/PII logged or exporte
 Gmail read checks declared scope/identity before auth; unused modify helper now
 refuses before IO until workflow approval. Summary never exposes config values
 or probes providers. Secrets/scopes/user files unchanged; synthetic tests only.
+
+## 2026-11-03 — S09-08 personal todo
+
+Ownership rechecked transactionally, stable IDs bind visible list selection,
+mentions disabled and output bounded. Temporary10min cache contains IDs/hashes,
+not raw task text; max1000 user entries. No stored retention change, mail/depot
+interaction or live credentials; synthetic service/handler evidence only.

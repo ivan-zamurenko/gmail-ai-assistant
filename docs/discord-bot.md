@@ -225,3 +225,16 @@ codes TIMEOUT/HTTP/INVALID_RESPONSE/SIZE_LIMIT/NO_RESULT/REQUEST_FAILED only;
 no key, URL, coordinates or raw exceptions logged.
 Root1.1.29/bot0.2.14; extension unchanged6.3.0.70. Offline validated; no live
 Google/Discord check, registration or runtime restart in this task.
+
+## S09-08 — personal checklist consistency
+
+/todo done N resolves the last successfully delivered list in this bot session,
+not a fresh positional query. Snapshot holds at most20 IDs+fingerprints for10min,
+max1000 users; expiry/restart/stale record asks /todo list. Transactions recheck
+actual document ID, userId and state; sender ID comes only from interaction.
+List reads at most101 records, shows up to20 bounded rows and indicates partial
+results; missing timestamps shown explicitly. Add text1..500, soft100-item limit
+(not a transactionally enforced quota). Clear rechecks ownership/done per record
+and reports confirmed removals/failed/partial counts. All replies disable mentions.
+Stored todos are not automatically expired/deleted; /todo is unrelated to email
+approval, queue or depot. No command shape change or live activation.

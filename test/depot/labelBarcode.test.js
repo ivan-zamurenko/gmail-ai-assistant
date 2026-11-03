@@ -25,6 +25,10 @@ test('Code128 requires the confirmed 28-character DPD layout', () => {
 
   assert.equal(parseBarcode(barcode.slice(0, -1)), null);
   assert.equal(parseBarcode(`${barcode}0`), null);
+  for (const invalid of [null, undefined, 42, {}, '', ' '+barcode, barcode+' ',
+    barcode.slice(0, -6)+'BAD!!!', barcode.replace('%', '!')]) {
+    assert.equal(parseBarcode(invalid), null);
+  }
 });
 
 test('legacy Code128 card adds the explicit eight-digit lookup marker', () => {

@@ -24,13 +24,14 @@
  * ten-box shipment looks like a different consignment.
  */
 
-const CODE128 = /^%[A-Z\d]{7}\d{4}(\d{9})(\d)/;
+const CODE128 = /^%[A-Z\d]{7}\d{4}(\d{9})(\d)\d{6}$/;
 const LEGACY_CODE128 = /^(\d{8})\/([1-9]\d?)$/;
 const PDF417_ROUTING = /^%\d{4}(\d{9})(\d{1,2})$/;
 const PDF417_CONSIGNMENT = 4;
 
 /** @returns {{ number: string, parcel: number|null } | null} */
 export function parseBarcode(text) {
+  if (typeof text !== 'string') return null;
   const legacy = LEGACY_CODE128.exec(text);
   if (legacy) {
     return { number: `0${legacy[1]}`, parcel: Number(legacy[2]) };

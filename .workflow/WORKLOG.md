@@ -103,3 +103,5 @@
 - 2026-11-03 | root | S01-05 test-first and implementation | two grouped config/Drive tests RED0/2; compatibility regression RED1/2 caught omitted POD header; fixed, focused15/15 | synthetic only, no private config changes | independent review and full gates next.
 
 - 2026-11-03 | root + config_review | completed S01-05 offline | config/Drive fail-fast and safe errors, two new groups, existing build regression extended; root1.1.30/bot0.2.15/extension6.3.0.71 | focused15/15 full197/197 gates PASS; evidence/S01-05.json | commit/push codex, no runtime activation.
+
+- 2026-11-03 | root | completed S02-01 offline | Typed barcode input and exact Code128 tail; existing PDF unknown-parcel compatibility preserved, no new format inferred. | test-first 9/10 before type/tail guards;10/10 after; focused/full gates PASS; evidence/S02-01.json | separate commit/push, next independent task.

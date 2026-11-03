@@ -72,3 +72,19 @@ Drive зупиняє нові ефекти після uncertain/auth/cancel, з�
 раніше успішні exact targets для ручного продовження. Нової кнопки Cancel,
 автоматичного reconcile або persistent Drive journal тут немає. Gmail scopes
 і доступність mutation UI не змінено. Реальні API/Chrome не перевірялися.
+
+## S02-01 — payload formats (2026-11-03)
+
+Current parser: Code128 is exactly `%` + 7 uppercase/digit destination characters
++ 4 route digits + 9 consignment digits + 1 parcel digit + 6 trailing digits.
+Legacy card is exactly 8 digits `/` parcel1..99, with an explicit leading-zero
+lookup marker. PDF417 reads nine-digit field4; recognized routing is `%` + four
+digits + same consignment + one/two parcel digits. Contradictory numbers fail.
+Unknown/missing PDF routing retains canonical number with parcel:null, preserving
+existing UNROUTED compatibility; no unsupported routing is inferred as a parcel.
+Other PDF fields/tail are not interpreted or used as proof of validity.
+Nonstring, unsupported plain payload and malformed Code128 length/prefix/tail
+return null. Duplicate reads affect diagnostics, not the number of parcels or
+lookup acceptance. Competing numbers remain contested (parcel conflicts S02-02).
+No separate labelParser exists in this checkout; no archived regex restored.
+Synthetic parser tests characterize payloads, not camera/decoder accuracy.

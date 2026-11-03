@@ -1,3 +1,12 @@
+# S02-01 completed offline — 2026-11-03
+
+Root integrator. Typed barcode input and exact Code128 tail; existing PDF unknown-parcel compatibility preserved, no new format inferred.
+Evidence: [S02-01](evidence/S02-01.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
 # S01-05 completed offline — 2026-11-03
 
 Owner authorized autonomous small tasks, journal and one commit/push per task.

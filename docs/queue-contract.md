@@ -203,3 +203,15 @@ requires string summary<=500 (observed RED fixed). Nested parcel remains only
 map-validated by rules; executor/renderer whitelist/limits remain compensation,
 not a substitute for a future versioned shared nested schema. Admin SDK bypass
 is used only for synthetic seed. No rules deployed or live credentials used.
+
+## S09-05 — listener and runtime boundary
+
+Privileged worker bridges accept browser-provided matching extension ID, exact
+offscreen URL and no tab sender. Popup still injects directly. Offscreen creation
+and heartbeat have one in-flight operation; worker health interval singleton.
+Fixed20s/minute health checks continue recovery without tight retry or task replay;
+failures logged once per episode. No new polling service or queue version.
+Snapshot/claim/result paths verify current expected UID. UID change stops
+subscription/heartbeat/new queued work; in-flight unknown result remains claimed,
+never replayed. Fatal snapshot/auth setup failure stops listener with diagnostic;
+operator reload/rebinding may be required. This is not automatic lease recovery.

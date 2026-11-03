@@ -15,7 +15,7 @@
  */
 
 import { initializeApp }              from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import {
   getFirestore, collection, query, where,
   onSnapshot, doc, runTransaction, serverTimestamp, updateDoc,
@@ -34,6 +34,43 @@ import { safeErrorMessage }   from '../utils/errors.js';
 // depot writes are not idempotent and concurrent tasks would race the same tab.
 const scheduled = new Set();
 let serial = Promise.resolve();
+let executorUid = null;
+let auth = null;
+let acceptingTasks = false;
+let heartbeatTimer = null;
+let unsubscribeSnapshot = () => {};
+let unsubscribeAuth = () => {};
+let heartbeatInFlight = false;
+let heartbeatFailed = false;
+
+function currentExecutor() {
+  return acceptingTasks && auth?.currentUser?.uid === executorUid;
+}
+
+function stopListener(code) {
+  if (!acceptingTasks) return;
+  acceptingTasks = false;
+  unsubscribeSnapshot();
+  unsubscribeAuth();
+  if (heartbeatTimer !== null) clearInterval(heartbeatTimer);
+  heartbeatTimer = null;
+  console.warn(`[offscreen] ${code}`);
+}
+
+async function heartbeat() {
+  if (!currentExecutor() || heartbeatInFlight) return;
+  heartbeatInFlight = true;
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'keepalive' });
+    if (!response?.ok) throw new Error('Worker did not acknowledge heartbeat');
+    heartbeatFailed = false;
+  } catch {
+    if (!heartbeatFailed) console.warn('[offscreen] WORKER_UNAVAILABLE');
+    heartbeatFailed = true;
+  } finally {
+    heartbeatInFlight = false;
+  }
+}
 
 async function writeResult(db, id, { status, summary, details, parcel, execMs }) {
   const fields = { status, summary: summary ?? '', completedAt: serverTimestamp() };
@@ -43,7 +80,8 @@ async function writeResult(db, id, { status, summary, details, parcel, execMs })
   await runTransaction(db, async (tx) => {
     const ref = doc(db, TASKS_COLLECTION, id);
     const snap = await tx.get(ref);
-    if (!snap.exists() || snap.data().status !== STATUS.CLAIMED) return;
+    if (!currentExecutor() || !snap.exists() || snap.data().executorUid !== executorUid
+        || snap.data().status !== STATUS.CLAIMED) return;
     tx.update(ref, fields);
   });
 }
@@ -52,10 +90,10 @@ async function claimTask(db, id) {
   return runTransaction(db, async (tx) => {
     const ref = doc(db, TASKS_COLLECTION, id);
     const snap = await tx.get(ref);
-    if (!snap.exists()) return null;
+    if (!currentExecutor() || !snap.exists()) return null;
 
     const task = snap.data();
-    if (task.status !== STATUS.PENDING) return null;
+    if (task.executorUid !== executorUid || task.status !== STATUS.PENDING) return null;
     const expiresAt = task.expiresAt?.toMillis?.() ?? 0;
     if (!expiresAt || expiresAt <= Date.now()) {
       tx.update(ref, {
@@ -85,7 +123,7 @@ async function handle(db, id) {
   ));
   try {
     const task = await claimTask(db, id);
-    if (!task) return;
+    if (!task || !currentExecutor()) return;
     const isBarcodeTask = task.command === COMMANDS.RESCHEDULE
       && task.args?.mode === RESCHEDULE_MODE.BARCODES;
     const result = isBarcodeTask
@@ -122,7 +160,7 @@ async function handle(db, id) {
 }
 
 function schedule(db, id) {
-  if (scheduled.has(id)) return;
+  if (!currentExecutor() || scheduled.has(id)) return;
   scheduled.add(id);
   serial = serial.then(() => handle(db, id)).catch((err) => {
     scheduled.delete(id);
@@ -133,8 +171,11 @@ function schedule(db, id) {
 async function main() {
   const { firebase } = loadConfig();
   const app = initializeApp({ apiKey: firebase.apiKey, projectId: firebase.projectId });
-  const credential = await signInAnonymously(getAuth(app));
-  const executorUid = credential.user.uid;
+  auth = getAuth(app);
+  const credential = await signInAnonymously(auth);
+  executorUid = credential.user?.uid;
+  if (typeof executorUid !== 'string' || !executorUid) throw new Error('Missing executor identity');
+  acceptingTasks = true;
   console.info(`[offscreen] Firebase executor UID: ${executorUid}`);
   const db = getFirestore(app);
 
@@ -144,17 +185,29 @@ async function main() {
     collection(db, TASKS_COLLECTION),
     where('executorUid', '==', executorUid),
   );
-  onSnapshot(
+  unsubscribeSnapshot = onSnapshot(
     assigned,
     (snap) => snap.forEach((d) => {
-      if (d.data().status === STATUS.PENDING) schedule(db, d.id);
+      if (currentExecutor() && d.data().executorUid === executorUid
+          && d.data().status === STATUS.PENDING) schedule(db, d.id);
     }),
-    (err) => console.error('[offscreen] snapshot error:', safeErrorMessage(err)),
+    (err) => {
+      console.error('[offscreen] snapshot error:', safeErrorMessage(err));
+      stopListener('LISTENER_UNAVAILABLE');
+    },
   );
 
   // A reclaimed listener is why a task could sit ~30s before being noticed. Ping
   // the worker so both this document and the worker stay awake between tasks.
-  setInterval(() => chrome.runtime.sendMessage({ type: 'keepalive' }).catch(() => {}), 20_000);
+  heartbeatTimer = setInterval(heartbeat, 20_000);
+  unsubscribeAuth = onAuthStateChanged(auth, user => {
+    if (user?.uid !== executorUid) stopListener('IDENTITY_CHANGED');
+  }, () => stopListener('IDENTITY_UNAVAILABLE'));
+  // Also handle an identity change during listener setup, before its callback arrives.
+  if (!currentExecutor()) stopListener('IDENTITY_CHANGED');
 }
 
-main().catch((err) => console.error('[offscreen] fatal:', safeErrorMessage(err)));
+main().catch((err) => {
+  stopListener('LISTENER_UNAVAILABLE');
+  console.error('[offscreen] fatal:', safeErrorMessage(err));
+});

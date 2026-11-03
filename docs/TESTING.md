@@ -1090,3 +1090,13 @@ failed Discord send does not update snapshot, bounded output/mentions and partia
 clear. Mechanical extraction baseline RED0/2; own-property error-map review RED1/2;
 GREEN9/9 with admission/commands. No Firebase/Discord live calls; transactional
 contention is modeled, not an Admin SDK concurrency benchmark.
+
+## S09-05 — actual entrypoints with synthetic runtime
+
+Three grouped VM/esbuild tests in test/queue/listener.test.mjs execute actual
+background/offscreen source; config/Firebase/Chrome/executor adapters replaced
+before graph loading. RED1/3 for sender/foreign identity, GREEN3/3. Existing
+duplicate/serial/expiry/restart behavior characterized; serialized transaction
+fake distinguishes claim winner from local scheduling, not SDK contention.
+Additional alarm/in-flight identity/heartbeat assertions characterized after fix.
+Actual enforcement separately S09-03; real Chrome/MV3 timing remains untested.

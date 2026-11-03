@@ -556,3 +556,10 @@ Ownership rechecked transactionally, stable IDs bind visible list selection,
 mentions disabled and output bounded. Temporary10min cache contains IDs/hashes,
 not raw task text; max1000 user entries. No stored retention change, mail/depot
 interaction or live credentials; synthetic service/handler evidence only.
+
+## 2026-11-03 — S09-05 internal bridge
+
+Worker validates browser sender metadata before depot/OAuth/storage bridges.
+Listener binds expected/current Firebase UID across queue boundaries, stops on
+identity change and never replays claimed work. Fixed diagnostics/one in-flight
+health checks. Synthetic config adapters only; no live auth/provider/depot calls.

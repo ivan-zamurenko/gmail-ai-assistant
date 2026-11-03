@@ -143,3 +143,5 @@
 - 2026-11-03 | root | completed S09-16 offline | All new replies auto-cleanup: fixed private14min and normal/DM30min; late edit fails honestly, long barcode final/error DM survives progress expiry. | test-first RED4/6 including missing lifecycle and error-DM regression; focused GREEN7/7; focused/full gates PASS; evidence/S09-16.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | S09-16 activated | bot0.2.20 restarted, Discord ready/no startup errors; full gates218/218, reviewer ACCEPT | timers for new replies only, real14/30min wait untested | next: owner observe fresh response cleanup.
+
+- 2026-11-03 | root | experiment pending owner | owner uses WhatsApp Web on work PC; prepared local synthetic clipboard image+text probe at /tmp/dpd-whatsapp-probe/whatsapp-copy-test.html, no network/customer data or bot changes | JS syntax checked only; browser may choose just one clipboard representation | next: owner paste into own-chat draft, report whether caption survives; do not promise one-click transfer.

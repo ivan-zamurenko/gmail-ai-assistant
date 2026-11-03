@@ -109,3 +109,17 @@ Limits12 depth/100 parts,64Ki UTF-16 text,128Ki encoded processed text,16Ki head
 characters (4Ki per header); failed parsing returns no partial body. These are
 normalization limits, not an HTTP streaming body cap. No popup auto-reader yet.
 Source: [Gmail messages.get](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/get).
+
+## S05-03 — prepared source-linked case context
+
+Pure use-case buildCaseContext consumes normalized message plus injected
+depotLookup-compatible array port. A trusted caller must explicitly confirm
+author linkage before any lookup; message text never supplies that authority.
+Exactly one candidate/result/query/consignment creates facts_ready with message/
+thread/consId, readAt and bounded Scanning History parcel/type/date/time facts.
+No address/signature/session/token/raw HTML or inferred delivery promise.
+Ambiguous/malformed/unlinked/failing cases require review. checkCaseFreshness
+compares source IDs and the exact normalized scan snapshot, default5min (max1h
+caller bound); future timestamps fail. This is an engineering freshness default,
+not calendar policy. A fresh result authorizes no mutation/send. These modules
+are prepared interfaces, not a connected automatic mailbox/depot pipeline.

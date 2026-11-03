@@ -1064,3 +1064,11 @@ attachments and malformed/size/depth/HTML/charset/identity/read-only failures.
 Functional stub RED0/2, review RED0/2 for unnamed attachment/charset, GREEN10/10
 with labels suite. HTML is data only; no rendering/network image loads tested.
 Adapter prepared but not automatically invoked by the popup.
+
+## S05-03 — case context
+
+Two synthetic groups in test/workflow/caseContext.test.js use actual MIME/parser
+and depotLookup-shaped read port: source projection, stale/changed facts, forged
+source, ambiguity/unlinked zero lookup, failures and data minimization. Functional
+stub RED0/2 then source guard RED1/2, focused7/7. No live authorization or UI
+pipeline tested; human-link confirmation must come from a future trusted caller.

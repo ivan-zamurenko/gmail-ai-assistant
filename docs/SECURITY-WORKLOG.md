@@ -536,3 +536,10 @@ cancellation summary allowed; fixed with type and500-character limit. Full
 local matrix passes, permissive control demonstrates denial sensitivity.
 Pinned public emulator/dependency downloaded; no production credentials/config,
 deploy, client data or live project used. Nested parcel map-only gap documented.
+
+## 2026-11-03 — prepared Gmail MIME/case boundaries
+
+S05-02/S05-03 use synthetic data only. No automatic mailbox reads, attachment
+fetches, HTML execution or downstream effects. Case lookup requires explicit
+trusted author linkage; only exact minimal scan facts/source IDs projected.
+Untrusted text cannot supply authorization. No credentials/PII logged or exported.

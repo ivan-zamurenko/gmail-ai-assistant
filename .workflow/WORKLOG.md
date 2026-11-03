@@ -151,3 +151,7 @@
 - 2026-11-03 | root | completed S09-17 offline | Standalone local WhatsApp export with separate image/caption buttons; escaped text, no network, bounded attachments; existing report preserved. | test-first RED2/4 before module/integration; focused GREEN4/4; focused/full gates PASS; evidence/S09-17.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | S09-17 activated | root1.1.46/bot0.2.21; full gates219/219, reviewer ACCEPT; Mac bot restarted and Discord ready/no startup errors | owner confirmed synthetic two-button test; real HTML attachment smoke pending | next: fresh /report then open-for-whatsapp.html in Chrome.
+
+- 2026-11-03 | root | completed S09-18 offline | Explicit activeTab Discord Web report controls; paired caption/image, bounded CORS JPEG conversion, no permanent Discord access/clipboard reads or bot changes. | test-first Missing module RED0/1; focused GREEN2/2; focused/full gates PASS; evidence/S09-18.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | S09-18 ready for work-PC smoke | extension6.3.0.81/root1.1.47;221/221 + full gates, IIFE parse, reviewer ACCEPT; detached toolbar recovery RED1/2 -> GREEN2/2 | local /tmp/DPD-Assistance-6.3.0.81.zip contains built dist, not committed; no bot restart | next: owner reload extension and explicitly enable Discord copy controls.

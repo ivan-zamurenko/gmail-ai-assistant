@@ -32,12 +32,12 @@
 | Роль | Задачі roadmap | Що має робити |
 |---|---|---|
 | `toolchain_owner` | S00-01…S00-05; S01-03…S01-05; S08-01…S08-04 | Збірка, CI, безпечна діагностика, API-помилки, конфігурація, перевірки й підготовка випуску |
-| `extension_owner` | S01-02; S03-01…S03-05; S07-01…S07-03; S09-05 | Depot, точний lookup, MV3, listener, preview/apply, popup |
+| `extension_owner` | S01-02; S03-01…S03-05; S07-01…S07-03; S09-05; S09-18 | Depot, точний lookup, MV3, listener, preview/apply, popup |
 | `drive_owner` | S01-01; S02-01…S02-03; S04-01…S04-05 | Barcode, фізична посилка, іменування, Drive batches і recovery |
 | `gmail_ai_owner` | S02-04; S05-01…S05-05; S06-01…S06-05 | Номери з тексту, Gmail, підтверджені факти, AI proposal і чернетки з ручною перевіркою |
 | `discord_owner` | S09-01…S09-04; S09-06…S09-17 | Queue contract/rules, доступ, доставка відповіді, Maps, картки й report |
 
-Усього 58 задачі, кожна має одну основну роль. Завершені задачі не виконувати
+Усього 59 задачі, кожна має одну основну роль. Завершені задачі не виконувати
 повторно. Інший фахівець допомагає review, а не створює другу реалізацію.
 `integrator` координує доручення, перевіряє результат і веде спільний стан.
 Поточний writer може поєднувати свою роль та integrator після явної передачі.
@@ -172,3 +172,6 @@ Owner approved14min private/30min normal and DM. discord_owner/root writer; clea
 
 ### S09-17: two-button export
 Owner verified synthetic WhatsApp Web workflow. discord_owner/root integrates local HTML attachment; share_export_review read-only. Total58 tasks; no extension or slash-command change.
+
+### S09-18 Discord Web buttons
+Owner approved extension copy helper. extension_owner/root implementation; discord_copy_review read-only. Total59 tasks. No bot/queue/rules changes; work-PC extension update and live DOM/CORS check pending.

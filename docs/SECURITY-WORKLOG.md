@@ -588,3 +588,5 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | S09-17: owner-tested local two-button export integrated. Caption HTML-escaped in text node, no interpolation in script; fixed MIME/base64 image, restrictive CSP, bounded combined attachments. No new outbound service, clipboard read, persistent server copy or automatic WhatsApp send. Downloaded HTML contains report PII/photo and survives Discord cleanup; page/docs explain this. Only synthetic fixtures used.
 
 - 2026-11-03 | root | S09-17 activated through authorized Mac bot restart after full checks; exact process cwd verified. No WhatsApp/depot message sent by agent. Restart resets existing UI-cleanup timers as documented.
+
+- 2026-11-03 | root | S09-18 owner approved extension copy helper. Adds activeTab/clipboardWrite only, no permanent Discord host or clipboardRead. Explicit user activation, same-message read/copy on click, bounded allowlisted credential-free attachment fetch, no tokens/API/WhatsApp sending/history persistence. Privileged offscreen runtime guard unchanged. Test fixtures synthetic; no private config inspection.

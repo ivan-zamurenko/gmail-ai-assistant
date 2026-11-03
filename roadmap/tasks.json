@@ -1185,6 +1185,24 @@
         "docs/TESTING.md"
       ],
       "acceptance_count": 5
+    },
+    {
+      "id": "S09-18",
+      "title": "Кнопки копіювання report у Discord Web через розширення",
+      "stage": "S09",
+      "depends_on": [
+        "S09-15"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-18.md",
+      "context": [
+        "manifest.json",
+        "build.js",
+        "src/popup/popup.js",
+        "docs/SECURITY.md",
+        "docs/TESTING.md"
+      ],
+      "acceptance_count": 5
     }
   ]
 }

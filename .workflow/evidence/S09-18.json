@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-18",
+  "outcome": "passed",
+  "base_sha": "0e6efba",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Explicit activeTab Discord Web report controls; paired caption/image, bounded CORS JPEG conversion, no permanent Discord access/clipboard reads or bot changes.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/discord/copyButtons.test.js",
+      "exit_code": 1,
+      "result": "Missing module RED0/1; focused GREEN2/2"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/discord/copyButtons.test.js",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS7 stages,221/221 tests; browser NOT RUN"
+    }
+  ],
+  "untested": [
+    "Work-PC Discord DOM selectors/CORS/clipboard and extension update",
+    "Live depot unchanged"
+  ],
+  "external_effects": [],
+  "next_step": "Owner installs built6.3.0.81 dist, reloads extension, activates helper from popup in Discord Web and tries fresh report",
+  "review": "discord_copy_review ACCEPT; detached-toolbar regression RED1/2 -> GREEN2/2",
+  "artifact": {
+    "path": "/tmp/DPD-Assistance-6.3.0.81.zip",
+    "sha256": "642e6cbde60c538568644cfe5314f794af38980cba1147ae69b126598c707655",
+    "version": "6.3.0.81",
+    "classic_script_parse": "PASS",
+    "permanent_discord_host": false,
+    "clipboard_read": false
+  }
+}

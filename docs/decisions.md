@@ -212,3 +212,6 @@ All new bot replies: ephemeral delete14min from interaction creation (Discord to
 
 ## REPORT-COPY-2026-11-03 — two-button workflow verified by owner
 Owner uses WhatsApp Web on work PC. Combined image/text clipboard probe showed an image; two-button synthetic local page confirmed working by owner. S09-17 integrates that workflow as open-for-whatsapp.html attached to ready /report. Download/open in Chrome, copy image/paste, then copy caption/paste into image caption. No native Discord clipboard button, no hosting/WhatsApp API/direct send. Existing direct report image/text remain. Local downloaded PII file survives Discord cleanup.
+
+## DISCORD-COPY-EXTENSION-2026-11-03 — owner approved
+Owner wants copy buttons directly beside report in Discord Web, without HTML downloads; approved Chrome extension approach. Explicit activation via popup on active discord.com/channels tab, activeTab+clipboardWrite; no permanent Discord origin grant or clipboardRead. Buttons copy image then caption separately, no WhatsApp automation. Refresh requires reactivation. Desktop Discord unsupported. Existing HTML export stays fallback for long reports or unsupported DOM/CORS.

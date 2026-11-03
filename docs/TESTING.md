@@ -1120,3 +1120,6 @@ Two small groups with injected clock/scheduler: fixed14min private deadline incl
 
 ## S09-17: local share export
 Existing renderer expectations first require actual HTML attachment. One grouped regression checks escaped hostile caption, fixed image data URI/CSP, size rejection and executes static browser script in a synthetic VM: separate PNG/text writes, exact full caption and safe permission error. No live clipboard/network in automated tests. Owner confirmed earlier synthetic local-file two-button workflow on work-PC WhatsApp Web; actual report-export smoke still pending.
+
+## S09-18 Discord Web controls
+Two grouped synthetic tests cover same-message identity, ambiguous/placeholder rejection, strict attachment URLs and credential-free no-redirect image fetch, JPEG dimension rejection before decode, unique buttons and stale-row rejection. No new DOM dependency; fake DOM models the selector contract only. Built IIFE parsed as classic JS separately. Real Discord markup/CORS/browser clipboard and installation require owner smoke.

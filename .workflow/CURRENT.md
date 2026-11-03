@@ -1,3 +1,13 @@
+# S09-18 completed offline — 2026-11-03
+
+Root integrator. Explicit activeTab Discord Web report controls; paired caption/image, bounded CORS JPEG conversion, no permanent Discord access/clipboard reads or bot changes.
+Evidence: [S09-18](evidence/S09-18.json). No active writer.
+Extension6.3.0.81 built and packaged locally for owner installation; bot unchanged, no restart.
+Next: update existing dist on work PC, reload extension, open Discord Web and enable copy controls from popup. Live DOM/CORS/clipboard unverified.
+Reviewer ACCEPT; full gates221/221, injected IIFE parses. Roadmap33/59 done, no active writer.
+
+---
+
 # S09-17 completed offline — 2026-11-03
 
 Root integrator. Standalone local WhatsApp export with separate image/caption buttons; escaped text, no network, bounded attachments; existing report preserved.

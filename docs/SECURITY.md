@@ -97,3 +97,6 @@ fallback before the photo can be classified or filed.
 Large barcode tasks may run for up to two hours. Deploy the matching
 `firestore.rules` update before using the command so the claimed executor may
 write its bounded `execMs` result after a long scan.
+
+## Discord Web copy helper
+S09-18 adds activeTab and clipboardWrite. User explicitly activates helper from extension popup in Discord Web; no permanent Discord host access or clipboard reads. It copies only a recognized visible report/its attachment on click and never sends messages. No Discord tokens, session data or content are persisted/logged. Refresh requires activation again; existing HTML export remains fallback.

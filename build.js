@@ -92,6 +92,8 @@ const consoleConfig = {
   sourcemap:   false,
 };
 
+const discordCopyConfig = { ...config, entryPoints: ['src/discord/entry.js'], format: 'iife' };
+
 await rm(DIST, { recursive: true, force: true });
 await mkdir(DIST, { recursive: true });
 
@@ -104,11 +106,13 @@ if (watch) {
     }],
   });
   const consoleHelpers = await esbuild.context(consoleConfig);
-  await Promise.all([extension.watch(), consoleHelpers.watch()]);
+  const discordCopy = await esbuild.context(discordCopyConfig);
+  await Promise.all([extension.watch(), consoleHelpers.watch(), discordCopy.watch()]);
   console.log('watching for changes… (Ctrl+C to stop)');
 } else {
   await esbuild.build(config);
   await esbuild.build(consoleConfig);
+  await esbuild.build(discordCopyConfig);
   await copyStatic();
   console.log('build complete → dist/');
 }

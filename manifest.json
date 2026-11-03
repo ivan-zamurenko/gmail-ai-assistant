@@ -1,22 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "DPD Assistance (SOURCE — load dist/ instead)",
-  "version": "6.3.0.80",
+  "name": "DPD Assistance (SOURCE \u2014 load dist/ instead)",
+  "version": "6.3.0.81",
   "description": "DPD depot tools: Future Dates automation, Drive label scanning, and Gmail queue reading.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxBqmIQZ3Q3tco0gYEXrgOiy18AQAydZHBLcuA0v33FJKx4zk0f14Sa+Yiw8Y27hmIuDfyS0rSzTyLrge+BwKX2TxHcQZtsDEsB6c16I0EGKDbUI3lh3xRepivzp+3SMxo5Uh4nHl944u/F/hlWSZM9ZNeN/AZBKm4rJO2BdlmR4+ld9C/VxUYQuqXmi5RwslCKDa7rPl16EM8aqtetfvhJJAN7vHcn07fvyOztleUCJaQL0mDhDAuna9U2SoyZBz6LjUi1scm1zX2evUSIfhs7BSK5rrrYcfRfVmqFk/dQxOvV10DxZYY+xCOQZCdnEtHIWGIQeUPydbVUR88LzRTwIDAQAB",
-
   "permissions": [
     "identity",
     "alarms",
     "scripting",
     "offscreen",
-    "storage"
+    "storage",
+    "activeTab",
+    "clipboardWrite"
   ],
-
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
   },
-
   "host_permissions": [
     "https://gmail.googleapis.com/*",
     "https://www.googleapis.com/*",
@@ -27,28 +26,24 @@
     "https://api2.dpd.ie/*",
     "http://*.interlink.local/*"
   ],
-
   "background": {
     "service_worker": "src/background/background.js",
     "type": "module"
   },
-
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_title": "DPD Assistance",
     "default_icon": {
-      "16":  "assets/icon16.png",
-      "48":  "assets/icon48.png",
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
       "128": "assets/icon128.png"
     }
   },
-
   "icons": {
-    "16":  "assets/icon16.png",
-    "48":  "assets/icon48.png",
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
-
   "oauth2": {
     "client_id": "647516996436-kon8g0nkri73ck79vhc0uvk3hgf9m5ss.apps.googleusercontent.com",
     "scopes": [

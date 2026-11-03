@@ -1,3 +1,17 @@
+# Find separation/statuses activated — 2026-11-03
+
+Root writer complete; find_map_review ACCEPT. Root1.1.55/bot0.2.25/extension6.3.0.87. Mac bot restarted and online; no startup errors. No command registration changes.
+Overview parcel summaries only, no mixed history; selected/sole parcel shows its scans with spaced entries and colored status badges. Find POD request/render removed. Per-scan optional coords added to projection for valid Delivered/Carded identity; selected map has one pin, no global drop fallback. Ambiguous timestamps/identity/points/status ties suppress map.
+Existing regression groups updated test-first; focused22/22, full223/223 PASS7; approximate synthetic Chrome visual inspected. Real Discord/work-PC update unverified. Artifact /tmp/DPD-Assistance-6.3.0.87.zip; evidence/FIND-SEPARATION-2026-11-03.json. Next owner update dist/reload extension then fresh /find. Old extension still shows facts but no selected map. No active writer.
+
+---
+
+# Active find separation and status badges — 2026-11-03
+
+Root writer, basece6727d; find_map_review read-only. Owner approves overview without mixed scans, selected parcel only, no find POD, eligible scan map and status badges. Scope render/findViews/geo, additive optional scan coords projection in executor, existing tests, versions/docs. No lookup parser/queue command changes.
+
+---
+
 # Operator find ready and activated — 2026-11-03
 
 Root writer finished; reviewer find_internal_review ACCEPT. Root1.1.54/bot0.2.24; extension6.3.0.86 unchanged. Mac bot restarted, Discord online confirmed, no startup errors. No command re-registration/work-PC update.

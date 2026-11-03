@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Operator find ready and activated — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Find separation/statuses activated — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1212,6 +1212,9 @@ Copy controls6.3.0.86: automatically appear for recognized reports in Discord We
 ## Operator /find — bot0.2.24
 Private Administrator-only /find now leads with status/latest scan and depot details, then history12 scans per page, recipient and delivery evidence. Overview shows known parcel statuses; Parcel N buttons select only that parcel; Overview returns to all. Newer/Older scans edits the same private message without another depot lookup or queue ACK. Delivered/Carded GPS remains historical, not current depot position. POD/GPS are consignment-level and hidden in selected parcel view because schema lacks association. Bay/Sequence only from latest scan; older location stays dated in history.
 Navigation retains up to16 snapshots in Mac bot memory for at most14min from originating interaction; clicks do not extend lifetime. Bound to requester/guild/channel and existing Admin gate. Restart/expiry invalidates controls; use /find again. /result recovery gets the same navigation. No export/WhatsApp controls. Overview navigation currently regenerates optional Maps/attachments; no depot action is repeated.
+
+### Find visual follow-up — bot0.2.25 / extension6.3.0.87
+Overview has separate parcel summaries and no combined scan history. Selected parcel history uses bold separated scan entries and colored status badges/border; sole parcel opens automatically. Yellow Goods Held, light green Delivered, red failed/Carded, pink Pending. No POD/placeholder in find. Optional map is one scan pin, no geocoding needed; only bound Delivered/Carded coordinates with valid time and no same-time conflicting status/location. Old extension/results lack per-scan coordinates: card still works but map is omitted. Update work-PC dist to6.3.0.87 for maps and to stop find POD requests. /report unchanged.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1430,6 +1433,9 @@ Snapshot/claim/result paths verify current expected UID. UID change stops
 subscription/heartbeat/new queued work; in-flight unknown result remains claimed,
 never replayed. Fatal snapshot/auth setup failure stops listener with diagnostic;
 operator reload/rebinding may be required. This is not automatic lease recovery.
+
+### Additive find result coordinates — 2026-11-03
+Optional parcel.scans[].coords = {lat:number,lng:number} preserves row association. Producer whitelist: exact Delivered/Carded, positive1–6-digit parcel identity, finite lat[-90,90]/lng[-180,180]. No extra coordinate properties/event IDs/notes forwarded. Consumer validates again and requires valid timestamp; mixed history is never mapped as selected parcel. No fallback to global drop. Existing schema2/command shape unchanged: old consumers ignore field, new consumers omit map when field absent. /find no longer fetches POD; existing optional POD projector support remains for legacy tests/results, renderer ignores it.
 </pre></article>
 <article id="doc-9" tabindex="-1" hidden><p class="path"><a href="docs/discord/RUNBOOK_RU.md">docs/discord/RUNBOOK_RU.md</a></p><h1>Discord + Firestore + Chrome — порядок подготовки и эксплуатации</h1><pre class="markdown"># Discord + Firestore + Chrome — порядок подготовки и эксплуатации
 
@@ -2041,7 +2047,21 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Operator find ready and activated — 2026-11-03</h1><pre class="markdown"># Operator find ready and activated — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Find separation/statuses activated — 2026-11-03</h1><pre class="markdown"># Find separation/statuses activated — 2026-11-03
+
+Root writer complete; find_map_review ACCEPT. Root1.1.55/bot0.2.25/extension6.3.0.87. Mac bot restarted and online; no startup errors. No command registration changes.
+Overview parcel summaries only, no mixed history; selected/sole parcel shows its scans with spaced entries and colored status badges. Find POD request/render removed. Per-scan optional coords added to projection for valid Delivered/Carded identity; selected map has one pin, no global drop fallback. Ambiguous timestamps/identity/points/status ties suppress map.
+Existing regression groups updated test-first; focused22/22, full223/223 PASS7; approximate synthetic Chrome visual inspected. Real Discord/work-PC update unverified. Artifact /tmp/DPD-Assistance-6.3.0.87.zip; evidence/FIND-SEPARATION-2026-11-03.json. Next owner update dist/reload extension then fresh /find. Old extension still shows facts but no selected map. No active writer.
+
+---
+
+# Active find separation and status badges — 2026-11-03
+
+Root writer, basece6727d; find_map_review read-only. Owner approves overview without mixed scans, selected parcel only, no find POD, eligible scan map and status badges. Scope render/findViews/geo, additive optional scan coords projection in executor, existing tests, versions/docs. No lookup parser/queue command changes.
+
+---
+
+# Operator find ready and activated — 2026-11-03
 
 Root writer finished; reviewer find_internal_review ACCEPT. Root1.1.54/bot0.2.24; extension6.3.0.86 unchanged. Mac bot restarted, Discord online confirmed, no startup errors. No command re-registration/work-PC update.
 /find order: latest scan/depot details, history12/page, recipient, consignment-level evidence. Parcel buttons isolate scans and suppress unbound media. Unknown identity remains disclosed, no old bay carried forward. Snapshot navigation fixed14min/16 sessions, author/guild/channel binding; /result uses same view, no repeated depot/ACK.
@@ -2790,6 +2810,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root + duplicate_review_new | S09-18 automatic compact controls | owner confirmed duplicate fix after refresh; requested automatic injection and icons. Scoped static channels script, removed popup activation/activeTab,32px accessible icon buttons | existing regression RED1/2 -&gt; GREEN2/2; full220/220 PASS7; synthetic Chrome layout PASS, review ACCEPT | extension6.3.0.86/root1.1.53; bot unchanged; owner work-PC automatic-load smoke next.
 
 - 2026-11-03 | root + find_internal_review | operator /find completed and activated | status/details/history before recipient/evidence; parcel and history navigation without depot replay; no unbound selected media or invented location/barcode. Snapshot16/fixed14min, author/guild/channel checks; recovery integrated | test-first RED -&gt; focused12/12, full223/223 PASS7, review ACCEPT; Mac bot0.2.24 restarted/online | next owner fresh /find component smoke; extension unchanged.
+
+- 2026-11-03 | root + find_map_review | find separation/status badges activated | no mixed overview history, selected scan paragraphs/badges, no find POD; per-row eligible coords and single-pin map, ambiguity suppresses location | test-first existing groups, focused22/22/full223/223 PASS7; synthetic visual checked; bot0.2.25 restarted/online | extension6.3.0.87 requires owner update for maps; root1.1.55; next fresh /find live smoke.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4090,6 +4112,9 @@ Owner decision2026-11-03: automatic Discord report copy controls and compact ico
 
 ## Operator find — owner approved 2026-11-03
 /find is a private operator/depot investigation card, not a driver export. Order: status/latest event, parcel details, newest-first paged scan history, recipient, historical delivery evidence. Explicit parcel navigation; /report remains driver-facing. Bay/Sequence only describes latest recorded scan, never carries an older bay forward. No barcode inferred from query/parcel number. Observed parcel count is not a confirmed total. Current schema cannot bind global POD/GPS to physical parcel: overview labels this; selected view suppresses media. Unassigned scans keep latest status unconfirmed even after selection.
+
+## Find visual separation — owner approved 2026-11-03
+Overview lists parcel statuses without merged history. Selecting a physical parcel shows only its scans; a sole parcel opens directly. Scan entries use separated paragraphs, bold timestamps/status and badges: Goods Held yellow, Delivered light green, Failed Delivered/Carded red, Pending pink. POD and missing-photo placeholder removed from find; report keeps POD. Map shows only latest unambiguous valid Delivered/Carded scan of selected parcel, with historical/attempt disclaimer; no global drop fallback.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6124,6 +6149,8 @@ S09-18 existing regression protects automatic content-script path scope, clipboa
 
 ## Operator find follow-up
 Existing render expectations now require status/details → history → recipient → evidence. One new grouped render regression protects selected parcel isolation, old Bay not current, unassigned identity uncertainty and paging. Two grouped findViews regressions protect fixed expiry, actor/channel authorization, attachment clearing, no re-enqueue/ACK on navigation, and /result integration. Synthetic fixtures only; real Discord component editing/attachment replacement remains a live smoke boundary.
+
+Find visual follow-up updates existing render/projection/view groups (no added test groups): no mixed overview history, distinct selected scan paragraphs, badges/colors, no POD request/attachment, eligible per-row coordinate whitelist, single-pin map failure/key isolation, cross-parcel suppression, conflicting point/status ties, sole-parcel pagination with unassigned scans. Local synthetic HTML visual preview is approximate; live Discord/map display still needs owner smoke.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

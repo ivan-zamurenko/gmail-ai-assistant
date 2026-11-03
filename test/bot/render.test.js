@@ -1,10 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath, URL } from 'node:url';
 
-import { buildParcelEmbed } from '../../bot/src/render.js';
+import { buildParcelEmbed, findHistoryPages } from '../../bot/src/render.js';
 
 test('the private parcel card renders full recipient details and CAD location', async () => {
   const parcel = {
@@ -23,23 +21,15 @@ test('the private parcel card renders full recipient details and CAD location', 
     }],
   };
   const output = await buildParcelEmbed(parcel, '');
-  assert.equal(output.embeds.length, 4);
-  assert.equal(output.files.length, 1);
-  const placeholder = output.files[0];
-  assert.equal(placeholder.name, 'pod-unavailable.png');
-  assert.equal(placeholder.attachment, fileURLToPath(new URL('../../bot/assets/pod-unavailable.png', import.meta.url)));
-  const image = await readFile(placeholder.attachment);
-  assert.deepEqual([...image.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
-  const photo = output.embeds.at(-1).toJSON();
-  assert.equal(photo.title, 'Delivery photo unavailable');
-  assert.equal(photo.image.url, 'attachment://pod-unavailable.png');
+  assert.equal(output.embeds.length, 3);
+  assert.equal(output.files.length, 0);
   const [, history, recipient] = output.embeds.map((embed) => embed.toJSON());
   const plain = history.description.replaceAll('\u001b', '').replace(/\[[0-9;]*m/g, '');
   assert.match(recipient.fields.find(field => field.name === 'Delivery address').value, /Jane Doe.*Example Ltd/s);
   assert.match(recipient.fields.find(field => field.name === 'Contact').value, /0871234567/);
   assert.match(recipient.fields.find(field => field.name === 'Delivery address').value, /D01AB12/);
   assert.match(recipient.fields.find(field => field.name === 'Delivery address').value, /1 Main Street/);
-  assert.match(plain, /28 Aug 12:00:00.*Received.*cad.*Bay:32 Seq:5/);
+  assert.match(plain, /28 Aug 12:00:00.*Received.*cad.*Bay:32 Seq:5/s);
   assert.doesNotMatch(plain, /B32\/#5/);
 });
 test('history rows keep each status on one line', async () => {
@@ -58,8 +48,8 @@ test('history rows keep each status on one line', async () => {
   const { embeds } = await buildParcelEmbed(parcel, '');
   const history = embeds[1].toJSON();
   const plain = history.description.replaceAll('\u001b', '').replace(/\[[0-9;]*m/g, '');
-  assert.equal(history.title, 'History (1)');
-  assert.match(plain, /03 Sep 08:34:16.*CAD scan.*cad.*Bay:11 Seq:90/);
+  assert.equal(history.title, '🕒 SCAN HISTORY — PARCEL 1');
+  assert.match(plain, /03 Sep 08:34:16.*CAD scan.*cad.*Bay:11 Seq:90/s);
 });
 
 test('NearRoute is hidden from the operator-facing history log', async () => {
@@ -80,26 +70,28 @@ test('NearRoute is hidden from the operator-facing history log', async () => {
   const plain = history.description.replaceAll('\u001b', '').replace(/\[[0-9;]*m/g, '');
   assert.doesNotMatch(plain, /NearRoute/);
   assert.doesNotMatch(plain, /Nearest Route Assigned/);
-  assert.match(plain, /03 Sep 08:34:16.*CAD scan.*cad.*Bay:11 Seq:90/);
+  assert.match(plain, /03 Sep 08:34:16.*CAD scan.*cad.*Bay:11 Seq:90/s);
 });
 
-test('parcel card shows scan GPS when dropped Eircode is unavailable', async () => {
-  const parcel = {
-    query: '123456789', consNumber: '123456789', drop: { type: 'Delivered', lat: 52.037612, lng: -9.994881 },
-    arrangedDate: '29/08/2026',
-    address: { contact: 'Jane Doe', company: '', mobile: '', email: '', lines: ['1 Main Street'], town: 'Dublin', county: 'Dublin', postCode: 'D01AB12', depot: '22' },
-    scans: [{ parcel: '1', type: 'Delivered', date: '03/09/2026', time: '08:55:20', route: 'cad' }],
-  };
+test('selected scan GPS works without Eircode and never borrows another parcel location', async () => {
+ const parcel={consNumber:'123456789',address:{},scans:[
+ {parcel:'1',type:'Carded',date:'03/11/2026',time:'10:00:00',coords:{lat:53,lng:-6}},
+ {parcel:'2',type:'Delivered',date:'03/11/2026',time:'11:00:00',coords:{lat:54,lng:-7}}],drop:{type:'Delivered',lat:55,lng:-8}};
+ const first=await buildParcelEmbed(parcel,'',{parcelNumber:'1'});
+ assert.match(plainText(first),/53.000000, -6.000000/);
+ assert.match(plainText(first),/Open scan location/);
+ assert.doesNotMatch(plainText(first),/54.000000|55.000000|11:00:00/);
+ const conflict=await buildParcelEmbed({...parcel,scans:[...parcel.scans,{...parcel.scans[0],coords:{lat:52,lng:-5}}]},'',{parcelNumber:'1'});
+ assert.doesNotMatch(plainText(conflict),/maps\/|53.000000|52.000000/);
+ const conflictingType=await buildParcelEmbed({...parcel,scans:[...parcel.scans,{...parcel.scans[0],type:'Delivered'}]},'',{parcelNumber:'1'});
+ assert.doesNotMatch(plainText(conflictingType),/maps\/|53.000000/);
 
-  const { embeds } = await buildParcelEmbed(parcel, '');
-  const main = embeds.find(embed => embed.toJSON().title === '📍 Delivery evidence').toJSON();
-  assert.match(main.fields.find(field => field.name === 'Recorded location').value, /52\.037612, -9\.994881/);
-  assert.match(main.fields.find(field => field.name === 'Recorded location').value, /👉 \[Open scan location\]/);
-  assert.match(main.fields.find(field => field.name === 'Recorded location').value, /\n👉 \[Route to address\]/);
-  assert.doesNotMatch(JSON.stringify(main), /dropped ≈ —/);
+
+ const legacy=await buildParcelEmbed({...parcel,scans:parcel.scans.map(scan=>({...scan,coords:undefined}))},'',{parcelNumber:'1'});
+ assert.doesNotMatch(plainText(legacy),/maps\/|55.000000/);
 });
 
-test('parcel card includes the POD image attachment', async () => {
+test('find never includes POD images or placeholders', async () => {
   const parcel = {
     query: '123456789', consNumber: '123456789', drop: null,
     arrangedDate: '29/08/2026',
@@ -109,33 +101,30 @@ test('parcel card includes the POD image attachment', async () => {
   };
 
   const { embeds, files } = await buildParcelEmbed(parcel, '');
-  assert.equal(files.length, 1);
-  assert.equal(files[0].name, 'pod.jpg');
-  assert.equal(embeds.at(-1).toJSON().title, 'POD photo');
-  assert.equal(embeds.at(-1).toJSON().image.url, 'attachment://pod.jpg');
+  assert.equal(files.length, 0);
+  assert.doesNotMatch(JSON.stringify(embeds), /pod.jpg|pod-unavailable|POD photo/);
 });
 
 const plainText = output => output.embeds.map(embed => JSON.stringify(embed.toJSON())).join('\n').replaceAll('\\u001b', '').replace(/\[[0-9;]*m/g, '');
 
-test('cards sort scans explicitly, count physical parcels and disclose capped history', async () => {
-  const scans = Array.from({ length: 14 }, (_, i) => ({ parcel: i === 13 ? '2' : '1', type: i === 13 ? 'Delivered' : 'Received', date: `${String(i + 1).padStart(2, '0')}/10/2026`, time: '10:00:00', route: 'R1' }));
-  scans.push({ parcel: '0', type: 'Received', date: '30/10/2026', time: '12:00:00' });
-  const output = await buildParcelEmbed({ consNumber: '123456789', address: {}, scans: [scans[13], ...scans.slice(0, 13), scans[14]] }, '');
-  const [main, history] = output.embeds.map(embed => embed.toJSON());
-  assert.match(main.title, /Delivered \(1\/2\)/);
-  const body = history.description.replaceAll('\u001b', '').replace(/\[[0-9;]*m/g, '');
-  assert.match(body, /14 Oct/);
-  assert.ok(body.indexOf('14 Oct') < body.indexOf('13 Oct'));
-  assert.match(body, /\+2 earlier/);
-  assert.doesNotMatch(body, /01 Oct|02 Oct|P0/);
-  assert.doesNotMatch(main.fields.find(field => field.name === 'Parcels').value, /Parcel 0/);
+test('overview separates parcel summaries from individual paged histories', async () => {
+ const scans=Array.from({length:14},(_,i)=>({parcel:i===13?'2':'1',type:i===13?'Delivered':'Goods Held',date:`${String(i+1).padStart(2,'0')}/10/2026`,time:'10:00:00'}));
+ const parcel={consNumber:'123456789',address:{},scans};
+ const overview=await buildParcelEmbed(parcel,'');
+ assert.doesNotMatch(plainText(overview),/SCAN HISTORY|14 Oct|13 Oct/);
+ assert.match(plainText(overview),/Parcel 1/);assert.match(plainText(overview),/Parcel 2/);
+ const selected=await buildParcelEmbed(parcel,'',{parcelNumber:'1'});
+ const history=selected.embeds[1].toJSON();
+ assert.match(history.title,/PARCEL 1/);assert.match(history.description,/13 Oct/);
+ assert.doesNotMatch(history.description,/Delivered|14 Oct|Parcel 2/);
+ assert.match(history.description,/\n\n/);assert.match(history.footer.text,/Page 1 of 2/);
 });
 
 test('malformed and oversized card values remain honest, bounded and cannot inject Discord formatting', async () => {
   for (const parcel of [{}, { scans: [] }, { scans: 'invalid' }, { scans: [null] }, { scans: [{ parcel: '1', type: 'Delivered', date: '31/02/2026', time: '10:00:00' }] }, { scans: [{ parcel: '', type: 'Received', date: '01/11/2026', time: '' }] }]) {
     const result = await buildParcelEmbed(parcel, '');
     assert.match(plainText(result), /unknown|unconfirmed|no scan/i);
-    assert.doesNotMatch(plainText(result), /31 Feb|Parcel 1/);
+    assert.doesNotMatch(plainText(result), /31 Feb/);
   }
   const clippedAddress = await buildParcelEmbed({ address: { lines: ['1 Main Street'], truncated: true },
     drop: { type: 'Delivered', lat: 53, lng: -6 }, scans: [{ parcel: '1', type: 'Received', date: '01/11/2026', time: '12:00:00' }],
@@ -146,7 +135,7 @@ test('malformed and oversized card values remain honest, bounded and cannot inje
     { parcel: '', type: 'Redirected', date: '01/11/2026', time: '13:00:00' },
   ] }, '');
   assert.match(unassigned.embeds[0].toJSON().title, /Latest status unconfirmed/);
-  assert.match(plainText(unassigned), /Unassigned.*Redirected/);
+  assert.match(plainText(unassigned), /unassigned parcel identity/);
   const hostile = '``` @everyone <@123> \u001b[31m ** [click](https://evil.test)'.repeat(300);
   const output = await buildParcelEmbed({ consNumber: hostile, query: hostile,
     address: { contact: hostile, company: hostile, lines: Array(20).fill(hostile), mobile: hostile, email: hostile, depot: hostile, postCode: hostile },
@@ -191,97 +180,41 @@ test('malformed and oversized card values remain honest, bounded and cannot inje
   for (const lines of [[], ['𠮷'.repeat(400)], ['bad' + String.fromCharCode(0xd800)]]) {
     const map = await buildParcelEmbed({ address: { lines }, drop: { type: 'Delivered', lat: 53, lng: -6 }, scans: [] }, '');
     assert.doesNotMatch(plainText(map), /destination=/);
-    assert.match(plainText(map), /Open scan location/);
+    assert.doesNotMatch(plainText(map), /Open scan location/);
   }
 });
 
 
-test('find overview leads with facts, groups details and only maps delivery or attempted-delivery scans', async () => {
-  const parcel = { query: '123456789', consNumber: '123456789', address: { contact: 'Example Recipient', lines: ['1 Example Road'], town: 'Dublin', county: 'Dublin', postCode: 'D02AF30', mobile: '000000000', email: 'example@example.invalid' },
-    scans: [{ parcel: '1', type: 'Delivered', date: '02/11/2026', time: '12:34:56', route: '123', signature: 'Example signer' }],
-    drop: { type: 'Delivered', lat: 53, lng: -6 } };
-  const result = await buildParcelEmbed(parcel, '');
-  const main = result.embeds[0].toJSON();
-  assert.deepEqual(main.fields.map(field => field.name), ['Latest event', 'Parcel details']);
-  assert.equal(result.embeds[1].toJSON().title,'History (1)');
-  const recipient=result.embeds[2].toJSON();
-  assert.equal(recipient.title,'👤 Recipient');
-  assert.match(main.fields[0].value, /02 Nov 12:34:56/);
-  assert.match(main.fields[0].value, /Route 123/);
-  assert.match(main.fields[0].value, /Signed for by: Example signer/);
-  assert.equal((recipient.fields[0].value.match(/Dublin/g) ?? []).length, 1);
-  assert.match(plainText(result), /Photo and location may refer to different parcels or events/);
-  assert.doesNotMatch(main.footer?.text ?? '', /searched as/i);
-  assert.doesNotMatch(JSON.stringify(result.embeds.map(embed => embed.toJSON())), /\\u001b|```|searched as|->|off target/);
-  for (const type of ['Goods Held', undefined]) {
-    const excluded = await buildParcelEmbed({ ...parcel, drop: { ...parcel.drop, type } }, '');
-    assert.doesNotMatch(plainText(excluded), /Recorded location|maps\/|53\.000000/);
-  }
-  const longTarget = await buildParcelEmbed({ ...parcel, address: { lines: ['A'.repeat(790)] } }, '');
-  assert.ok(longTarget.embeds[0].toJSON().fields.every(field => field.value.length <= 1024));
-  assert.doesNotMatch(plainText(longTarget), /maps\/dir|destination=/);
-  const fullAddress = await buildParcelEmbed({ ...parcel, address: {
-    contact: 'A'.repeat(100), company: 'B'.repeat(100), lines: ['C', 'D', 'E', 'F', 'G'].map(letter => letter.repeat(100)),
-    town: 'H'.repeat(100), county: 'I'.repeat(100), postCode: 'J'.repeat(100),
-  } }, '');
-  assert.ok(fullAddress.embeds[0].toJSON().fields.every(field => field.value.length <= 1024));
-  const attempted = await buildParcelEmbed({ ...parcel, drop: { ...parcel.drop, type: 'Carded' } }, '');
-  assert.match(plainText(attempted), /Attempted delivery/);
-  assert.doesNotMatch(plainText(attempted), /maps\/dir|dropped|off target/);
+test('status colors and badges distinguish depot outcomes without changing source labels', async () => {
+ for (const [type,color,badge] of [['Goods Held',0xf1c40f,'🟨'],['Delivered',0x90ee90,'🟩'],['Failed Delivered',0xe74c3c,'🟥'],['Carded',0xe74c3c,'🟥'],['Pending',0xff8fcb,'🩷']]) {
+  const output=await buildParcelEmbed({scans:[{parcel:'1',type,date:'03/11/2026',time:'10:00:00'}]},'');
+  assert.equal(output.embeds[0].toJSON().color,color);
+  assert.ok(output.embeds[0].toJSON().description.includes(`${badge} **${type}**`));
+  assert.ok(output.embeds[1].toJSON().description.includes(`${badge} **${type}**`));
+ }
 });
 
-
-test('Maps failure preserves the actual card, POD and links; disabled enrichment never requests', async (t) => {
-  const key = 'SYNTHETIC_MAP_SECRET';
-  const original = globalThis.fetch;
-  t.after(() => { globalThis.fetch = original; });
-  t.mock.method(globalThis.console, 'warn', () => {});
-  const parcel = { consNumber: '123456789', address: { contact: 'Synthetic recipient', lines: ['1 Example Street'], postCode: 'D02AF30' },
-    scans: [{ parcel: '1', type: 'Delivered', date: '03/11/2026', time: '12:00:00' }],
-    drop: { type: 'Delivered', lat: 53, lng: -6 }, pod: { body: '/9j/4AAQ', mime: 'image/jpeg' } };
-  let calls = 0;
-  globalThis.fetch = async () => { calls++; throw new Error(key); };
-  const output = await buildParcelEmbed(parcel, key);
-  assert.match(output.embeds[0].toJSON().title, /Delivered/);
-  assert.match(plainText(output), /Synthetic recipient|1 Example Street/);
-  assert.match(plainText(output), /Map preview unavailable/);
-  assert.match(plainText(output), /Open scan location|Route to address/);
-  assert.equal(output.files[0].name, 'pod.jpg');
-  assert.doesNotMatch(JSON.stringify(output.embeds.map(e => e.toJSON())), /SYNTHETIC_MAP_SECRET/);
-  assert.equal(calls, 1);
-  calls = 0;
-  globalThis.fetch = async url => {
-    calls++;
-    if (String(url).includes('/staticmap')) return new globalThis.Response('provider error', { headers: { 'content-type': 'text/html' } });
-    return new globalThis.Response(JSON.stringify({ status: 'OK', results: [{ geometry: { location: { lat: 53.001, lng: -6 } }, formatted_address: 'D02AF30' }] }), { headers: { 'content-type': 'application/json' } });
-  };
-  const failedImage = await buildParcelEmbed(parcel, key);
-  assert.equal(calls, 5, 'one geocode, three reverse variants, one static image; no retries');
-  assert.match(plainText(failedImage), /straight-line/);
-  assert.match(plainText(failedImage), /Map preview unavailable/);
-  assert.equal(failedImage.files[0].name, 'pod.jpg');
-  assert.equal(failedImage.files.length, 1);
-  assert.doesNotMatch(plainText(failedImage), /SYNTHETIC_MAP_SECRET/);
-  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7ioAAAAASUVORK5CYII=', 'base64');
-  for (const [lat, units] of [[53.001, /≈ \d+ m from/], [53.02, /≈ \d+\.\d km from/]]) {
-    globalThis.fetch = async url => String(url).includes('/staticmap')
-      ? new globalThis.Response(png, { headers: { 'content-type': 'image/png' } })
-      : new globalThis.Response(JSON.stringify({ status: 'OK', results: [{ geometry: { location: { lat, lng: -6 } }, formatted_address: 'D02AF30' }] }), { headers: { 'content-type': 'application/json' } });
-    const complete = await buildParcelEmbed(parcel, key);
-    assert.match(plainText(complete), units);
-    assert.match(plainText(complete), /straight-line/);
-    assert.equal(complete.files.find(file => file.name === 'route.png').attachment.equals(png), true);
-    assert.doesNotMatch(plainText(complete), /SYNTHETIC_MAP_SECRET|Map preview unavailable/);
-  }
-  calls = 0;
-  globalThis.fetch = async () => { calls++; throw new Error(key); };
-  for (const [value, apiKey] of [[parcel, ''], [{ ...parcel, drop: null }, key], [{ ...parcel, address: { postCode: 'invalid' } }, key]]) {
-    const basic = await buildParcelEmbed(value, apiKey);
-    assert.match(basic.embeds[0].toJSON().title, /Delivered/);
-  }
-  assert.equal(calls, 0);
+test('scan Maps fail independently and never geocode or expose a key', async t => {
+ const key='SYNTHETIC_MAP_SECRET';
+ const original=globalThis.fetch;t.after(()=>{globalThis.fetch=original;});
+ t.mock.method(globalThis.console,'warn',()=>{});
+ const parcel={consNumber:'123456789',address:{contact:'Synthetic recipient'},scans:[{parcel:'1',type:'Delivered',date:'03/11/2026',time:'10:00:00',coords:{lat:53,lng:-6}}],pod:{body:'/9j/4AAQ'}};
+ let calls=0;
+ globalThis.fetch=async()=>{calls++;throw new Error(key);};
+ const failed=await buildParcelEmbed(parcel,key);
+ assert.equal(calls,1);assert.equal(failed.files.length,0);
+ assert.match(plainText(failed),/Map preview unavailable/);assert.match(plainText(failed),/Open scan location/);
+ assert.doesNotMatch(plainText(failed),/SYNTHETIC_MAP_SECRET|pod.jpg/);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7ioAAAAASUVORK5CYII=', 'base64');
+ globalThis.fetch=async url=>{assert.match(String(url),/staticmap/);assert.doesNotMatch(String(url),/label:D|path=/);return new globalThis.Response(png,{headers:{'content-type':'image/png'}});};
+ const ready=await buildParcelEmbed(parcel,key);assert.equal(ready.files[0].name,'scan-location.png');assert.ok(ready.files[0].attachment.equals(png));
+ calls=0;globalThis.fetch=async()=>{calls++;throw new Error('unexpected');};
+ for (const type of ['Goods Held','Pending']) {
+  const excluded=await buildParcelEmbed({...parcel,scans:[{...parcel.scans[0],type}]},key);
+  assert.doesNotMatch(plainText(excluded),/maps\/|53.000000/);
+ }
+ await buildParcelEmbed(parcel,'');assert.equal(calls,0);
 });
-
 
 test('operator find pages history, isolates selected parcels and never carries an old bay forward', async () => {
  const scans=Array.from({length:15},(_,i)=>({parcel:'1',type:i===14?'Goods Held':'CAD scan',date:'03/11/2026',time:`10:${String(i).padStart(2,'0')}:00`,...(i===0?{bay:'7',sequence:'2'}:{})}));
@@ -293,12 +226,14 @@ test('operator find pages history, isolates selected parcels and never carries a
  assert.doesNotMatch(selected.embeds[0].toJSON().fields[0].value,/Bay:7/);
  const history=selected.embeds[1].toJSON();
  assert.match(history.footer.text,/Page 2 of 2/);
- assert.match(history.description,/10:00:00.*Bay:7 Seq:2/);
+ assert.match(history.description,/10:00:00.*Bay:7 Seq:2/s);
  assert.doesNotMatch(history.description,/Delivered|P2/);
  assert.equal(selected.files.length,0,'consignment-level photos must not be attributed to selected parcel');
  const ambiguous=await buildParcelEmbed({...parcel,scans:[...scans,{parcel:'',type:'Delivered',date:'03/11/2026',time:'12:00:00'}]},'',{parcelNumber:'1'});
  assert.match(ambiguous.embeds[0].toJSON().title,/unconfirmed/);
  assert.match(ambiguous.embeds[0].toJSON().description,/unassigned parcel identity/);
+ assert.equal(findHistoryPages({scans:[...scans.slice(0,12),{parcel:'',type:'Carded'}]}),1,'single parcel pages exclude unassigned scans like the renderer');
+
 
  assert.doesNotMatch(plainText(selected),/maps\/|attachment:\/\//);
  const overview=await buildParcelEmbed(parcel,'');

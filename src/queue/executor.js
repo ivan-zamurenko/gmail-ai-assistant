@@ -258,14 +258,8 @@ async function runFind(args) {
   if (reason)  return error(reason);
   if (!res.ok) return error(findFailure(res));
 
-  // Credentials stay in the extension: the depot tab only reports the event id.
-  const podResult = res.podEventId == null ? null : await fetchPodImage(res.podEventId, config.podAuth);
-  const podBody = typeof podResult?.image?.body === 'string' && /^[A-Za-z0-9+/=]+$/.test(podResult.image.body)
-    && podResult.image.body.length <= 700_000 ? podResult.image.body : '';
-  if (podResult?.error) console.warn('[find] POD_UNAVAILABLE', podFailureCode(podResult.error));
-  // POD is optional: a provider failure must not discard the confirmed parcel
-  // facts. With no image the bot renders its local unavailable-photo placeholder.
-  return projectFindResult(res, podBody);
+  // Operator find needs scan facts only; POD stays in the driver report flow.
+  return projectFindResult(res);
 }
 
 /** Report selection is read-only; chosen tuples are rechecked against fresh depot scans. */
@@ -352,6 +346,11 @@ export function projectFindResult(res, podBody = '') {
       ...(bay && { bay }),
       ...(sequence && { sequence }),
       ...(onwardBc && { onwardBc }),
+      ...(['Delivered', 'Carded'].includes(scan.type)
+        && typeof scan.parcel === 'string' && /^\d{1,6}$/.test(scan.parcel) && Number(scan.parcel) > 0
+        && Number.isFinite(scan.coords?.lat) && Math.abs(scan.coords.lat) <= 90
+        && Number.isFinite(scan.coords?.lng) && Math.abs(scan.coords.lng) <= 180
+        && { coords: { lat: scan.coords.lat, lng: scan.coords.lng } }),
     };
   });
   const address = res.address && typeof res.address === 'object' ? res.address : {};

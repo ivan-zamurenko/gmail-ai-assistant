@@ -1134,3 +1134,5 @@ S09-18 existing regression protects automatic content-script path scope, clipboa
 
 ## Operator find follow-up
 Existing render expectations now require status/details → history → recipient → evidence. One new grouped render regression protects selected parcel isolation, old Bay not current, unassigned identity uncertainty and paging. Two grouped findViews regressions protect fixed expiry, actor/channel authorization, attachment clearing, no re-enqueue/ACK on navigation, and /result integration. Synthetic fixtures only; real Discord component editing/attachment replacement remains a live smoke boundary.
+
+Find visual follow-up updates existing render/projection/view groups (no added test groups): no mixed overview history, distinct selected scan paragraphs, badges/colors, no POD request/attachment, eligible per-row coordinate whitelist, single-pin map failure/key isolation, cross-parcel suppression, conflicting point/status ties, sole-parcel pagination with unassigned scans. Local synthetic HTML visual preview is approximate; live Discord/map display still needs owner smoke.

@@ -226,7 +226,7 @@ test('retry task deletes a previous-day batch without reaching the depot', async
   }
 });
 
-test('find injects only the number; the POD photo is requested by the extension', async (t) => {
+test('find injects only the number and never requests a POD photo', async (t) => {
   const warnings = [];
   t.mock.method(globalThis.console, 'warn', (...args) => warnings.push(args));
   const originalChrome = globalThis.chrome;
@@ -266,18 +266,14 @@ test('find injects only the number; the POD photo is requested by the extension'
   assert.deepEqual(warnings, [], 'no warning when no POD was expected');
   podEventId = '555';
   const delivered = await executeTask(task);
-  // The test network guard (or a missing local podAuth in CI) makes the POD step
-  // fail inside the extension; core facts must still reach the renderer.
+  // A photo event must not trigger a provider request in the operator find flow.
   assert.equal(delivered.status, 'done');
   assert.equal(delivered.parcel.pod, undefined);
   assert.equal(delivered.parcel.consNumber, '123456789');
   assert.deepEqual(delivered.parcel.scans, notDelivered.parcel.scans);
   assert.equal(JSON.stringify(delivered).includes('555'), false, 'event id stays local even when POD fails');
   assert.doesNotMatch(JSON.stringify(delivered), /POD (request|authorization)/);
-  assert.equal(warnings.length, 1);
-  assert.equal(warnings[0][0], '[find] POD_UNAVAILABLE');
-  assert.match(warnings[0][1] ?? '', /^(AUTH_NOT_CONFIGURED|REQUEST_FAILED)$/);
-  assert.equal(warnings[0].length, 2);
+  assert.deepEqual(warnings, [], 'find never requests POD even when a photo event exists');
 
   assert.deepEqual(injections, [[['123456789']], [['123456789']]]);
 });
@@ -382,6 +378,17 @@ test('find projection bounds optional values and excludes internal identity meta
   assert.equal(result.parcel.scans[0].date, '');
   assert.equal(result.parcel.scans[0].time, '');
   assert.equal(result.parcel.scans[0].parcel, '');
+  const geoScans = [
+    { parcel:'1', type:'Delivered', coords:{lat:53,lng:-6,token:'PRIVATE_GPS'} },
+    { parcel:'2', type:'Carded', coords:{lat:54,lng:-7} },
+    { parcel:'1', type:'Goods Held', coords:{lat:53,lng:-6} },
+    { parcel:'', type:'Delivered', coords:{lat:53,lng:-6} },
+    { parcel:'1', type:'Delivered', coords:{lat:100,lng:-6} },
+  ];
+  const projected=projectFindResult({...source,scans:geoScans}).parcel.scans;
+  assert.deepEqual(projected[0].coords,{lat:53,lng:-6});
+  assert.deepEqual(projected[1].coords,{lat:54,lng:-7});
+  assert.ok(projected.slice(2).every(scan=>!scan.coords));
   const oversizedScan = { ...source.scans[0], type: '𠮷'.repeat(24), signature: '𠮷'.repeat(40), route: '𠮷'.repeat(12), date: '𠮷'.repeat(5), time: '𠮷'.repeat(4), parcel: '𠮷'.repeat(3), bay: 'B'.repeat(24), sequence: 'S'.repeat(24), onwardBc: 'O'.repeat(24) };
   const combined = projectFindResult({ ...source, scans: Array(1000).fill(oversizedScan) }, 'A'.repeat(700000));
   assert.equal(combined.status, 'error', 'combined Unicode history and POD must fit serialized byte budget');

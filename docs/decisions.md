@@ -226,3 +226,6 @@ Owner decision2026-11-03: automatic Discord report copy controls and compact ico
 
 ## Operator find — owner approved 2026-11-03
 /find is a private operator/depot investigation card, not a driver export. Order: status/latest event, parcel details, newest-first paged scan history, recipient, historical delivery evidence. Explicit parcel navigation; /report remains driver-facing. Bay/Sequence only describes latest recorded scan, never carries an older bay forward. No barcode inferred from query/parcel number. Observed parcel count is not a confirmed total. Current schema cannot bind global POD/GPS to physical parcel: overview labels this; selected view suppresses media. Unassigned scans keep latest status unconfirmed even after selection.
+
+## Find visual separation — owner approved 2026-11-03
+Overview lists parcel statuses without merged history. Selecting a physical parcel shows only its scans; a sole parcel opens directly. Scan entries use separated paragraphs, bold timestamps/status and badges: Goods Held yellow, Delivered light green, Failed Delivered/Carded red, Pending pink. POD and missing-photo placeholder removed from find; report keeps POD. Map shows only latest unambiguous valid Delivered/Carded scan of selected parcel, with historical/attempt disclaimer; no global drop fallback.

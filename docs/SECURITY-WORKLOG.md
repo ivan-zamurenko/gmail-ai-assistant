@@ -600,3 +600,7 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | owner-authorized operator /find redesign: read-only navigation snapshots retained only in Mac memory,16-session bound, fixed14min expiry from interaction, actor/guild/channel bound and Admin runtime gate. No disk persistence/raw logging/exports or permission changes. Selected views suppress unbound POD/GPS; unknown parcel identity remains disclosed. Recovery ACK semantics unchanged. Synthetic fixtures only.
 
 - 2026-11-03 | root | operator-find activation: exact bot PID/cwd verified, authorized Mac restart after passing gates; Discord online confirmed without printing identity/config. In-memory cleanup timers reset as documented; no depot requests or customer messages initiated by agent.
+
+- 2026-11-03 | root | owner-approved find scan map: only bounded Delivered/Carded GPS with physical parcel identity passes result projection; event/session metadata stays local. Single-point Maps request uses existing server-side bounded adapter and keeps key out of Discord. Removed find POD service request/rendering. No new permissions, no live depot calls by agent; legacy unbound drop never used for selected map.
+
+- 2026-11-03 | root | authorized find-separation activation: verified exact Node process and bot cwd before restart; bot0.2.25 online, no startup errors; no identity/config printed or live depot calls initiated. Existing in-memory timers reset on restart. Extension artifact stored outside Git for intended work PC.

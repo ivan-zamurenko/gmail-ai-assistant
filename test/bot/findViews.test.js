@@ -10,9 +10,10 @@ test('private find navigation stays on saved scans and rejects other actors and 
  const parcel={consNumber:'123456789',address:{},scans:Array.from({length:15},(_,i)=>({parcel:i===14?'2':'1',type:'Received',date:'03/11/2026',time:`10:${String(i).padStart(2,'0')}:00`}))};
  const payload=await views.open(parcel,actor);
  const ids=payload.components.flatMap(row=>row.toJSON().components.map(b=>b.custom_id));
- const next=ids.find(id=>id.endsWith(':all:1'));
+ assert.ok(!ids.some(id=>id.endsWith(':all:1')),'overview has no mixed scan pages');
  const selected=ids.find(id=>id.endsWith(':1:0'));
- assert.ok(next);assert.ok(selected);
+ assert.ok(selected);
+ const next=selected.replace(/:1:0$/,':1:1');
  let edited,replies=0,deferred=0;
  const click={...actor,customId:next,message:{id:'message'},deferUpdate:async()=>{deferred++;},editReply:async p=>{edited=p;},reply:async()=>{replies++;}};
  await views.handle({...click,user:{id:'other'}});assert.equal(replies,1);assert.equal(renders,1);

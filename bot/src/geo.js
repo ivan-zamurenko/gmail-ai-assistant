@@ -161,3 +161,13 @@ export async function mapImage(drop, addr, apiKey, options) {
 
   return request(url, 'image', options);
 }
+
+/** Operator view: one recorded scan point; no destination geocoding or route. */
+export async function scanMapImage(point, apiKey, options) {
+  if (!validKey(apiKey) || !validPoint(point)) return null;
+  const url = 'https://maps.googleapis.com/maps/api/staticmap?size=640x400&scale=2&format=png32'
+    + `&center=${point.lat},${point.lng}&zoom=17`
+    + `&markers=color:red|label:S|${point.lat},${point.lng}`
+    + `&key=${encodeURIComponent(apiKey)}`;
+  return request(url, 'image', options);
+}

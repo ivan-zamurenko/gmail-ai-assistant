@@ -343,3 +343,5 @@ Separate IIFE bundle injected in ISOLATED world via explicit activeTab popup act
 Sources: [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts). Discord markup/CORS are external compatibility boundaries; fail with operator-readable status and use existing export fallback.
 
 S09-18 update6.3.0.86: owner requested automatic loading. Existing IIFE now registered as static isolated/top-frame content script matching only https://discord.com/channels/* at document_idle; popup activation module/UI and activeTab removed. No broader host match. Login-to-channels SPA transition may require one reload; browser site-access policy still applies.
+
+Find map adapter scanMapImage uses existing guarded Maps Static request with one red scan marker, fixed zoom17, no geocoding/destination route. /report mapImage remains unchanged. Optional per-scan coords require extension6.3.0.87; old payload safely omits selected map.

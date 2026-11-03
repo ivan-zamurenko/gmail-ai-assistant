@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-03",
+  "scope": "Find Failed Delivery/Incorrect Address GPS and red Return to depot without GPS",
+  "versions": {
+    "root": "1.1.56",
+    "bot": "0.2.26",
+    "extension": "6.3.0.88"
+  },
+  "regression": "Existing tests first RED17/20 -> focused20/20; full223/223 PASS7",
+  "review": "find_map_review ACCEPT",
+  "report": "Eligibility unchanged Delivered/Carded",
+  "artifact": "/tmp/DPD-Assistance-6.3.0.88.zip",
+  "sha256": "138c87b3f02cc390ed6fd95defe48e966f092d7a63853a8af197627097037691",
+  "live": "Work-PC verification pending",
+  "merge": "Owner explicitly authorized codex into main; pending PR checks/merge"
+}

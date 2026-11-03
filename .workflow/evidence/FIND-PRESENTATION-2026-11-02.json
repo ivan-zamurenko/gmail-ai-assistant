@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "task_id": "FIND-PRESENTATION-2026-11-02",
+  "outcome": "implemented; live activation pending",
+  "base_sha": "37c470f",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/render.test.js",
+      "exit_code": 1,
+      "result": "1/8 after owner-requested layout expectations before runtime"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/render.test.js",
+      "exit_code": 0,
+      "result": "8/8; one new grouped regression"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "193/193; all7stages PASS; browser NOT RUN"
+    }
+  ],
+  "review": "find_layout_review ACCEPT; parent synthetic text preview inspected",
+  "test_spec_correction": "Removed overbroad no-footer expectation; retained required uncertainty and forbade redundant searched-as. Not a runtime defect.",
+  "characterization": "Long target/max grouped address added after encoded-target budget500 guard",
+  "untested": [
+    "Real Discord/mobile display",
+    "Bot restart and report registration",
+    "Existing optional Maps provider errors remain S09-07"
+  ],
+  "next_step": "Activate updated bot then owner /find check"
+}

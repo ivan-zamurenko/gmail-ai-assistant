@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-02",
+  "outcome": "passed",
+  "scope": "Offline Discord admission: extract real handlers without startup; reject unknown and malformed commands before queue/todo effects",
+  "base_sha": "29c8be4",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/discord/admission.test.mjs",
+      "exit_code": 1,
+      "result": "Writer: 3 PASS / 2 FAIL after unchanged extraction; unknown command enqueued and malformed getter exception escaped",
+      "boundary": "synthetic interactions; no startup/Firebase"
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/discord/admission.test.mjs test/bot/commands.test.js test/bot/validation.test.js",
+      "exit_code": 0,
+      "result": "Writer: 7/7 PASS",
+      "boundary": "synthetic interactions with explicit fake external adapters"
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "7 stages PASS: lint, 162/162 tests, build, artifacts, roadmap, docs-links, diff-check",
+      "boundary": "local; browser NOT RUN"
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/build-start-here.mjs",
+      "exit_code": 0,
+      "result": "121 documents; offline reader rebuilt",
+      "boundary": "documentation only"
+    }
+  ],
+  "acceptance": {
+    "1": "wrong guild/all commands and non-admin depot reject before queue; allowed registered modes enqueue once",
+    "2": "all todo subcommands allowed without depot Admin, actor always interaction.user.id",
+    "3": "omitted/null getter defaults true; explicit true/false preserved without confirm_live",
+    "4": "unknown command/subcommand and malformed getter/type/number/date reject safely before defer or effects; sentinel absent from replies",
+    "5": "actual command schema exercised against real handler factory; tests never import index/login/Firebase"
+  },
+  "decisions": [
+    "User instructed continue report-first S09-02",
+    "Scope includes interactions.js for minimal mechanical handler extraction; no permissions/schema change",
+    "Discord null optional getter means omitted, distinct from explicit queue dryRun:null",
+    "Keep delivery/progress/render behavior; broad logging and recovery remain S01-03/S09-04",
+    "Root 1.1.15, bot 0.2.5; extension unchanged"
+  ],
+  "review": "s09_admission_review independent static ACCEPT; helper delivery paths compared to baseline",
+  "changed_paths": [
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md",
+    ".workflow/evidence/S09-02.json",
+    ".workflow/state.json",
+    "START_HERE.html",
+    "bot/package-lock.json",
+    "bot/package.json",
+    "bot/src/index.js",
+    "bot/src/interactions.js",
+    "docs/SECURITY-WORKLOG.md",
+    "docs/TESTING.md",
+    "docs/discord-bot.md",
+    "package-lock.json",
+    "package.json",
+    "roadmap/tasks/S09-02.md",
+    "test/discord/admission.test.mjs"
+  ],
+  "untested": [
+    "Live Discord permissions/registration/client login",
+    "Live Firebase and Firestore rules",
+    "Reply delivery failure/recovery",
+    "Browser lifecycle"
+  ],
+  "residual_risk": [
+    "Existing raw client/find diagnostics await S01-03",
+    "Existing terminal result deletion before delivery awaits S09-04"
+  ],
+  "blocker": null,
+  "next_step": "S01-03 — safe diagnostic/error paths (toolchain_owner)",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "pending",
+    "push_status": "pending"
+  },
+  "external_effects": []
+}

@@ -1,0 +1,73 @@
+{
+  "scope": "final documentation-kit validation; not application readiness",
+  "checks": [
+    {
+      "name": "roadmap-validate",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "validate"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.2/roadmap-validate.log"
+    },
+    {
+      "name": "roadmap-next",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "next"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.2/roadmap-next.log"
+    },
+    {
+      "name": "markdown-validate",
+      "command": [
+        "node",
+        "tools/check-docs.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.2/markdown-validate.log"
+    },
+    {
+      "name": "tool-tests",
+      "command": [
+        "node",
+        "--test",
+        "tools/tests/discord-docs.test.mjs",
+        "tools/tests/docs.test.mjs",
+        "tools/tests/reader.test.mjs",
+        "tools/tests/roadmap.test.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.2/tool-tests.log"
+    },
+    {
+      "name": "html-build",
+      "command": [
+        "node",
+        "tools/build-start-here.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.2/html-build.log"
+    }
+  ],
+  "tool_tests": {
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0
+  },
+  "markdown_files": 115,
+  "tasks": 53,
+  "stages": 10,
+  "gates": 12,
+  "source_checks": "checks/kit-v1.2/source-checks.json",
+  "source_failures_remain": true,
+  "consistency": "checks/kit-v1.2/consistency.json"
+}

@@ -1,22 +1,25 @@
 {
   "name": "gmail-ai-assistant",
-  "version": "1.0.0",
-  "description": "Chrome Extension — Gmail AI Assistant (Manifest V3)",
+  "version": "1.1.56",
+  "description": "Chrome Extension \u2014 Gmail AI Assistant (Manifest V3)",
   "type": "module",
   "private": true,
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
-    "test": "node --test",
-    "lint": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" build.js",
-    "lint:fix": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" build.js --fix"
+    "test": "node --test --import ./test/helpers/noNetwork.js test/*/*.test.js test/*/*.test.mjs tools/tests/*.test.mjs",
+    "lint": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" \"shared/**/*.js\" build.js",
+    "lint:fix": "eslint \"src/**/*.js\" \"bot/**/*.js\" \"test/**/*.js\" \"shared/**/*.js\" build.js --fix",
+    "test:rules": "node tools/run-firestore-rules.mjs"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.0",
     "esbuild": "^0.28.1",
     "eslint": "^9.0.0"
   },
   "dependencies": {
     "@zxing/library": "^0.23.0",
-    "firebase": "^12.18.0"
+    "firebase": "^12.18.0",
+    "zxing-wasm": "^3.1.3"
   }
 }

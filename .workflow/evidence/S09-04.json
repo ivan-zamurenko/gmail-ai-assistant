@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-04",
+  "outcome": "passed",
+  "base_sha": "3e76bc9",
+  "branch": "codex",
+  "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+  "completed_on": "2026-10-29",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/delivery.test.mjs",
+      "exit_code": 1,
+      "result": "0/1: actual queue deletes result before rejected Discord reply"
+    },
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/delivery.test.mjs",
+      "exit_code": 1,
+      "result": "2/3: ACK ordering and handler delivery failure expectations"
+    },
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/delivery.test.mjs",
+      "exit_code": 1,
+      "result": "4/5: recovery list lacks selection controls (fixture setup error excluded)"
+    },
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/delivery.test.mjs",
+      "exit_code": 1,
+      "result": "4/5: slight server-clock lead incorrectly treated as invalid completion"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/delivery.test.mjs test/discord/admission.test.mjs test/bot/commands.test.js",
+      "exit_code": 0,
+      "result": "12/12"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "186/186; lint/build/artifacts/docs/diff PASS; browser NOT RUN"
+    }
+  ],
+  "review": "delivery_review ACCEPT; parent inspected ownership/retention/ACK and clock-skew fix; full gate passed",
+  "acceptance": {
+    "1": "Actual queue+handler rejects delivery while retained record survives; enqueue remains once",
+    "2": "ACK follows final send/edit; failed generic notice/list/render never ACK; ACK/delete failure separated",
+    "3": "Fresh service instance reads same store; exact consignment list selects internal ID, buttons recheck requester/guild/executor behind Admin gate; no enqueue port in recovery",
+    "4": "Pending timeout terminal cancelled vs claimed uncertain rejection; sweeper never deletes pending/claimed",
+    "5": "Bot-only additive delivery metadata documented before implementation, schema2/rules unchanged; owner24h retention from completedAt, expired deny and sweep; skew5min bounded"
+  },
+  "characterization": "Restart/expiry new service APIs tested without claiming pre-existing implementation RED.",
+  "owner_decision": "24h retained result, /result using consignment rather than taskID",
+  "engineering_default": "Optional no-consignment private paginated list and explicit selection for multiple matches; proposed and announced, not recorded as separate owner approval",
+  "untested": [
+    "Firebase Emulator/security rules against live server",
+    "Real Discord network behavior, command registration/startup/deployment",
+    "Bot-offline physical cleanup delayed until startup; no Firestore TTL deployment",
+    "Maps rerender can fail; result retained, Maps work deferred S09-07",
+    "Exactly-once message delivery not guaranteed after uncertain send/ACK"
+  ],
+  "next_step": "S09-06",
+  "external_effects": [],
+  "changed_paths": [
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md",
+    ".workflow/state.json",
+    "bot/package-lock.json",
+    "bot/package.json",
+    "bot/src/commands.js",
+    "bot/src/index.js",
+    "bot/src/interactions.js",
+    "bot/src/queue.js",
+    "docs/SECURITY-WORKLOG.md",
+    "docs/SECURITY.md",
+    "docs/TESTING.md",
+    "docs/decisions.md",
+    "docs/discord-bot.md",
+    "docs/queue-contract.md",
+    "package-lock.json",
+    "package.json",
+    "roadmap/tasks/S09-04.md",
+    "test/bot/commands.test.js",
+    "test/discord/admission.test.mjs",
+    "bot/src/queueService.js",
+    "bot/src/resultRecovery.js",
+    "test/queue/delivery.test.mjs",
+    ".workflow/evidence/S09-04.json",
+    "START_HERE.html"
+  ]
+}

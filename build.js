@@ -21,8 +21,16 @@
 
 import * as esbuild from 'esbuild';
 import { cp, rm, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const watch = process.argv.includes('--watch');
+
+// Anchor every path to the project so running from another cwd can never clean
+// or write someone else's dist/.
+const ROOT = dirname(fileURLToPath(import.meta.url));
+const DIST = join(ROOT, 'dist');
+const fromRoot = (path) => join(ROOT, path);
 
 // Every JS execution context Chrome loads independently needs its own entry point.
 const ENTRY_POINTS = [
@@ -45,15 +53,21 @@ const SOURCE_MARKER = ' (SOURCE — load dist/ instead)';
 
 async function copyStatic() {
   for (const path of STATIC_FILES) {
-    await cp(path, `dist/${path}`, { recursive: true });
+    await cp(fromRoot(path), join(DIST, path), { recursive: true });
   }
 
-  const manifest = JSON.parse(await readFile('manifest.json', 'utf8'));
+  await cp(
+    fromRoot('node_modules/zxing-wasm/dist/reader/zxing_reader.wasm'),
+    join(DIST, 'assets/zxing_reader.wasm'),
+  );
+
+  const manifest = JSON.parse(await readFile(fromRoot('manifest.json'), 'utf8'));
   manifest.name = manifest.name.replace(SOURCE_MARKER, '');
-  await writeFile('dist/manifest.json', JSON.stringify(manifest, null, 2));
+  await writeFile(join(DIST, 'manifest.json'), JSON.stringify(manifest, null, 2));
 }
 
 const config = {
+  absWorkingDir: ROOT,
   entryPoints: ENTRY_POINTS,
   outbase:  '.',
   outdir:   'dist',
@@ -78,22 +92,27 @@ const consoleConfig = {
   sourcemap:   false,
 };
 
-await rm('dist', { recursive: true, force: true });
-await mkdir('dist', { recursive: true });
+const discordCopyConfig = { ...config, entryPoints: ['src/discord/entry.js'], format: 'iife' };
+
+await rm(DIST, { recursive: true, force: true });
+await mkdir(DIST, { recursive: true });
 
 if (watch) {
-  const ctx = await esbuild.context({
+  const extension = await esbuild.context({
     ...config,
     plugins: [{
       name: 'copy-static',
       setup: (b) => b.onEnd(copyStatic),
     }],
   });
-  await ctx.watch();
+  const consoleHelpers = await esbuild.context(consoleConfig);
+  const discordCopy = await esbuild.context(discordCopyConfig);
+  await Promise.all([extension.watch(), consoleHelpers.watch(), discordCopy.watch()]);
   console.log('watching for changes… (Ctrl+C to stop)');
 } else {
   await esbuild.build(config);
   await esbuild.build(consoleConfig);
+  await esbuild.build(discordCopyConfig);
   await copyStatic();
   console.log('build complete → dist/');
 }

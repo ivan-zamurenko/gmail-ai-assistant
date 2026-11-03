@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-01",
+  "outcome": "passed",
+  "scope": "Protect schema-2 mirrors and pending envelope identity; reject invalid tasks before Chrome/ports, including barcode null dryRun",
+  "base_sha": "bd6fb22",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/contract.test.mjs test/queue/executor.test.js test/queue/barcodeExecutor.test.js",
+      "exit_code": 1,
+      "result": "Writer: 11 PASS / 1 FAIL; explicit null dryRun reached barcode ports",
+      "boundary": "synthetic; network guard; no real services"
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/contract.test.mjs test/queue/executor.test.js test/queue/barcodeExecutor.test.js",
+      "exit_code": 0,
+      "result": "Writer: 14/14 PASS; identity/mirror characterization and controlled mismatch fixtures; no invented functional RED for extraction",
+      "boundary": "synthetic; no Firebase startup"
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "157/157 tests; lint/build/artifacts/roadmap/docs/diff PASS",
+      "boundary": "local; Chrome and live services not run"
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/build-start-here.mjs",
+      "exit_code": 0,
+      "result": "121 documents; offline reader rebuilt",
+      "boundary": "local documentation only"
+    }
+  ],
+  "decisions": [
+    "Owner continue instruction assigns S09-01 on report-first path",
+    "Scope extended to pure pendingTask builder and queue integration to test production identity without Firebase startup",
+    "Barcode nonboolean rejection includes null; omitted dryRun remains true",
+    "Schema version 2 and supported modes preserved",
+    "Root 1.1.14; bot 0.2.4; extension 6.3.0.60"
+  ],
+  "acceptance": {
+    "1": "contract.test.mjs mirror equality and controlled mismatch for all five exports",
+    "2": "existing executor invalid test strengthened with zero Chrome access and nonboolean inputs",
+    "3": "pure production builder identity/envelope test; queue.js integration reviewed",
+    "4": "ALL default test; existing parcel/retry/barcodes regressions retained; barcode null fix",
+    "5": "full regression suite preserved, no startup imports in contract tests"
+  },
+  "review": "s09_contract_review: ACCEPT; independent static review, all five criteria covered",
+  "changed_paths": [
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md",
+    ".workflow/evidence/S09-01.json",
+    ".workflow/state.json",
+    "START_HERE.html",
+    "bot/package-lock.json",
+    "bot/package.json",
+    "bot/src/pendingTask.js",
+    "bot/src/queue.js",
+    "docs/SECURITY-WORKLOG.md",
+    "docs/TESTING.md",
+    "docs/queue-contract.md",
+    "manifest.json",
+    "package-lock.json",
+    "package.json",
+    "roadmap/tasks/S09-01.md",
+    "src/queue/barcodeExecutor.js",
+    "test/queue/barcodeExecutor.test.js",
+    "test/queue/contract.test.mjs",
+    "test/queue/executor.test.js"
+  ],
+  "untested": [
+    "Real Chrome/offscreen lifecycle",
+    "Firestore rules enforcement in Emulator/live",
+    "Discord admission and reply delivery",
+    "Bot startup and deployment"
+  ],
+  "residual_risk": [
+    "Queue still deletes terminal result before confirmed Discord delivery; S09-04 remains pending",
+    "Pure builder is not a Discord admission or Firestore authorization layer"
+  ],
+  "blocker": null,
+  "next_step": "S09-02: Discord access and command parameter validation",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "pending",
+    "push_status": "pending"
+  },
+  "external_effects": []
+}

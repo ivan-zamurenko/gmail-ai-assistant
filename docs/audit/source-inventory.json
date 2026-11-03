@@ -1,0 +1,221 @@
+{
+  "archive_head_ref": "refs/heads/main",
+  "archive_head_sha": "6684b17a6e698d88a52e350989060c26609d56b9",
+  "archive_remote_names": [
+    "origin"
+  ],
+  "live_remote_verified": false,
+  "archive_sha256": "c545e03cb651305099eb581f0a37cdbf36dad456335ecdbc9f2a9dc0de4e328a",
+  "source_files": [
+    {
+      "path": ".gitignore",
+      "bytes": 284,
+      "sha256": "286c1ec4843a2cefb1e42246519f521d28a8a2f1bba051b9e926c9d40679cfcf"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4971,
+      "sha256": "9a6ade69346f2b3209a9755dded6c1fac4b7815514773d84d9ef98d8953a6881"
+    },
+    {
+      "path": "assets/dpd-logo.svg",
+      "bytes": 1945,
+      "sha256": "2a59d8742465a09af19e2670e584d85d940d466c0ff03ebcd943fd925d906776"
+    },
+    {
+      "path": "build.js",
+      "bytes": 2840,
+      "sha256": "3a48bc2c1c95c5c32237bc4fa699fcc6da3257f330c0db71b287d012dfec0774"
+    },
+    {
+      "path": "docs/TOOLING.md",
+      "bytes": 16707,
+      "sha256": "8f16d284b04f4f2dd051a339f3d494df3956df920f008dedc101f1322da92ffc"
+    },
+    {
+      "path": "eslint.config.js",
+      "bytes": 1837,
+      "sha256": "5600de24b7275ed5106107818e0cf6d31dfc2c28104946dd87d13a69c347e29e"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 1597,
+      "sha256": "077467d4ce20df1233c8c28a62abd48373cc277c400ccb319c086348f8ae35c3"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 51153,
+      "sha256": "3c3f95a2ba887661fec872c191f6e95c1b079bb393cf9d59f544167d62ac9e38"
+    },
+    {
+      "path": "package.json",
+      "bytes": 477,
+      "sha256": "75eaa9a4a8088b13eadce5831c790fe31308ada4135ebe512cfc05b2e616fb93"
+    },
+    {
+      "path": "snippets/depot_script_v2.js",
+      "bytes": 17465,
+      "sha256": "711a1efb5ab252fd911df9c5875c159d72ece8523b56b98d0b6de03acce932e4"
+    },
+    {
+      "path": "snippets/discover_consignment_details.js",
+      "bytes": 3058,
+      "sha256": "ddc073fe9e28e83fb6574c6bba14768375947d0802489413c143bb1b7ce7616c"
+    },
+    {
+      "path": "snippets/discover_quick_search.js",
+      "bytes": 4023,
+      "sha256": "c03f53262dc08562f2238ace9f374a7a373458f28457898e04262861cd009f5e"
+    },
+    {
+      "path": "snippets/discover_reschedule_form.js",
+      "bytes": 2862,
+      "sha256": "ebf074ef7153885de4915b06181acd6310418403e5a4ab3fde598e8e4d01fb36"
+    },
+    {
+      "path": "src/auth/getAuthToken.js",
+      "bytes": 1328,
+      "sha256": "8400eb8ccb5b879c921f8015037937be7625e38c7e80cf82627a697d8968ad32"
+    },
+    {
+      "path": "src/background/background.js",
+      "bytes": 482,
+      "sha256": "8078bbd19b4b3215c4b72d11fa3e2cf980bad9834508570998b947b7e95103de"
+    },
+    {
+      "path": "src/config/config.js",
+      "bytes": 2026,
+      "sha256": "c239e16cbd0d173d2820c300f6d7d48a67fab2d10f83b5448eae6370a27618e3"
+    },
+    {
+      "path": "src/depot/barcode.js",
+      "bytes": 3934,
+      "sha256": "3e7f097a912e25ca0be52d1940c6c1fa4587b63330a1b8c451e1306dac343428"
+    },
+    {
+      "path": "src/depot/depotScript.js",
+      "bytes": 16216,
+      "sha256": "4d04a7bff35de12e9ddf775195007215ffd9147bfe230e56a79c2759c6daa312"
+    },
+    {
+      "path": "src/depot/driveScanner.js",
+      "bytes": 8297,
+      "sha256": "40ede56ca774fcd1d65d535fde01afb867a68114c74ab8f79ffbd282301346b2"
+    },
+    {
+      "path": "src/depot/labelBarcode.js",
+      "bytes": 2813,
+      "sha256": "638ae6961c6e15b4d5ef52e6e828411ee549519facdba0f1b8e044e575a5f054"
+    },
+    {
+      "path": "src/depot/labelName.js",
+      "bytes": 1615,
+      "sha256": "3530dc5f314bbd2c6eb85bfe2705990d95a813e0044a6884886349fa19251269"
+    },
+    {
+      "path": "src/depot/labelParser.js",
+      "bytes": 1360,
+      "sha256": "1952f9b0eb8ee2394756728ff1ddd732fa3ad78da61398aaf44d3c5e7e0fa5fc"
+    },
+    {
+      "path": "src/depot/lookup.js",
+      "bytes": 7449,
+      "sha256": "2d98bd67ae3f963fa2a9d7129b3b71c2ddf1535add75a04a8c0666f4d23baa9d"
+    },
+    {
+      "path": "src/depot/lookupConsole.js",
+      "bytes": 1650,
+      "sha256": "53444e152a103a401f44174289b30e2bbc00e12ed98e47fcf97814017b06d659"
+    },
+    {
+      "path": "src/gmail/labels.js",
+      "bytes": 1277,
+      "sha256": "233e709ef01ff4c1d3209a795ce93598a3bc85e5f33f7049c5abd9e7430c8026"
+    },
+    {
+      "path": "src/parser/consignment.js",
+      "bytes": 671,
+      "sha256": "fce78b83bfbef5c65ff3b05cd6374ad9145b521c9c8367a89e7ec7021c75ac12"
+    },
+    {
+      "path": "src/popup/depotFlow.js",
+      "bytes": 8513,
+      "sha256": "f2c511f78351b0d4c7c6ed31b35fca35214d8e845401154d81a86d232ae37b23"
+    },
+    {
+      "path": "src/popup/gmailFlow.js",
+      "bytes": 1061,
+      "sha256": "11a0cd161131af29f338896b2daf8a3430eccd3adbe9a260866f17d368667fd4"
+    },
+    {
+      "path": "src/popup/logView.js",
+      "bytes": 911,
+      "sha256": "cfdc817616ce51a5da31110fe64a32215ad9c5b3e33ce2637725ea0c74f225bd"
+    },
+    {
+      "path": "src/popup/popup.css",
+      "bytes": 8586,
+      "sha256": "2e8aaf6fc982ee52d0f922f403b44cb1cbfd7a8463bde8ae61ee5488edba90a6"
+    },
+    {
+      "path": "src/popup/popup.html",
+      "bytes": 4289,
+      "sha256": "2512ed1811d036c69f7bbb9a6948f1cb455530df0ada8e4778e50e8848085530"
+    },
+    {
+      "path": "src/popup/popup.js",
+      "bytes": 3718,
+      "sha256": "6118993d8b72d22cd74bfd9ff21cb8059be41b1d2a38f06e3934bd5522e3c2d0"
+    },
+    {
+      "path": "src/popup/settingsFlow.js",
+      "bytes": 2939,
+      "sha256": "39b86d6a92073d2103f74c0f41531bbef377281db7cb360f9112bcb2d15f05da"
+    },
+    {
+      "path": "src/popup/statusHelper.js",
+      "bytes": 905,
+      "sha256": "bed56c3374ad204de38437a52902355c2118bb6244fd2fbf9091fba073a518aa"
+    },
+    {
+      "path": "src/storage/settings.js",
+      "bytes": 1219,
+      "sha256": "3ca79ea3a21e7563dc074d52d21e9453c9db48bab6639018802ddb8ced6b65ea"
+    },
+    {
+      "path": "src/storage/storage.js",
+      "bytes": 1189,
+      "sha256": "13b4a8356f308879ab75da23db439c6cfcc45732c9d85d912a9b0a7bbc7eb2b5"
+    },
+    {
+      "path": "src/utils/constants.js",
+      "bytes": 880,
+      "sha256": "af4221f5cdbbc902d383bf035ec6776e4aefe33eaa84c7b42280914ea4ec736f"
+    },
+    {
+      "path": "src/utils/delay.js",
+      "bytes": 310,
+      "sha256": "9ca997a66bba4102f917f4870553835ad55d28f42fcb618b21ecbe0d5cb65021"
+    },
+    {
+      "path": "src/utils/logger.js",
+      "bytes": 572,
+      "sha256": "eac0cb63bd7e1d0cb3071ddbc9f6bb3a18add5e029414d5a0d7dc218b3861b63"
+    },
+    {
+      "path": "src/utils/request.js",
+      "bytes": 1321,
+      "sha256": "da57f8d7a24594d7efc2d1be0fc8fa9eec9cfb7d2088d71bf494dd80448a835a"
+    },
+    {
+      "path": "tools/barcodeTest/build.js",
+      "bytes": 1591,
+      "sha256": "9438a2ccf03ba2dbfaa3af9a2e5af47480cc24503ff00b953152f742b3a0f688"
+    },
+    {
+      "path": "tools/barcodeTest/main.js",
+      "bytes": 796,
+      "sha256": "aed5cbf2f6becc7eb08b641282bb9eac70a476d3092a542ce34ad6b88ffddc3e"
+    }
+  ]
+}

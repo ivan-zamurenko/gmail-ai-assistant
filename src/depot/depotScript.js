@@ -6,12 +6,38 @@
  *
  * Modes:
  *   'cad'    — reads the pending list, processes only CAD-scanned parcels
- *   'labels' — receives consignment numbers from Drive label photos, looks them up
+ *   'labels' — receives exact targets resolved from Drive label photos
+ *   'manual' — receives one exact target and an operator-selected date
  *
- * @param {{ dryRun?: boolean, mode?: 'cad'|'labels', consNumbers?: string[] }} options
+ * @param {{ dryRun?: boolean, mode?: 'cad'|'labels'|'manual', date?: string,
+ *           targets?: Array<{consNumber, consId, type}> }} options
  * @returns {{ dryRun?, count?, changed?, skipped?, errors?, results?, warning?, __error? }}
  */
-export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] } = {}) {
+export async function depotMain({ dryRun = true, mode = 'cad', date = '', targets = [] } = {}) {
+
+  function safeFailure(error, fallback = 'Depot operation failed') {
+    const known = new Set([
+      "Manual date must use YYYY-MM-DD",
+      "Manual date is not a valid calendar date",
+      "Manual date must be a future working day",
+      "Refusing a cross-origin depot request",
+      "Pending trigger link not found — are you on the correct depot page?",
+      "Unexpected trigger href",
+      "Reschedule form not found",
+      "Reschedule rejected by server",
+      "Reschedule: server did not confirm. See console for details.",
+      "Status not found — depot page structure may have changed",
+      "Not the correct depot page (unexpected origin)",
+      "Unsupported depot mode"
+    ]);
+    const raw = typeof error?.message === 'string' ? error.message : '';
+    if (known.has(raw)) return raw;
+    const status = raw.match(/(?:HTTP|Drive API|Drive) ([1-5]\d{2})\b/)?.[1];
+    const codes = new Set(['permission-denied', 'unauthenticated', 'unavailable', 'deadline-exceeded', 'resource-exhausted', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND']);
+    const candidate = error?.code ?? raw.match(/\[([a-zA-Z-]+)\]$/)?.[1];
+    const code = codes.has(candidate) ? ` [${candidate}]` : '';
+    return `${fallback}${status ? ` (HTTP ${status})` : ''}${code}`;
+  }
 
   // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -62,6 +88,24 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     };
   }
 
+  function manualDateInput(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
+    if (!match) throw new Error('Manual date must use YYYY-MM-DD');
+
+    const [, yearText, monthText, dayText] = match;
+    const year = Number(yearText), month = Number(monthText), day = Number(dayText);
+    const selected = new Date(year, month - 1, day);
+    if (selected.getFullYear() !== year || selected.getMonth() !== month - 1 || selected.getDate() !== day) {
+      throw new Error('Manual date is not a valid calendar date');
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selected <= today || isNonWorkingDay(selected)) {
+      throw new Error('Manual date must be a future working day');
+    }
+    return `${dayText}/${monthText}/${yearText}`;
+  }
+
   // ── Classify ───────────────────────────────────────────────────────────────────
 
   function buildNotesPattern(todayShort) {
@@ -82,6 +126,26 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     return { action: 'SKIP', reason: `Unknown status: "${status}"` };
   }
 
+  // ── Origin guard ───────────────────────────────────────────────────────────────
+
+  // This runs in the page MAIN world. The tab can navigate after the extension
+  // checked its URL, so confirm where we actually are (same rule as
+  // depotTarget.js) and never send session-bearing requests to another origin.
+  function isDepotPage() {
+    const here = new URL(window.location.href);
+    return here.protocol === 'http:'
+      && here.hostname.toLowerCase().endsWith('.interlink.local')
+      && here.hostname.length > '.interlink.local'.length
+      && here.href.startsWith(`${here.origin}/`); // no user:pass@ in the URL
+  }
+
+  function sameOrigin(raw) {
+    const here = new URL(window.location.href);
+    const url = new URL(raw, here.href);
+    if (url.origin !== here.origin) throw new Error('Refusing a cross-origin depot request');
+    return url.href;
+  }
+
   // ── Fetch helpers ──────────────────────────────────────────────────────────────
 
   function getSessionParams() {
@@ -90,7 +154,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
   }
 
   async function fetchDoc(url) {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await fetch(sameOrigin(url), { credentials: 'include' });
     if (!res.ok) throw new Error(`Depot page returned HTTP ${res.status}`);
     return new DOMParser().parseFromString(await res.text(), 'text/html');
   }
@@ -104,7 +168,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     if (!trigger) throw new Error('Pending trigger link not found — are you on the correct depot page?');
 
     const m = (trigger.getAttribute('href') ?? '').match(/CL\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/);
-    if (!m) throw new Error(`Unexpected trigger href: ${trigger.getAttribute('href')}`);
+    if (!m) throw new Error('Unexpected trigger href');
 
     const { session, uid } = getSessionParams();
     const typeName = CONS_LIST_TYPE[m[2]] ?? m[2];
@@ -119,7 +183,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     const headers = Array.from(doc.querySelectorAll('thead th, thead td'));
     const idx = headers.findIndex(h => /route/i.test(h.textContent ?? ''));
     if (idx === -1) {
-      console.warn(`[pending list] no "Route" header found, falling back to column 6. Headers: ${headers.map(h => h.textContent.trim()).join(' | ')}`);
+      console.warn('[pending list] ROUTE_HEADER_MISSING: falling back to column 6');
       return 5;
     }
     return idx;
@@ -160,7 +224,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
       const m = s.textContent.match(/ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*['"]([^'"]+)['"]/);
       if (!m) continue;
       try {
-        const doc = await fetchDoc(new URL(m[1], window.location.href).href);
+        const doc = await fetchDoc(m[1]);
         return doc.body?.textContent?.trim() ?? '';
       } catch { return ''; }
     }
@@ -184,7 +248,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
         for (const el of form.elements) {
           if (el.name && el.type === 'hidden') body.set(el.name, el.value);
         }
-        await fetch(new URL(form.getAttribute('action'), window.location.href).href, {
+        await fetch(sameOrigin(form.getAttribute('action')), {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: body.toString(),
@@ -197,7 +261,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
         /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([/\w][^'"]+)['"]/
       );
       if (om) {
-        await fetch(new URL(om[1], window.location.href).href, { credentials: 'include' });
+        await fetch(sameOrigin(om[1]), { credentials: 'include' });
         return;
       }
 
@@ -208,7 +272,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
         { credentials: 'include' }
       );
     } catch (e) {
-      console.warn(`[logCall] non-fatal: ${e.message}`);
+      console.warn('[logCall] non-fatal:', safeFailure(e, 'Call logging failed'));
     }
   }
 
@@ -220,11 +284,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     const formDoc = await fetchDoc(formUrl);
     const form    = formDoc.querySelector('form');
     if (!form) {
-      const preview = formDoc.body?.textContent?.trim().slice(0, 200) ?? '(empty)';
-      throw new Error(`Reschedule form not found. Page says: ${preview}`);
+      throw new Error('Reschedule form not found');
     }
 
-    const actionUrl = new URL(form.getAttribute('action') ?? formUrl, window.location.href).href;
+    const actionUrl = sameOrigin(form.getAttribute('action') ?? formUrl);
 
 
     // Echo every field back exactly as the server filled it — a field we omit
@@ -258,7 +321,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
 
     const errEl = resultDoc.querySelector('.panel-danger p, #panel-error p, .alert-danger p, .alert-danger, .error p');
     const errMsg = errEl?.textContent.trim();
-    if (errMsg) throw new Error(`Server error: ${errMsg}`);
+    if (errMsg) throw new Error('Reschedule rejected by server');
 
     const ok = resultDoc.querySelector('.panel-success p, #panel-success p, .alert-success p, .success p');
     if (ok) return ok.textContent.trim();
@@ -268,12 +331,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
     const savedDate = resultDoc.querySelector('[name="arranged-date"]')?.getAttribute('value');
     if (savedDate === tomorrowInput) return `arranged-date is now ${savedDate}`;
 
-    // Neither success nor error found — show what the page actually says.
-    // Scripts must go first, or the jQuery boilerplate fills the whole preview.
-    resultDoc.querySelectorAll('script, style').forEach(el => el.remove());
-    const visibleText = (resultDoc.body?.textContent ?? '').replace(/\s+/g, ' ').trim();
-    console.warn(`[reschedule] arranged-date came back as "${savedDate}", asked for "${tomorrowInput}"`);
-    console.warn(`[reschedule] unconfirmed response text length: ${visibleText.length}`);
+    console.warn('[reschedule] UNCONFIRMED_RESPONSE');
     throw new Error(`Reschedule: server did not confirm. See console for details.`);
   }
 
@@ -290,22 +348,19 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
         if (!status) throw new Error('Status not found — depot page structure may have changed');
 
         const notes = status === STATUS.GOODS_HELD ? await getNotes(consDoc) : '';
-        const { action, reason } = classify(status, notes, todayShort);
-        console.log(`[${pkg.consNumber}] ${status} → ${action} | ${reason}`);
+        const { action } = classify(status, notes, todayShort);
 
         if (action === 'CHANGE_DATE') {
           await logCall(pkg.consId, consDoc);
-          const msg = await submitReschedule(pkg.consId, tomorrowInput);
-          console.log(`[${pkg.consNumber}] ✅ ${msg}`);
+          await submitReschedule(pkg.consId, tomorrowInput);
           changed++;
         } else {
-          console.log(`[${pkg.consNumber}] ⏭️  skipped`);
           skipped++;
         }
 
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action });
       } catch (err) {
-        console.error(`[${pkg.consNumber}] ❌ ${err.message}`);
+        console.error('[reschedule]', safeFailure(err, 'Reschedule failed'));
         errors++;
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR' });
       }
@@ -317,46 +372,55 @@ export async function depotMain({ dryRun = true, mode = 'cad', consNumbers = [] 
   // ── Entry point ────────────────────────────────────────────────────────────────
 
   try {
-    console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'} | ${new Date().toLocaleTimeString()}`);
 
+    if (!isDepotPage()) throw new Error('Not the correct depot page (unexpected origin)');
+    if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error('Unsupported depot mode');
+    console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'}`);
     const { todayShort, tomorrowInput } = getDates();
-    const allRows = await fetchPendingList();
-    const consSet = new Set(consNumbers);
-
+    const arrangedDate = mode === 'manual' ? manualDateInput(date) : tomorrowInput;
+    const allRows = mode === 'cad' ? await fetchPendingList() : [];
+    const exactTargets = Array.isArray(targets) ? targets : [];
     const packages = mode === 'cad'
       ? allRows.filter(r => r.route === 'cad')
-      : allRows.filter(r => consSet.has(r.consNumber) || consSet.has(r.consId));
+      : Array.from(new Map(exactTargets.flatMap((target) => {
+        const consNumber = String(target?.consNumber ?? '').trim();
+        const consId = String(target?.consId ?? '').trim();
+        if (!/^\d{9}$/.test(consNumber) || !/^\d+$/.test(consId)) return [];
+        return [[consId, { consNumber, consId, type: 'PopUp' }]];
+      })).values());
 
     if (packages.length === 0) {
       let warning;
-      if (allRows.length === 0) {
+      if (mode === 'manual') {
+        warning = 'No exact verified parcel target was supplied.';
+      } else if (mode === 'labels') {
+        warning = 'No exact verified label targets were supplied.';
+      } else if (allRows.length === 0) {
         warning = 'Pending list came back empty — the list page did not load or its layout changed.';
       } else if (mode === 'cad') {
         const routes = [...new Set(allRows.map(r => r.route))].filter(Boolean);
         warning = `No CAD parcels among ${allRows.length} pending. Routes seen: ${routes.join(', ') || '(all blank)'}`;
-      } else {
-        warning = `None of the scanned numbers found in the pending list: ${consNumbers.join(', ')}`;
       }
-      console.warn(`⚠️ ${warning}`);
+      console.warn('[depotMain] NO_TARGETS');
       return { changed: 0, skipped: 0, errors: 0, warning };
     }
 
     if (dryRun) {
-      console.table(packages.map(({ consNumber, consId }) => ({ consNumber, consId })));
       console.log(`DRY RUN — ${packages.length} parcel(s) would be processed.`);
       return {
         dryRun: true,
         count:  packages.length,
         packages: packages.map(({ consNumber, consId }) => ({ consNumber, consId })),
+        ...(mode === 'manual' && { date: arrangedDate }),
       };
     }
 
-    const result = await processPackages(packages, todayShort, tomorrowInput);
+    const result = await processPackages(packages, todayShort, arrangedDate);
     console.log(`Done | Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
     return result;
 
   } catch (err) {
-    console.error('[depotMain] fatal:', err);
-    return { __error: err?.message ?? String(err) };
+    console.error('[depotMain] fatal:', safeFailure(err));
+    return { __error: safeFailure(err) };
   }
 }

@@ -1,0 +1,1138 @@
+# Testing strategy
+
+Цей документ пояснює, які ризики перевіряють тести DPD Assistance, де вони
+зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
+тестового коду.
+
+Історична початкова базова лінія: **63 автоматизовані тести у 19 файлах**. Актуальні результати — у CURRENT та evidence задач. Усі вони працюють
+локально без корпоративного ПК, живої depot-сесії, Discord або Firestore.
+
+## Принципи
+
+1. Тестуємо ризик і поведінку, а не кожен рядок коду.
+2. Один тест має доводити один зрозумілий сценарій.
+3. Тест імпортує production-функцію; копіювати її реалізацію в тест заборонено.
+4. Тести детерміновані: однаковий вхід завжди дає однаковий результат.
+5. Для parcel-даних використовуємо лише синтетичні або анонімізовані fixtures.
+6. Не вгадуємо невідомий depot-формат. Спершу підтверджуємо його, потім фіксуємо
+   анонімізованим regression-тестом.
+7. Небезпечні або неоднозначні дані мають завершуватися fail-closed: краще
+   `null`/`error`, ніж дія над неправильною посилкою.
+
+## Як запускати
+
+Повний набір:
+
+```sh
+npm test
+```
+
+`npm test` передає Node явний набір `test/*/*.test.js`, `test/*/*.test.mjs` і
+`tools/tests/*.test.mjs` та preload `test/helpers/noNetwork.js`. Preload замінює
+`fetch` на guard: будь-який не підмінений тестом запит відхиляється з кодом
+`TEST_NETWORK_BLOCKED`. Явний перелік потрібен, бо Node 20 інакше запускає кожен
+`.js` у `test/`, і helper-модулі рахувались би як «ok» без жодного тесту.
+Новий тест кладіть на один рівень: `test/<група>/<назва>.test.js`.
+
+Одна група (із тим самим guard):
+
+```sh
+node --test --import ./test/helpers/noNetwork.js test/depot/labelBarcode.test.js
+```
+
+Один сценарій за назвою:
+
+```sh
+node --test --import ./test/helpers/noNetwork.js --test-name-pattern="damaged consignment" test/depot/labelBarcode.test.js
+```
+
+Повний quality gate перед комітом:
+
+```sh
+npm run lint
+npm test
+npm run build
+git diff --check
+```
+
+## Структура
+
+```text
+test/
+├── bot/
+│   ├── barcodeProgress.test.js Discord progress rendering and throttling
+│   ├── commands.test.js     Discord command contract
+│   ├── render.test.js       Discord parcel-card presentation
+│   └── validation.test.js   Discord depot-command input validation
+├── depot/
+│   ├── barcodeReader.test.js ZXing reader-state adapter
+│   ├── fastBarcodeReader.test.js WASM-first decoder and safe fallback
+│   ├── depotScript.test.js   Direct label reschedule target boundary
+│   ├── depotTarget.test.js   Depot tab/origin rule and in-page origin guard
+│   ├── driveLabels.test.js   Drive adapter: every request in dry-run vs live
+│   ├── labelBatch.test.js    Label batch orchestration and write boundaries
+│   ├── labelBarcode.test.js  DPD barcode domain parsing
+│   ├── labelName.test.js     Drive label filename rules
+│   ├── labelVerifier.test.js Shared exact depot target collection
+│   ├── lookup.test.js        Depot lookup input normalization
+│   ├── monthFolders.test.js  Drive folder planning and dry-run safety
+│   ├── podImage.test.js      POD photo fetch from the extension, safe errors
+│   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
+├── fixtures/
+│   └── gmail-labels.json    Synthetic Gmail labels/messages ("synthetic": true)
+├── gmail/
+│   └── labels.test.js       Gmail label transport: status, auth, exact payload
+├── helpers/
+│   ├── networkGuard.js      Shared blocked fetch (no side effects)
+│   ├── noNetwork.js         npm test preload: global network ban
+│   ├── harness.js           Per-test fake fetch routes, chrome storage/identity
+│   ├── fixtures.js          Fixture loader that rejects real-looking data
+│   └── harness.test.js      Harness guard, isolation and fixture validator
+├── queue/
+│   ├── barcodeExecutor.test.js Discord Drive-label orchestration
+│   ├── executor.test.js     Queue validation and command boundary
+│   ├── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
+│   └── taskProgress.test.js PII-free coalesced progress transport
+├── tooling/
+│   ├── build.test.mjs       esbuild one-off/watch plan and dist boundary
+│   └── checks.test.mjs      tools/checks.mjs gate runner and CI workflow policy
+└── utils/
+    └── errors.test.js       Safe outbound error messages
+```
+
+Тест лежить поруч із групою відповідальності production-модуля. Новий великий
+модуль отримує власний test-файл; не складаємо всі сценарії в один загальний файл.
+
+## Поточне покриття
+
+### `test/bot/barcodeProgress.test.js`
+
+**Discord renders a bounded PII-free progress bar**
+
+- Перевіряє режим, `current/total`, відсоток, етап і elapsed seconds в одному
+  редагованому ephemeral-повідомленні.
+- Доводить, що renderer не потребує consignment, ConsId, filename або token.
+- Окремий сценарій обмежує частоту проміжних Discord edits, але завжди пропускає
+  останнє фото та початок reschedule.
+
+### `test/bot/commands.test.js`
+
+**Discord command schema includes the three expected commands**
+
+- Перевіряє, що бот публікує команди `reschedule`, `find` і `todo`.
+- Фіксує options усіх чотирьох reschedule modes і доводить, що єдина live-згода
+  — явне `dry_run:false`, без окремого `confirm_live`.
+- Захищає від випадкового видалення або перейменування команди під час рефакторингу.
+- Fixture не потрібен: тест читає справжній command schema з production-коду.
+- Не перевіряє реєстрацію команд у Discord API або permissions у живому guild.
+
+### `test/bot/validation.test.js`
+
+**Manual reschedule input requires an explicit parcel number and real future date**
+
+- Відхиляє bare 8-digit input, але приймає 9 цифр із legacy marker та звичайні
+  14 цифр.
+- Відхиляє неможливу календарну дату й дату в минулому до створення queue task.
+- Імпортує production validation module без запуску Discord client.
+- Не замінює повторну authoritative validation у extension/depot executor.
+
+### `test/bot/render.test.js`
+
+**The private parcel card renders full recipient details and CAD location**
+
+- Перевіряє повну приватну parcel-картку: recipient, mobile, Eircode, address і
+  scan history у форматі `Bay:32 Seq:5`.
+- Захищає погоджений операторський формат від регресії та повернення старого
+  запису `B32/#5`.
+- Використовує повністю синтетичну людину, адресу й consignment.
+- Не перевіряє реальну Discord-відповідь, ephemeral visibility або route-map API.
+
+### `test/depot/barcodeReader.test.js`
+
+**DPD barcode reader enables only formats confirmed by the label audit**
+
+- Фіксує production allowlist як PDF417 + Code128.
+- Не дозволяє непідтвердженому DataMatrix або загальному ZXing format-набору
+  непомітно повернутися в decoder.
+- Контракт ізольований від DOM і ZXing adapter, тому тест працює у звичайному Node.
+
+**Barcode windows preserve the configured ZXing reader state**
+
+- Перевіряє, що кожен crop/rotation проходить через `decodeWithState()` після
+  одноразового `setHints()`, а `reset()` викликається після спроби.
+- Захищає дозволений список PDF417/Code128 від скидання до всіх ZXing
+  formats і прибирає сторонні ITF, Code39 та Micro QR candidates.
+- Використовує мінімальний fake reader; DOM, canvas і приватні фото не потрібні.
+- Не доводить реальну image accuracy — це перевіряє private label audit.
+
+**Expected ZXing misses do not flood the operator console**
+
+- Приглушує тільки точний внутрішній warning ZXing для звичайної невдалої
+  crop/rotation-спроби та зберігає всі сторонні warning.
+- Перевіряє fake reader без фотографій, barcode payload або персональних даних.
+
+### `test/depot/fastBarcodeReader.test.js`
+
+**Valid WASM result skips the expensive legacy reader**
+
+- Доводить, що exact DPD candidate з швидкого reader повертається без 30
+  JavaScript crop/rotation-спроб.
+- Використовує синтетичний barcode і injected ports; WASM та приватне фото не
+  завантажуються в unit-тесті.
+
+**Invalid or failed WASM result retains the proven fallback**
+
+- Перевіряє окремо нерозпізнаний результат і технічну помилку WASM.
+- В обох випадках викликається попередній ZXing reader, тому новий fast path не
+  перетворює складне фото на втрачений файл.
+
+### `test/depot/labelBarcode.test.js`
+
+**Code128 keeps the parcel digit separate from the consignment number**
+
+- Перевіряє поділ 9-значного consignment і номера фізичної посилки.
+- Захищає multi-parcel consignments: parcel `2` не стає частиною tracking number.
+- Використовує синтетичний Code128 payload із підтвердженою структурою.
+- Не перевіряє зчитування пікселів камерою або checksum самого barcode.
+
+**Code128 requires the confirmed 28-character DPD layout**
+
+- Перевіряє рядки на один символ коротші й довші за підтверджені 28 символів.
+- Очікує `null`, щоб parser не приймав лише валідний префікс довшого payload.
+- Межа підтверджена 64 DPD Code128 records у повторному приватному label-аудиті.
+- Не перевіряє checksum: його перевіряє ZXing до виклику `parseBarcode()`.
+
+**Legacy Code128 card adds the explicit eight-digit lookup marker**
+
+- Парсить лише exact synthetic layout `8 digits/positive parcel`.
+- Додає leading-zero marker до consignment, зберігаючи parcel окремо.
+- Ті самі 8 цифр без `/parcel` відхиляються, щоб не розширювати parser випадковим
+  коротким числом.
+- Реальний номер і фото owner-provided картки не входять у test fixture.
+
+**PDF417 reads a confirmed anonymized DPD record**
+
+- Перевіряє routing, поле `[4]` і parcel number у semicolon-record.
+- Fixture походить із локально декодованого реального DPD PDF417, але всі
+  значення анонімізовані; з 31 поля збережено лише потрібний parser-префікс.
+- Захищає підтверджений формат без збереження customer PII чи tracking data.
+- Не доводить структуру всіх 31 полів і не тестує ZXing image decoding.
+
+**PDF417 rejects a damaged consignment field**
+
+- Перевіряє запис, де routing виглядає валідним, але canonical field `[4]` має
+  лише 5 цифр замість 9.
+- Очікує `null`, щоб пошкоджений barcode не запустив lookup або depot-дію над
+  потенційно чужою посилкою.
+- Використовує синтетичну пошкоджену версію анонімізованого fixture.
+- Не визначає, чи можна відновити пошкоджений barcode іншим decoder-проходом.
+
+**PDF417 rejects contradictory consignment numbers**
+
+- Перевіряє PDF417, де routing і canonical field `[4]` окремо містять валідні,
+  але різні 9-значні consignment numbers.
+- Очікує `null`: parser не має права самостійно вибирати одну з двох посилок.
+- Захищає lookup і майбутні depot-дії від неправильної цілі після часткового
+  пошкодження або помилкового декодування.
+- Не змінює fallback для запису, в якому routing взагалі не розпізнаний; це
+  окремий сценарій, який потребує власного рішення й тесту.
+
+**PDF417 restores the full parcel number when Code128 wraps parcel 10 to 0**
+
+- Відтворює підтверджений приватним аудитом порядок: Code128 для parcel `10`
+  спочатку дає однозначний суфікс `0`, а PDF417 потім дає повне число `10`.
+- Перевіряє, що PDF417 оновлює не лише preferred format, а й physical parcel.
+- Захищає Scanning History і depot lookup від показу `parcel 0` замість `10`.
+- Обидва barcode payloads синтетичні; ім'я та дані реального файла не збережені.
+
+**PDF417 without routing cannot overwrite an exact Code128 parcel**
+
+- Відтворює PDF417 із валідним consignment, але без розпізнаного routing, поруч
+  із Code128 для parcel `2` того самого consignment.
+- Перевіряє обидва порядки candidates, щоб результат не залежав від першого
+  успішно декодованого crop/rotation.
+- PDF417 залишається preferred format, але його невідомий parcel не перекриває
+  точний Code128 parcel `2`.
+
+**PDF417 without any exact parcel source cannot select a depot lookup target**
+
+- Перевіряє валідний PDF417 consignment без routing і без matching Code128.
+- Parser зберігає номер для діагностики, але повертає `parcel: null`, а safety
+  boundary не допускає candidate до depot `verify()`.
+- У production такий файл іде на наявний шлях `unknown-*`, без вигаданої одиниці.
+- Не змінює випадок, де matching Code128 дає точний parcel.
+
+**Contested barcode numbers cannot select a depot lookup target**
+
+- Створює два валідні синтетичні Code128 з різними consignments на одному фото.
+- Перевіряє, що діагностичний winner має `contested: true`, але safety boundary
+  не передає жоден із номерів у depot `verify()`.
+- У production такий файл отримує `unknown-*`, а contested marker зберігається
+  для оператора; сильніший за кількістю reads candidate не обирається мовчки.
+- Не тестує Drive API move/rename; тест захищає чисте доменне рішення перед ним.
+
+### `test/depot/labelName.test.js`
+
+**Label filenames preserve the exact physical parcel number**
+
+- Перевіряє узгоджений filename contract для parcel `1`, `2` і `10`.
+- Parcel `1` не має зайвого суфікса, `2` стає `-p02`, а двозначний `10` не
+  обрізається до `0` і стає `-p10`.
+- Використовує синтетичний consignment та перевіряє нормалізацію `.JPG` → `.jpg`.
+- Не звертається до Drive і не перейменовує реальний файл.
+
+**Duplicate label photos receive the next free filename**
+
+- Імітує вже наявні базову назву та копію `-2` для того самого parcel.
+- Очікує наступну вільну назву `-3`, щоб Drive move/rename не створив колізію.
+- Також перевіряє, що справді вільна назва залишається без зайвого суфікса.
+- Використовує лише `Set` синтетичних назв і не звертається до Drive API.
+
+**Unreadable labels and file dates**
+
+- Нечитабельний barcode дає `unknown-007` з нулями й extension у нижньому
+  регістрі; файл без extension отримує `.jpg`.
+- Дата файлу — день створення в Drive (`dateOf`), без переформатування.
+
+### `test/depot/depotTarget.test.js`
+
+**Depot code runs only on the depot origin and never posts elsewhere**
+
+- Таблиця URL: лише `http://*.interlink.local` без `user:pass@`; відхиляються https,
+  голий `interlink.local`, `interlink.local.evil`, підрядок у path/query, `chrome://`.
+- Активна вкладка: відсутня, без URL, з чужим host — помилка до ін'єкції.
+- `depotMain`/`depotLookup` відтворюються з тексту функції (як у Chrome) і на чужій
+  сторінці повертають «unexpected origin» без жодного запиту.
+- Quick search з `form.action` іншого origin не надсилає номер; свій origin — POST.
+- Суміжно: `depotScript.test.js` — reschedule з чужим form action не робить POST
+  (0 save, 1 error); `executor.test.js` — вкладка, що пішла з depot після
+  `tabs.query`, не отримує ін'єкцію.
+- Не перевіряє справжній Chrome, реальні depot URL/path і iframe.
+
+### `test/depot/driveLabels.test.js`
+
+**Drive adapter sends only GET requests to Drive in dry-run**
+
+- Synthetic Drive і depot через fake `fetch`; записуються method і URL кожного запиту,
+  невідомий запит — помилка.
+- Відсутні `YYYY/MM`: dry-run не робить POST/PATCH, preview має шлях і назву без
+  вигаданого folder id.
+- Наявна папка й колізія назв: план `-p02-2` і `unknown-005`, жодної мутації Drive.
+- Depot lookup POST у dry-run дозволений; Drive mutation — ні (розрізняються за host).
+- Live: list → download → verify → створення року й місяця → один PATCH з
+  `addParents`/`removeParents`.
+- Мутації «прибрати `dryRun` з resolver/batch» ловляться (S01-01 evidence).
+- Не перевіряє справжні права Drive, ZXing і FileReader у браузері.
+
+### `test/depot/monthFolders.test.js`
+
+**Dry-run folder planning never creates missing Drive folders**
+
+- Імітує відсутню річну папку та записує виклики fake Drive adapter functions.
+- Очікує лише read-only `find`; `createFolder` і `listNames` не викликаються.
+- Повертає віртуальний шлях `YYYY/MM`, щоб preview усе одно показував майбутню
+  назву без будь-якого запису в Drive.
+- Не перевіряє OAuth або HTTP; тест захищає доменну оркестрацію dry-run.
+
+**Live folder planning creates the hierarchy and resumes unknown numbering**
+
+- Перевіряє точний порядок `find → create` для року та місяця у live mode.
+- Після створення місячної папки читає її назви й знаходить найбільший
+  `unknown` index, щоб наступний файл не почав нумерацію з `001`.
+- Зберігає всі наявні назви у `taken`, тому наступний filename collision можна
+  безпечно вирішити через `makeUnique()`.
+- Використовує fake adapter callbacks; реальний Drive не змінюється.
+
+**Month folder state is reused for every photo in the same batch month**
+
+- Запитує дві різні дати одного місяця й очікує той самий cached state object.
+- Перевіряє, що зміни `unknown` і `taken` після першого фото бачить друге фото.
+- Drive `find/list` callbacks виконуються лише один раз для всього місяця;
+  `createFolder` для вже наявних папок заборонений fake-функцією.
+- Не перевіряє cache між окремими запусками — він навмисно живе один batch.
+
+### `test/depot/labelBatch.test.js`
+
+**Dry-run label batch plans a verified file without moving it**
+
+- Проганяє одну синтетичну фотографію через повний batch flow: load, barcode
+  selection, depot verification, filename planning і result reporting.
+- Очікує правильний planned path із parcel `2`, але `movePhoto` має 0 викликів.
+- Planned name додається у shared `taken`, тому кілька фото в одному preview
+  отримають ті самі collision-safe назви, що й у live mode.
+- Provider ports є fake-функціями; DOM, OAuth, Drive і depot session не потрібні.
+
+**Depot-rejected barcode is filed under the next unknown name**
+
+- Дає batch валідний синтетичний Code128, але fake depot verifier повертає false.
+- Перевіряє, що live move отримує `unknown-008`, а не decoded consignment filename.
+- Result не експонує відхилений номер (`number: null`) і зберігає шлях для
+  ручного пошуку фотографії оператором.
+- Реальний depot і Drive не викликаються; move та verify є контрольованими ports.
+
+**Verified live label is moved once with its exact parcel filename**
+
+- Проганяє matching Code128/PDF417 для synthetic parcel `10` через live batch.
+- Depot verifier підтверджує consignment, після чого `movePhoto` викликається
+  рівно один раз із місячною папкою та filename `-p10`.
+- Result і shared `taken` отримують ту саму точну назву, яку одержав move-port.
+- Не викликає реальний Drive/depot; тест перевіряє orchestration contract.
+
+**Legacy eight-digit card reaches verification with its zero marker**
+
+- Проганяє synthetic short Code128 через production barcode selection, exact
+  boundary, depot verifier port, filename planning і live move port.
+- Verifier та result отримують `0 + 8 digits`, а filename зберігає marker і
+  точний physical parcel suffix.
+- Доводить, що коротка картка не стає `unknown` до depot lookup.
+- Drive, depot та owner-provided фото не викликаються і не читаються.
+
+**Consignment without a physical parcel number still reaches depot verification**
+
+- Дає batch однозначний synthetic PDF417 із consignment number, але без routing,
+  з якого не можна надійно визначити physical parcel number.
+- Перевіряє, що consignment усе одно доходить до точного depot verification і
+  планується під filename без `-pNN`; номер parcel є metadata, а не умовою reschedule.
+- Тест працює в dry-run із fake ports і не звертається до Drive або depot.
+
+**Batch contains photo failures but stops immediately on a fatal depot failure**
+
+- Перше синтетичне фото падає під час load, отримує власний error-result, а
+  наступне фото все одно проходить повний dry-run flow.
+- Окремий fatal depot error передається назовні та зупиняє batch до
+  завантаження другого фото.
+- Захищає від двох крайнощів: один поганий файл не валить batch, але недоступний
+  depot не перетворює всі наступні фото на помилкові `unknown-*`.
+- Помилки, barcode та provider ports повністю синтетичні.
+
+### `test/depot/labelVerifier.test.js`
+
+**Label verifier caches exact depot targets and deduplicates one consignment**
+
+- Проганяє synthetic depot probe та повторний lookup одного consignment через
+  production collector, спільний для popup і Discord.
+- Очікує один lookup для повтореного номера й один exact `{consNumber, ConsId}`
+  target незалежно від кількості фізичних parcel-фото.
+
+**Label verifier stops the batch when the depot did not give a real answer**
+
+- Повертає response, який не є ні exact match, ні чесним `N matches`.
+- Очікує fatal error, щоб недоступне депо не перетворило весь Drive batch на
+  `unknown` і не продовжило автоматичні дії.
+
+### `test/depot/rescheduleRecovery.test.js`
+
+**Live targets are persisted and merged without losing a same-day failed batch**
+
+- Додає два synthetic exact targets окремими live batches і дублює один із них.
+- Перевіряє дедуплікацію за внутрішнім `ConsId`, відкидання malformed target та
+  збереження попередньої невдалої черги під час наступного Scan Drive Labels у
+  той самий processing day.
+
+**A previous-day recovery batch expires instead of moving to a new tomorrow**
+
+- Зберігає synthetic batch із датою попереднього дня та читає його наступного.
+- Очікує порожній список і фізичне видалення storage key до depot execution.
+- Захищає від автоматичного перенесення вчорашніх errors на нову дату.
+
+**Total or indeterminate depot failure keeps every target for retry**
+
+- Передає повний збій без parcel-results і контрольований `__error`.
+- Доводить, що жоден exact target не зникає, якщо немає підтвердженого результату.
+
+**Confirmed and skipped targets clear while errors remain recoverable**
+
+- Імітує частковий batch: один `CHANGE_DATE`, один `ERROR`, а потім `SKIP`.
+- Підтверджені та свідомо пропущені записи видаляються; помилки залишаються до
+  повторної спроби. Після очищення останнього запису storage key видаляється.
+- Усі storage/depot значення синтетичні; Chrome, Drive і жива depot-сесія не потрібні.
+
+### `test/depot/depotScript.test.js`
+
+**Label dry-run uses exact verified targets without reading Pending List**
+
+- Передає direct target із synthetic consignment та внутрішнім `consId` у
+  `depotMain(mode: labels)` і очікує dry-run package без DOM.
+- Node test не має `document` або depot page: будь-яка спроба відкрити Pending
+  List завершила б тест помилкою.
+- Дублікат того самого `consId` обробляється один раз.
+- Synthetic leading-zero target приймається як валідний exact marker і не
+  втрачається на межі reschedule.
+- Не виконує live reschedule POST; це окремий manual E2E крок.
+
+**Invalid exact label targets are rejected before depot access**
+
+- Передає невалідний consignment і нечисловий внутрішній `ConsId` у label mode.
+- Очікує порожній результат із контрольованим warning до будь-якого DOM або
+  depot-запиту.
+- Захищає exact-target boundary від пошкоджених або підмінених аргументів.
+- У тесті немає реального tracking number, `ConsId`, session або мережі.
+
+**CAD and label targets share the same PENDING reschedule rules**
+
+- Запускає справжній `depotMain()` окремо в CAD і labels mode проти повністю
+  synthetic depot documents та мережевих відповідей.
+- Для одного статусу `PENDING` обидва режими мають однаково виконати
+  `CHANGE_DATE` і повернути той самий parcel result.
+- Додатково доводить різницю лише у selection: CAD читає Pending List один раз,
+  labels не читає його взагалі.
+- POST залишається локальним fake-port; живий depot, session та customer data не
+  використовуються.
+
+**GOODS HELD without qualifying notes never reaches reschedule**
+
+- Подає exact label target зі статусом `GOODS HELD`, але без підтверджувальної
+  depot note, потрібної чинному правилу.
+- Очікує `SKIP`, нуль змінених посилок і нуль звернень до reschedule form.
+- Захищає fail-safe поведінку: неоднозначну GOODS HELD посилку лишає оператору,
+  а не змінює її дату автоматично.
+- Усі сторінки та значення синтетичні; live depot POST не виконується.
+
+**GOODS HELD with today qualifying note reaches reschedule once**
+
+- Формує synthetic depot note `Del. date changed ... TO <сьогодні>` у тому самому
+  локальному форматі `DD/MM/YY`, який читає production rule.
+- Очікує `CHANGE_DATE`, одну змінену посилку й рівно одне відкриття reschedule
+  form — позитивну половину спеціального GOODS HELD правила.
+- Дата обчислюється під час тесту, тому fixture не застаріває наступного дня.
+- Живий depot, customer data та справжні ідентифікатори не використовуються.
+
+**Friday reschedule submits the following Monday**
+
+- Фіксує synthetic clock на п’ятниці 28/08/2026 і запускає справжній live-path
+  `depotMain()` проти локальних fake responses.
+- Читає сформоване тіло Save-запиту й очікує `arranged-date=31/08/2026`, тобто
+  субота та неділя пропущені.
+- Захищає фактичний outbound payload, а не лише проміжне обчислення дати.
+- Запит перехоплюється тестом; жодного мережевого або depot-запису немає.
+
+**Reschedule skips an Irish bank holiday**
+
+- Фіксує synthetic clock на 16/03/2026, безпосередньо перед St Patrick's Day із
+  production holiday set.
+- Перевіряє outbound `arranged-date=18/03/2026`, а не святкове 17/03.
+- Окремо захищає holiday branch, яку weekend-сценарій не виконує.
+- Save-запит перехоплюється локально; реальний depot не змінюється.
+
+**Manual reschedule submits the exact operator-selected date**
+
+- Фіксує synthetic clock, передає Discord-style `YYYY-MM-DD` у manual mode і
+  запускає справжній fake-backed live Save path.
+- Перевіряє, що outbound `arranged-date` дорівнює точній вибраній даті у depot
+  format `DD/MM/YYYY`, а не автоматично обчисленому завтра.
+- Manual mode використовує ті самі status classification і Save confirmation,
+  що CAD та labels.
+- Живий depot не викликається.
+
+**Failed reschedule POST is reported as an error, never changed**
+
+- Дає synthetic Save endpoint відповідь HTTP 500 після однієї спроби запису.
+- Очікує `changed: 0`, `errors: 1` і parcel action `ERROR`, тому невдалий POST не
+  може виглядати як успішний перенос.
+- Перевіряє фактичну межу зовнішнього запису та per-parcel error handling.
+- Endpoint локальний і фальшивий; справжній depot не викликається.
+
+**Unconfirmed HTTP 200 reschedule is reported as an error**
+
+- Повертає успішний HTTP status, але без success marker і без збереженого
+  `arranged-date` у synthetic response.
+- Очікує `changed: 0`, `errors: 1` і parcel action `ERROR`.
+- Захищає від хибного успіху, коли transport спрацював, але depot не підтвердив
+  зміну стану.
+- Response повністю локальний; живий depot не викликається.
+
+**One failed parcel does not stop the next parcel in the batch**
+
+- Передає два synthetic exact targets: перший Save повертає HTTP 500, другий —
+  підтверджений success.
+- Очікує два Save-виклики, `errors: 1`, `changed: 1` та результати в початковому
+  порядку: `ERROR`, потім `CHANGE_DATE`.
+- Захищає per-parcel isolation: локальна проблема однієї посилки не втрачає
+  решту batch.
+- Усі відповіді та ідентифікатори синтетичні; живий depot не викликається.
+
+### `test/depot/lookup.test.js`
+
+**Lookup requires the zero marker before searching a legacy eight-digit number**
+
+- Передає bare synthetic 8-digit input і доводить, що він відхиляється без
+  жодного Quick Search request.
+- Потім передає той самий synthetic номер із leading-zero marker; production
+  lookup прибирає лише маркер і відправляє в form рівно 8 цифр.
+- Перевіряє реальний POST body `con-quick-search`, а не копію normalization rule.
+- Owner-provided reference-card photo та надрукований на ньому номер не входять
+  у fixture, документацію або Git.
+
+**Identity-only label lookup skips unused Scanning History safely**
+
+- Перевіряє обидва підтверджені Quick Search variants: direct detail і exact
+  single-hit list; кожен повертає тільки `consNumber + ConsId` за один request.
+- Один substring hit відхиляється як `0 matches`, тому швидший шлях не розширює
+  автоматизацію приблизним збігом.
+- Окремий regression доводить, що звичайний повний lookup і далі завантажує
+  Scanning History для `/find`.
+
+### `test/depot/podImage.test.js`
+
+**POD photo is fetched by the extension with exact requests and safe errors**
+
+- Точні POST на authorize і image API, `credentials: 'omit'`, Bearer з відповіді.
+- Відсутній eventId/невалідний формат/немає podAuth — відмова без запиту.
+- HTTP 401, відсутній токен, відсутнє фото, мережна помилка — короткі помилки
+  без логіна, пароля чи токена.
+- `test/depot/lookup.test.js` окремо перевіряє, що серіалізована `depotLookup`
+  не містить podAuth, Authorization і викликів DPD API; `test/queue/executor.test.js`
+  — що `/find` передає в ін'єкцію лише номер, а eventId не виходить у результат.
+- Справжній DPD API і host permissions у Chrome не перевіряються.
+
+### `test/queue/barcodeExecutor.test.js`
+
+**Discord barcode live scan saves depot errors for same-day retry**
+
+- Проганяє production offscreen orchestration через fake Drive scan, exact lookup,
+  reschedule та local storage ports.
+- Перевіряє, що розпізнаний consignment доходить до `depotMain(mode: labels)`, а
+  parcel-level `ERROR` залишається в same-day recovery batch.
+- Фото, OAuth, Drive, depot, Firestore і Discord повністю synthetic/fake.
+
+**Discord barcode dry run previews the same exact target without local writes**
+
+- Виконує той самий шлях із `dryRun:true` і exact target.
+- Storage ports навмисно кидають помилку при будь-якому зверненні; успішний тест
+  доводить, що preview не створює, не змінює і не очищає recovery state.
+
+**Discord barcode scan reports PII-free execution stages**
+
+- Перевіряє індикатор виконання від перевірки depot і авторизації Drive до
+  читання лейблів та запуску reschedule.
+- Доводить, що діагностичні події не містять OAuth token, consignment, ConsId,
+  імен файлів або інших даних посилки.
+
+### `test/queue/runtimeStorage.test.js`
+
+**Offscreen recovery storage uses only the narrow runtime bridge**
+
+- Перевіряє production adapter для `get`, `set` і `remove`, який передає запити
+  з offscreen-документа у background service worker.
+- Захищає від прямого звернення до недоступного в offscreen `chrome.storage.local`.
+- Fake runtime port не використовує Chrome, Firestore, Drive, depot або реальні
+  consignment identifiers.
+
+### `test/queue/taskProgress.test.js`
+
+**Queue progress is bounded, PII-free and coalesced**
+
+- Пропускає до Firestore тільки дозволені етапи та чотири числові/службові поля.
+- Об’єднує швидкі події, щоб progress-діагностика не стала bottleneck великого
+  batch; значення обмежені розміром batch і двогодинним execution window.
+- Використовує injected writer без Firebase, Discord, фотографій та parcel data.
+
+### `test/queue/executor.test.js`
+
+**Invalid or unversioned tasks cannot reach a depot command**
+
+- Перевіряє `null`, неправильну schema version, невідому command і невалідний
+  consignment для `find`.
+- Захищає межу Firestore queue: неперевірене завдання завершується `error` до
+  виконання depot-команди.
+- Використовує синтетичні queue tasks без Firebase і без живої вкладки.
+- Не перевіряє transaction claim, expiry, Firestore rules або мережевий timeout.
+
+**Manual parcel task resolves one exact target before depot dry-run**
+
+- Проганяє production `executeTask()` із synthetic `mode: parcel` task.
+- Очікує рівно два MAIN-world етапи: `depotLookup`, потім `depotMain` у manual
+  mode з одним resolved `ConsId` і вибраною ISO date.
+- Доводить, що command не використовує Pending List і не діє за приблизним
+  збігом.
+- Chrome tabs та injections повністю fake; depot і Firestore не викликаються.
+
+**Label target lookup injects identity-only mode**
+
+- Перевіряє, що тільки вузький label-verification bridge передає
+  `{ identityOnly: true }` у production `depotLookup`.
+- Manual parcel і `/find` залишаються на повному lookup; queue schema та depot
+  reschedule contract не змінюються.
+
+**Retry task uses only today's saved exact targets without Drive or barcode lookup**
+
+- Передає production `executeTask()` synthetic `mode: retry` task і актуальний
+  локальний recovery batch.
+- Очікує рівно один `depotMain(mode: labels)` із saved exact target; `depotLookup`,
+  Drive download та barcode reader не викликаються.
+- Dry-run не видаляє recovery batch. Chrome storage, tabs та injection є fake;
+  Firebase, Drive і живий depot не використовуються.
+
+**Retry task deletes a previous-day batch without reaching the depot**
+
+- Запускає production `executeTask(mode: retry)` зі synthetic batch попереднього дня.
+- Очікує відповідь «немає errors», видалення local storage key і нуль звернень до
+  depot tabs — навіть якщо task помилково надіслано з `dryRun:false`.
+- Це наскрізний захист Discord retry від переносу вчорашніх посилок на нове «завтра».
+
+### `test/utils/errors.test.js`
+
+**Outbound errors redact URLs and sensitive query values**
+
+- Передає однакову небезпечну помилку extension- і bot-санітайзерам.
+- Перевіряє, що назва depot host, session/query values і ключ не виходять у
+  Firestore, Discord або користувацьке повідомлення.
+- Всі значення синтетичні; справжні URL, токени й ключі в тестах заборонені.
+- Не перевіряє кожну можливу форму секрету або сторонні library stack traces.
+
+### `test/helpers/harness.test.js`
+
+**Tests cannot reach the network or inherit state from each other**
+
+- Не підмінений `fetch` відхиляється guard'ом до виходу з процесу.
+- `useFetch` відповідає лише на перелічені method+URL, кожен маршрут один раз,
+  а решту записує як unexpected.
+- Пара послідовних тестів доводить, що chrome storage, fake clock, fetch і
+  pending fake timer не переходять у наступний тест.
+- Валідатор fixtures вимагає `"synthetic": true` і відхиляє токени, приватні
+  ключі, вбудовані зображення, raw HTML, depot host/session і не-example email.
+- Обов'язкові групи `test/` не можуть бути порожніми.
+- Regex-валідатор не гарантує відсутність будь-яких PII; рев'ю fixtures лишається.
+
+### `test/gmail/labels.test.js`
+
+**Gmail label transport sends the exact request and surfaces failures**
+
+- `findLabelId` шукає точну назву і передає `Bearer` токен з `chrome.identity`.
+- `listByLabel` повертає id і порожній список, коли Gmail не надсилає `messages`.
+- `moveLabels` надсилає точний POST payload `addLabelIds/removeLabelIds`.
+- HTTP 401/403 стають помилкою зі статусом; помилка identity зупиняє до запиту.
+- Fake transport не перевіряє реальні OAuth scopes і pagination Gmail.
+
+### `test/tooling/checks.test.mjs`
+
+**Quality gate fails closed**
+
+- Стадія з exit 7 зупиняє pipeline з кодом 7; наступні не запускаються, `PASS` не друкується.
+- `# tests 0`, наявні падіння або відсутній summary — помилка навіть при exit 0.
+- Відсутні dist-артефакти manifest перелічуються поіменно; source marker відхиляється.
+- Зміна lockfile під час install виявляється за SHA-256.
+- Workflow: лише `contents: read`, без secrets і live-команд, actions закріплені SHA.
+- Не доводить, що GitHub-хмара реально виконала workflow.
+
+### `test/tooling/build.test.mjs`
+
+**Build plan is identical for one-off and watch, and never touches foreign files**
+
+- Збирає тимчасову копію `src/`, `assets/`, `manifest.json` із synthetic
+  `local.js` з example; приватний `src/config/local.js` не копіюється, мережі немає.
+- One-off: усі entry points manifest, popup, offscreen, WASM і console helpers;
+  source marker прибрано, `key` і версія manifest не змінені.
+- Watch: зміна `lookup.js` оновлює той самий `dist/console/lookupConsole.js`
+  без ESM `export` (до S00-02 watch його не збирав).
+- Запуск з чужого cwd не видаляє його `dist/`; синтаксична помилка дає ненульовий exit.
+- Не перевіряє завантаження в Chrome або serialization injected functions.
+
+## Private label audits — 2026-08-29 / 2026-08-31
+
+Read-only batch перевірив **69 локальних фото** тим самим browser ZXing-шляхом,
+який використовує extension. 68 доданих приватних фото ігноруються Git; один
+старий `label_example.png` уже відстежувався до аудиту й залишається окремим
+відомим privacy-debt. За рішенням власника повторна локальна діагностика зберегла
+оригінальні назви файлів, щоб проблемний label можна було знайти; цей локальний
+звіт, barcode payloads, tracking numbers і customer PII не додавалися до Git.
+
+| Метрика | До виправлення `decode()` | Після `decodeWithState()` |
+|---|---:|---:|
+| Оброблено фото | 69 | 69 |
+| Parseable consignment | 66 | 69 |
+| Unreadable | 3 | 0 |
+| Унікальні consignments | 58 | 61 |
+| Processing errors | 0 | 0 |
+| Contested images | 0 | 0 |
+| Сторонні decoded formats | Micro QR, ITF, Code39 | немає |
+| DataMatrix | 0 | 0 |
+
+## Private WASM performance audit — 2026-09-02
+
+Read-only запуск `zxing-wasm/reader` локально перевірив усі 69 приватних фото,
+не виводячи назви, payload або tracking numbers. WASM знайшов barcode у 67 фото;
+усі **65/65** уже названих фото точно збіглися з очікуваним consignment. Повний
+набір зайняв **9.57 с**, у середньому **139 мс** на фото, максимум **213 мс**.
+Два нестандартні приклади, які fast path не прочитав, залишаються покритими
+попереднім JavaScript fallback.
+
+Підтверджена база після виправлення:
+
+- decoder повернув лише PDF417 і Code128;
+- 64 повні DPD Code128 records мали рівно 28 символів і успішно парсилися;
+- один сторонній 12-символьний Code128 candidate відхилено exact-length parser;
+- серед PDF417 candidates: 61 parsed і 16 rejected;
+- 11 routing contradictions fail-closed повернули `null`;
+- 2 parseable PDF417 candidates без routing походили з одного фото; matching
+  Code128 на ньому підтвердив parcel `1`. Ще 5 раніше порахованих candidates
+  були відхилені parser і не є fallback-випадками;
+- PDF417 без routing більше не вигадує `parcel: 1`: matching Code128 заповнює
+  parcel, а без точного джерела safety boundary направляє файл у `unknown-*`;
+- повторний production-path audit після цієї зміни: 69 parsed, 69 допущені
+  exact-parcel boundary, 0 відхилених;
+- локальна діагностика встановила, що `parcel: 0` був parcel `10`: одноцифровий
+  Code128 candidate з'явився раніше, а preferred PDF417 не оновлював parcel;
+- regression test тепер вимагає, щоб повний PDF417 parcel `10` замінював
+  однозначний Code128 суфікс `0` для того самого consignment;
+- DataMatrix не підтвердився жодним із 69 фото.
+- Тому DataMatrix видалено з production allowlist; повернути його можна лише з
+  новим реальним label-прикладом і regression evidence.
+
+Аудит підтверджує структури для regression-тестів, але не замінює E2E перевірку
+Drive/depot workflow на корпоративному ПК.
+
+## Рівні тестування
+
+### Unit — працює зараз
+
+Чисті функції, validation, parsing і rendering із контрольованими даними. Швидкі,
+не потребують мережі та запускаються після кожної зміни.
+
+### Integration — наступний рівень
+
+Перевірятиме кілька модулів разом: queue contract, claim/state transitions,
+Discord handler → queue payload, barcode selection і parcel rendering. Для
+Firestore потрібен emulator або ізольований test-project, не production.
+
+### E2E / manual — коли доступний корпоративний ПК
+
+Потрібні для сценаріїв, які неможливо чесно відтворити локально:
+
+- справжня MV3 service-worker/offscreen lifecycle;
+- authenticated depot tab і `executeScript` у MAIN world;
+- реальний lookup і Scanning History;
+- Firestore → extension → depot → Discord повний цикл;
+- dry-run/live confirmation та відновлення після timeout;
+- ZXing на репрезентативній добірці приватних label-фото.
+
+Реальні customer-дані не додаються до Git. Фото залишаються у gitignored
+`labels_example/` або іншому приватному локальному сховищі; до тестів потрапляє
+лише мінімальний анонімізований fixture.
+
+## Як додавати новий тест
+
+1. Назвати конкретну регресію або ризик, який тест має зупинити.
+2. Обрати відповідну групу в `test/`; створити новий файл лише для нового модуля.
+3. Імпортувати production-функцію.
+4. Побудувати мінімальний Arrange → Act → Assert сценарій.
+5. Додати коментар лише там, де без нього неочевидний формат або причина.
+6. Не використовувати випадковий real-world payload без підтвердження й
+   анонімізації.
+7. Оновити цей документ, якщо з'явився новий ризик, рівень або межа покриття.
+8. Підняти версію відповідного артефакту.
+9. Запустити повний quality gate і зробити один логічний commit у `codex`.
+
+## CI status
+
+З S00-04 один runner `node tools/checks.mjs` виконує lint → test (вимагає
+`# tests > 0` і `# fail 0`) → build → перевірку dist-артефактів manifest →
+roadmap/doc validators → `git diff --check` і зупиняється на першій помилці з її
+exit code. `--install` спершу робить `npm ci` для root і bot, перевіряє, що
+lockfiles не змінились, і створює `src/config/local.js` з example, лише якщо його
+немає. `.github/workflows/checks.yml` запускає саме `--install` з правами
+`contents: read`, без secrets, deploy, bot start/register. Browser-тестів ще
+немає: runner явно друкує `browser: NOT RUN`. Локальний PASS і хмарний run —
+окремі докази.
+
+## Workflow tooling — 2026-10-23
+
+Комплект додає `tools/tests/` до `npm test` (з S00-03 — явним шаблоном).
+Окремий запуск: `node --test tools/tests/*.test.mjs`. Тести перевіряють graph/state,
+обов'язкове evidence для done, відмову для path traversal/symlink, нерозкриття
+HTML/script із Markdown, локальні посилання та актуальні capabilities. Fixtures
+створюються в тимчасових каталогах; зовнішні сервіси не викликаються.
+
+Додаткові команди: `node tools/roadmap.mjs validate`, `node tools/check-docs.mjs`,
+`node tools/build-start-here.mjs`. Точна кількість та результати поточного прогону
+записуються в `.workflow/evidence/S00-01.json`; початкові 63/19 вище — попередня
+продуктова базова лінія, а не новий підрахунок. Історичний Discord probe має назву
+`.probe.mjs` і не входить у default test discovery. Його старі очікування
+не замінюють актуальні product regressions.
+
+## S09-01 — queue contract, 2026-10-26
+
+- `test/queue/contract.test.mjs`: equality п'яти mirror exports; контрольовані
+  розходження виявляються; production pending builder зберігає trusted envelope
+  і розділяє requestedBy/executorUid незалежно від вкладених args.
+- `test/queue/executor.test.js`: розширено чинний invalid-task тест лічильником
+  доступів Chrome, invalid mode і nonboolean dryRun; додано ALL dispatch із
+  безпечним default. Чинні позитивні parcel/retry тести збережені.
+- `test/queue/barcodeExecutor.test.js`: invalid version/command/mode/dryRun
+  відхиляються до читання ports/config; explicit null — regression RED → GREEN.
+  Чинний dry-run сценарій перевіряє і true, і undefined; live/progress збережені.
+- Fixtures synthetic, без Firebase/startup imports у contract suite, noNetwork
+  preload для виконавців. Emulator, Chrome і живі сервіси не перевірялись.
+
+Мінімальний запуск: `node --test --import ./test/helpers/noNetwork.js test/queue/contract.test.mjs test/queue/executor.test.js test/queue/barcodeExecutor.test.js`.
+
+## S09-02 — Discord admission, 2026-10-26
+
+`test/discord/admission.test.mjs` містить п'ять згрупованих synthetic сценаріїв:
+
+- Чужий guild та depot actor без Admin: жодного queue/todo виклику.
+- Реальна command schema маршрутизує всі depot modes рівно в один enqueue;
+  omitted/true/false dry_run, ephemeral і barcode DM збережені.
+- Усі todo subcommands працюють без Admin лише для interaction.user.id.
+- Невідомі command/subcommand відхиляються до defer, не лишають завислу відповідь.
+- Getter exceptions, неправильні типи actor/options, find/parcel number/date,
+  todo text/number: без побічних ефектів та відображення synthetic secret marker.
+
+Тест імпортує справжній createInteractionHandler з interactions.js; enqueue,
+render і todo adapters підставлені. Index/client.login/Firebase/config не
+імпортуються. RED відтворив unknown-command enqueue і uncaught getter error
+після механічного extraction без зміни поведінки; GREEN після admission guards.
+Чинні command-schema і validation тести збережені. Live та delivery recovery
+не покриті цією задачею.
+
+## POD fallback — 2026-10-26
+
+Без нових test cases: змінено два чинні тести під нову вимогу власника.
+Renderer тепер перевіряє локальний PNG attachment, існування/PNG signature,
+module-relative path і збережені адресу/history. Чинний real-POD тест збережено.
+Executor очікує done/core parcel без фото й event ID при POD error замість
+старої навмисної відмови; warning має лише константу POD_UNAVAILABLE.
+RED11/13 → GREEN13/13, а перевірка warning RED12/13 → GREEN13/13.
+Synthetic only; реальне надсилання attachment, POD timeout і Maps не перевірено.
+
+## S01-03 — безпечна діагностика, 2026-10-28
+
+П’ять згрупованих regression cases у чинних файлах захищають невідомий
+HTML/JSON/body, дозволені HTTP/code, serialized lookup, depot console,
+реальні popup/Discord handlers із synthetic adapters. Оновлено чинний
+labelBatch expectation. Спочатку RED, потім production fix; нових test files немає.
+Збережено no-replay timeout, operational results та auth/retry routing.
+Popup harness — підставлені DOM/Chrome об’єкти, не реальний браузер.
+Реальні Chrome, Discord, provider responses і розгортання не перевірено.
+Manual console tools залишають дозволені операторські результати; це не
+автоматичні технічні логи. Повний secret scanning не входить у цю перевірку.
+
+## S01-04 — API retries та uncertain writes, 2026-10-28
+
+Вісім згрупованих risk-based перевірок: три в новому request.test.js, решта
+у чинних Drive/batch/executor/barcode tests. Реальний request wrapper: 401/403,
+429/503, bounded attempts, body timeout, abort during backoff, write timeout/
+network/abort/parse і pre-aborted zero-call. Реальний Drive adapter: uncertain
+folder POST не повторюється наступним фото; signal доходить до запиту.
+Перевірено збереження partial results/targets, File errors без targets і
+відсутність live replay у другій вкладці. Existing Gmail payload/dry-run checks
+збережено. Focused 39/39. Popup auth branch перевірено review, не browser harness.
+RED використовує watchdog лише щоб baseline без timeout не зависав; ранній
+запуск із cancelled tests не оголошено успішним RED. Дані тільки synthetic.
+
+## S02-04 — consignment candidates, 2026-10-28
+
+Три згруповані synthetic тести в test/parser/consignment.test.js: cardinality/
+order/dedup/leading zeros; phone/timestamp/quoted/random candidates never verified
+та excluded longer runs; type/no-coercion і exact combined size boundary.
+RED0/3 → GREEN3/3. Вони імпортують справжню pure function; мережі/листів немає.
+Runtime caller наразі відсутній, тому UI/lookup integration не заявляється.
+
+## S03-01 — lookup responses, 2026-10-28
+
+Три grouped cases додано до test/depot/lookup.test.js. Fixtures — synthetic
+DOM objects inline; VM виконує serialized production function без closure.
+Матриця: direct/list/exact/multiple/login/missing table/changed rows/detail ID
+mismatch, fallback IDs, title-only scan type, successful scan/address/drop/timing.
+Старі пусті fixture documents уточнено як known empty MAINTABLE, а не arbitrary
+HTML. Credential assertion не забороняє слово password у login selector; POD
+credentials, Authorization і third-party calls далі заборонені.
+Focused lookup+origin+verifier+executor+render 29/29. Реальні HTML parsing,
+браузерні selectors та provider responses не перевірено.
+
+## S09-04 — delivery acknowledgement/recovery, 2026-10-28
+
+П’ять grouped scenarios у test/queue/delivery.test.mjs імпортують справжній
+queueService + interaction handlers із synthetic Firestore/Discord/clock ports.
+Захищають delete-before-reply, ACK-after-send, restart,24h expiry/clock skew,
+ACK/delete failure, pending vsclaimed timeout, ownership/forged buttons,
+multiple selection/pagination, render failure і barcode DM delivery.
+Чинні schema/admission тести оновлено для result (bot-only, Admin, optional con_id).
+RED0/1;2/3;4/5;4/5 → GREEN5/5. Focused12/12. Restart/expiry нових API має
+characterization evidence, не вигаданий baseline RED.
+Це fakes actual control flow, не Firebase Emulator/реальний Discord. Startup
+cleanup wiring перевірено review; live registration/startup не виконувались.
+
+## S09-06 — 2026-11-01
+
+Три додані grouped regressions у `test/bot/render.test.js` та
+`test/queue/executor.test.js`: явна хронологія/фізичні посилки; malformed,
+Unicode та Discord limits/formatting; фактична whitelist-проєкція без
+внутрішніх даних. Розширення тих самих груп захищає unknown parcel identity
+та маршрут з обрізаної адреси. Спочатку відтворені дефекти, потім код.
+Combined Unicode+POD byte-cap fixture — characterization існуючого guard.
+Лише synthetic offline дані; реальний depot, Discord і Maps не перевірені.
+
+## POD diagnostics follow-up — 2026-11-02
+
+Existing podImage/executor tests extended, no new test cases: fixed reason codes,
+anchored HTTP status mapping, unknown/provider-text rejection and actual warning
+shape. Replaces prior constant-only warning contract with constant prefix plus
+allowlisted reason code; no raw provider errors or parcel IDs. Functional RED12/14
+(after helper stub), GREEN14/14. No live POD provider calls; root cause pending.
+
+## POD separate authorization — 2026-11-02
+
+POD auth: existing success regression now uses different synthetic Basic client credentials and request-body credentials. RED3/4, focused GREEN14/14; no additional test case. Protects independent header/body contract. No live auth verification.
+
+## POD image request alignment — 2026-11-02
+
+Existing POD success fixture now returns lowercase TokenType while expecting exact Bearer as captured depot code. Existing failure test includes HTTP200 body authorization Error1 with lowercase status/image. RED2/4 then focused14/14. No new test cases, no live acceptance claimed.
+
+## S09-13 — minimal driver-report regressions
+
+Three new groups in test/bot/driverReport.test.js: pure exact event selection
+plus actual executor Carded projection; bounded copyable text/Maps/missing data;
+actual handler ownership/retained-choice ACK/recovery. Existing admission,
+command schemas and lookup fixture extended. RED0/3 initial stubs, later1/3
+for address/defer defects, then36/36 focused. GPS parser checks are characterization
+after its small fix, not claimed RED. Delivered event-to-POD adapter correlation
+is source-reviewed; no real provider/Discord/mobile requests in this task.
+
+## Find high-level presentation — 2026-11-02
+
+Find presentation: existing7 render regressions updated FIRST for explicitly requested layout while preserving chronology, unknown identity/time, privacy, Unicode bounds and POD. One new hierarchy/empty/noANSI/drop-type group. RED1/8, GREEN8/8. New test originally overconstrained footer to absent; corrected to no redundant searched-as while requiring uncertainty (test specification correction, not runtime defect). Long map target and maximal grouped-address checks added after guard as characterization.
+
+## S09-07 — optional Maps failure isolation
+
+Two new groups in existing test/bot/geo.test.js and render.test.js: provider
+reject/non2xx/invalid JSON/status/coords/image/size, hanging fetch/body, bounded
+attempts/redaction; actual card survival with POD/links and disabled-network gates.
+Initial RED14/16; review ZERO_RESULTS-with-results RED15/16; GREEN16/16.
+Success PNG attachment, failed static map and m/km rendering added afterward as
+characterization. Existing reverse fixtures use real synthetic Response objects
+with explicit status/MIME to exercise streaming reads. PNG validity is structural,
+not full decoding; no real API/key/parcel data used.
+
+## S01-05 — configuration boundary
+
+Two grouped tests in test/unit/config-boundaries.test.mjs compile actual loaders
+with synthetic local modules: safe bot negatives/import failure, optional browser
+config/contact/POD compatibility, and invalid Drive input with zero fetch.
+Existing build test now places synthetic bot/service-account markers outside
+the browser graph and checks exclusion, preserved local config and identity/scopes.
+These build assertions characterize existing isolation, not a previously broken
+bundler. No actual private files are imported by the config fixture loader.
+Actual Firebase setup module runs with synthetic fs/Admin adapters to verify
+bot-root path resolution and redaction of JSON/SDK errors (characterization after
+implementation). No live credentials, SDK authentication, Discord or browser startup tested.
+
+## S02-01/S02-02 — barcode boundaries
+
+Extended existing parser boundary test for nonstrings and exact strip tail.
+Two new grouped parser/batch regressions cover competing numbers/parcel
+identities, read-order/repetition, modulo10 compatibility and zero lookup/folder/
+move effects for ambiguity in dry/live. Synthetic payloads only; no camera or
+private-label corpus claims. Decoder provenance allowlist excludes raw markers.
+
+## S05-01 — Gmail enumeration
+
+Existing list test now covers three pages/dedup; two new grouped tests cover
+loop/page/message budgets/schema/errors and actual gmailFlow with synthetic DOM.
+Missing label, empty, partial and API403 differ; all enumerating requests GET.
+RED5/8 to GREEN8/8; no mailbox/Chrome execution.
+
+## S04-01 — Drive enumeration
+
+Two grouped cases added to existing driveLabels tests: multipage/dedup/filter
+and metadata403/404, late page failure, schema/loop/budget/incompleteSearch.
+Real adapter with fake fetch asserts no media or mutation before complete
+validated listing. Existing fixtures now provide requested metadata. RED5/7,
+GREEN7/7; focused26/26. No live Drive/browser/image decoding verified.
+
+## S09-03 — explicit Firestore Emulator suite
+
+`npm run test:rules -- --download` downloads checksum-pinned Emulator1.22.0 once
+to the OS temporary cache; later `npm run test:rules` is offline. Requires Java21
+and loopback socket permission. `FIRESTORE_EMULATOR_JAR` may point to the same
+verified JAR. Runner uses direct Java, random loopback port and unique demo project;
+no Firebase CLI, login, service account or real project. Tests reject nonlocal
+hosts/projects. Runner terminates child processes and removes its temporary data.
+
+Two groups in test/emulator/firestore-rules.emulator.mjs are intentionally outside
+ordinary npm test; absence of an Emulator is an explicit failure, never skip.
+RED1/2 -> GREEN2/2. A permissive-rule control in a separate demo project proves
+denial assertion sensitivity. Time boundary uses server-generated reached expiry,
+not exact equality between separate requests. No browser/live evidence claimed.
+References: [Firebase local testing](https://firebase.google.com/docs/rules/unit-tests),
+[demo projects](https://firebase.google.com/docs/emulator-suite/connect_firestore).
+
+## S05-02 — bounded MIME
+
+Two grouped synthetic tests in test/gmail/mime.test.js: nested Unicode/headers/
+attachments and malformed/size/depth/HTML/charset/identity/read-only failures.
+Functional stub RED0/2, review RED0/2 for unnamed attachment/charset, GREEN10/10
+with labels suite. HTML is data only; no rendering/network image loads tested.
+Adapter prepared but not automatically invoked by the popup.
+
+## S05-03 — case context
+
+Two synthetic groups in test/workflow/caseContext.test.js use actual MIME/parser
+and depotLookup-shaped read port: source projection, stale/changed facts, forged
+source, ambiguity/unlinked zero lookup, failures and data minimization. Functional
+stub RED0/2 then source guard RED1/2, focused7/7. No live authorization or UI
+pipeline tested; human-link confirmation must come from a future trusted caller.
+
+## S07-02 — truthful capabilities
+
+One new grouped capability test checks config/permission/unsupported/external
+states, secret-free text and actual Gmail boundary zero requests. Existing modify
+regression now expects refusal because current workflow is read-only; current
+403/401 cases use the read endpoint. Synthetic Chrome manifest added to harness.
+RED0/1 -> focused11/11, no settings write/provider probe. Actual popup visual/
+Chrome permission-grant behavior not tested; declared scope is not live consent.
+
+## S09-08 — todo safety
+
+Two new grouped tests in test/discord/todo.test.mjs use pure Firestore adapter
+fakes and actual handler: user scope, stable IDs, concurrent clear/stale/expiry,
+failed Discord send does not update snapshot, bounded output/mentions and partial
+clear. Mechanical extraction baseline RED0/2; own-property error-map review RED1/2;
+GREEN9/9 with admission/commands. No Firebase/Discord live calls; transactional
+contention is modeled, not an Admin SDK concurrency benchmark.
+
+## S09-05 — actual entrypoints with synthetic runtime
+
+Three grouped VM/esbuild tests in test/queue/listener.test.mjs execute actual
+background/offscreen source; config/Firebase/Chrome/executor adapters replaced
+before graph loading. RED1/3 for sender/foreign identity, GREEN3/3. Existing
+duplicate/serial/expiry/restart behavior characterized; serialized transaction
+fake distinguishes claim winner from local scheduling, not SDK contention.
+Additional alarm/in-flight identity/heartbeat assertions characterized after fix.
+Actual enforcement separately S09-03; real Chrome/MV3 timing remains untested.
+
+## S06-02 — proposal schema and prompt separation
+
+Two groups in test/ai/outputSchema.test.js cover strict fields/bounds/action/ref/
+numeric claim rejection, hostile text as data, whitelist context projection,
+stale/changed source and mandatory human review. Functional stub RED0/2 ->2/2;
+integration with actual case builder4/4. Zero network/effect ports; no model
+evaluation, semantic prose-proof or prompt-injection immunity claim.
+
+## S09-14 report follow-up
+Existing report/command groups extended before code: optional normalized Eircode, invalid destination, selected-event override/recovery, no-origin navigation links, optional two-call map/POD and safe failure. Synthetic fetch only; real Discord/Maps/mobile not tested. Focused24/24 including todo regression after handler integration.
+
+## S09-15: WhatsApp image and caption
+Existing report group changed first (RED2/3) to require one image and no operator/map service text in caption. One new grouped image regression uses synthetic raster pixels: both panels and map bottom strip survive without cropping, EXIF orientation applied/metadata removed, malformed/missing/oversized inputs become placeholders. Report selection/recovery/admission regressions retained. Preview inspected with synthetic map and existing404 asset; no customer data. Real WhatsApp caption limits/display require owner trial.
+
+## S09-16: response lifetime
+Two small groups with injected clock/scheduler: fixed14min private deadline incl defer/edits, late-edit rejection, failed-send no cleanup,30min ordinary/DM, private followup deadline and fixed-code failure handling. Existing barcode delivery group extended first to prove error-DM survives expired progress; success ACK boundary retained. No real waiting/token/Discord in tests. Runtime restart and network failure are documented best-effort boundaries, not durable deletion guarantees.
+
+## S09-17: local share export
+Existing renderer expectations first require actual HTML attachment. One grouped regression checks escaped hostile caption, fixed image data URI/CSP, size rejection and executes static browser script in a synthetic VM: separate PNG/text writes, exact full caption and safe permission error. No live clipboard/network in automated tests. Owner confirmed earlier synthetic local-file two-button workflow on work-PC WhatsApp Web; actual report-export smoke still pending.
+
+## S09-18 Discord Web controls
+Two grouped synthetic tests cover same-message identity, ambiguous/placeholder rejection, strict attachment URLs and credential-free no-redirect image fetch, JPEG dimension rejection before decode, unique buttons and stale-row rejection. No new DOM dependency; fake DOM models the selector contract only. Built IIFE parsed as classic JS separately. Real Discord markup/CORS/browser clipboard and installation require owner smoke.
+
+- 2026-11-03 caption follow-up: extended existing Discord copy/HTML groups first (formatting RED1/3, emoji RED1/2) then GREEN3/3. Checks WhatsApp headings, blank lines, copied full caption, retained IMG-alt emoji/BR and existing URL safety. No new groups. Real WhatsApp styled-caption display remains owner smoke.
+
+- 2026-11-03 HTML export retired by owner: existing report attachment expectation changed first RED2/3, then verified without HTML. Removed obsolete whatsappExport module and its sole test group; extension formatter/copy regressions preserved.
+
+S09-18 duplicate-control regression also covers marked legacy toolbars outside recognized message rows, late legacy insertion and preservation of current controls. Synthetic DOM only; work-PC smoke remains necessary.
+
+S09-18 existing regression protects automatic content-script path scope, clipboardWrite without clipboardRead/activeTab, icon accessible names and titles after copy. Live automatic injection remains a work-PC smoke boundary.
+
+## Operator find follow-up
+Existing render expectations now require status/details → history → recipient → evidence. One new grouped render regression protects selected parcel isolation, old Bay not current, unassigned identity uncertainty and paging. Two grouped findViews regressions protect fixed expiry, actor/channel authorization, attachment clearing, no re-enqueue/ACK on navigation, and /result integration. Synthetic fixtures only; real Discord component editing/attachment replacement remains a live smoke boundary.
+
+Find visual follow-up updates existing render/projection/view groups (no added test groups): no mixed overview history, distinct selected scan paragraphs, badges/colors, no POD request/attachment, eligible per-row coordinate whitelist, single-pin map failure/key isolation, cross-parcel suppression, conflicting point/status ties, sole-parcel pagination with unassigned scans. Local synthetic HTML visual preview is approximate; live Discord/map display still needs owner smoke.

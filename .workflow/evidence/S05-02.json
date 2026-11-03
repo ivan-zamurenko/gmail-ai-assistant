@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "S05-02",
+  "outcome": "passed",
+  "base_sha": "2c9289e",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Bounded plain/nested MIME and exact read-only message adapter; HTML/unsupported encoding require review, attachment metadata only. Prepared module, no automatic mailbox reading.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/gmail/mime.test.js test/gmail/labels.test.js",
+      "exit_code": 1,
+      "result": "0/2 functional RED;review0/2 unnamed attachment/charset;GREEN10/10"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/gmail/mime.test.js test/gmail/labels.test.js",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS (full offline gates)"
+    }
+  ],
+  "untested": [
+    "Live services/credentials",
+    "Real Chrome/Discord/depot interaction"
+  ],
+  "external_effects": [],
+  "next_step": "Continue independently executable roadmap tasks; defer owner policy/live gates"
+}

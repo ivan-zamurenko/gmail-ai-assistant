@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: bot and extension contract values agree
+ok 1 - bot and extension contract values agree
+  ---
+  duration_ms: 2.159095
+  type: 'test'
+  ...
+# Subtest: invalid versions and unknown commands are rejected before Chrome calls
+ok 2 - invalid versions and unknown commands are rejected before Chrome calls
+  ---
+  duration_ms: 1.32861
+  type: 'test'
+  ...
+# Subtest: invalid consignment values are rejected before Chrome calls
+ok 3 - invalid consignment values are rejected before Chrome calls
+  ---
+  duration_ms: 0.48725
+  type: 'test'
+  ...
+# Subtest: parcel and barcodes modes are registered in contract but not executed
+ok 4 - parcel and barcodes modes are registered in contract but not executed
+  ---
+  duration_ms: 0.453109
+  type: 'test'
+  ...
+# Subtest: nonboolean dryRun is rejected before Chrome calls
+ok 5 - nonboolean dryRun is rejected before Chrome calls
+  ---
+  duration_ms: 0.225327
+  type: 'test'
+  ...
+# Subtest: reschedule all defaults to dryRun at the injection boundary
+ok 6 - reschedule all defaults to dryRun at the injection boundary
+  ---
+  duration_ms: 0.521672
+  type: 'test'
+  ...
+# Subtest: an explicitly false dryRun reaches only our fake injection boundary
+ok 7 - an explicitly false dryRun reaches only our fake injection boundary
+  ---
+  duration_ms: 0.316404
+  type: 'test'
+  ...
+# Subtest: find returns minimized parcel fields while retaining location data
+ok 8 - find returns minimized parcel fields while retaining location data
+  ---
+  duration_ms: 1.069632
+  type: 'test'
+  ...
+# Subtest: missing depot tabs return an error without injection
+ok 9 - missing depot tabs return an error without injection
+  ---
+  duration_ms: 0.277886
+  type: 'test'
+  ...
+# Subtest: outbound URL errors are redacted and bounded
+ok 10 - outbound URL errors are redacted and bounded
+  ---
+  duration_ms: 0.787379
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 72.270499

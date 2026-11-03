@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-07",
+  "outcome": "passed",
+  "base_sha": "4623e09",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/geo.test.js test/bot/render.test.js",
+      "exit_code": 1,
+      "result": "14/16 initial provider/card failures; later15/16 contradictory ZERO_RESULTS regression"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/geo.test.js test/bot/render.test.js",
+      "exit_code": 0,
+      "result": "16/16;2newgroups"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "195/195; lint/build/artifacts/docs/diff PASS; browser NOT RUN"
+    }
+  ],
+  "review": "maps_review ACCEPT; parent inspected request lifetime, body caps and actual render fallback",
+  "acceptance": {
+    "1": "Actual renderer no requests absent key/drop/Eircode",
+    "2": "Synthetic reject, HTTP, invalid JSON/status/coords/image, fetch/body timeout; actual card/POD/links survive",
+    "3": "Distance zero/known degree/antipodal plus actual m/km straight-line render fixtures",
+    "4": "Synthetic key marker absent output/logs; fixed codes and encoded provider request only",
+    "5": "One attempt/request,1000ms incl body,<=3 reverse variants stop on failure,<=5 calls/card; no cache"
+  },
+  "characterization": "Added actual failed static map/success PNG and m/km render fixtures after implementation; no claimed RED for these",
+  "untested": [
+    "Real Google Maps service/network latency and billing",
+    "Actual Discord/mobile rendering; bot not restarted",
+    "PNG full decoding/CRC (structural validation only)",
+    "Pending report registration/work-PC smoke test"
+  ],
+  "external_effects": [],
+  "next_step": "Live activation and owner smoke test when available; no new roadmap task assigned"
+}

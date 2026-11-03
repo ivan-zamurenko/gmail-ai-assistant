@@ -10,12 +10,50 @@
  * parcel is carded and sent back. The scan history is the honest source.
  */
 
-export async function depotLookup(numbers) {
+export async function depotLookup(numbers, { identityOnly = false } = {}) {
+
+  function safeFailure(error, fallback = 'Depot operation failed') {
+    const known = new Set([
+      "Refusing a cross-origin depot request",
+      "Quick search form not found — is this a depot page?",
+      "Depot login required",
+      "Unsupported depot response"
+    ]);
+    const raw = typeof error?.message === 'string' ? error.message : '';
+    if (known.has(raw)) return raw;
+    const status = raw.match(/(?:HTTP|Drive API|Drive) ([1-5]\d{2})\b/)?.[1];
+    const codes = new Set(['permission-denied', 'unauthenticated', 'unavailable', 'deadline-exceeded', 'resource-exhausted', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND']);
+    const candidate = error?.code ?? raw.match(/\[([a-zA-Z-]+)\]$/)?.[1];
+    const code = codes.has(candidate) ? ` [${candidate}]` : '';
+    return `${fallback}${status ? ` (HTTP ${status})` : ''}${code}`;
+  }
   const SCAN_URL = '/scripts/cgiip.exe/WService=wsInterlink/woScanningHistoryList.p';
   const CONS_URL = '/scripts/cgiip.exe/WService=wsInterlink/woConsignmentDetails.p';
 
   const text  = (el) => (el?.textContent ?? '').replace(/\s+/g, ' ').trim();
-  const toDoc = (html) => new DOMParser().parseFromString(html, 'text/html');
+  const toDoc = (html) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    if (doc.querySelector('input[type="password"]')) throw new Error('Depot login required');
+    return doc;
+  };
+  const unsupported = () => { throw new Error('Unsupported depot response'); };
+
+  // Runs in the page MAIN world: confirm the page is the depot (same rule as
+  // depotTarget.js) and keep every request on its origin.
+  function isDepotPage() {
+    const here = new URL(window.location.href);
+    return here.protocol === 'http:'
+      && here.hostname.toLowerCase().endsWith('.interlink.local')
+      && here.hostname.length > '.interlink.local'.length
+      && here.href.startsWith(`${here.origin}/`); // no user:pass@ in the URL
+  }
+
+  function sameOrigin(raw) {
+    const here = new URL(window.location.href);
+    const url = new URL(raw, here.href);
+    if (url.origin !== here.origin) throw new Error('Refusing a cross-origin depot request');
+    return url.href;
+  }
 
   function sessionParams() {
     const p = new URLSearchParams(window.location.search);
@@ -23,18 +61,29 @@ export async function depotLookup(numbers) {
   }
 
   async function fetchDoc(url) {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await fetch(sameOrigin(url), { credentials: 'include' });
     if (!res.ok) throw new Error(`Depot page returned HTTP ${res.status}`);
     return toDoc(await res.text());
   }
 
   // ── Finding the consignment ──────────────────────────────────────────────────
 
+  function depotQuery(input) {
+    const raw = String(input ?? '').trim();
+    // A leading zero is an explicit operator marker for a legacy eight-digit
+    // number. Bare eight-digit input stays rejected so a typo cannot broaden
+    // Quick Search to several consignments.
+    if (/^\d{8}$/.test(raw)) {
+      return { raw, error: '8-digit numbers require a leading zero marker' };
+    }
+    return { raw, query: /^0\d{8}$/.test(raw) ? raw.slice(1) : raw };
+  }
+
   async function quickSearch(number) {
     const form = document.getElementById('ConQSearchForm');
     if (!form) throw new Error('Quick search form not found — is this a depot page?');
 
-    const res = await fetch(form.action, {
+    const res = await fetch(sameOrigin(form.action), {
       method:      'POST',
       credentials: 'include',
       headers:     { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -46,12 +95,34 @@ export async function depotLookup(numbers) {
 
   /** Search results link straight to the detail page — unlike the CAD list, which uses chooseItem(). */
   function parseHitList(doc) {
+    if (!doc.getElementById('MAINTABLE')) unsupported();
     const hits = new Map();
     for (const a of doc.querySelectorAll('#MAINTABLE a[href*="woConsignmentDetails.p"]')) {
       const consId = new URLSearchParams(a.getAttribute('href').split('?')[1]).get('ConsId');
-      if (consId && !hits.has(consId)) hits.set(consId, { consId, consNumber: text(a) });
+      if (!/^\d+$/.test(consId ?? '') || !text(a)) unsupported();
+      if (hits.has(consId) && hits.get(consId).consNumber !== text(a)) unsupported();
+      hits.set(consId, { consId, consNumber: text(a) });
     }
+    if (!hits.size && doc.querySelectorAll('#MAINTABLE tbody tr').length) unsupported();
     return Array.from(hits.values());
+  }
+
+  /** Detail responses expose ConsId differently across depot page variants. */
+  function consIdFromDetail(doc) {
+    const hidden = doc.getElementById('hiddenConsIdValue')?.value
+      || doc.querySelector('input[name="ConsId" i]')?.value;
+    if (hidden) return hidden;
+
+    const ids = new Set();
+    for (const el of doc.querySelectorAll('[href*="ConsId="], [action*="ConsId="]')) {
+      const raw = el.getAttribute('href') || el.getAttribute('action') || '';
+      const query = raw.split('?')[1];
+      const consId = query ? new URLSearchParams(query).get('ConsId') : '';
+      if (consId && !/^\d+$/.test(consId)) unsupported();
+      if (consId) ids.add(consId);
+    }
+    if (ids.size > 1) unsupported();
+    return [...ids][0] ?? '';
   }
 
   function fetchConsignment(consId) {
@@ -77,6 +148,9 @@ export async function depotLookup(numbers) {
 
   const pick = (rows, label) => rows.find((r) => r.label === label)?.value ?? '';
 
+  /** Depot versions use slightly different labels for phone and email fields. */
+  const pickMatching = (rows, pattern) => rows.find((r) => pattern.test(r.label))?.value ?? '';
+
   /** The second address line sits in its own row under an empty label. */
   function addressLines(rows) {
     const start = rows.findIndex((r) => r.label === 'Address');
@@ -95,12 +169,22 @@ export async function depotLookup(numbers) {
       `&ConsBarcode=${encodeURIComponent(consNumber)}&UID=${encodeURIComponent(uid)}`;
   }
 
+  /** Operational values hidden in the scan tooltip, e.g. Bay: 32, Sequence: 5. */
+  function scanNoteField(notes, label) {
+    const match = new RegExp(`(?:^|[,|]\\s*)${label}:\\s*([^,|]+)`, 'i').exec(notes);
+    return match?.[1]?.trim() ?? '';
+  }
+
   function parseScans(doc) {
+    if (!doc.getElementById('MAINTABLE')) unsupported();
     return Array.from(doc.querySelectorAll('#MAINTABLE tbody tr')).flatMap((tr) => {
       const tds = tr.querySelectorAll('td');
-      if (tds.length < 12) return [];
+      if (tds.length < 12 || !(tds[3].getAttribute('title')?.trim() || text(tds[3])) || !text(tds[4])) unsupported();
 
       const [date = '', time = ''] = text(tds[4]).split(' ');
+      const notes = tds[10].getAttribute('title')?.trim() || text(tds[10]);
+      const imageCell = Array.from(tds).find((td) => /setEventID\s*\(/i.test(td.innerHTML));
+      const eventId = imageCell?.innerHTML.match(/setEventID\s*\(\s*["']?(\d+)["']?\s*\)/i)?.[1] ?? '';
       return [{
         route:  text(tds[1]),
         depot:  text(tds[2]),
@@ -110,8 +194,13 @@ export async function depotLookup(numbers) {
         parcel:    text(tds[7]),
         date,
         time,
-        notes:     tds[10].getAttribute('title')?.trim() || text(tds[10]),
+        notes,
+        bay:        scanNoteField(notes, 'Bay'),
+        sequence:   scanNoteField(notes, 'Sequence'),
+        // The onward barcode carries a /N parcel suffix; keep only the barcode.
+        onwardBc:   scanNoteField(notes, 'Onward BC').split('/')[0],
         signature: text(tds[11]),
+        eventId,
         coords:    coordsFromRow(tr),
       }];
     });
@@ -122,9 +211,10 @@ export async function depotLookup(numbers) {
     const link = tr.querySelector('a[href*="openstreetmap.org"]');
     if (!link) return null;
     const p   = new URLSearchParams(link.getAttribute('href').split('?')[1] ?? '');
+    if (!p.get('mlat')?.trim() || !p.get('mlon')?.trim()) return null;
     const lat = Number(p.get('mlat'));
     const lng = Number(p.get('mlon'));
-    return Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng) ? { lat, lng } : null;
+    return Number.isFinite(lat) && Math.abs(lat) <= 90 && Number.isFinite(lng) && Math.abs(lng) <= 180 ? { lat, lng } : null;
   }
 
   /** Dates are DD/MM/YYYY, so sorting them as strings would put 10/08 before 07/08. */
@@ -137,30 +227,47 @@ export async function depotLookup(numbers) {
 
   // ── One consignment ──────────────────────────────────────────────────────────
 
-  async function lookupOne(query) {
+  async function lookupOne(input) {
+    const normalized = depotQuery(input);
+    if (normalized.error) {
+      return { query: normalized.raw, ok: false, reason: normalized.error };
+    }
+    const query = normalized.query;
     const t0 = Date.now();
     const searched = await quickSearch(query);
     const t1 = Date.now();
     let detail = searched;
+    let consId = '';
+    const directNumber = searched.getElementById('hiddenConsBarcodeValue')?.value ?? '';
 
-    if (!searched.getElementById('hiddenConsBarcodeValue')) {
-      const hits = parseHitList(searched);
-      // Quick search matches substrings, so two hits mean we cannot tell which
-      // parcel the customer meant — that is a case for a human, not a template.
+    if (directNumber) {
+      consId = consIdFromDetail(searched);
+      if (directNumber !== query) return { query, ok: false, reason: '0 matches' };
+      if (!/^\d+$/.test(consId)) unsupported();
+      if (identityOnly) return { query, ok: true, consNumber: directNumber, consId };
+    } else {
+      // Approximate matches are never promoted to verified identity.
+      const hits = parseHitList(searched).filter(hit => hit.consNumber === query);
       if (hits.length !== 1) return { query, ok: false, reason: `${hits.length} matches` };
-      detail = await fetchConsignment(hits[0].consId);
+      if (identityOnly) return { query, ok: true, ...hits[0] };
+      consId = hits[0].consId;
+      detail = await fetchConsignment(consId);
+      if (detail.getElementById('hiddenConsBarcodeValue')?.value !== query
+          || consIdFromDetail(detail) !== consId) unsupported();
     }
     const t2 = Date.now();
-
-    const consNumber = detail.getElementById('hiddenConsBarcodeValue')?.value ?? '';
+    const consNumber = query;
     const delivery   = readBlock(detail, 'Delivery Address');
     const confirm    = readBlock(detail, 'Confirmation / Notification / Delivery Details');
+    const contact    = [...delivery, ...confirm];
 
     const scans = parseScans(await fetchDoc(scanUrl(consNumber)));
     const t3 = Date.now();
     // The parcel exists even with no scans, so callers that only need identity
     // (label renaming) still get the number back.
-    if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber };
+    if (!scans.length) return { query, ok: false, reason: 'no scans', consNumber, consId };
+
+    const delivered = scans.filter((scan) => /delivered/i.test(scan.type));
 
     // Only field scans (delivery, carding, failed attempt) carry GPS; the most
     // recent of those is where the parcel physically ended up.
@@ -171,11 +278,15 @@ export async function depotLookup(numbers) {
       query,
       ok:           true,
       consNumber,
+      consId,
       status:       text(detail.querySelectorAll('h1 b')[1]),
       arrangedDate: pick(confirm, 'Arranged Delivery Date'),
       lastScan:     latest(scans),
       scanCount:    scans.length,
       scans,
+      // The POD photo is fetched by the extension (podImage.js); only the event
+      // id of the latest delivered scan leaves the page. null = not delivered.
+      podEventId:   delivered.length ? latest(delivered).eventId : null,
       timing:       { search: t1 - t0, detail: t2 - t1, scans: t3 - t2 },
       drop:         drop && { ...drop.coords, type: drop.type, date: drop.date, time: drop.time },
       address: {
@@ -186,8 +297,15 @@ export async function depotLookup(numbers) {
         county:   pick(delivery, 'County'),
         postCode: pick(delivery, 'Post Code'),
         depot:    pick(delivery, 'Delivery Depot'),
+        // Prefer a real mobile; fall back to a landline only when none is listed.
+        mobile:   pickMatching(contact, /mobile/i) || pickMatching(contact, /telephone|phone/i),
+        email:    pickMatching(contact, /e-?mail/i),
       },
     };
+  }
+
+  if (!isDepotPage()) {
+    return numbers.map((query) => ({ query, ok: false, reason: 'Not a depot page (unexpected origin)' }));
   }
 
   const results = [];
@@ -196,7 +314,7 @@ export async function depotLookup(numbers) {
     try {
       results.push(await lookupOne(query));
     } catch (err) {
-      results.push({ query, ok: false, reason: err.message });
+      results.push({ query, ok: false, reason: safeFailure(err, 'Lookup failed') });
     }
   }
   return results;

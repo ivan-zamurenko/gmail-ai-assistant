@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "task_id": "S00-04",
+  "outcome": "passed",
+  "scope": "One fail-fast quality-gate runner shared by local use and a read-only GitHub Actions workflow; no deploy, secrets or live services.",
+  "base_sha": "0017b2a",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test test/tooling/checks.test.mjs",
+      "exit_code": 1,
+      "result": "ERR_MODULE_NOT_FOUND tools/checks.mjs — missing implementation, not a behavioural RED; behavioural spec (exit 7 stub) written before the runner",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test test/tooling/checks.test.mjs",
+      "exit_code": 0,
+      "result": "8/8: exit 7 stops pipeline without PASS; empty/failed test summary fails; missing manifest artifacts and source marker detected; lock drift detected; workflow read-only, secret-free, SHA-pinned",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages; 137/137 tests; browser: NOT RUN reported",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "temporary clone under /tmp (removed)",
+      "command": "node tools/checks.mjs --install",
+      "exit_code": 0,
+      "result": "PASS 12 stages in a fresh clone of HEAD + S00-04 files, no node_modules, no private local.js; 130/130 tests; lockfiles unchanged",
+      "boundary": "fresh local clone; npm registry download; synthetic config",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "remote",
+      "cwd": "GitHub Actions",
+      "command": "GitHub Actions workflow 'checks' on push 8d1a128",
+      "exit_code": 0,
+      "result": "completed success; PASS 12 stages; 130/130 tests; https://github.com/ivan-zamurenko/gmail-ai-assistant/actions/runs/39990600863",
+      "boundary": "GitHub-hosted ubuntu-latest; contents: read; no secrets",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npx eslint tools/checks.mjs test/tooling/checks.test.mjs",
+      "exit_code": 0,
+      "result": "passed (files outside npm lint glob)",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Runner lives in tools/checks.mjs and is the only CI entry point, so CI and local use the same commands.",
+    "Test-count check parses the node:test TAP summary (# tests > 0, # fail 0).",
+    "Actions pinned to commit SHAs verified via GitHub API: actions/checkout v7.0.1 3d3c42e5…, actions/setup-node v7.1.0 949feb24….",
+    "Browser tests do not exist yet: runner prints 'browser: NOT RUN' instead of a silent skip.",
+    "No version bump: runtime packages unchanged (CI tooling only).",
+    "Owner approved pushing the workflow (cloud runs) on 2026-10-23."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "tools/checks.mjs",
+    "test/tooling/checks.test.mjs",
+    ".github/workflows/checks.yml",
+    "docs/TESTING.md",
+    "docs/toolchain.md",
+    "START_HERE.html",
+    ".workflow/state.json",
+    ".workflow/evidence/S00-04.json",
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md"
+  ],
+  "untested": [
+    "Workflow on pull_request events and on main",
+    "Branch protection / required status check (GitHub settings not changed)",
+    "Browser/MV3 tests (none exist)",
+    "macOS runner (CI uses ubuntu-latest; local gate is macOS)"
+  ],
+  "residual_risk": [
+    "CI is not yet a required check: a red run does not block merging until branch protection is configured by the owner.",
+    "TAP summary parsing depends on the node:test reporter format under a non-TTY pipe."
+  ],
+  "blocker": null,
+  "next_step": "S00-05 (recommended; check card before starting).",
+  "git": {
+    "commit_sha": "8d1a128",
+    "commit_status": "performed",
+    "push_status": "performed; evidence recorded in a follow-up commit"
+  },
+  "external_effects": [
+    "GitHub Actions run 39990600863 (read-only, no secrets)",
+    "npm registry downloads in temp clone and CI"
+  ]
+}

@@ -1,5 +1,9 @@
 # DPD Assistance — Team Charter
 
+Практичний розподіл усіх 59 задач і підключення агентів —
+[AGENT_ASSIGNMENTS](AGENT_ASSIGNMENTS.md). Ролі нижче — перспективи review;
+фактичні сесії та доручення записуються в CURRENT.
+
 > Живий документ. Ми звіряємося з ним на кожній зміні.
 > Founder / ultimate decision-maker — **ти** (власник проєкту). Нижче — команда,
 > яку ти зібрав: кожен має ім'я, і в розмові я можу говорити з його перспективи,
@@ -45,6 +49,10 @@
 6. **Користувач вчиться.** Додаємо 🎓-пояснення концепцій паралельно з роботою.
 7. **Великий рефакторинг — тільки інкрементально й з погодженням.** Спершу план,
    потім маленькі перевірені кроки, не «переписати все за раз».
+8. **Кожна завершена зміна продукту піднімає версію.** За замовчуванням — patch;
+   minor для сумісної нової можливості, major для несумісної зміни. Піднімаємо
+   версію кожного зміненого артефакту окремо: Chrome extension у `manifest.json`,
+   root package та Discord bot у їхніх `package.json` і lock-файлах.
 
 ---
 
@@ -117,9 +125,11 @@
 1. **Слайс 0 — скелет бота** ✅ (готово: 3 команди реєструються, черга Firestore).
 2. **Слайс TODO — `/todo`** ✅ (готово: `add/list/done/clear`, окрема колекція
    `todos` у Firestore, персональний список на юзера). (Sofia)
-3. **Слайс 1 — `/find`** — слухач у розширенні + depot lookup (read-only). (Ravi, Marek)
-4. **Слайс 2 — `/reschedule`** — спершу лише dry-run; live після діагностики CAD-бага. (Marek, Priya)
-5. **Слайс 3 — `/check_barcodes`** — потребує `chrome.offscreen` для ZXing DOM. (Marek)
+3. **Слайс 1 — `/find`** ✅ — слухач у розширенні + depot lookup (read-only). (Ravi, Marek)
+4. **Слайс 2 — `/reschedule`** ✅ — safe-by-default dry-run; explicit
+   `dry_run:false` confirms live execution; manual date. (Marek, Priya)
+5. **Слайс 3 — `/reschedule barcodes`** ✅ — Drive/ZXing працює у
+   `chrome.offscreen`, depot actions — через вузький background bridge. (Marek)
 6. **Слайс 4 — звірка доставки + імейли** — на базі даних Scanning History. (Viktor, Aria)
 
 ---

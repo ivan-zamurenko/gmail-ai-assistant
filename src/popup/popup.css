@@ -442,3 +442,5 @@ details[open] > .section__header .section__arrow {
 }
 
 .footer__contact:hover { color: #2c2c2e; }
+
+.capabilities { white-space: pre-line; font-size: 11px; color: #666; line-height: 1.5; }

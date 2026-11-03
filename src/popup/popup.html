@@ -15,7 +15,6 @@
   </header>
 
   <main class="main">
-
     <!-- ── DEPOT: Future Dates ──────────────────────── -->
     <details class="section" open>
       <summary class="section__header">
@@ -35,6 +34,7 @@
         </div>
         <button class="btn btn--primary" id="scanCAD">Scan CAD List</button>
         <button class="btn btn--secondary" id="scanDrive">Scan Drive Labels</button>
+        <button class="btn btn--secondary" id="retryReschedule" hidden>Retry Today's Errors</button>
         <div id="scanProgress" class="progress" hidden>
           <div class="progress__bar">
             <div class="progress__fill" id="progressFill"></div>
@@ -46,7 +46,7 @@
       </div>
     </details>
 
-    <!-- ── GMAIL: Auto-Reply ────────────────────────── -->
+    <!-- ── GMAIL: Read-only queue ────────────────────────── -->
     <details class="section">
       <summary class="section__header">
         <span class="section__title">Gmail</span>
@@ -62,6 +62,7 @@
       </div>
     </details>
 
+    <p class="capabilities" id="capabilitySummary"></p>
   </main>
 
   <footer class="footer">

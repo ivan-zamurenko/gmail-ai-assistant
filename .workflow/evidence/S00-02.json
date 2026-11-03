@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "task_id": "S00-02",
+  "outcome": "passed",
+  "scope": "Reproducible install and one-off/watch build of the existing extension; no dependency upgrades, no manifest identity change.",
+  "base_sha": "da17e08b704befd5d545dd186fad92740ed4ab8a",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test test/tooling/build.test.mjs",
+      "exit_code": 1,
+      "result": "failed as expected: 2/4 failed — watch never produced dist/console/lookupConsole.js (timeout); build run from another cwd failed to resolve entry points and targeted the caller's dist/",
+      "boundary": "local; synthetic local.js from example in temp workspace; no network; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test test/tooling/build.test.mjs",
+      "exit_code": 0,
+      "result": "passed 4/4",
+      "boundary": "local; synthetic local.js from example in temp workspace; no network; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "temporary copy under /tmp with working-tree package.json/package-lock.json and bot copies (since removed)",
+      "command": "npm ci --no-audit --no-fund && npm --prefix bot ci --no-audit --no-fund",
+      "exit_code": 0,
+      "result": "both exit 0 (178 + 199 packages); shasum -a 256 -c of both lockfiles before/after: OK",
+      "boundary": "network to npm registry; clean install without node_modules",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "temporary copy under /tmp with working-tree package.json/package-lock.json and bot copies (since removed)",
+      "command": "npm run build && npm test && npm run lint (on the clean install)",
+      "exit_code": 0,
+      "result": "all exit 0; 115/115 tests",
+      "boundary": "clean install; synthetic local.js; no live calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npm run lint",
+      "exit_code": 0,
+      "result": "passed",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npx eslint test/tooling/build.test.mjs",
+      "exit_code": 0,
+      "result": "passed (file outside lint script glob)",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npm test",
+      "exit_code": 0,
+      "result": "115/115 passed (73 product + 4 build tooling + 38 workflow tooling)",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "npm run build",
+      "exit_code": 0,
+      "result": "passed",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "passed",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/roadmap.mjs validate && node tools/check-docs.mjs && node --test tools/tests/*.test.mjs",
+      "exit_code": 0,
+      "result": "PASS; 38/38",
+      "boundary": "local working checkout incl. owner's uncommitted changes; no live service calls",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Watch and one-off now share one plan: watch runs a second esbuild context for console helpers.",
+    "All build paths anchored to the build.js directory (absWorkingDir + absolute dist) instead of process cwd.",
+    ".node-version = 20.14.0: the only Node actually verified by clean install.",
+    "docs/TESTING.md updated per AGENTS (new protected risk) — outside the card's listed paths."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "build.js",
+    "test/tooling/build.test.mjs",
+    ".node-version",
+    "docs/toolchain.md",
+    "docs/TESTING.md",
+    ".workflow/state.json",
+    ".workflow/evidence/S00-02.json",
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md"
+  ],
+  "untested": [
+    "Other Node/npm versions",
+    "Loading dist/ in real Chrome",
+    "Long-running watch stability and copy-static race on rapid edits",
+    "Serialization of injected depot functions (not changed)"
+  ],
+  "residual_risk": [
+    "Root package version not bumped: package.json/package-lock.json carry the owner's uncommitted bump 1.1.1→1.1.8 and were left untouched; build tooling output for the extension is unchanged.",
+    "Build tests take ~20 s within npm test due to four real esbuild runs."
+  ],
+  "blocker": null,
+  "next_step": "S00-03 (recommended; separate assignment).",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": [
+    "npm registry download into a temporary directory only"
+  ]
+}

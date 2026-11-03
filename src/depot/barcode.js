@@ -16,10 +16,12 @@ import {
   HybridBinarizer,
   MultiFormatReader,
 } from '@zxing/library';
+import { DPD_BARCODE_FORMAT_NAMES } from './barcodeFormats.js';
+import { decodeWithConfiguredReader } from './barcodeReader.js';
 
 // PDF417 is the big block on Irish labels and carries the whole consignment
 // record; Code128 is the routing strip and carries the number alone.
-const FORMATS = [BarcodeFormat.PDF_417, BarcodeFormat.CODE_128, BarcodeFormat.DATA_MATRIX];
+const FORMATS = DPD_BARCODE_FORMAT_NAMES.map((name) => BarcodeFormat[name]);
 
 // Code128 needs clean white margins around the bars. A photo of a label lying
 // on a cardboard box fails on the full frame, because the dark box edge merges
@@ -74,13 +76,7 @@ function drawWindow(img, inset, degrees) {
 
 function decodeCanvas(canvas, reader) {
   const bitmap = new BinaryBitmap(new HybridBinarizer(new HTMLCanvasElementLuminanceSource(canvas)));
-  try {
-    return reader.decode(bitmap);
-  } catch {
-    return null;
-  } finally {
-    reader.reset();
-  }
+  return decodeWithConfiguredReader(bitmap, reader);
 }
 
 export function loadImage(src) {

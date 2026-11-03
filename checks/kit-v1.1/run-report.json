@@ -1,0 +1,60 @@
+{
+  "scope": "documentation and tooling only",
+  "checks": [
+    {
+      "name": "roadmap-validate",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "validate"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/roadmap-validate.log"
+    },
+    {
+      "name": "roadmap-next",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "next"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/roadmap-next.log"
+    },
+    {
+      "name": "markdown-validate",
+      "command": [
+        "node",
+        "tools/check-docs.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/markdown-validate.log"
+    },
+    {
+      "name": "tool-tests",
+      "command": [
+        "node",
+        "--test",
+        "tools/tests/docs.test.mjs",
+        "tools/tests/reader.test.mjs",
+        "tools/tests/roadmap.test.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/tool-tests.log"
+    },
+    {
+      "name": "html-build",
+      "command": [
+        "node",
+        "tools/build-start-here.mjs"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "log": "checks/kit-v1.1/html-build.log"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-15",
+  "outcome": "passed",
+  "base_sha": "0274c57",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "One local map/POD image and copy-ready caption without operator notes; contained pixels, bounded decode and metadata stripping. Independent review ACCEPT.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/driverReport.test.js; node --test test/bot/reportImage.test.js (separate RED runs)",
+      "exit_code": 1,
+      "result": "Report expectation RED 2/3, image module RED 0/1; focused GREEN 15/15"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/reportImage.test.js test/bot/driverReport.test.js test/queue/delivery.test.mjs test/discord/admission.test.mjs",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS7 gates,216/216 tests; browser NOT RUN"
+    }
+  ],
+  "untested": [
+    "Actual WhatsApp caption transfer/rendering and unusual long captions",
+    "New combined report with live depot data"
+  ],
+  "external_effects": [
+    "Existing authorized Mac bot restarted after checks; Discord ready confirmed; no command registration, WhatsApp send or depot mutation"
+  ],
+  "next_step": "Owner runs fresh /report and forwards one image with copied text as WhatsApp caption",
+  "review": "whatsapp_review ACCEPT, independent focused4/4; synthetic visual preview inspected locally",
+  "layout_followup": {
+    "date": "2026-11-03",
+    "request": "Map left, POD right; scanned point legend",
+    "red": "Existing reportImage regression0/1 before code change",
+    "focused": "reportImage + driverReport4/4",
+    "dimensions": "1600x864; contain without crop",
+    "gates": "PASS7,216/216",
+    "visual": "Synthetic side-by-side preview inspected",
+    "activation": "Mac bot0.2.19 restarted; Discord ready"
+  }
+}

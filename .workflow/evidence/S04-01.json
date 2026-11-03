@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "S04-01",
+  "outcome": "passed",
+  "base_sha": "3c698cd",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js test/depot/labelBatch.test.js test/depot/monthFolders.test.js test/queue/barcodeExecutor.test.js test/unit/config-boundaries.test.mjs",
+      "exit_code": 1,
+      "result": "5/7 RED to7/7 GREEN;focused26/26"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js test/depot/labelBatch.test.js test/depot/monthFolders.test.js test/queue/barcodeExecutor.test.js test/unit/config-boundaries.test.mjs",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS (full offline gates)"
+    }
+  ],
+  "untested": [
+    "Live services/credentials",
+    "Real Chrome/Discord/depot interaction"
+  ],
+  "external_effects": [],
+  "next_step": "Continue independently executable roadmap tasks; defer owner policy/live gates"
+}

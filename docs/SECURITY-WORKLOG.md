@@ -4,6 +4,51 @@ This file records security-related work on DPD Assistance. Never write secrets,
 session identifiers, customer names, addresses, tracking data, or label contents
 into this log.
 
+## 2026-10-26 — S09-02
+
+- Extracted the actual Discord handler behind explicit adapters for offline
+  admission tests; startup/login/config remain in index.js.
+- Unknown commands/subcommands and malformed option getter/type failures now
+  receive a fixed safe ephemeral error before queue/todo side effects.
+- Preserved configured guild, depot Administrator checks, interaction user
+  identity for todo, and explicit dry_run:false as the sole live confirmation.
+- Synthetic tests only; no permission/schema registration, live bot startup,
+  Firebase calls, customer data or secret values used.
+
+## 2026-10-26 — S09-01
+
+- Protected both queue vocabularies with equality/drift tests; preserved schema 2.
+- Extracted the existing pending-record builder to test requester/executor and
+  trusted envelope isolation without Firebase startup or credential reads.
+- Added zero-Chrome/ports-access assertions for invalid tasks; regression found
+  explicit null dryRun accepted by barcode executor. It now rejects null before
+  config/Drive/depot access; omitted dryRun still defaults to preview.
+- Synthetic local checks only; no live calls, rule deployment or customer data.
+
+## 2026-10-23
+
+- S01-02: depot code is injected only into tabs that match the depot rule
+  (`src/depot/depotTarget.js`), re-checked by the queue executor and, inside
+  the page, by `depotMain`/`depotLookup`. Every depot fetch and form action is
+  restricted to the page origin, so session and hidden fields cannot be posted to
+  another origin. Synthetic tests only; real Chrome/depot not exercised.
+- Moved POD authorization and image retrieval out of the depot page MAIN world
+  into the extension (`src/depot/podImage.js`). The DPD API user/password and
+  access token were previously passed as injected args, where page scripts could
+  read or intercept them. The injected lookup now returns only the numeric event
+  id of the latest delivered scan; the event id stays in the extension and is
+  not included in the queue result. Regression: `test/depot/lookup.test.js`,
+  `test/depot/podImage.test.js`, `test/queue/executor.test.js` (owner-approved).
+- Residual: podAuth is still bundled into the built extension from the
+  gitignored local config, like the other local settings; dist must stay private.
+
+## 2026-09-03
+
+- Added bounded POD image retrieval inside the authenticated depot tab. Only the
+  approved image body is transferred through the assigned queue for the private
+  Discord reply; depot tokens, cookies, event identifiers, and image URLs stay
+  inside the depot tab and are never logged.
+
 ## 2026-08-28
 
 - 14:46 IST — Started the remediation pass requested after the repository audit.
@@ -105,3 +150,461 @@ into this log.
 - Prepared the reviewed remediation as a dedicated Git snapshot on the local
   `codex` branch. The unrelated untracked EVE guide files remain excluded, and
   ignored local credentials/configuration remain outside version control.
+- Added structured CAD location fields for the Discord scan history: only the
+  operational Bay and Sequence values cross Firestore. The raw depot tooltip,
+  Service value, and other arbitrary notes remain local to the extension.
+- Configured the private, gitignored bot settings with the extension executor
+  UID and confirmed the bot reached its online state. The UID value was not
+  written to this journal, staged, committed, or pushed.
+- During a structural inspection of the private bot config, an existing Google
+  Maps API key was inadvertently included in local tool output. It was not
+  committed or pushed, but it must be treated as exposed in this session and
+  rotated in Google Cloud; the replacement must remain only in private config.
+- Diagnosed the reported bot/extension timeout with a PII-free queue health
+  probe. The extension claimed the task and returned the expected controlled
+  unknown-command result, confirming that executor UID, Firestore, offscreen,
+  and service-worker messaging were connected.
+- Found three simultaneous local Discord bot processes using the same bot
+  identity. Two confirmed older duplicate processes were stopped with SIGTERM;
+  the newest configured process was preserved and rechecked as the sole running
+  bot instance. This removed the interaction acknowledgment race.
+- Restored the full administrator-only `/find` parcel card at the owner's
+  explicit request: recipient, company, mobile/telephone, email when available,
+  full delivery address, Eircode, delivery depot, arranged date, and signature.
+  Responses remain ephemeral; arbitrary scan notes and session data remain
+  excluded. Documented that these cards must not be copied to public locations.
+- Replaced the compact CAD marker with an aligned scan-history column formatted
+  as `Bay: <number>, Seq: <sequence>` immediately to the right of scan time.
+- Reorganized tests by module and replaced the barcode regression fixture with
+  an explicitly synthetic consignment/parcel example; no real tracking data was
+  added to the test suite.
+- Locally decoded one owner-provided label photo from the gitignored
+  `labels_example/` directory using the same browser ZXing path as the extension.
+  No raw barcode payload or customer field was printed, logged, committed, or
+  sent to an external decoder. The safe structural report confirmed PDF417, a
+  31-field record, matching nine-digit consignment positions, and parcel 1.
+- Replaced the unverified PDF417 test data and historical source-code examples
+  with anonymized values that preserve the confirmed field lengths and routing
+  layout. The private source photo remains ignored and outside version control.
+- Ran a read-only local barcode audit across 69 owner-provided label images in
+  `labels_example/`. The 68 newly supplied private photos are gitignored; the
+  pre-existing tracked `label_example.png` was not modified and remains known
+  privacy debt. The audit used numeric in-memory file IDs and reported aggregate
+  format/parser statistics only; filenames, barcode payloads, tracking numbers,
+  and customer PII were not logged or newly committed. Temporary audit code,
+  browser profile, and localhost server were removed after completion.
+- Replaced the ZXing adapter's state-clearing `decode()` call with
+  `decodeWithState()` so the configured PDF417/Code128/DataMatrix allowlist is
+  preserved across image windows. Added a PII-free regression test using a fake
+  reader; no private label data was added to the automated test suite.
+- Repeated the same read-only 69-image audit after the reader-state fix. All 69
+  images produced a parseable consignment with no processing error or contested
+  result; only PDF417 and Code128 were returned, while DataMatrix remained
+  unobserved. One aggregate parcel-zero result was flagged for separate review.
+  No filenames, payloads, tracking numbers, or customer fields were logged, and
+  the temporary localhost audit environment was removed again.
+- Repeated the local audit with original filenames visible only in the owner's
+  private local report, as explicitly requested, to locate the parcel-zero
+  result. The diagnosis confirmed a two-digit parcel whose Code128 suffix was
+  zero and whose PDF417 routing carried the complete parcel number. Fixed the
+  PII-free selection rule and regression test without committing the filename,
+  barcode payload, consignment, or customer data.
+- Removed DataMatrix from the production ZXing allowlist after two local audits
+  of the 69-image private set returned only PDF417 and Code128. Added a PII-free
+  supported-format contract test and corrected documentation that had inferred
+  DataMatrix from a label's appearance without decoded evidence.
+- Audited PDF417 candidates without recognized routing using original filenames
+  only in the owner's temporary local report. Two parseable candidates came
+  from one image and its matching Code128 independently confirmed parcel one;
+  five earlier aggregate candidates were parser-rejected rather than fallbacks.
+  Updated selection so an assumed PDF417 parcel one cannot overwrite an exact
+  Code128 parcel, without committing any filename, barcode, or customer data.
+- Added a fail-closed boundary between diagnostic barcode ranking and Drive
+  filing. A photo containing more than one parsed consignment is now reported
+  as contested but cannot send either candidate to depot verification or rename
+  the file under a guessed parcel number; it follows the existing unknown path.
+  Added a regression test using two fully synthetic Code128 payloads.
+- Removed the implicit parcel-one assumption from PDF417 records without
+  recognized routing. The parser now preserves the consignment diagnostically
+  with an unknown parcel, while the filing boundary requires an exact positive
+  parcel from PDF417 routing or matching Code128 before depot verification.
+  Added a synthetic regression test; no label content or identifier was stored.
+- Re-ran all 69 private label images through the production barcode ranking and
+  new exact-parcel boundary. All 69 were parsed and safely accepted, with zero
+  rejected results. Original filenames remained available only in the temporary
+  local report; the audit environment was removed and no label data was committed.
+- Found that Drive label dry-run skipped photo moves but could still create
+  missing YYYY/MM folders. Extracted folder planning behind explicit adapter
+  callbacks and made missing folders virtual during dry-run, so no create/write
+  callback can run. Added a synthetic regression test with no token or Drive data.
+- Extracted the label batch orchestration from the Drive/ZXing adapter and added
+  a full dry-run regression through barcode selection, verification, naming and
+  reporting. The injected move port remained uncalled while the planned result
+  stayed complete; all fixtures and provider ports were synthetic.
+- Added a live-path regression for a structurally valid barcode rejected by the
+  depot verifier. The batch now has evidence that it files such a photo under
+  the next unknown name and does not expose or use the rejected consignment in
+  its result. All identifiers and provider ports in the test are synthetic.
+- Added the complementary verified live-path regression. Matching synthetic
+  Code128/PDF417 candidates for a two-digit parcel now prove that the batch calls
+  its move port exactly once with the verified consignment and exact parcel
+  filename, while using no real Drive, depot session, or customer data.
+- Added the final label-batch failure-boundary regression. A normal per-photo
+  failure is contained and the next photo continues, while a synthetic fatal
+  depot failure is rethrown before the second photo loads. This prevents a depot
+  outage from silently filing the remaining batch as unknown.
+- Added the owner-provided Drive folder link only to the gitignored local
+  configuration and rebuilt the extension locally. The folder identifier was
+  not copied into tracked source, documentation, tests, logs, or the Git index;
+  the stale popup error now points to local configuration instead of Settings.
+- Replaced the label reschedule dependency on Pending List with exact targets
+  already resolved by the authenticated depot lookup. The lookup now retains
+  internal ConsId locally, label mode validates and deduplicates targets, and
+  its dry-run no longer reads Pending List. Added a fully synthetic no-DOM test;
+  no real consignment, ConsId, session value, or customer data was committed.
+- Added a synthetic integration regression proving CAD and label targets share
+  the same PENDING classification and reschedule path while only CAD reads
+  Pending List. All depot documents, request values, and identifiers are fake;
+  no live depot action, session, tracking number, or customer data was used.
+- Added a fail-safe synthetic regression for GOODS HELD without qualifying
+  notes. It proves the target is skipped before the reschedule form is opened;
+  no live request, real identifier, session value, or customer data was used.
+- Added the complementary synthetic GOODS HELD regression: a qualifying note
+  dated to the test's local current day reaches the shared reschedule path
+  exactly once. No live depot request, real note, identifier, or PII was used.
+- Added a synthetic-clock regression proving a Friday reschedule submits the
+  following Monday in the outbound arranged-date field. The request is fully
+  intercepted locally; no live depot, session value, identifier, or PII is used.
+- Added a synthetic-clock regression proving the outbound arranged date skips
+  an Irish bank holiday. The Save request is intercepted locally and contains
+  no live depot value, real identifier, session data, or customer information.
+- Added a synthetic HTTP-failure regression proving a rejected reschedule Save
+  is counted as an error and never as changed. The write is intercepted locally;
+  no live depot endpoint, identifier, session value, or customer data is used.
+
+## 2026-09-01
+
+- Added a fail-closed regression for an HTTP 200 reschedule response that does
+  not confirm the saved date. It is reported as an error rather than changed;
+  all responses and identifiers are synthetic and no live depot or PII is used.
+- Added exact-target validation coverage proving malformed label targets are
+  rejected before depot access. Added batch-isolation coverage proving one
+  failed parcel does not prevent the next exact target from completing. All
+  requests and identifiers are synthetic; no live depot, session, or PII is used.
+- Added legacy eight-digit lookup normalization inside the depot search method.
+  Bare eight-digit input is rejected; an explicit nine-digit leading-zero marker
+  is removed only before Quick Search, while ambiguity remains fail-closed. The
+  owner-provided reference-card photo and printed number were not copied into
+  source, tests, documentation, logs, or Git; the regression is fully synthetic.
+- Extended the Drive label parser with the owner-confirmed legacy Code128 card
+  structure: eight digits plus an explicit physical parcel. The parser adds the
+  zero lookup marker, and synthetic regressions cover parsing, batch verification,
+  filename planning, and acceptance by the exact reschedule boundary. The photo
+  and its printed value remain outside source control and test fixtures.
+- Connected the existing administrator-only `/reschedule parcel` queue mode to
+  exact depot lookup and the shared reschedule executor. Added bot and extension
+  validation for consignment, future date, dry-run, exact `ConsId`, working-day
+  constraints, and confirmed Save results. Synthetic tests cover command schema,
+  validation, queue orchestration, and outbound date conversion; no live depot,
+  session value, customer data, or real identifier was used.
+- Removed the physical parcel number as a prerequisite for Drive-label
+  rescheduling. An unambiguous consignment now reaches exact authenticated depot
+  verification even when `/1`, `/2`, or routing parcel metadata is unavailable;
+  any parcel number that is decoded remains in the photo filename only. Contested
+  consignment numbers still fail closed. Synthetic parser and batch regressions
+  were used without Drive, depot, customer data, or real identifiers.
+- Added a device-local recovery queue for live Drive-label reschedules and the
+  narrowly scoped Chrome `storage` permission it requires. Exact targets are
+  persisted before the depot mutation, merged across batches, and removed only
+  after a confirmed change or intentional skip; failed and indeterminate targets
+  remain available through an operator-confirmed retry that does not access
+  Drive or decode photos again. The queue stores only consignment numbers and
+  internal ConsIds, never recipient PII, depot sessions, OAuth tokens, or secrets,
+  and it is not synchronized to Discord or Firestore. Tests use an in-memory fake
+  storage adapter and synthetic identifiers only.
+- Corrected recovery lifetime after the owner clarified the operational rule:
+  retry is limited to the processing day that created the batch. The stored
+  record now carries a local `runDay`; a later-day read deletes it before any
+  depot action, preventing yesterday's errors from being moved to a newly
+  calculated date. Added administrator-only `/reschedule retry` over queue schema
+  v2; it sends no target list through Firestore and the extension reads only its
+  same-day local exact targets. Synthetic tests prove expiry and that retry calls
+  `depotMain` without Drive or barcode access; no real identifiers or PII were used.
+- Connected the existing administrator-only `/reschedule barcodes` command to
+  the production Drive-label workflow in the extension's offscreen DOM context.
+  Popup and Discord now share the same barcode parser, exact-target collector,
+  Drive filing adapter, recovery queue, and depot reschedule function; the
+  background exposes only narrow lookup, reschedule, and non-interactive OAuth
+  bridges required because offscreen documents expose only `chrome.runtime`.
+  Drive photos, OAuth tokens, folder IDs, and filenames remain local. Firestore carries
+  only the command plus a bounded result, which the bot delivers by private DM
+  and then deletes. Extended the claimed-task execution allowance to two hours
+  for large batches; write fields and sizes remain deny-by-default and bounded.
+  All automated coverage uses fake ports and synthetic identifiers without live
+  Drive, depot, Firebase, Discord, credentials, or customer data.
+- Installed Firebase CLI in the owner's user-local tool directory, authenticated
+  it interactively, and deployed only `firestore.rules` to the explicitly
+  verified `dpd-assistant` project. Added a tracked `.firebaserc` default-project
+  binding to prevent accidental deployment to another Firebase project and
+  ignored local Firebase debug logs. Authentication tokens, account details,
+  debug output, and other credentials were not added to the repository.
+
+## 2026-09-02
+
+- Removed the redundant Discord `confirm_live` option by explicit owner
+  decision. Reschedule commands remain fail-safe by default because an omitted
+  `dry_run` is interpreted as `true`; choosing `dry_run:false` is now the single
+  explicit confirmation for a live depot mutation. Updated the production
+  command schema, handler, regression contract, and operator documentation.
+- Diagnosed the first real remote Drive-label run from PII-free Firestore status
+  and owner-observed extension errors. The scan completed barcode processing but
+  failed when the offscreen context directly accessed unavailable
+  `chrome.storage.local`. Added a narrow internal runtime bridge limited to the
+  existing recovery key; exact targets remain device-local and are not sent to
+  the bot, Discord, or Firestore. Added a synthetic adapter regression without
+  real Drive, depot, credentials, filenames, or consignment identifiers.
+- Optimized label identity verification after a production-path review showed
+  that it fetched and discarded full recipient fields and Scanning History for
+  every unique decoded label. The opt-in lookup now accepts only an exact
+  consignment plus numeric ConsId and returns no customer fields; substring,
+  missing, and ambiguous results remain fail-closed. Full `/find` lookup is
+  unchanged, while `depotMain` still re-reads authoritative status and GOODS
+  HELD notes immediately before every live mutation. Synthetic tests cover both
+  Quick Search response variants, substring rejection, label-only wiring, and
+  preservation of the full Scanning History path without real parcel data.
+- Added PII-free progress diagnostics for remote Drive-label execution after the
+  first lookup optimization did not materially reduce the owner's observed run
+  time. The offscreen console now reports only stage, current/total counters,
+  and elapsed milliseconds across depot probe, Drive authorization, label scan,
+  and reschedule hand-off. It never logs filenames, file IDs, consignments,
+  ConsIds, OAuth tokens, or customer data. A synthetic regression protects the
+  stage sequence and the data-minimization boundary.
+- Confirmed from the owner's PII-free timing trace that label decoding, not Drive
+  listing, dominated the batch and that ZXing emitted a full warning stack for
+  ordinary failed angle/window attempts. Suppressed only ZXing's exact expected
+  `MultiFormatReader` warning during its synchronous decode call; unrelated
+  warnings, barcode selection, retry windows, and fail-closed handling remain
+  unchanged. Added a focused regression for that boundary.
+- Replaced the primary 30-pass JavaScript label decode with a local
+  `zxing-cpp` WebAssembly reader restricted to Code128 and PDF417, while keeping
+  the proven JavaScript reader as a fail-safe fallback. The WASM binary is copied
+  into the extension and loaded from its own origin; no photo, payload, or
+  identifier is sent to a CDN. A read-only aggregate audit of all 69 private
+  examples completed in 9.57 seconds, matched all 65/65 pre-named consignments,
+  and emitted no identifiers. Added synthetic fast-path and fallback regressions.
+- Added a throttled Discord progress bar for remote Drive-label runs. The
+  extension coalesces Firestore writes and exposes only an allowlisted stage,
+  bounded current/total counters, bounded elapsed milliseconds, and server
+  timestamp; rules reject all other claimed-task progress mutations. The bot
+  edits one ephemeral message and retains the private DM final report. Added
+  synthetic tests for coalescing, bounds, rendering, throttling, and PII absence.
+- Verified the progress release with ESLint, 63 automated tests, a production
+  extension build, and `git diff --check`; deployed only the compiled Firestore
+  rules to the bound `dpd-assistant` project and restarted bot version 0.1.10.
+  The root dependency audit is clean. The bot audit still reports the known
+  moderate transitive `uuid` advisory through Firebase Admin; npm offers only a
+  breaking Firebase Admin major upgrade, so it was documented rather than
+  force-applied without a separate migration and regression pass.
+
+## 2026-10-23 — execution kit integration
+
+- Installed owner-requested workflow documentation and offline validators after
+  checking archive checksums. Preserved existing runtime edits, private configs,
+  credentials, and label photos. No live services, registration, deployment, or
+  customer-data transfer was performed.
+- Reconciled archive instructions with current access boundaries and the owner's
+  dry_run:false decision. Historical probes/logs are explicitly separated from
+  current regression evidence; no credentials or customer identifiers were added.
+- Existing uncommitted worklog entries were preserved and excluded from the
+  workflow installation commit. Local evidence is in .workflow/evidence/S00-01.json.
+
+## 2026-10-26 — module boundary audit
+
+- Read-only source review identified result/delivery coupling, optional POD/Maps
+  failure propagation, and potential replay after an indeterminate injection
+  error. No live reproduction, secret reads, customer data, or runtime changes.
+- Diagnostic output paths recorded for S01-03; no actual secret leak claimed.
+
+## 2026-10-26 — POD fallback
+
+- Preserved successful parcel facts when optional POD retrieval returns an error;
+  provider error/event ID are not added to the queue payload. Diagnostic warning
+  is the constant POD_UNAVAILABLE only, without identifiers or provider text.
+- Added generated local placeholder with no customer/reference data; real photos
+  remain private attachments. No live sending, deployment or credentials read.
+
+## 2026-10-28 — S01-03 safe diagnostics
+
+- Replaced arbitrary diagnostic text with static operation labels, exact known
+  reasons and allowlisted HTTP/status codes across extension and bot sinks.
+- Removed parcel identifiers, raw tab diagnostics and depot response fragments
+  from automatic logs. Preserved authorized operational cards and manual tools.
+- Synthetic test-first evidence only; no credentials, real customer records,
+  live services or external log provider used. See .workflow/evidence/S01-03.json.
+
+## 2026-10-28 — S01-04 bounded API operations
+
+- Removed whole-batch auth replay and live cross-tab replay after lost results.
+  Forbidden does not invalidate OAuth cache; unauthenticated does.
+- Safe typed diagnostics preserve uncertain outcomes; no raw response bodies,
+  credentials or identifiers added to errors. Confirmed local recovery targets
+  remain local under the existing same-day contract.
+- Synthetic tests/review only; no live provider calls, new scopes or deployment.
+
+## 2026-10-28 — S02-04 parser input boundary
+
+- Bounded pure text extraction; numeric matches explicitly unverified and require
+  separate lookup. No email contents, logging, storage or external calls added.
+- Synthetic fixtures only; no runtime caller or Gmail access enabled.
+
+## 2026-10-28 — S03-01 exact lookup responses
+
+- Reject foreign identity, ambiguous fallback IDs, login and unknown DOM shapes
+  before returning verified fields. Safe reasons omit provider body/session.
+- Kept operational query correlation and existing minimized bot projection.
+  Synthetic DOM fixtures only; no real sessions, customer data or live scraping.
+
+## 2026-10-28 — S09-04 retained result recovery
+
+- Owner approved24h undelivered retention and consignment-based recovery. No
+  new datastore; existing minimized task result retained until send ACK/expiry.
+- Recovery remains requester-only, configured guild/Admin/executor scoped and
+  ephemeral. No raw parcel details or secrets added to logs. Browser rules
+  unchanged; delivery metadata is Admin-only under changedOnly constraints.
+- Startup/periodic cleanup cannot delete while bot is offline; expired results
+  are denied on read. No TTL deployment, registration, startup or live sends.
+- Five grouped synthetic regressions and independent review; real Firestore
+  rules/network behavior remains untested in this session.
+
+## 2026-11-01 — S09-06
+
+- Bounded explicit find-result whitelist; internal diagnostics, arbitrary notes
+  and provider identity fields excluded. Approved private recipient/contact,
+  address and signature remain PII, not anonymous data.
+- Disabled Discord mentions; neutralized customer-controlled formatting/control
+  characters. No real customer data, credentials or network services used.
+- Synthetic projection/render regressions; Admin/ephemeral gates unchanged.
+
+## 2026-11-02 — POD diagnostic follow-up
+
+Owner observed missing POD and generic warning during live find. Local diagnostic
+now logs constant prefix plus allowlisted code only, superseding constant-only
+warning contract. No credentials, token, provider Status text, parcel/event IDs
+or raw exception logged. No new live requests or secret inspection performed.
+
+## POD separate authorization — 2026-11-02
+
+Owner-supplied private source confirmed separate provider Basic authorization. Added optional local podAuth.basicAuthorization; private config updated, no secret committed. No provider call performed. AccessToken still acquired per POD fetch; no persisted bearer token. Temporary extracted private text removed after use.
+
+## POD image request alignment — 2026-11-02
+
+Owner image-function PDF inspected privately. Image request now uses literal Bearer scheme matching depot; returned TokenType is not interpolated. Observed provider authorization rejection maps to fixed IMAGE_AUTH_REJECTED, no raw Details logged. No live requests or credentials changes; private extracted text removed.
+
+## 2026-11-02 — S09-13 report
+
+- Reused Administrator/ephemeral/requester/guild/executor/24h retained boundary.
+- Selection buttons carry internal task ID/index only; depot IDs/notes stay local.
+- Report projects approved recipient/address/phone, event GPS/time/signature;
+  remains PII, not anonymous. No email, provider headers or raw errors in output.
+- No new Maps provider transmission, persistence policy or Firestore rule change.
+- Synthetic fixtures only; no live registration/start/parcel command by agents.
+
+## Find high-level presentation — 2026-11-02
+
+Find presentation retains Administrator/ephemeral and mention neutralization. Explicit Delivered/Carded filter prevents using other/unknown drop types for Maps output. No new fields/provider flows or retention changes. Source uncertainty preserved. Synthetic fixtures only; no live calls or private data used.
+
+## 2026-11-03 — S09-07 Maps boundary
+
+Bounded optional requests including response body, streamed byte caps, redirect
+rejection and validated coordinates/schema. Diagnostics use fixed codes only;
+synthetic key-leak regression covers output/logs. No new provider/cache/retention,
+secrets reads or live requests. Invalid/missing inputs skip enrichment entirely.
+
+## 2026-11-03 — S01-05 configuration
+
+Validated known config types/required bot fields and Drive folder targets before
+external use. Bot import/service-account errors no longer expose raw parser/SDK
+messages. Synthetic bundle markers confirm separate Node-only credentials stay
+out of extension entry points; this does not protect secrets incorrectly pasted
+into browser local.js. Private configs not read/edited; no credentials rotated,
+permissions/scopes changed, or external services invoked.
+
+## 2026-11-03 — S09-03 Emulator enforcement
+
+Actual loopback/demo-project rules checks found malformed/oversized expired
+cancellation summary allowed; fixed with type and500-character limit. Full
+local matrix passes, permissive control demonstrates denial sensitivity.
+Pinned public emulator/dependency downloaded; no production credentials/config,
+deploy, client data or live project used. Nested parcel map-only gap documented.
+
+## 2026-11-03 — prepared Gmail MIME/case boundaries
+
+S05-02/S05-03 use synthetic data only. No automatic mailbox reads, attachment
+fetches, HTML execution or downstream effects. Case lookup requires explicit
+trusted author linkage; only exact minimal scan facts/source IDs projected.
+Untrusted text cannot supply authorization. No credentials/PII logged or exported.
+
+## 2026-11-03 — S07-02 availability guards
+
+Gmail read checks declared scope/identity before auth; unused modify helper now
+refuses before IO until workflow approval. Summary never exposes config values
+or probes providers. Secrets/scopes/user files unchanged; synthetic tests only.
+
+## 2026-11-03 — S09-08 personal todo
+
+Ownership rechecked transactionally, stable IDs bind visible list selection,
+mentions disabled and output bounded. Temporary10min cache contains IDs/hashes,
+not raw task text; max1000 user entries. No stored retention change, mail/depot
+interaction or live credentials; synthetic service/handler evidence only.
+
+## 2026-11-03 — S09-05 internal bridge
+
+Worker validates browser sender metadata before depot/OAuth/storage bridges.
+Listener binds expected/current Firebase UID across queue boundaries, stops on
+identity change and never replays claimed work. Fixed diagnostics/one in-flight
+health checks. Synthetic config adapters only; no live auth/provider/depot calls.
+
+## 2026-11-03 — S06-02 AI preparation
+
+Strict output schema and separate untrusted-message data; context whitelist
+excludes unknown fields. No provider/tool/network capabilities, no auto-send or
+policy override; human review always required. Synthetic adversarial evidence
+only, free prose remains unverified; no external AI data transmission.
+
+- 2026-11-03 | root | S09-14: report-only validated Eircode retained in existing task args and 24h recovery; Admin/requester/guild protections preserved. Optional map uses existing server adapter, no keys/provider URLs exposed. No private configs read, live requests or deployment. Synthetic tests only.
+
+- 2026-11-03 | root | owner explicitly authorized command registration and bot restart in existing configured guild. Previous schema saved outside Git with restrictive file permissions; no credentials/customer data printed. Discord ready confirmed. No rules deploy or depot command executed.
+
+- 2026-11-03 | root | S09-15: map/POD composition local in bot memory with bounded decoding; no disk persistence/customer preview fixtures or new outbound service. Metadata removed, original evidence not regenerated/cropped. Caption stays under existing Admin/ephemeral/recovery protections. Operator note removed per owner request; no WhatsApp send, clipboard, rules or depot mutation.
+
+- 2026-11-03 | root | S09-15 runtime: reused owner-authorized Mac bot restart after passing gates; verified process cwd and Discord ready without printing identity/config. No command registration, rules deploy or outbound customer report initiated by agent.
+
+- 2026-11-03 | root | authorized report-layout restart on Mac after gates; exact project process verified. No customer fixture or image regeneration, no new outbound service, no depot action.
+
+- 2026-11-03 | root | S09-16 owner approved UI deletion of all new replies at14/30min. In-memory timers only, no persisted tokens/content/IDs, no logs with raw errors. Existing Admin/ephemeral and24h undelivered recovery unchanged. No retrospective purge or depot retries. Cleanup failure safely logged by fixed code; restart loses timers.
+
+- 2026-11-03 | root | S09-16 activated via authorized Mac bot restart after full gates, exact cwd verified. No message history purge, rules deployment or depot action; token/content not logged or persisted.
+
+- 2026-11-03 | root | S09-17: owner-tested local two-button export integrated. Caption HTML-escaped in text node, no interpolation in script; fixed MIME/base64 image, restrictive CSP, bounded combined attachments. No new outbound service, clipboard read, persistent server copy or automatic WhatsApp send. Downloaded HTML contains report PII/photo and survives Discord cleanup; page/docs explain this. Only synthetic fixtures used.
+
+- 2026-11-03 | root | S09-17 activated through authorized Mac bot restart after full checks; exact process cwd verified. No WhatsApp/depot message sent by agent. Restart resets existing UI-cleanup timers as documented.
+
+- 2026-11-03 | root | S09-18 owner approved extension copy helper. Adds activeTab/clipboardWrite only, no permanent Discord host or clipboardRead. Explicit user activation, same-message read/copy on click, bounded allowlisted credential-free attachment fetch, no tokens/API/WhatsApp sending/history persistence. Privileged offscreen runtime guard unchanged. Test fixtures synthetic; no private config inspection.
+
+- 2026-11-03 | root | caption presentation follow-up: pure shared formatting, Unicode emoji extraction, full URL preserved. No new permissions or outbound data. Authorized Mac bot restart after gates; Discord ready; existing cleanup timers reset as documented. Synthetic data only.
+
+- 2026-11-03 | root | owner-requested HTML report attachment removed; no retrospective deletion of Discord messages/downloads. Authorized Mac bot restart after gates; no new data access or outbound workflow. Existing cleanup timers reset on restart as documented.
+
+2026-11-03 | root | owner-requested automatic Discord controls: static isolated top-frame script scoped to channels/*, ongoing page access replacing activeTab. Removed popup injection; clipboardWrite only on copy click. No token/session/API access, persistence or automatic sending. Synthetic fixtures; no bot restart. Browser may request site access on update.
+
+- 2026-11-03 | root | owner-authorized operator /find redesign: read-only navigation snapshots retained only in Mac memory,16-session bound, fixed14min expiry from interaction, actor/guild/channel bound and Admin runtime gate. No disk persistence/raw logging/exports or permission changes. Selected views suppress unbound POD/GPS; unknown parcel identity remains disclosed. Recovery ACK semantics unchanged. Synthetic fixtures only.
+
+- 2026-11-03 | root | operator-find activation: exact bot PID/cwd verified, authorized Mac restart after passing gates; Discord online confirmed without printing identity/config. In-memory cleanup timers reset as documented; no depot requests or customer messages initiated by agent.
+
+- 2026-11-03 | root | owner-approved find scan map: only bounded Delivered/Carded GPS with physical parcel identity passes result projection; event/session metadata stays local. Single-point Maps request uses existing server-side bounded adapter and keeps key out of Discord. Removed find POD service request/rendering. No new permissions, no live depot calls by agent; legacy unbound drop never used for selected map.
+
+- 2026-11-03 | root | authorized find-separation activation: verified exact Node process and bot cwd before restart; bot0.2.25 online, no startup errors; no identity/config printed or live depot calls initiated. Existing in-memory timers reset on restart. Extension artifact stored outside Git for intended work PC.
+
+- 2026-11-03 | root | owner-approved GPS eligibility extended to Failed Delivery/Incorrect Address under existing bounded per-scan projection; no additional identifiers/permissions or providers. Return to depot excluded from GPS; red badge only. No live depot calls initiated. Owner explicitly authorized codex commit and merge into main.
+
+- 2026-11-03 | root | authorized Mac bot0.2.26 restart after gates; process/cwd checked, Discord online confirmed without identity/config output; cleanup timers reset as documented.

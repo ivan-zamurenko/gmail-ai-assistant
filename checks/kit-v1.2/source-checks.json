@@ -1,0 +1,52 @@
+{
+  "versions": {
+    "node": "v22.16.0",
+    "npm": "10.9.2",
+    "python": "Python 3.13.5"
+  },
+  "syntax_files": 49,
+  "commands": [
+    {
+      "name": "source-discord-offline",
+      "command": [
+        "node",
+        "--test",
+        "checks/github/offline-discord.test.mjs"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit-v1.2",
+      "exit_code": 0,
+      "log": "checks/kit-v1.2/source-discord-offline.log",
+      "boundary": "offline; no live services",
+      "environment": {
+        "DPD_SOURCE_ROOT": "/mnt/data/bot-docs-update/source/gmail-ai-assistant-main"
+      }
+    },
+    {
+      "name": "source-security-suite",
+      "command": [
+        "node",
+        "--test",
+        "test/security.test.js"
+      ],
+      "cwd": "/mnt/data/bot-docs-update/source/gmail-ai-assistant-main",
+      "exit_code": 1,
+      "log": "checks/kit-v1.2/source-security-suite.log",
+      "boundary": "offline; no live services"
+    },
+    {
+      "name": "source-dry-run-probe",
+      "command": [
+        "node",
+        "--experimental-vm-modules",
+        "/mnt/data/dpd-assistance-kit-v1.2/checks/baseline/drive-dry-run-probe.mjs",
+        "--root",
+        "/mnt/data/bot-docs-update/source/gmail-ai-assistant-main"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit-v1.2",
+      "exit_code": 1,
+      "log": "checks/kit-v1.2/source-dry-run-probe.log",
+      "boundary": "offline; no live services"
+    }
+  ],
+  "note": "Missing dependencies are environment limitations. Expected dryRun assertion failure is not kit test failure; runtime not modified."
+}

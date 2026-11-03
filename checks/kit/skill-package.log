@@ -1,0 +1,11 @@
+📦 Packaging skill: /mnt/data/dpd-assistance-kit/.agents/skills/dpd-task-delivery
+   Output directory: /mnt/data
+
+🔍 Validating skill...
+✅ Skill is valid!
+
+  Added: dpd-task-delivery/SKILL.md
+  Added: dpd-task-delivery/agents/openai.yaml
+
+📏 Archive size: 1,952 bytes
+✅ Successfully packaged skill to: /mnt/data/skill.zip

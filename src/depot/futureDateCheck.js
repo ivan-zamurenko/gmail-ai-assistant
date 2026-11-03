@@ -15,6 +15,19 @@
  * @returns {Promise<Array<{ query, ok, consNumber, consId, status, futureDate: 'yes'|'no', reason }>>}
  */
 export async function futureDateCheck(barcodes) {
+
+  function safeFailure(error, fallback = 'Depot operation failed') {
+    const known = new Set([
+      "Quick search form not found — is this a depot page?"
+    ]);
+    const raw = typeof error?.message === 'string' ? error.message : '';
+    if (known.has(raw)) return raw;
+    const status = raw.match(/(?:HTTP|Drive API|Drive) ([1-5]\d{2})\b/)?.[1];
+    const codes = new Set(['permission-denied', 'unauthenticated', 'unavailable', 'deadline-exceeded', 'resource-exhausted', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND']);
+    const candidate = error?.code ?? raw.match(/\[([a-zA-Z-]+)\]$/)?.[1];
+    const code = codes.has(candidate) ? ` [${candidate}]` : '';
+    return `${fallback}${status ? ` (HTTP ${status})` : ''}${code}`;
+  }
   const CONS_URL = '/scripts/cgiip.exe/WService=wsInterlink/woConsignmentDetails.p';
   const SCAN_URL = '/scripts/cgiip.exe/WService=wsInterlink/woScanningHistoryList.p';
 
@@ -174,7 +187,7 @@ export async function futureDateCheck(barcodes) {
     try {
       results.push(await checkOne(String(query)));
     } catch (err) {
-      results.push({ query, ok: false, consNumber: String(query), consId: '', status: '', futureDate: 'no', reason: err.message });
+      results.push({ query, ok: false, consNumber: String(query), consId: '', status: '', futureDate: 'no', reason: safeFailure(err, 'Future date check failed') });
     }
   }
   return results;

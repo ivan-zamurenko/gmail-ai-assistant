@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "S02-01",
+  "outcome": "passed",
+  "base_sha": "6ceebf1",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Typed barcode input and exact Code128 tail; existing PDF unknown-parcel compatibility preserved, no new format inferred.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test test/depot/labelBarcode.test.js",
+      "exit_code": 1,
+      "result": "9/10 before type/tail guards;10/10 after"
+    },
+    {
+      "phase": "green",
+      "command": "node --test test/depot/labelBarcode.test.js",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS (full offline gates)"
+    }
+  ],
+  "untested": [
+    "Live services/credentials",
+    "Real Chrome/Discord/depot interaction"
+  ],
+  "external_effects": [],
+  "next_step": "Continue independently executable roadmap tasks; defer owner policy/live gates"
+}

@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "task_id": "KIT-00",
+  "outcome": "documentation_prepared_with_known_runtime_defect",
+  "date": "2026-10-09",
+  "scope": "Source audit, detailed Markdown execution kit, read-only roadmap/document tooling; no runtime modifications",
+  "checks": [
+    {
+      "name": "roadmap-validate",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "validate"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/roadmap-validate.log"
+    },
+    {
+      "name": "roadmap-next",
+      "command": [
+        "node",
+        "tools/roadmap.mjs",
+        "next"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/roadmap-next.log"
+    },
+    {
+      "name": "markdown-validate",
+      "command": [
+        "node",
+        "tools/check-docs.mjs"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/markdown-validate.log"
+    },
+    {
+      "name": "tool-tests",
+      "command": [
+        "node",
+        "--test",
+        "tools/tests/docs.test.mjs",
+        "tools/tests/reader.test.mjs",
+        "tools/tests/roadmap.test.mjs"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/tool-tests.log"
+    },
+    {
+      "name": "html-build",
+      "command": [
+        "node",
+        "tools/build-start-here.mjs"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/html-build.log"
+    },
+    {
+      "name": "runtime-syntax",
+      "command": [
+        "node",
+        "/mnt/data/dpd-assistance-kit/checks/baseline/syntax-check.mjs",
+        "--root",
+        "/mnt/data/audit/gmail-ai-assistant"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/runtime-syntax.log"
+    },
+    {
+      "name": "runtime-eslint",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/**/*.js"
+      ],
+      "cwd": "/mnt/data/audit/gmail-ai-assistant",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/runtime-eslint.log"
+    },
+    {
+      "name": "runtime-known-dry-run-defect",
+      "command": [
+        "node",
+        "--experimental-vm-modules",
+        "/mnt/data/dpd-assistance-kit/checks/baseline/drive-dry-run-probe.mjs",
+        "--root",
+        "/mnt/data/audit/gmail-ai-assistant"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "matched_expected": true,
+      "log": "checks/kit/runtime-known-dry-run-defect.log"
+    },
+    {
+      "name": "skill-package",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "/home/oai/skills/skill-creator/scripts/package_skill.py",
+        "/mnt/data/dpd-assistance-kit/.agents/skills/dpd-task-delivery",
+        "/mnt/data"
+      ],
+      "cwd": "/mnt/data/dpd-assistance-kit",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected": true,
+      "log": "checks/kit/skill-package.log"
+    }
+  ],
+  "runtime_modified": false,
+  "archive_sha256": "c545e03cb651305099eb581f0a37cdbf36dad456335ecdbc9f2a9dc0de4e328a",
+  "source_integrity": "checks/kit/source-integrity.json",
+  "managed_markdown": 92,
+  "tool_tests": {
+    "passed": 27,
+    "failed": 0,
+    "skipped": 0
+  },
+  "product_tasks": {
+    "todo": 40,
+    "done": 0
+  },
+  "gates": {
+    "pending": 10,
+    "approved": 0
+  },
+  "git": {
+    "working_branch": null,
+    "base_sha": null,
+    "archive_head_sha": "6684b17a6e698d88a52e350989060c26609d56b9",
+    "archive_metadata_is_not_verified_checkout": true,
+    "commit_sha": null,
+    "commit_status": "not_performed",
+    "push_status": "not_performed_or_authorized",
+    "live_remote_verified": false
+  },
+  "external_effects": [],
+  "not_performed": [
+    "clean npm ci",
+    "application build",
+    "Chrome runtime or browser rendering",
+    "Google OAuth and real API calls",
+    "depot lookup/reschedule",
+    "AI provider calls",
+    "IDE instruction discovery",
+    "Git commit or push"
+  ],
+  "known_defects": [
+    {
+      "id": "S01-01",
+      "description": "Original Drive dryRun creates two missing folders",
+      "probe_exit_code": 1,
+      "fixed": false
+    }
+  ],
+  "next_step": "Read INSTALL_RU.md; node tools/roadmap.mjs show S00-01"
+}

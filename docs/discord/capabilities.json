@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "snapshot": "local checkout 2026-10-23",
+  "meaning": "Source-path implementation status, not deployment status or roadmap task completion. Update only against reviewed code and evidence.",
+  "commands": {
+    "find": {
+      "status": "implemented_unverified_live",
+      "task": "S09-06",
+      "source": [
+        "bot/src/index.js",
+        "src/queue/executor.js",
+        "bot/src/render.js"
+      ]
+    },
+    "reschedule.all": {
+      "status": "implemented_unverified_live",
+      "task": "S09-09",
+      "default_dry_run": true,
+      "preview_binding_implemented": false
+    },
+    "reschedule.parcel": {
+      "status": "implemented_unverified_live",
+      "task": "S09-10",
+      "default_dry_run": true,
+      "source": [
+        "src/queue/executor.js",
+        "bot/src/commands.js"
+      ]
+    },
+    "reschedule.barcodes": {
+      "status": "implemented_unverified_live",
+      "task": "S09-11",
+      "default_dry_run": true,
+      "source": [
+        "src/queue/barcodeExecutor.js",
+        "src/offscreen/offscreen.js"
+      ]
+    },
+    "todo": {
+      "status": "implemented_unverified_live",
+      "task": "S09-08",
+      "subcommands": [
+        "add",
+        "list",
+        "done",
+        "clear"
+      ],
+      "collection": "todos"
+    },
+    "reschedule.retry": {
+      "status": "implemented_unverified_live",
+      "default_dry_run": true,
+      "same_day_only": true,
+      "source": [
+        "src/queue/executor.js",
+        "src/depot/rescheduleRecovery.js"
+      ]
+    }
+  },
+  "not_implemented": [
+    "discord_email_review",
+    "gmail_draft_from_discord",
+    "auto_send",
+    "proactive_channel_reports"
+  ],
+  "owner_policy": "Human review before email send; explicit dry_run:false confirms depot live without confirm_live. Source implementation does not authorize live execution in this setup session.",
+  "baseline": "docs/audit/LOCAL_BASELINE.md"
+}

@@ -1,0 +1,36 @@
+{
+  "task": "S09-06 operator-view follow-up",
+  "date": "2026-11-03",
+  "owner_scope": "Private operator find: status/details, paged scan history, parcel selection, recipient, historical delivery materials; no export",
+  "versions": {
+    "root": "1.1.54",
+    "bot": "0.2.24",
+    "extension": "6.3.0.86 unchanged"
+  },
+  "implementation": [
+    "Status and latest scan depot position first; history12 per page before recipient/media",
+    "Explicit physical-parcel navigation with overview; unknown identity remains unconfirmed",
+    "No inferred barcode/current depot position; delivery depot labelled as such",
+    "Global POD/GPS suppressed for selected parcel; overview labels unconfirmed association",
+    "Read-only UI snapshots16 sessions, fixed14min, owner/guild/channel bound; no enqueue or ACK on paging",
+    "Same presenter used for recovered find; optional Maps are regenerated on overview page changes"
+  ],
+  "checks": {
+    "test_first_render": "RED2/10 before implementation; GREEN10/10",
+    "test_first_view": "Missing module RED0/1; integration RED1/2 -> GREEN2/2",
+    "additional_regressions": "Malformed scans and unassigned identity each RED9/10 before fix",
+    "focused": "12/12 PASS",
+    "full": "node tools/checks.mjs PASS7,223/223 tests",
+    "review": "find_internal_review ACCEPT"
+  },
+  "activation": {
+    "bot": "Exact process cwd verified; bot0.2.24 restarted on Mac, Discord online marker confirmed, no startup error markers",
+    "command_registration": "Unchanged/not required",
+    "extension_update": "Not required"
+  },
+  "untested": [
+    "Real Discord component pagination/attachment replacement",
+    "Live multi-parcel depot lookup under new view"
+  ],
+  "next": "Owner runs fresh /find and checks parcel/history buttons; snapshots invalid after14min or restart"
+}

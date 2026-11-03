@@ -1,0 +1,191 @@
+{
+  "result": "PASS",
+  "scope": "syntax parsing only; not validation against current external vendor schemas",
+  "files": [
+    {
+      "path": ".agents/skills/dpd-task-delivery/SKILL.md",
+      "format": "YAML frontmatter",
+      "result": "PASS"
+    },
+    {
+      "path": ".agents/skills/dpd-task-delivery/agents/openai.yaml",
+      "format": "YAML",
+      "result": "PASS"
+    },
+    {
+      "path": ".github/agents/dpd-review.agent.md",
+      "format": "YAML frontmatter",
+      "result": "PASS"
+    },
+    {
+      "path": ".github/instructions/depot.instructions.md",
+      "format": "YAML frontmatter",
+      "result": "PASS"
+    },
+    {
+      "path": ".github/instructions/discord-queue.instructions.md",
+      "format": "YAML frontmatter",
+      "result": "PASS"
+    },
+    {
+      "path": ".github/instructions/gmail-ai.instructions.md",
+      "format": "YAML frontmatter",
+      "result": "PASS"
+    },
+    {
+      "path": ".github/instructions/tests.instructions.md",
+      "format": "YAML frontmatter",
+      "result": "PASS"
+    },
+    {
+      "path": ".workflow/evidence/KIT-00.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": ".workflow/evidence/KIT-01.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": ".workflow/evidence/KIT-02.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": ".workflow/evidence/TEMPLATE.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": ".workflow/state.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "DOCS_MANIFEST.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "agent-config/codex.config.example.toml",
+      "format": "TOML",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/github/previous-review/checks/results.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/github/previous-review/checks/syntax.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/github/previous-review/comparison.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit/run-report.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit/source-integrity.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit/structure-validation.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.1/consistency.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.1/final-report.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.1/run-report.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/change-manifest.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/consistency.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/formats.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/run-report-initial.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/run-report.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/source-checks.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/source-integrity.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "checks/kit-v1.2/source-syntax.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "docs/audit/github-source-inventory.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "docs/audit/source-inventory.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "docs/audit/source-traceability.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "docs/copilot/settings.merge-example.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "docs/discord/capabilities.json",
+      "format": "JSON",
+      "result": "PASS"
+    },
+    {
+      "path": "roadmap/tasks.json",
+      "format": "JSON",
+      "result": "PASS"
+    }
+  ]
+}

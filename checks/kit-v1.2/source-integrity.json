@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "checked_files": 71,
+  "archive_sha256": "b92e58bc30740f105fc94ef20fc266eb7a6c1eaa2d9201f279bd0dca8e1e3077",
+  "excluded_from_file_check": [
+    "labels_example/label_example.png"
+  ],
+  "source_modified": false
+}

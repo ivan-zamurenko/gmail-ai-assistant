@@ -9,6 +9,7 @@
 export const COMMANDS = Object.freeze({
   RESCHEDULE: 'reschedule',
   FIND:       'find',
+  REPORT:     'report',
 });
 
 // Sub-modes of /reschedule, carried in task.args.mode.
@@ -16,6 +17,7 @@ export const RESCHEDULE_MODE = Object.freeze({
   ALL:      'all',      // scan CAD list, reschedule every future-dated parcel
   PARCEL:   'parcel',   // reschedule one consignment to a given date
   BARCODES: 'barcodes', // scan Drive labels, reschedule the parcels found
+  RETRY:    'retry',    // retry today's saved Drive-label server errors
 });
 
 export const STATUS = Object.freeze({
@@ -26,7 +28,7 @@ export const STATUS = Object.freeze({
   CANCELLED: 'cancelled',
 });
 
-export const TASK_SCHEMA_VERSION = 1;
+export const TASK_SCHEMA_VERSION = 2;
 
 // Firestore collection that carries tasks in both directions.
 export const TASKS_COLLECTION = 'tasks';

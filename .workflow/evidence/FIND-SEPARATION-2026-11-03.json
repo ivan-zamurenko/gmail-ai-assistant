@@ -1,0 +1,34 @@
+{
+  "task": "S09-06 find separation follow-up",
+  "date": "2026-11-03",
+  "scope": "Owner-approved separated overview/parcel scans, no find POD, status badges and selected eligible scan map",
+  "versions": {
+    "root": "1.1.55",
+    "bot": "0.2.25",
+    "extension": "6.3.0.87"
+  },
+  "changes": [
+    "Overview has no mixed scan history; sole parcel auto-selected; exact parcel history remains filtered",
+    "Bold spaced scan paragraphs; Goods Held yellow, Delivered light green, failed/Carded red, Pending pink",
+    "Find no longer fetches/renders POD or placeholder; report unchanged",
+    "Optional scans[].coords whitelist preserves Delivered/Carded physical identity; no global drop fallback",
+    "One-point map via existing bounded adapter, no geocode; invalid timestamps/identity/conflicting latest point or status suppress map"
+  ],
+  "verification": {
+    "test_first": "Existing groups updated RED10/20 -> focused22/22; paging/conflicting coordinates RED8/10 and status tie RED9/10 before fixes",
+    "full": "node tools/checks.mjs PASS7,223/223",
+    "review": "find_map_review ACCEPT; sole-parcel pagination and tie findings fixed",
+    "visual": "Synthetic local HTML preview rendered in isolated Chrome and inspected; approximate layout, not live Discord"
+  },
+  "compatibility": "Optional result coords additive; schema2 unchanged. Old extension/results still render facts but lack selected map. Existing commands/permissions unchanged.",
+  "activation": "Exact bot process/cwd verified; bot0.2.25 restarted, Discord online and no startup error markers",
+  "artifact": {
+    "path": "/tmp/DPD-Assistance-6.3.0.87.zip",
+    "sha256": "6c1c1db11061bf47a85b848852cac4f2b4094dbf02b7e970dd5dbedca342e057"
+  },
+  "untested": [
+    "Real Discord layout/navigation/scan map after work-PC extension update",
+    "Live depot coordinates projection with new extension"
+  ],
+  "next": "Owner install6.3.0.87 dist, reload extension, run fresh /find; inspect each parcel separately"
+}

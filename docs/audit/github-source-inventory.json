@@ -1,0 +1,364 @@
+{
+  "source_archive": "gmail-ai-assistant-main.zip",
+  "source_archive_sha256": "b92e58bc30740f105fc94ef20fc266eb7a6c1eaa2d9201f279bd0dca8e1e3077",
+  "excluded": [
+    "labels_example/label_example.png"
+  ],
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 501,
+      "sha256": "9866b708e6e77c190459d1851f191dfd620cafe5c015e0c0284607922d6c78a8"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8476,
+      "sha256": "73ac81dbc40611493a10a56d2a4c721f5bc80cbed73149315037564f7c24bfac"
+    },
+    {
+      "path": "assets/dpd-icon-192.png",
+      "bytes": 7161,
+      "sha256": "895837dab325f3040e2dddb74eff6fd9ec4744de80d1d11427df2affce94e2ab"
+    },
+    {
+      "path": "assets/dpd-icon-32.png",
+      "bytes": 576,
+      "sha256": "3c9fcef6fdd71cbe95d3e76cf4e9569ba6eb8728c612aa7ad20649a7806e80a5"
+    },
+    {
+      "path": "assets/dpd-logo.svg",
+      "bytes": 1945,
+      "sha256": "2a59d8742465a09af19e2670e584d85d940d466c0ff03ebcd943fd925d906776"
+    },
+    {
+      "path": "assets/icon128.png",
+      "bytes": 6629,
+      "sha256": "eb0952580d04820e0377f69550ed73f0705993a1b4bf7cef9675e5e734402320"
+    },
+    {
+      "path": "assets/icon16.png",
+      "bytes": 654,
+      "sha256": "462b37c536365e362dac70e2e116b7ee2ebab221f988d8f57be23e5366e3c9a1"
+    },
+    {
+      "path": "assets/icon48.png",
+      "bytes": 2335,
+      "sha256": "ab947230c937ab67992c8e85a45312d767da5fb965520a8b2e09def263c11da8"
+    },
+    {
+      "path": "bot/config/config.js",
+      "bytes": 936,
+      "sha256": "bc7c432d7a3bd3471f947277d7c460bf679bdc592849a1607996dae812566de5"
+    },
+    {
+      "path": "bot/config/local.example.js",
+      "bytes": 2071,
+      "sha256": "31525c7d5d6fccadcbc92945035f43779f78ce5d2e2ab4dbad738a061afcaed5"
+    },
+    {
+      "path": "bot/package-lock.json",
+      "bytes": 84234,
+      "sha256": "50d99579caca000e54e1f26e03869bed262dfa723697ab1bdc00f9aa0d87923e"
+    },
+    {
+      "path": "bot/package.json",
+      "bytes": 369,
+      "sha256": "12997dc23df31c3433cb9a31b62bbd4afd7f7b6995fe39b859c101708db11034"
+    },
+    {
+      "path": "bot/src/commands.js",
+      "bytes": 3208,
+      "sha256": "a63f85414be3018ab07486bb7629840195bbb12d79973b01b0a8002f2e7e6358"
+    },
+    {
+      "path": "bot/src/contract.js",
+      "bytes": 973,
+      "sha256": "06caa97344e7ccccb6982cea318094f85462db50d4f670cdf1074e1e10a63793"
+    },
+    {
+      "path": "bot/src/errors.js",
+      "bytes": 380,
+      "sha256": "80b5311ac8ad8f8b0d5e9df1436f446b5aabd44405eff947b4a0286197402e6b"
+    },
+    {
+      "path": "bot/src/firebase.js",
+      "bytes": 863,
+      "sha256": "08279e68f800cb3038c520b40148d7e607c94481697bc658a1377af782c88830"
+    },
+    {
+      "path": "bot/src/geo.js",
+      "bytes": 2580,
+      "sha256": "03f70a26cb7d9b60155c4f4713b41fe0066dfb14c5f6b575e47cb8d84e00d6ee"
+    },
+    {
+      "path": "bot/src/index.js",
+      "bytes": 8043,
+      "sha256": "e9a1a847a22de0fa539b64d33ceb1e75b11db7e81147e24f2a826ef5a493dda1"
+    },
+    {
+      "path": "bot/src/queue.js",
+      "bytes": 4271,
+      "sha256": "2c30353e04a7820c05305b467fd87e6d1099acd03bb0507bf611cd93e24aa936"
+    },
+    {
+      "path": "bot/src/register-commands.js",
+      "bytes": 940,
+      "sha256": "d8ec326410d5846dc5e79f9126581b40feed2c4ecef0e5ef2814fdff94ae6789"
+    },
+    {
+      "path": "bot/src/render.js",
+      "bytes": 8587,
+      "sha256": "5a5ed89741aa92b1fa05b3079e9ea8118402db199c076c04d18039c753b83a54"
+    },
+    {
+      "path": "bot/src/todo.js",
+      "bytes": 2297,
+      "sha256": "a2c2995e1132c2515308f093fcd8a0857bc5d67db39d596603deea16aef6c4ff"
+    },
+    {
+      "path": "build.js",
+      "bytes": 2940,
+      "sha256": "76cdbc24618ef42c94fe249d888da7aec75658c11de4abdcb2c99be19543bd80"
+    },
+    {
+      "path": "docs/SECURITY-WORKLOG.md",
+      "bytes": 7412,
+      "sha256": "adfb4292a4b0cb39299a4e3d3e1e2e9dd5bfbb06270ed161bc8995096ccd04d6"
+    },
+    {
+      "path": "docs/SECURITY.md",
+      "bytes": 1853,
+      "sha256": "f98de3c7a45fee9b1acd793bb2c86e750085762cbae382040c0bd2a651f25160"
+    },
+    {
+      "path": "docs/TEAM.md",
+      "bytes": 12559,
+      "sha256": "4137bca4724d2aac7ef4e76b9dc2906094e61e780403ad420daab0afd8f6692b"
+    },
+    {
+      "path": "docs/TOOLING.md",
+      "bytes": 16698,
+      "sha256": "fc9bb9e29370d099aaf00a448fd60b338a2513689064ff201a781255fd88bab2"
+    },
+    {
+      "path": "eslint.config.js",
+      "bytes": 2583,
+      "sha256": "665e42d8495ae4caefef35627ce3bdeee7dab183598c0c636cf904f5892f5d94"
+    },
+    {
+      "path": "firebase.json",
+      "bytes": 56,
+      "sha256": "e87125f3ec6439a59ba44d80a6dcc46378a27a0644b0cda30abeafd2efb67e20"
+    },
+    {
+      "path": "firestore.rules",
+      "bytes": 2512,
+      "sha256": "b0ba7f9e3b387e3e48d6cff50589713470a880614367c93523ec2eb7b4f344d2"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 1667,
+      "sha256": "97599014a2c0ae5d0df80ab4cffceb64ec1b4d137af9aff9d791fd5c7882a6b3"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 89372,
+      "sha256": "c3aae0dba471efad380e7f4f21955a3274c65ffd0f8bc49f226bee3ccafe7ec1"
+    },
+    {
+      "path": "package.json",
+      "bytes": 616,
+      "sha256": "e1549232789f0457cedd49b0fb6db5b1623cd6f0c57021446413ddeadbdad27d"
+    },
+    {
+      "path": "snippets/depot_script_v2.js",
+      "bytes": 17465,
+      "sha256": "711a1efb5ab252fd911df9c5875c159d72ece8523b56b98d0b6de03acce932e4"
+    },
+    {
+      "path": "snippets/discover_consignment_details.js",
+      "bytes": 3058,
+      "sha256": "ddc073fe9e28e83fb6574c6bba14768375947d0802489413c143bb1b7ce7616c"
+    },
+    {
+      "path": "snippets/discover_quick_search.js",
+      "bytes": 4023,
+      "sha256": "c03f53262dc08562f2238ace9f374a7a373458f28457898e04262861cd009f5e"
+    },
+    {
+      "path": "snippets/discover_reschedule_form.js",
+      "bytes": 2862,
+      "sha256": "ebf074ef7153885de4915b06181acd6310418403e5a4ab3fde598e8e4d01fb36"
+    },
+    {
+      "path": "src/auth/getAuthToken.js",
+      "bytes": 1328,
+      "sha256": "8400eb8ccb5b879c921f8015037937be7625e38c7e80cf82627a697d8968ad32"
+    },
+    {
+      "path": "src/background/background.js",
+      "bytes": 2814,
+      "sha256": "3af8744e639830b7eadcff6081531cd59888e9a6666470c02f86b0279d2a4e48"
+    },
+    {
+      "path": "src/config/config.js",
+      "bytes": 817,
+      "sha256": "42a4c78b45f69ae75ab39c2196a831c10e58a3821f9b366b513e7bcdfec8aae6"
+    },
+    {
+      "path": "src/config/local.example.js",
+      "bytes": 601,
+      "sha256": "f9551f6293f7037bbfc16babf21463343b7a8e8b10b238c7a67fb6af4f131af9"
+    },
+    {
+      "path": "src/depot/barcode.js",
+      "bytes": 3934,
+      "sha256": "3e7f097a912e25ca0be52d1940c6c1fa4587b63330a1b8c451e1306dac343428"
+    },
+    {
+      "path": "src/depot/depotScript.js",
+      "bytes": 16308,
+      "sha256": "879db88355081115fd1e965ae95438659f8335ed039da6442295107ae2e7fbd6"
+    },
+    {
+      "path": "src/depot/driveScanner.js",
+      "bytes": 8162,
+      "sha256": "1dce6b7dadcb88d3b86861284dab8a270b31e81b0dfd9568edc99da6be1467e7"
+    },
+    {
+      "path": "src/depot/futureDateCheck.js",
+      "bytes": 7833,
+      "sha256": "a67f5dc2eb11e4b4cae8ef5a8ded4d2da5a6d1692ce1d98c81b1677fffddf380"
+    },
+    {
+      "path": "src/depot/futureDateConsole.js",
+      "bytes": 1032,
+      "sha256": "cd0cbaab9d8150d59bb37ef539ccd5f2aa433da89dd8040db8323b59076c8991"
+    },
+    {
+      "path": "src/depot/labelBarcode.js",
+      "bytes": 2813,
+      "sha256": "638ae6961c6e15b4d5ef52e6e828411ee549519facdba0f1b8e044e575a5f054"
+    },
+    {
+      "path": "src/depot/labelName.js",
+      "bytes": 1615,
+      "sha256": "3530dc5f314bbd2c6eb85bfe2705990d95a813e0044a6884886349fa19251269"
+    },
+    {
+      "path": "src/depot/lookup.js",
+      "bytes": 8632,
+      "sha256": "2d5a76ca1f7fa0ae8e54c7963704b0e825ec5edc65be36b47583198c7c0aa608"
+    },
+    {
+      "path": "src/depot/lookupConsole.js",
+      "bytes": 1650,
+      "sha256": "53444e152a103a401f44174289b30e2bbc00e12ed98e47fcf97814017b06d659"
+    },
+    {
+      "path": "src/gmail/labels.js",
+      "bytes": 1277,
+      "sha256": "233e709ef01ff4c1d3209a795ce93598a3bc85e5f33f7049c5abd9e7430c8026"
+    },
+    {
+      "path": "src/offscreen/offscreen.html",
+      "bytes": 191,
+      "sha256": "07cb00d81bd7f3590ccff6b3713cbcc72cba5a67f12ea947f7246580ca9e1cea"
+    },
+    {
+      "path": "src/offscreen/offscreen.js",
+      "bytes": 4673,
+      "sha256": "4b1ab2ec8f577206dc16ccc5ce6da1d201d36e20a719475d6381c2da95791846"
+    },
+    {
+      "path": "src/parser/consignment.js",
+      "bytes": 671,
+      "sha256": "fce78b83bfbef5c65ff3b05cd6374ad9145b521c9c8367a89e7ec7021c75ac12"
+    },
+    {
+      "path": "src/popup/depotFlow.js",
+      "bytes": 10370,
+      "sha256": "19a340a7030368719cfa4dbd346ba525707c60fe9f3f873553baaa7e06c4deb6"
+    },
+    {
+      "path": "src/popup/gmailFlow.js",
+      "bytes": 1061,
+      "sha256": "11a0cd161131af29f338896b2daf8a3430eccd3adbe9a260866f17d368667fd4"
+    },
+    {
+      "path": "src/popup/logView.js",
+      "bytes": 911,
+      "sha256": "cfdc817616ce51a5da31110fe64a32215ad9c5b3e33ce2637725ea0c74f225bd"
+    },
+    {
+      "path": "src/popup/popup.css",
+      "bytes": 9102,
+      "sha256": "50f7471b8c0fff1b8319bf7123d29f83e8bbebc3f8ef418c2463278ac8720172"
+    },
+    {
+      "path": "src/popup/popup.html",
+      "bytes": 2769,
+      "sha256": "39ab107261b16f888f0a489e0bc40a8b6fd0ef56d886be548ca727f05fcc2a27"
+    },
+    {
+      "path": "src/popup/popup.js",
+      "bytes": 2898,
+      "sha256": "7dae90b80ceea1fccd1473708606b352a4ed70659b5260e6b77afef1026287d6"
+    },
+    {
+      "path": "src/popup/settingsFlow.js",
+      "bytes": 2939,
+      "sha256": "39b86d6a92073d2103f74c0f41531bbef377281db7cb360f9112bcb2d15f05da"
+    },
+    {
+      "path": "src/popup/statusHelper.js",
+      "bytes": 905,
+      "sha256": "bed56c3374ad204de38437a52902355c2118bb6244fd2fbf9091fba073a518aa"
+    },
+    {
+      "path": "src/queue/contract.js",
+      "bytes": 998,
+      "sha256": "931c266e355436cfd925a937f0bbc0db7d1086b27f8f69d291040ac2533008b7"
+    },
+    {
+      "path": "src/queue/executor.js",
+      "bytes": 9701,
+      "sha256": "b9898bcce7b02df0604a8309d14c2f5993f1fe1cf9e392dd890b8bacf9fb310e"
+    },
+    {
+      "path": "src/utils/constants.js",
+      "bytes": 880,
+      "sha256": "af4221f5cdbbc902d383bf035ec6776e4aefe33eaa84c7b42280914ea4ec736f"
+    },
+    {
+      "path": "src/utils/errors.js",
+      "bytes": 495,
+      "sha256": "91274937e681de835883418ed7d0df9dd553bf8aec020f4e1ea00ff84fee43e0"
+    },
+    {
+      "path": "src/utils/logger.js",
+      "bytes": 572,
+      "sha256": "eac0cb63bd7e1d0cb3071ddbc9f6bb3a18add5e029414d5a0d7dc218b3861b63"
+    },
+    {
+      "path": "src/utils/request.js",
+      "bytes": 1305,
+      "sha256": "9982561175a99ad848793a35eed58eacd08a8622e23acf0ee4cc8f1a8510980f"
+    },
+    {
+      "path": "test/security.test.js",
+      "bytes": 1867,
+      "sha256": "46d7546e9883e3dcbd6705dbfba7251d9f9dbca2b55f5d5ab8a0aa6d8cd68e6a"
+    },
+    {
+      "path": "tools/barcodeTest/build.js",
+      "bytes": 1591,
+      "sha256": "9438a2ccf03ba2dbfaa3af9a2e5af47480cc24503ff00b953152f742b3a0f688"
+    },
+    {
+      "path": "tools/barcodeTest/main.js",
+      "bytes": 796,
+      "sha256": "aed5cbf2f6becc7eb08b641282bb9eac70a476d3092a542ce34ad6b88ffddc3e"
+    }
+  ]
+}

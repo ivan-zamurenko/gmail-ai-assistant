@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "task_id": "S01-04",
+  "outcome": "passed",
+  "base_sha": "eac6c5d",
+  "branch": "codex",
+  "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/utils/request.test.js test/queue/executor.test.js",
+      "exit_code": 1,
+      "result": "Initial: 8 passed, 2 failed, 2 cancelled (baseline has no timeout); after watchdog: 8 passed, 4 failed, 0 cancelled against baseline runtime restored in finally"
+    },
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/labelBatch.test.js test/queue/barcodeExecutor.test.js",
+      "exit_code": 1,
+      "result": "10 passed, 2 failed before batch/auth implementation"
+    },
+    {
+      "phase": "sensitivity",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js test/queue/barcodeExecutor.test.js",
+      "exit_code": 1,
+      "result": "8 passed, 3 failed against baseline Drive/barcode; runtime restored in finally"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/utils/request.test.js test/utils/errors.test.js test/depot/labelBatch.test.js test/depot/driveLabels.test.js test/gmail/labels.test.js test/queue/executor.test.js test/queue/barcodeExecutor.test.js",
+      "exit_code": 0,
+      "result": "39/39"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "175/175; lint/build/artifacts/docs/diff PASS; browser NOT RUN"
+    }
+  ],
+  "review": "api_retry_review ACCEPT; parent reviewed diff and ran full gate",
+  "acceptance": {
+    "1": "Distinct 401/403 codes; generic403 no token invalidation or whole-batch replay. Barcode regression; popup code review.",
+    "2": "Explicit read semantics: 3 attempts, bounded timeout incl body, cancellable backoff; exhausted flag retained in safe diagnostics.",
+    "3": "Dispatched write failures uncertain, no automatic retry; actual Drive folder-create failure cannot repeat on next photo; live cross-tab replay prevented.",
+    "4": "Per-file error entries retained, unprocessed files counted, failed/partial summary explicit; prior successful targets saved for local recovery.",
+    "5": "Abort after dispatch stays uncertain; pre-abort zero requests. Safe payload excludes provider bodies; no rollback claim."
+  },
+  "engineering_defaults": {
+    "read_attempts": 3,
+    "attempt_timeout_ms": 15000,
+    "retry_delays_ms": [
+      250,
+      500
+    ],
+    "write_attempts": 1
+  },
+  "untested": [
+    "Real Chrome/browser popup flow",
+    "Live Google/depot/Discord or deployment",
+    "Manual reconcile; no automatic reconcile or persistent Drive journal added",
+    "New Cancel UI not implemented; AbortSignal is adapter capability",
+    "Maps and Discord delivery recovery deferred to S09-07/S09-04"
+  ],
+  "next_step": "S02-04",
+  "external_effects": [],
+  "changed_paths": [
+    ".workflow/CURRENT.md",
+    ".workflow/WORKLOG.md",
+    ".workflow/state.json",
+    "bot/package-lock.json",
+    "bot/package.json",
+    "bot/src/errors.js",
+    "docs/SECURITY-WORKLOG.md",
+    "docs/TESTING.md",
+    "docs/drive-contract.md",
+    "docs/gmail-contract.md",
+    "manifest.json",
+    "package-lock.json",
+    "package.json",
+    "roadmap/tasks/S01-04.md",
+    "src/depot/driveLabels.js",
+    "src/depot/driveScanner.js",
+    "src/depot/labelBatch.js",
+    "src/popup/depotFlow.js",
+    "src/queue/barcodeExecutor.js",
+    "src/queue/executor.js",
+    "src/utils/errors.js",
+    "src/utils/request.js",
+    "test/depot/driveLabels.test.js",
+    "test/depot/labelBatch.test.js",
+    "test/queue/barcodeExecutor.test.js",
+    "test/queue/executor.test.js",
+    "src/shared/apiErrors.js",
+    "test/utils/request.test.js",
+    ".workflow/evidence/S01-04.json",
+    "START_HERE.html"
+  ]
+}

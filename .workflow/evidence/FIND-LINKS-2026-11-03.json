@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "task_id": "FIND-LINKS-2026-11-03",
+  "outcome": "passed",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/render.test.js",
+      "exit_code": 1,
+      "result": "7/8; requested marker/newline absent"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "193/193; all7stages PASS"
+    }
+  ],
+  "untested": [
+    "Actual Discord/mobile display; runtime restart pending"
+  ]
+}

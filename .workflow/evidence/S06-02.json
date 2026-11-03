@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "S06-02",
+  "outcome": "passed",
+  "base_sha": "b52e0d4",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Strict provider-independent proposal schema and separate untrusted data; all accepted prose still requires human review, no model/tools/IO.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/ai/outputSchema.test.js test/workflow/caseContext.test.js",
+      "exit_code": 1,
+      "result": "0/2 functional stub RED;2/2 draft GREEN;4/4 integrated"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/ai/outputSchema.test.js test/workflow/caseContext.test.js",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS (full offline gates)"
+    }
+  ],
+  "untested": [
+    "Live services/credentials",
+    "Real Chrome/Discord/depot interaction"
+  ],
+  "external_effects": [],
+  "next_step": "Continue independently executable roadmap tasks; defer owner policy/live gates"
+}

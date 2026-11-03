@@ -1,0 +1,63 @@
+{
+  "result": "PASS",
+  "old_task_ids_preserved": 41,
+  "new_tasks": 12,
+  "tasks": 53,
+  "stages": 10,
+  "acceptance_scenarios": 265,
+  "all_product_tasks": "todo",
+  "all_gates": "pending",
+  "gates": 12,
+  "documented_future_context": [
+    {
+      "id": "S04-04",
+      "path": "src/workflow/driveJobs.js",
+      "producer_task": "S04-03",
+      "classification": "planned file; not present or claimed implemented"
+    },
+    {
+      "id": "S05-05",
+      "path": "src/gmail/messages.js",
+      "producer_task": "S05-02",
+      "classification": "planned file; not present or claimed implemented"
+    },
+    {
+      "id": "S05-05",
+      "path": "src/workflow/replyPolicy.js",
+      "producer_task": "S05-04",
+      "classification": "planned file; not present or claimed implemented"
+    },
+    {
+      "id": "S06-04",
+      "path": "docs/ai-evaluation.md",
+      "producer_task": "S06-03",
+      "classification": "planned file; not present or claimed implemented"
+    },
+    {
+      "id": "S06-05",
+      "path": "src/gmail/drafts.js",
+      "producer_task": "S05-05",
+      "classification": "planned file; not present or claimed implemented"
+    },
+    {
+      "id": "S06-05",
+      "path": "src/workflow/draftJobs.js",
+      "producer_task": "S05-05",
+      "classification": "planned file; not present or claimed implemented"
+    },
+    {
+      "id": "S08-03",
+      "path": "docs/release-runbook.md",
+      "producer_task": "S08-03",
+      "classification": "planned file; not present or claimed implemented"
+    },
+    {
+      "id": "S08-04",
+      "path": "docs/release-runbook.md",
+      "producer_task": "S08-03",
+      "classification": "planned file; not present or claimed implemented"
+    }
+  ],
+  "unexplained_missing_context": [],
+  "skill_matches_included_directory": true
+}

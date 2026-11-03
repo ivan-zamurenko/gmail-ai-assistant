@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '../utils/errors.js';
 /**
  * popup/depotFlow.js
  * ==================
@@ -11,9 +12,15 @@ import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
 import { processLabels }                       from '../depot/driveScanner.js';
 import { depotLookup }                         from '../depot/lookup.js';
 import { depotMain }                           from '../depot/depotScript.js';
+import { assertDepotTab }                      from '../depot/depotTarget.js';
+import { createLabelVerifier, DEPOT_PROBE }     from '../depot/labelVerifier.js';
+import {
+  addRecoveryTargets,
+  applyRecoveryResult,
+  loadRecoveryTargets,
+} from '../depot/rescheduleRecovery.js';
 import { createLog }                           from './logView.js';
 import { setStatus }                           from './statusHelper.js';
-import { CONSTANTS }                           from '../utils/constants.js';
 
 const STATE_LABELS = {
   listing:     'Listing',
@@ -23,12 +30,6 @@ const STATE_LABELS = {
   filing:      'Filing',
 };
 
-// "0 matches" is the depot answering; any other failure means it is not.
-const ANSWERED = /^\d+ matches$/;
-
-// A number that cannot exist — any answer to it proves the depot is alive.
-const DEPOT_PROBE = '000000000';
-
 function fatal(message) {
   const err = new Error(message);
   err.fatal = true;
@@ -37,7 +38,7 @@ function fatal(message) {
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, scanCADBtn, scanDriveBtn,
+  dryRunToggle, scanCADBtn, scanDriveBtn, retryRescheduleBtn,
   scanProgress, progressFill, progressLabel, depotLogEl,
 }) {
   const log = createLog(depotLogEl);
@@ -51,6 +52,14 @@ export function initDepotFlow({
   function setDepotButtons(disabled) {
     scanCADBtn.disabled   = disabled;
     scanDriveBtn.disabled = disabled;
+    retryRescheduleBtn.disabled = disabled;
+  }
+
+  async function refreshRetryButton() {
+    const targets = await loadRecoveryTargets(chrome.storage.local);
+    retryRescheduleBtn.hidden = targets.length === 0;
+    retryRescheduleBtn.textContent = `Retry Today's Errors (${targets.length})`;
+    return targets;
   }
 
   function showDepotResult(result) {
@@ -93,19 +102,7 @@ export function initDepotFlow({
 
   async function getActiveDepotTab() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab) throw new Error('No active tab found');
-    let url;
-    try {
-      url = new URL(tab.url);
-    } catch {
-      throw new Error('Open the depot page in the active tab first');
-    }
-    const isDepot = url.protocol === 'http:'
-      && url.hostname.toLowerCase().endsWith('.interlink.local');
-    if (!isDepot) {
-      throw new Error(`Active tab is not a depot page (${CONSTANTS.DEPOT_URL_PATTERN})`);
-    }
-    return tab;
+    return assertDepotTab(tab);
   }
 
   // ── Scan CAD List ───────────────────────────────────────────────────────────
@@ -130,7 +127,7 @@ export function initDepotFlow({
       if (injection.result.__error) throw new Error(injection.result.__error);
       showDepotResult(injection.result);
     } catch (err) {
-      setDepotStatus('error', err.message);
+      setDepotStatus('error', safeErrorMessage(err, 'Depot operation failed'));
     } finally {
       setDepotButtons(false);
     }
@@ -142,57 +139,52 @@ export function initDepotFlow({
   // the email flow runs, so there is one definition of "this parcel is ours".
   // A consignment of ten parcels repeats one number ten times, hence the cache.
   function depotVerifier() {
-    const seen = new Map();
-
-    return async function verify(number) {
-      if (seen.has(number)) return seen.get(number);
-
-      const tab = await getActiveDepotTab();
-      let injection;
-      try {
-        [injection] = await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func:   depotLookup,
-          args:   [[number]],
-          world:  'MAIN',
-        });
-      } catch (err) {
-        throw fatal(`Cannot reach the depot tab — ${err.message}`);
-      }
-      if (!injection?.result) throw fatal('Depot lookup returned nothing — open the depot page in the active tab');
-
-      const [result] = injection.result;
-      if (!result.consNumber && !ANSWERED.test(result.reason ?? '')) {
-        throw fatal(`Depot is not responding — ${result.reason}`);
-      }
-
-      const found = Boolean(result.consNumber);
-      if (!found && number !== DEPOT_PROBE) log.warn(`  ${number} — ${result.reason}`);
-      seen.set(number, found);
-      return found;
-    };
+    return createLabelVerifier({
+      lookup: async (number) => {
+        const tab = await getActiveDepotTab();
+        let injection;
+        try {
+          [injection] = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func:   depotLookup,
+            args:   [[number], { identityOnly: true }],
+            world:  'MAIN',
+          });
+        } catch (err) {
+          throw fatal(`Cannot reach the depot tab — ${safeErrorMessage(err, 'Depot operation failed')}`);
+        }
+        if (!injection?.result) {
+          throw fatal('Depot lookup returned nothing — open the depot page in the active tab');
+        }
+        return injection.result[0];
+      },
+      onRejected: (number, reason) => log.warn(`  ${number} — ${reason}`),
+    });
   }
 
-  // The labels find the parcels; this hands their consignment numbers to the
-  // same depot reschedule the CAD list runs. dryRun only logs what would move.
-  async function rescheduleFound(results, dryRun) {
-    const numbers = [...new Set(results.filter(r => r.number).map(r => r.number))];
-    if (numbers.length === 0) return '';
+  async function runExactReschedule(targets, dryRun) {
+    log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${targets.length} parcel(s) to tomorrow...`);
 
-    log.info(`${dryRun ? 'Would reschedule' : 'Rescheduling'} ${numbers.length} parcel(s) to tomorrow...`);
+    // Persist before the live attempt. If the popup closes or every request
+    // fails, the exact targets remain reusable without reading Drive again.
+    if (!dryRun) {
+      await addRecoveryTargets(chrome.storage.local, targets);
+      await refreshRetryButton();
+    }
 
     const tab = await getActiveDepotTab();
     const [injection] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func:   depotMain,
-      args:   [{ dryRun, mode: 'labels', consNumbers: numbers }],
+      args:   [{ dryRun, mode: 'labels', targets }],
       world:  'MAIN',
     });
 
     const res = injection?.result;
     if (!res || res.__error) {
       log.fail(`Reschedule: ${res?.__error ?? 'depot script returned nothing'}`);
-      return ' | Reschedule failed';
+      const remaining = await refreshRetryButton();
+      return ` | Reschedule failed | Retry saved: ${remaining.length}`;
     }
     if (res.dryRun) {
       log.info(`Dry run — ${res.count} parcel(s) would be rescheduled`);
@@ -202,9 +194,68 @@ export function initDepotFlow({
       log.warn(res.warning);
       return ' | Reschedule: none matched';
     }
+
+    const errors = (res.results ?? []).filter(entry => entry.action === 'ERROR');
+    const skipped = (res.results ?? []).filter(entry => entry.action === 'SKIP');
+    for (const entry of errors.slice(0, 20)) log.fail(`${entry.consNumber} — reschedule failed`);
+    if (errors.length > 20) log.fail(`...and ${errors.length - 20} more failed parcel(s)`);
+    for (const entry of skipped.slice(0, 20)) log.warn(`${entry.consNumber} — skipped (${entry.status})`);
+    if (skipped.length > 20) log.warn(`...and ${skipped.length - 20} more skipped parcel(s)`);
+
+    const remaining = await applyRecoveryResult(chrome.storage.local, res);
+    await refreshRetryButton();
     log.info(`Reschedule — Changed: ${res.changed} | Skipped: ${res.skipped} | Errors: ${res.errors}`);
-    return ` | Rescheduled ${res.changed}`;
+    if (remaining.length) log.warn(`${remaining.length} failed parcel(s) saved for retry`);
+    return ` | Rescheduled ${res.changed}`
+      + (remaining.length ? ` | Retry saved: ${remaining.length}` : '');
   }
+
+  // Label verification already resolved exact depot targets. Reschedule those
+  // directly; a driver-scanned parcel can be PENDING without being in Pending List.
+  async function rescheduleFound(results, dryRun, targetsFor) {
+    const numbers = [...new Set(results.filter(r => r.number).map(r => r.number))];
+    if (numbers.length === 0) return '';
+
+    const { targets, unresolved } = targetsFor(numbers);
+    if (unresolved) log.warn(`${unresolved} verified parcel(s) had no exact depot target`);
+    if (targets.length === 0) return ' | Reschedule: no exact targets';
+
+    return runExactReschedule(targets, dryRun);
+  }
+
+  retryRescheduleBtn.addEventListener('click', async () => {
+    const targets = await refreshRetryButton();
+    if (targets.length === 0) {
+      setDepotStatus('done', 'No failed reschedules are waiting');
+      return;
+    }
+
+    const dryRun = dryRunToggle.checked;
+    if (!dryRun && !window.confirm(
+      `LIVE RETRY: attempt ${targets.length} saved parcel(s) again without scanning Drive?`,
+    )) return;
+
+    log.start(`${dryRun ? 'Dry run' : 'Live retry'} — using ${targets.length} saved parcel target(s)`);
+    setDepotStatus('running', 'Retrying saved reschedules — Drive will not be scanned');
+    setDepotButtons(true);
+    try {
+      const result = await runExactReschedule(targets, dryRun);
+      const remaining = await refreshRetryButton();
+      setDepotStatus('done',
+        `${dryRun ? 'Retry preview complete' : 'Retry complete'}${result}`
+        + (remaining.length ? ` | Still waiting: ${remaining.length}` : ''),
+      );
+    } catch (err) {
+      log.fail(safeErrorMessage(err, 'Depot operation failed'));
+      setDepotStatus('error', `${safeErrorMessage(err, 'Depot operation failed')} | Saved targets remain available`);
+    } finally {
+      setDepotButtons(false);
+    }
+  });
+
+  refreshRetryButton().catch((err) => {
+    log.fail(`Cannot load saved reschedules — ${safeErrorMessage(err, 'Depot operation failed')}`);
+  });
 
   scanDriveBtn.addEventListener('click', async () => {
     const dryRun = dryRunToggle.checked;
@@ -217,32 +268,30 @@ export function initDepotFlow({
 
     try {
       const config = await loadConfig();
-      if (!config.driveFolderId) throw new Error('Drive Folder ID not set in Settings');
+      if (!config.driveFolderId) throw new Error('Drive Folder ID is missing from local configuration');
 
       // Fail before touching Drive rather than halfway through the folder.
-      const verify = depotVerifier();
+      const depot = depotVerifier();
       log.info('Checking depot connection...');
-      await verify(DEPOT_PROBE);
+      await depot.verify(DEPOT_PROBE);
       log.ok('Depot is responding');
 
       const run = (token) => processLabels({
         folderInput: config.driveFolderId,
         token,
-        verify,
+        verify: depot.verify,
         dryRun,
         onProgress:  onScanProgress,
       });
 
-      let token   = await getAuthToken();
+      const token = await getAuthToken();
       let results;
       try {
         results = await run(token);
       } catch (err) {
-        if (!err.message.includes('403')) throw err;
-        // Cached token is stale (missing Drive scope) — remove and retry with fresh one
-        await removeCachedAuthToken(token);
-        token   = await getAuthToken({ interactive: true });
-        results = await run(token);
+        if (err.code === 'unauthenticated') await removeCachedAuthToken(token);
+        // Never replay a whole batch: earlier files may already be filed.
+        throw err;
       }
 
       if (results.length === 0) {
@@ -255,15 +304,26 @@ export function initDepotFlow({
       const read   = results.filter(r => r.number).length;
       log.info(`${dryRun ? 'Would file' : 'Filed'} ${results.length - failed} of ${results.length} — read ${read}`);
 
-      const reschedule = await rescheduleFound(results, dryRun);
+      const stopped = results.find(item => ['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied'].includes(item.errorCode));
+      if (stopped) {
+        const { targets } = depot.targetsFor(results.filter(item => item.number).map(item => item.number));
+        if (!dryRun && targets.length) {
+          await addRecoveryTargets(chrome.storage.local, targets);
+          await refreshRetryButton();
+        }
+        if (stopped.errorCode === 'unauthenticated') await removeCachedAuthToken(token);
+        setDepotStatus('error', `${dryRun ? 'Would file' : 'Filed'} ${results.length - failed}/${results.length} | Errors: ${failed} | Saved targets: ${dryRun ? 0 : targets.length} | ${stopped.error}`);
+        return;
+      }
+      const reschedule = await rescheduleFound(results, dryRun, depot.targetsFor);
 
-      setDepotStatus('done',
+      setDepotStatus(failed ? 'error' : 'done',
         `${dryRun ? 'Dry run' : 'Filed'} ${results.length - failed}/${results.length} — read ${read}`
         + (failed ? ` | Errors: ${failed}` : '')
         + reschedule
       );
     } catch (err) {
-      const message = err.fatal ? `Stopped — ${err.message}` : err.message;
+      const message = err.fatal ? `Stopped — ${safeErrorMessage(err, 'Depot operation failed')}` : safeErrorMessage(err, 'Depot operation failed');
       log.fail(message);
       setDepotStatus('error', message);
     } finally {

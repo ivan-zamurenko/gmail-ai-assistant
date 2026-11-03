@@ -6,7 +6,8 @@
 
 import { initDepotFlow }    from './depotFlow.js';
 import { initGmailFlow }    from './gmailFlow.js';
-import { getContact }       from '../config/config.js';
+import { capabilitySummary } from '../config/capabilities.js';
+import { loadConfig, getContact }       from '../config/config.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
@@ -16,6 +17,7 @@ const depotMessage      = document.getElementById('depotMessage');
 const dryRunToggle      = document.getElementById('dryRun');
 const scanCADBtn        = document.getElementById('scanCAD');
 const scanDriveBtn      = document.getElementById('scanDrive');
+const retryRescheduleBtn = document.getElementById('retryReschedule');
 const scanProgress      = document.getElementById('scanProgress');
 const progressFill      = document.getElementById('progressFill');
 const progressLabel     = document.getElementById('progressLabel');
@@ -30,13 +32,22 @@ const checkLabelBtn     = document.getElementById('checkLabel');
 
 initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, scanCADBtn, scanDriveBtn,
+  dryRunToggle, scanCADBtn, scanDriveBtn, retryRescheduleBtn,
   scanProgress, progressFill, progressLabel, depotLogEl,
 });
 
 initGmailFlow({
   gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn,
 });
+
+// Local capability checks do not authenticate or contact providers.
+try {
+  document.getElementById('capabilitySummary').textContent = capabilitySummary({
+    config: loadConfig(), manifest: chrome.runtime.getManifest(),
+  });
+} catch {
+  document.getElementById('capabilitySummary').textContent = 'Local configuration needs attention. AI replies are not available yet.';
+}
 
 // ── Footer: author details, kept in the gitignored local config ───────────────
 
@@ -61,4 +72,3 @@ document.querySelectorAll('details.section').forEach(detail => {
     if (!isOpen) detail.open = true;
   });
 });
-

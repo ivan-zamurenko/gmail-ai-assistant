@@ -1,5 +1,12 @@
 # Зовнішні інструменти та бібліотеки
 
+> **Статус на 2026-10-23:** ранні оцінки нижче історичні. esbuild вже є;
+> production barcode path — локальний ZXing WASM із JavaScript fallback;
+> Discord labels працюють в offscreen. Розділ «немає збірки», старі ліміти
+> провайдерів і рекомендації не є поточними вимогами. Чинні рішення власника
+> збережені; актуальні джерела — `package.json`, `build.js`,
+> [LOCAL_BASELINE](audit/LOCAL_BASELINE.md).
+
 Оцінка сторонніх проєктів під задачі DPD Assistance: Gmail, barcode/OCR,
 AI-обробка. Для кожного — що воно робить, чи підходить нам, і мінімальний приклад.
 
@@ -180,8 +187,9 @@ body: JSON.stringify({
 
 ### 8. @zxing/library 🟡 — головна рекомендація
 
-Порт ZXing від Google. Читає Code128 і DataMatrix — саме ці формати на
-етикетках DPD.
+Порт ZXing від Google. Бібліотека підтримує багато форматів, але наш production
+allowlist містить лише PDF417 і Code128 — саме їх підтвердив повторний аудит 69
+приватних DPD label-фото. DataMatrix у цій вибірці не знайдено.
 
 ```js
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -206,7 +214,7 @@ async function readBarcode(imageDataUrl) {
 ### 9. QuaggaJS 🔴 — НЕ потрібен
 
 Пропонувався як fallback, але після перевірки: проєкт без релізів з 2017 року,
-вміє тільки 1D-коди (DataMatrix з етикеток DPD не читає) і на статичних
+вміє тільки 1D-коди (PDF417 з етикеток DPD не читає) і на статичних
 зображеннях програє ZXing. Форк `@ericblade/quagga2` живий, але дублює
 можливості ZXing.
 
@@ -272,14 +280,14 @@ await worker.terminate();
 | Код | Тип | Вміст |
 |---|---|---|
 | Довгий 1D зверху | **Code128** | `%93K A9P0 5112 9987 1894 2328 372N` — маршрутизація |
-| Квадрат знизу зліва | **DataMatrix** | дублює дані посилки |
+| Великий складений 2D-код | **PDF417** | повний semicolon-record посилки |
 
 QR-коду на етикетці немає. Consignment `05112998718942` вже коректно
 обробляється наявним [labelBarcode.js](../src/depot/labelBarcode.js).
 
-Етикетка на фото **перевернута на 180°** і зім'ята. DataMatrix стійкий до
-повороту за побудовою, Code128 декодери пробують обидва напрямки — тож ZXing
-з цим впорається.
+Етикетка на фото **перевернута на 180°** і зім'ята. Поточний crop/rotation
+прохід ZXing читає PDF417 і Code128 у таких фото; це підтверджено приватним
+label-аудитом, а не припущенням за зовнішнім виглядом коду.
 
 ### Два обмеження, які виявились уже після вибору бібліотек
 
@@ -287,7 +295,9 @@ QR-коду на етикетці немає. Consignment `05112998718942` вж�
 Приклад з `BrowserMultiFormatReader` вище працює лише там, де є `document`.
 У MV3 background-контексті немає ні `document`, ні `Image`, ні `canvas` —
 код впаде. Рішення — [Offscreen Documents](https://developer.chrome.com/docs/extensions/reference/api/offscreen):
-прихована сторінка з повноцінним DOM, куди service worker шле зображення.
+прихована сторінка з повноцінним DOM. Для `/reschedule barcodes` вона сама
+завантажує Drive-фото й запускає ZXing, а service worker виконує лише вузькі
+depot lookup/reschedule запити.
 Потребує дозволу `offscreen` у маніфесті.
 
 **2. ZXing не читає PDF.**
@@ -302,7 +312,7 @@ QR-коду на етикетці немає. Consignment `05112998718942` вж�
    ├─ PDF?  → pdf.js рендерить у canvas
    └─ PNG/JPG? → одразу в canvas
         ↓
-   ZXing: Code128 + DataMatrix   ← швидко, без мережі, без "здогадок"
+   ZXing: PDF417 + Code128       ← швидко, без мережі, без "здогадок"
         ↓ не зчиталось
    Gemini Vision                 ← наявний fallback, уже працює
         ↓
@@ -324,3 +334,14 @@ Gemini лишається другим кроком, а не першим: де�
 не відкрили, тому без обліку та сама відповідь створювалась би на кожному
 тику. Це вирішує [processedStore.js](../src/storage/processedStore.js).
 
+## S09-15: local report image composition
+Bot-only pinned sharp0.35.5 (Node>=20.9), installed on current Node20.14 Mac. Separate reportImage adapter, lazy import so native-load failure does not stop bot startup. No browser canvas/server, no external image processor, no AI alteration of evidence. Uses rotate/contain/composite, strips metadata; 8MiB input/output,20M input pixels,1600px width,864px height and processing timeout. Full photo and map attribution preserved. Native binary must be installed through npm ci in bot on target host; fallback preserves text when unavailable.
+Official references: [composite](https://sharp.pixelplumbing.com/api-composite/), [installation](https://sharp.pixelplumbing.com/install/).
+
+## S09-18 Discord Web clipboard helper
+Separate IIFE bundle injected in ISOLATED world via explicit activeTab popup action; no persistent Discord content script/host grant. clipboardWrite is used only on copy click; clipboardRead absent. No background bridge/CDN credentials or Discord API. CORS fetch of exact attachment URL uses HTTPS allowlist (cdn.discordapp.com/media.discordapp.net), redirects error, credentials omit, no-store,5s abort,8MiB streamed limit; JPEG dimensions<=2000 each checked before bitmap decode. Local PNG conversion for clipboard. Observer is singleton/debounced and WeakMap tracks mounted rows, no history storage.
+Sources: [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts). Discord markup/CORS are external compatibility boundaries; fail with operator-readable status and use existing export fallback.
+
+S09-18 update6.3.0.86: owner requested automatic loading. Existing IIFE now registered as static isolated/top-frame content script matching only https://discord.com/channels/* at document_idle; popup activation module/UI and activeTab removed. No broader host match. Login-to-channels SPA transition may require one reload; browser site-access policy still applies.
+
+Find map adapter scanMapImage uses existing guarded Maps Static request with one red scan marker, fixed zoom17, no geocoding/destination route. /report mapImage remains unchanged. Optional per-scan coords require extension6.3.0.87; old payload safely omits selected map.

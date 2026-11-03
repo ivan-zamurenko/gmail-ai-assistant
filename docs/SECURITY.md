@@ -27,6 +27,11 @@ an unbound bot must not create depot tasks that every anonymous client can read.
 also checked against the configured guild at runtime. Re-run `npm run register`
 inside `bot/` after changing command permissions.
 
+`/find` intentionally returns the full operational parcel card, including
+recipient contact details and address. Its reply must remain ephemeral and
+administrator-only. Do not copy these cards into public channels, logs, issues,
+screenshots, or source control.
+
 ## Local secret files
 
 Restrict the local files after creating them:
@@ -46,3 +51,54 @@ actually enabled and reviewed. The existing Drive workflow still needs the broad
 `drive` scope because it discovers and moves pre-existing files. Migrate it to
 `drive.file` only together with Google Picker; changing the scope alone would
 break access to the current shared folder.
+
+## Local reschedule recovery
+
+The `storage` permission is used for a device-local recovery queue containing
+only exact consignment numbers and internal ConsIds from live Drive-label runs.
+It contains no recipient name, address, phone, email, depot session URL, OAuth
+token, or service credential. Confirmed changes and intentional skips are
+removed; failed or indeterminate entries remain available only on the processing
+day that created the batch. A later-day read deletes the stale queue so yesterday's
+errors cannot be moved to a newly calculated "tomorrow". Targets are not synced
+or sent to Discord/Firestore; `/reschedule retry` sends only the retry instruction
+through the existing assigned, expiring task contract. Because Chrome offscreen
+documents expose no storage API, the scanner reaches this single local record
+through a narrow internal runtime bridge handled by the background worker.
+
+## Remote Drive-label scan
+
+`/reschedule barcodes` sends only the command mode and dry-run flag through
+Firestore. The offscreen extension document reads the gitignored local Drive
+folder setting, receives the cached Google OAuth token through an internal
+runtime-only background bridge, downloads and decodes the photos locally, and
+asks the worker only for exact depot lookup/reschedule operations. Photos, OAuth
+tokens, Drive identifiers, and filenames are never written to Firestore or
+Discord. The bounded result may contain up to
+25 consignment numbers and is delivered to the administrator's private DM; the
+temporary task document is retained for at most 24 hours from completion for recovery,
+and deleted after confirmed delivery. Expired data is denied immediately; physical
+cleanup runs at startup/every minute while the bot is running.
+
+While a barcode task is claimed, the executor may update only a strict progress
+allowlist: stage, bounded current/total counters, bounded elapsed milliseconds,
+and a server timestamp. Firestore rules reject every other claimed-to-claimed
+mutation. The bot renders those fields into one throttled ephemeral progress
+message; no filename, Drive ID, consignment, ConsId, token, or customer field is
+part of this channel.
+
+Barcode pixels are decoded locally with the self-hosted
+`assets/zxing_reader.wasm`; the extension never fetches decoder code from a CDN.
+The extension-page CSP permits WebAssembly compilation but keeps scripts limited
+to `'self'`. Only Code128 and PDF417 are enabled. A result must still pass the
+existing exact DPD parser; otherwise the proven JavaScript reader runs as a
+fallback before the photo can be classified or filed.
+
+Large barcode tasks may run for up to two hours. Deploy the matching
+`firestore.rules` update before using the command so the claimed executor may
+write its bounded `execMs` result after a long scan.
+
+## Discord Web copy helper
+S09-18 (owner update 2026-11-03, extension6.3.0.86): static content script automatically loads only on https://discord.com/channels/*, top frame, isolated world. This grants ongoing content-script access to matching Discord pages; activeTab removed, clipboardWrite retained, no clipboardRead. Recognized report/attachment copy still requires a button click; no Discord tokens, messages, session data or content are sent, persisted or logged. Browser site-access policy can block automatic loading. If login navigates into channels without document reload, refresh once. HTML export was removed at owner request.
+
+Operator /find navigation holds at most16 result snapshots in bot memory for up to14min from original interaction creation. Owner/guild/channel and Administrator checks protect edits; clicks do not refresh expiry. Restarts discard snapshots. This UI cache is separate from24h undelivered result retention and does not replay depot actions.

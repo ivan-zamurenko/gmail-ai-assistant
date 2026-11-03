@@ -8,6 +8,9 @@ test('Discord command schema includes depot, todo and retained-result recovery c
     'reschedule', 'find', 'todo', 'report', 'result',
   ]);
 
+  const report = commands.find(c => c.name === 'report').toJSON();
+  assert.deepEqual(report.options.map(option => option.name), ['con_id', 'eircode']);
+  assert.equal(Boolean(report.options[1].required), false);
   const recovery = commands.find(c => c.name === 'result').toJSON();
   assert.equal(recovery.default_member_permissions, '8');
   assert.equal(recovery.options[0].name, 'con_id');

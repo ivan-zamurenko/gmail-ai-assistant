@@ -570,3 +570,5 @@ Strict output schema and separate untrusted-message data; context whitelist
 excludes unknown fields. No provider/tool/network capabilities, no auto-send or
 policy override; human review always required. Synthetic adversarial evidence
 only, free prose remains unverified; no external AI data transmission.
+
+- 2026-11-03 | root | S09-14: report-only validated Eircode retained in existing task args and 24h recovery; Admin/requester/guild protections preserved. Optional map uses existing server adapter, no keys/provider URLs exposed. No private configs read, live requests or deployment. Synthetic tests only.

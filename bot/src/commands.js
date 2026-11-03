@@ -76,7 +76,8 @@ export const commands = [
     .setName('report')
     .setDescription('Create a driver recovery and redelivery report')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addStringOption(o => o.setName('con_id').setDescription('Consignment number').setRequired(true)),
+    .addStringOption(o => o.setName('con_id').setDescription('Consignment number').setRequired(true))
+    .addStringOption(o => o.setName('eircode').setDescription('Correct destination Eircode; omit to use depot value').setMaxLength(12)),
   new SlashCommandBuilder()
     .setName('result')
     .setDescription('Показати збережений результат без повторної дії в depot')

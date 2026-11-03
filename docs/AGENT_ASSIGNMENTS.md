@@ -35,9 +35,9 @@
 | `extension_owner` | S01-02; S03-01…S03-05; S07-01…S07-03; S09-05 | Depot, точний lookup, MV3, listener, preview/apply, popup |
 | `drive_owner` | S01-01; S02-01…S02-03; S04-01…S04-05 | Barcode, фізична посилка, іменування, Drive batches і recovery |
 | `gmail_ai_owner` | S02-04; S05-01…S05-05; S06-01…S06-05 | Номери з тексту, Gmail, підтверджені факти, AI proposal і чернетки з ручною перевіркою |
-| `discord_owner` | S09-01…S09-04; S09-06…S09-13 | Queue contract/rules, доступ, доставка відповіді, Maps, картки й report |
+| `discord_owner` | S09-01…S09-04; S09-06…S09-14 | Queue contract/rules, доступ, доставка відповіді, Maps, картки й report |
 
-Усього 54 задачі, кожна має одну основну роль. Завершені задачі не виконувати
+Усього 55 задачі, кожна має одну основну роль. Завершені задачі не виконувати
 повторно. Інший фахівець допомагає review, а не створює другу реалізацію.
 `integrator` координує доручення, перевіряє результат і веде спільний стан.
 Поточний writer може поєднувати свою роль та integrator після явної передачі.
@@ -157,3 +157,6 @@ Checkout / branch / base SHA:
 Owner prioritized immediate S09-13 with direct Maps links (no provider calls).
 S09-07 is no longer its hard dependency; /find Maps isolation remains open.
 Do not infer S09-07 completion from report implementation.
+
+### Report follow-up — 2026-11-03
+S09-14 belongs to discord_owner, depends on completed S09-13/S09-07. Owner-approved destination override/navigation/map implemented offline; activation remains separate. Current roadmap has55 tasks.

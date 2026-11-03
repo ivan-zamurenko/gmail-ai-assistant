@@ -1,4 +1,5 @@
 import { todoDisplayText, todoErrorMessage } from './todoService.js';
+import { normEircode } from './geo.js';
 import { renderDriverReport } from './driverReport.js';
 /** Discord interaction boundary; importing this module never starts a client or Firebase. */
 import { createResultRecovery } from './resultRecovery.js';
@@ -69,7 +70,7 @@ export function createInteractionHandler({
     if (interaction.commandName === 'todo') {
       await handleTodo(interaction, request);
     } else if (interaction.commandName === COMMANDS.REPORT) {
-      await handleReport(interaction, { conId: request.conId });
+      await handleReport(interaction, { conId: request.conId, ...(request.eircode && { eircode: request.eircode }) });
     } else if (interaction.commandName === COMMANDS.FIND) {
       await handleFind(interaction, request.conId);
     } else {
@@ -98,7 +99,16 @@ export function createInteractionHandler({
       const conId = interaction.options.getString('con_id');
       if (typeof conId !== 'string') return invalid;
       const error = validateConsignmentNumber(conId);
-      return error ? { error } : { conId };
+      if (error) return { error };
+      if (command === COMMANDS.REPORT) {
+        const manual = interaction.options.getString('eircode');
+        if (manual !== null && manual !== undefined) {
+          const eircode = normEircode(manual);
+          if (!eircode) return { error: 'Enter a valid destination Eircode.' };
+          return { conId, eircode };
+        }
+      }
+      return { conId };
     }
     if (command !== COMMANDS.RESCHEDULE) return invalid;
     const mode = interaction.options.getSubcommand();
@@ -218,7 +228,7 @@ export function createInteractionHandler({
   async function showReport(interaction, result) {
     const report = result.parcel?.report;
     await interaction.editReply(report
-      ? renderDriverReport(result.parcel, { resultId: result.id }) : resultMessage(result));
+      ? await renderDriverReport(result.parcel, { resultId: result.id, eircode: result.args?.eircode, apiKey: cfg.googleMapsApiKey }) : resultMessage(result));
     if (report?.state !== 'choose') await acknowledge(interaction, result);
     return report?.state === 'ready';
   }
@@ -252,11 +262,11 @@ export function createInteractionHandler({
       return;
     }
     if (match[1] === 'page') {
-      try { await interaction.editReply(renderDriverReport(source.parcel, { resultId: source.id, offset: index })); }
+      try { await interaction.editReply(await renderDriverReport(source.parcel, { resultId: source.id, offset: index, eircode: source.args?.eircode })); }
       catch (err) { await deliveryError(interaction, err, true); }
       return;
     }
-    await handleReport(interaction, { conId: report.consNumber, selection: report.candidates[index] }, source.id, true);
+    await handleReport(interaction, { conId: report.consNumber, selection: report.candidates[index], ...(source.args?.eircode !== undefined && { eircode: source.args.eircode }) }, source.id, true);
   }
 
   /** Looks up one consignment and shows its latest status — read-only, no date. */

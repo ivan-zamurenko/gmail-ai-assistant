@@ -178,7 +178,7 @@ Extension6.3.0.69 matches depot image request with explicit Bearer scheme. IMAGE
 
 ## Driver report — S09-13 (2026-11-02)
 
-`/report con_id:<9 or14 digits>` gives an English, Administrator-only ephemeral
+`/report con_id:<9 or14 digits> [eircode:<correct destination>]` gives an English, Administrator-only ephemeral
 report in the group chat. /find remains the full operational card. One eligible
 event renders directly; multiple events show four choices per page, up to25.
 Choose parcel and timestamp explicitly. Photos/GPS/signature come from the same
@@ -190,8 +190,9 @@ recipient/company/address/Eircode/phone, full clickable map URLs, photo or404.
 No history/email/internal logs; no arbitrary depot notes. Maps URLs make no
 provider request, need no API key; mobile app/browser behavior follows
 [Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started).
-Delivered route uses recorded GPS to valid Eircode/full address with driving mode.
-Carded or missing coordinates has no redelivery route. No nearby Eircode is guessed.
+S09-14: both navigation links omit origin, using the device location when available.
+Pickup uses selected-event GPS; delivery uses valid effective Eircode, even without GPS.
+Carded labels its point as attempted delivery. No nearby Eircode is guessed.
 
 Text can be copied to WhatsApp; photo copied separately. Auto URL previews and
 mentions are suppressed. Text over1900 chars is attached as driver-report.txt
@@ -211,8 +212,8 @@ registration, restart, real Discord/mobile report verification not yet performed
 or static map fails. A short footer says map preview is unavailable. No Maps
 request without a configured key, valid Delivered/Carded drop and valid Eircode.
 Failed address lookup stops enrichment; reverse lookup failure stops its variants
-but does not prevent a static map using the resolved target. /report stays
-provider-independent. Distance remains approximate straight-line, not road distance
+but does not prevent a static map using the resolved target. S09-14 adds optional
+/report map enrichment through these same bounded adapters. Distance remains approximate straight-line, not road distance
 or evidence of misdelivery.
 
 One request attempt,1000ms deadline including streamed body; at most5 requests
@@ -238,3 +239,13 @@ results; missing timestamps shown explicitly. Add text1..500, soft100-item limit
 and reports confirmed removals/failed/partial counts. All replies disable mentions.
 Stored todos are not automatically expired/deleted; /todo is unrelated to email
 approval, queue or depot. No command shape change or live activation.
+
+## Destination override and map — S09-14 (2026-11-03)
+
+Omit eircode to use the depot value; explicit valid input wins for this report only.
+Invalid/missing destination asks for a corrected /report invocation, without a misleading route. This successfully displayed correction prompt acknowledges the result; use /report again, not /result, to correct it.
+Selection, pagination and recovery retain task.args.eircode. No queue schema or depot mutation.
+Manual override leaves the street address unchanged: operator-only warning asks to check it before forwarding; pure text/export excludes that note.
+Up to two bounded provider calls (geocode, static map), only with GPS/key/valid destination. Map first, POD/404 second. Red is recorded point, blue destination; line is not a driving route. Failure/missing map leaves text/links/POD with a short unavailable note. No provider URL/key in output.
+Navigation links open independently from current device location, subject to device permission/app behavior. Copy text to WhatsApp and attach images separately; no clipboard automation.
+Local checks passed; updated slash-command registration, bot activation and real mobile rendering remain unverified.

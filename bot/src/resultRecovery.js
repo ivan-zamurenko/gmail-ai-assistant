@@ -56,7 +56,7 @@ export function createResultRecovery({ listResults, getResult, acknowledgeResult
         return;
       }
       const report = result.parcel?.report;
-      const payload = report ? renderDriverReport(result.parcel, { resultId: result.id })
+      const payload = report ? await renderDriverReport(result.parcel, { resultId: result.id, eircode: result.args?.eircode, apiKey: cfg.googleMapsApiKey })
         : result.parcel ? await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey) : resultMessage(result);
       await interaction.editReply(payload);
       if (report?.state === 'choose') return;

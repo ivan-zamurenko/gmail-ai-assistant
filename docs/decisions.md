@@ -190,12 +190,12 @@ one verified task at a time, with shared journal, commit and push to codex.
 Consult on unresolved DPD behavior or material product choices. This does not
 activate services, register commands, deploy or merge main automatically.
 
-## REPORT-DESTINATION-2026-11-03 — owner confirmed, not yet implemented
+## REPORT-DESTINATION-2026-11-03 — implemented offline in S09-14
 
 Optional /report eircode overrides the system Eircode for this report only.
 If omitted, use the system Eircode; if absent/invalid (e.g. placeholder), request
 a correct one. No depot mutation. Agreed driver layout: recipient/address/phone/
 time, separate current-location navigation to recorded pickup and correct delivery,
 map with both points, POD. Preserve exact event selection and distinguish Carded
-attempts from parcel collection. Implementation/activation remains pending;
+attempts from parcel collection. Implementation is locally verified; activation remains pending;
 WhatsApp clipboard/export interaction is still a proposal, not completed behavior.

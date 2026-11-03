@@ -1,3 +1,12 @@
+# S09-14 completed offline — 2026-11-03
+
+Root integrator. Report-only Eircode override, independent device-location navigation, optional map plus POD with explicit fallback; event/recovery and todo preserved.
+Evidence: [S09-14](evidence/S09-14.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
 # S06-02 completed offline — 2026-11-03
 
 Root integrator. Strict provider-independent proposal schema and separate untrusted data; all accepted prose still requires human review, no model/tools/IO.

@@ -1115,6 +1115,25 @@
         "firestore.rules"
       ],
       "acceptance_count": 5
+    },
+    {
+      "id": "S09-14",
+      "title": "Report: ручний Eircode, навігація та карта",
+      "stage": "S09",
+      "depends_on": [
+        "S09-13",
+        "S09-07"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-14.md",
+      "context": [
+        "docs/decisions.md",
+        "docs/discord-bot.md",
+        "bot/src/driverReport.js",
+        "bot/src/interactions.js",
+        "bot/src/resultRecovery.js"
+      ],
+      "acceptance_count": 5
     }
   ]
 }

@@ -1108,3 +1108,6 @@ numeric claim rejection, hostile text as data, whitelist context projection,
 stale/changed source and mandatory human review. Functional stub RED0/2 ->2/2;
 integration with actual case builder4/4. Zero network/effect ports; no model
 evaluation, semantic prose-proof or prompt-injection immunity claim.
+
+## S09-14 report follow-up
+Existing report/command groups extended before code: optional normalized Eircode, invalid destination, selected-event override/recovery, no-origin navigation links, optional two-call map/POD and safe failure. Synthetic fetch only; real Discord/Maps/mobile not tested. Focused24/24 including todo regression after handler integration.

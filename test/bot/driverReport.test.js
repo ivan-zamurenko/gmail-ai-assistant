@@ -2,7 +2,7 @@ import test from 'node:test';
 import { URL } from 'node:url';
 import assert from 'node:assert/strict';
 import { reportSelection } from '../../src/depot/reportSelection.js';
-import { renderDriverReport } from '../../bot/src/driverReport.js';
+import { renderDriverReport, buildDriverReportText } from '../../bot/src/driverReport.js';
 import { executeTask } from '../../src/queue/executor.js';
 import { createResultRecovery } from '../../bot/src/resultRecovery.js';
 import { createInteractionHandler } from '../../bot/src/interactions.js';
@@ -44,46 +44,81 @@ test('report selects one exact parcel/event and never borrows later unrelated GP
 
 });
 
-test('driver report is copyable, bounded, event-specific and honest without GPS/POD', () => {
+test('driver report uses effective Eircode, current-location routes and optional map/POD without losing core', async t => {
   const report = { version: 1, state: 'ready', consNumber: '123456789', event: { ...selection(delivered), signature: delivered.signature, coords: delivered.coords }, address: { contact: 'Synthetic recipient', lines: ['1 Example Street'], town: 'Dublin', postCode: 'D02AF30', mobile: '+353000000000', email: 'hidden@example.invalid' } };
-  const output = renderDriverReport({ report });
-  assert.match(output.content, /Delivery point/);
+  const output = await renderDriverReport({ report });
+  assert.match(output.content, /Delivery recorded/);
   assert.match(output.content, /Signed for by: Synthetic signer/);
   assert.doesNotMatch(output.content, /History|hidden@example|Goods Held/);
-  const route = output.content.match(/https:\/\/www.google.com\/maps\/dir\/\?\S+/)[0];
-  const url = new URL(route);
-  assert.equal(url.searchParams.get('origin'), '53,-6');
-  assert.equal(url.searchParams.get('destination'), 'D02AF30');
-  assert.equal(url.searchParams.get('api'), '1');
-  assert.equal(url.searchParams.get('travelmode'), 'driving');
+  const routes = output.content.match(/https:\/\/www.google.com\/maps\/dir\/\?\S+/g).map(route => new URL(route));
+  assert.equal(routes.length, 2);
+  assert.deepEqual(routes.map(url => url.searchParams.get('destination')), ['53,-6', 'D02AF30']);
+  for (const url of routes) {
+    assert.equal(url.searchParams.has('origin'), false);
+    assert.equal(url.searchParams.get('api'), '1');
+    assert.equal(url.searchParams.get('travelmode'), 'driving');
+    assert.equal(url.searchParams.get('dir_action'), 'navigate');
+  }
   assert.deepEqual(output.allowedMentions, { parse: [] });
   assert.equal(output.files[0].name, 'pod-unavailable.png');
-  const attempted = renderDriverReport({ report: { ...report, event: { ...report.event, type: 'Carded' } } });
-  assert.match(attempted.content, /Attempted delivery point/);
-  assert.match(attempted.content, /not confirmed/);
-  assert.doesNotMatch(attempted.content, /maps\/dir/);
-  const missing = renderDriverReport({ report: { ...report, event: { ...report.event, coords: null } } });
+  const manual = await renderDriverReport({ report }, { eircode: 'd01 a1f2' });
+  assert.match(manual.content, /D01A1F2/);
+  assert.doesNotMatch(manual.content, /D02AF30/);
+  assert.match(manual.content, /Operator note/);
+  assert.doesNotMatch(buildDriverReportText(report, { eircode: 'D01A1F2' }), /Operator note/);
+  const attempted = await renderDriverReport({ report: { ...report, event: { ...report.event, type: 'Carded' } } });
+  assert.match(attempted.content, /Navigate to attempted delivery point/);
+  assert.doesNotMatch(attempted.content, /Navigate to collection point/);
+  const missing = await renderDriverReport({ report: { ...report, event: { ...report.event, coords: null } } });
   assert.match(missing.content, /Location unavailable/);
-  assert.doesNotMatch(missing.content, /maps\/dir/);
-  const long = renderDriverReport({ report: { ...report, address: { contact: '@everyone'.repeat(1000), lines: ['x'.repeat(4000)] } } });
+  assert.match(missing.content, /destination=D02AF30/);
+  const invalid = await renderDriverReport({ report: { ...report, address: { ...report.address, postCode: 'zz0000' } } });
+  assert.match(invalid.content, /correct Eircode/);
+  assert.doesNotMatch(invalid.content, /maps\/dir|Parcel recovery/);
+  assert.equal(invalid.files, undefined);
+  const long = await renderDriverReport({ report: { ...report, address: { ...report.address, contact: '@everyone'.repeat(1000), lines: ['x'.repeat(4000)] } } });
   assert.ok(long.content.length <= 2000);
   assert.doesNotMatch(long.content, /@everyone/);
+
+  const requests = [];
+  const png = globalThis.Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7ioAAAAASUVORK5CYII=', 'base64');
+  t.mock.method(globalThis, 'fetch', async url => {
+    requests.push(url);
+    return url.includes('/geocode/')
+      ? new globalThis.Response(JSON.stringify({ status: 'OK', results: [{ geometry: { location: { lat: 54, lng: -7 } } }] }), { headers: { 'content-type': 'application/json' } })
+      : new globalThis.Response(png, { headers: { 'content-type': 'image/png' } });
+  });
+  const withMap = await renderDriverReport({ report, pod: { body: 'c3ludGhldGlj' } }, { eircode: 'D01A1F2', apiKey: 'PRIVATE_MAPS_KEY' });
+  assert.equal(requests.length, 2);
+  assert.match(requests[0], /address=D01A1F2/);
+  assert.match(requests[1], /53,-6/);
+  assert.match(requests[1], /54,-7/);
+  assert.deepEqual(withMap.files.map(file => file.name), ['delivery-map.png', 'pod.jpg']);
+  assert.doesNotMatch(withMap.content, /PRIVATE_MAPS_KEY/);
+  globalThis.fetch = async () => { throw new Error('PRIVATE_MAPS_KEY'); };
+  t.mock.method(globalThis.console, 'warn', () => {});
+  const failed = await renderDriverReport({ report, pod: { body: 'c3ludGhldGlj' } }, { apiKey: 'PRIVATE_MAPS_KEY' });
+  assert.match(failed.content, /destination=D02AF30/);
+  assert.equal(failed.files[0].name, 'pod.jpg');
+  assert.match(failed.content, /Map preview unavailable; use navigation links/);
+  assert.doesNotMatch(failed.content, /PRIVATE_MAPS_KEY/);
 });
 
 test('report choices retain recovery state, check ownership, and acknowledge only after successful final delivery', async () => {
   const calls = { queue: [], ack: [], edit: [], reply: [] };
-  const record = { id: 'synthetic-id', parcel: { report: { version: 1, state: 'choose', consNumber: '123456789', candidates: [selection(delivered), selection(carded)] } } };
+  const record = { id: 'synthetic-id', args: { eircode: 'D01A1F2' }, parcel: { report: { version: 1, state: 'choose', consNumber: '123456789', candidates: [selection(delivered), selection(carded)] } } };
   let allowed = true;
   let failDelivery = false;
   const order = [];
   const handler = createInteractionHandler({ cfg: { guildId: 'guild' },
-    enqueueAndWait: async task => { calls.queue.push(task); return task.args.selection ? { id: 'selected-id', parcel: { report: { version: 1, state: 'ready', consNumber: '123456789', event: selection(delivered), address: {} } } } : record; },
+    enqueueAndWait: async task => { calls.queue.push(task); return task.args.selection ? { id: 'selected-id', args: task.args, parcel: { report: { version: 1, state: 'ready', consNumber: '123456789', event: selection(delivered), address: {} } } } : record; },
     getResult: async () => { order.push('get'); return allowed ? record : null; },
     acknowledgeResult: async id => calls.ack.push(id),
   });
   const base = { guildId: 'guild', user: { id: 'actor' }, memberPermissions: { has: () => true },
     deferReply: async () => order.push('defer'), reply: async p => calls.reply.push(p), editReply: async p => { if (failDelivery) throw new Error('synthetic delivery failure'); calls.edit.push(p); } };
-  await handler({ ...base, commandName: 'report', isChatInputCommand: () => true, options: { getString: () => '123456789' } });
+  await handler({ ...base, commandName: 'report', isChatInputCommand: () => true, options: { getString: key => key === 'eircode' ? 'D01 A1F2' : '123456789' } });
+  assert.equal(calls.queue[0].args.eircode, 'D01A1F2');
   assert.equal(calls.queue.length, 1);
   assert.equal(calls.ack.length, 0);
   assert.ok(calls.edit[0].components.length);
@@ -100,12 +135,19 @@ test('report choices retain recovery state, check ownership, and acknowledge onl
   await handler(button);
   assert.deepEqual(calls.ack, ['selected-id', 'synthetic-id']);
   assert.deepEqual(calls.queue.at(-1).args.selection, selection(delivered));
+  assert.equal(calls.queue.at(-1).args.eircode, 'D01A1F2');
+  assert.match(calls.edit.at(-1).content, /D01A1F2/);
   const recovery = createResultRecovery({ listResults: async () => [record], acknowledgeResult: async id => calls.ack.push(id), cfg: {} });
   await recovery({ ...base, isButton: () => false, options: { getString: () => '123456789' } });
   assert.equal(calls.ack.length, 2, 'recovered choices remain unacknowledged');
   assert.ok(calls.edit.at(-1).components.length);
-  const ready = { id: 'recovered-id', args: { choiceTaskId: record.id }, parcel: { report: { version: 1, state: 'ready', consNumber: '123456789', event: selection(delivered), address: {} } } };
+  const ready = { id: 'recovered-id', args: { choiceTaskId: record.id, eircode: 'D01A1F2' }, parcel: { report: { version: 1, state: 'ready', consNumber: '123456789', event: selection(delivered), address: {} } } };
   const recoverReady = createResultRecovery({ listResults: async () => [ready], acknowledgeResult: async id => calls.ack.push(id), cfg: {} });
   await recoverReady({ ...base, isButton: () => false, options: { getString: () => '123456789' } });
   assert.deepEqual(calls.ack.slice(-2), ['recovered-id', 'synthetic-id']);
+  assert.match(calls.edit.at(-1).content, /D01A1F2/);
+  const queued = calls.queue.length;
+  await handler({ ...base, commandName: 'report', isChatInputCommand: () => true, options: { getString: key => key === 'eircode' ? 'zz0000' : '123456789' } });
+  assert.equal(calls.queue.length, queued);
+  assert.match(calls.reply.at(-1).content, /Eircode/);
 });

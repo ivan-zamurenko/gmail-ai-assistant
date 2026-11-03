@@ -992,3 +992,14 @@ is source-reviewed; no real provider/Discord/mobile requests in this task.
 ## Find high-level presentation — 2026-11-02
 
 Find presentation: existing7 render regressions updated FIRST for explicitly requested layout while preserving chronology, unknown identity/time, privacy, Unicode bounds and POD. One new hierarchy/empty/noANSI/drop-type group. RED1/8, GREEN8/8. New test originally overconstrained footer to absent; corrected to no redundant searched-as while requiring uncertainty (test specification correction, not runtime defect). Long map target and maximal grouped-address checks added after guard as characterization.
+
+## S09-07 — optional Maps failure isolation
+
+Two new groups in existing test/bot/geo.test.js and render.test.js: provider
+reject/non2xx/invalid JSON/status/coords/image/size, hanging fetch/body, bounded
+attempts/redaction; actual card survival with POD/links and disabled-network gates.
+Initial RED14/16; review ZERO_RESULTS-with-results RED15/16; GREEN16/16.
+Success PNG attachment, failed static map and m/km rendering added afterward as
+characterization. Existing reverse fixtures use real synthetic Response objects
+with explicit status/MIME to exercise streaming reads. PNG validity is structural,
+not full decoding; no real API/key/parcel data used.

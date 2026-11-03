@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Find link polish — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-07 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1107,6 +1107,27 @@ registration, restart, real Discord/mobile report verification not yet performed
 ## Find high-level presentation — 2026-11-02
 
 /find presentation refreshed: headline status/count, latest event, grouped delivery address/contact/details, recorded location, map, POD, then plain chronological history (up to12). Empty optional fields, ANSI and duplicate address/searched-as removed. Evidence uncertainty remains in footer. GPS only with explicit Delivered/Carded drop.type; unknown/other types are not inferred from headline. Carded has no redelivery route. Distance labelled straight-line; route target encoded cap500 to protect1024 field size. /report behavior unchanged. Bot0.2.12/root1.1.27; extension remains6.3.0.70. Runtime restart/registration pending.
+
+## Optional Maps isolation — S09-07 (2026-11-03)
+
+/find keeps core facts, POD/404 and direct navigation links when Google lookup
+or static map fails. A short footer says map preview is unavailable. No Maps
+request without a configured key, valid Delivered/Carded drop and valid Eircode.
+Failed address lookup stops enrichment; reverse lookup failure stops its variants
+but does not prevent a static map using the resolved target. /report stays
+provider-independent. Distance remains approximate straight-line, not road distance
+or evidence of misdelivery.
+
+One request attempt,1000ms deadline including streamed body; at most5 requests
+per card (geocode1,reverse up to3,static1), about5s maximum I/O waiting excluding
+event-loop scheduling. No retry on provider failure, cache or retained geodata.
+JSON cap256000 bytes/max100 results; PNG cap2000000 bytes, MIME/signature/IHDR/IEND
+checks (not a complete decoder/CRC check). Invalid coordinates/status/schema,
+network/HTTP failure or timeout return unavailable. Fixed `[maps] UNAVAILABLE`
+codes TIMEOUT/HTTP/INVALID_RESPONSE/SIZE_LIMIT/NO_RESULT/REQUEST_FAILED only;
+no key, URL, coordinates or raw exceptions logged.
+Root1.1.29/bot0.2.14; extension unchanged6.3.0.70. Offline validated; no live
+Google/Discord check, registration or runtime restart in this task.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1914,7 +1935,27 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Find link polish — 2026-11-03</h1><pre class="markdown"># Find link polish — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-07 completed offline — 2026-11-03</h1><pre class="markdown"># S09-07 completed offline — 2026-11-03
+
+Owner approved local progress while work PC unavailable. maps_impl handed off
+to root; maps_review ACCEPT. No active writer. Root1.1.29/bot0.2.14;
+extension unchanged6.3.0.70. /find presentation and /report preserved.
+
+Optional Maps requests now bounded (1000ms including body, max5 requests),
+streamed size/schema/image checks, fixed safe diagnostics. Core facts/POD/direct
+links survive failure; invalid/missing key/drop/Eircode skips enrichment entirely.
+No cache/new provider/retention. PNG structural validation only, no full decoder.
+
+Two new grouped tests: RED14/16 then15/16, focused16/16; full195/195 and7gates PASS.
+Evidence: [S09-07](evidence/S09-07.json). No live Google/Discord/browser calls,
+bot restart or command registration. Work-PC /find+/report smoke test remains
+deferred, not a blocker for completed offline implementation. Report-first
+implementation tasks complete; actual /report activation still pending.
+
+---
+
+
+# Find link polish — 2026-11-03
 
 Owner requested 👉 markers. /find map links now each on their own marked line.
 Root1.1.28/bot0.2.13, extension unchanged6.3.0.70. Existing test expectation first:
@@ -2281,6 +2322,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-02 | find_layout + root + find_layout_review | implemented find presentation | organized overview/photo/plain history, Delivered/Carded-only GPS; root1.1.27/bot0.2.12 | RED1/8 GREEN8/8 full193/193 gates PASS, review ACCEPT, synthetic preview | live restart/report registration pending; next S09-07.
 
 - 2026-11-03 | root | implemented link polish | /find map links on separate 👉 lines; root1.1.28/bot0.2.13 | existing test RED7/8 then full193/193 gates PASS | runtime activation still pending.
+
+- 2026-11-03 | maps_impl + root + maps_review | completed S09-07 offline | bounded Maps failures preserve card/POD/links; no-request gates, safe logs; root1.1.29/bot0.2.14 | RED14/16 then15/16, focused16/16 full195/195 allgates PASS; review ACCEPT; evidence/S09-07.json | live activation/work-PC smoke test deferred.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -5177,6 +5220,17 @@ is source-reviewed; no real provider/Discord/mobile requests in this task.
 ## Find high-level presentation — 2026-11-02
 
 Find presentation: existing7 render regressions updated FIRST for explicitly requested layout while preserving chronology, unknown identity/time, privacy, Unicode bounds and POD. One new hierarchy/empty/noANSI/drop-type group. RED1/8, GREEN8/8. New test originally overconstrained footer to absent; corrected to no redundant searched-as while requiring uncertainty (test specification correction, not runtime defect). Long map target and maximal grouped-address checks added after guard as characterization.
+
+## S09-07 — optional Maps failure isolation
+
+Two new groups in existing test/bot/geo.test.js and render.test.js: provider
+reject/non2xx/invalid JSON/status/coords/image/size, hanging fetch/body, bounded
+attempts/redaction; actual card survival with POD/links and disabled-network gates.
+Initial RED14/16; review ZERO_RESULTS-with-results RED15/16; GREEN16/16.
+Success PNG attachment, failed static map and m/km rendering added afterward as
+characterization. Existing reverse fixtures use real synthetic Response objects
+with explicit status/MIME to exercise streaming reads. PNG validity is structural,
+not full decoding; no real API/key/parcel data used.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -9873,6 +9927,15 @@ fix(discord): [S09-07] preserve lookup when maps fail
 ```
 
 Evidence: `.workflow/evidence/S09-07.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
+
+## Реалізація 2026-11-03
+
+Використано наявні `test/bot/geo.test.js` і `test/bot/render.test.js`, а не
+архівні запропоновані нові test paths. Maps optional boundary має1000ms
+request+body deadline, one attempt, максимум5 запитів на картку; дані посилки
+та прямі посилання зберігаються. Деталі й межі — docs/discord-bot.md та
+.workflow/evidence/S09-07.json. Оновлення візуального оформлення /find збережено.
+Реальні API/Discord/browser не запускалися; runtime activation pending.
 </pre></article>
 <article id="doc-115" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-08.md">roadmap/tasks/S09-08.md</a></p><h1>S09-08 — Проверить изоляцию и устойчивость личного todo</h1><pre class="markdown"># S09-08 — Проверить изоляцию и устойчивость личного todo
 

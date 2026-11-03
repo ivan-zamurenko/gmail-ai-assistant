@@ -223,7 +223,8 @@ export async function buildParcelEmbed(parcel, apiKey) {
 
   // Resolve the Eircode once — the same point feeds both the distance and the map.
   const eircode = normEircode(a.postCode);
-  const addr    = parcel.drop && eircode ? await geocode(eircode, apiKey) : null;
+  const enrich = Boolean(parcel.drop && eircode && typeof apiKey === 'string' && apiKey.trim());
+  const addr = enrich ? await geocode(eircode, apiKey) : null;
 
   const desc = [];
   if (unknownIdentity) desc.push('Some scans have an unassigned parcel identity; latest status cannot be confirmed.');
@@ -239,7 +240,7 @@ export async function buildParcelEmbed(parcel, apiKey) {
   if (multi) fields.push({ name: 'Parcels', value: parcelsBlock(parcels) });
   if (parcel.drop) {
     const attempted = parcel.drop.type === 'Carded';
-    const dropEircode = await reverseGeocode(parcel.drop, apiKey);
+    const dropEircode = enrich && addr ? await reverseGeocode(parcel.drop, apiKey) : null;
     const location = [attempted ? 'Attempted delivery' : 'Delivered scan',
       `${coord(parcel.drop.lat)}, ${coord(parcel.drop.lng)}`];
     if (parcel.drop.date || parcel.drop.time) location.push([parcel.drop.date, parcel.drop.time].filter(Boolean).join(' '));
@@ -284,13 +285,20 @@ export async function buildParcelEmbed(parcel, apiKey) {
       .setTitle('Delivery photo unavailable')
       .setImage('attachment://pod-unavailable.png'));
   }
+  let mapAvailable = false;
   if (addr) {
     const png = await mapImage(parcel.drop, addr, apiKey);
     if (png) {
+      mapAvailable = true;
       mainEmbed.setImage('attachment://route.png');
       mainEmbed.addFields({ name: 'Map key', value: 'S · scan location   D · delivery address' });
       files.push(new AttachmentBuilder(png, { name: 'route.png' }));
     }
+  }
+
+  if (enrich && !mapAvailable) {
+    const note = 'Map preview unavailable; navigation links still available.';
+    mainEmbed.setFooter({ text: [...notes, note].join(' · ') });
   }
 
   // Its own embed so it renders below the map image.

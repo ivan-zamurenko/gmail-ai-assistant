@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath, URL } from 'node:url';
 
@@ -224,4 +225,56 @@ test('find overview leads with facts, groups details and only maps delivery or a
   const attempted = await buildParcelEmbed({ ...parcel, drop: { ...parcel.drop, type: 'Carded' } }, '');
   assert.match(plainText(attempted), /Attempted delivery/);
   assert.doesNotMatch(plainText(attempted), /maps\/dir|dropped|off target/);
+});
+
+
+test('Maps failure preserves the actual card, POD and links; disabled enrichment never requests', async (t) => {
+  const key = 'SYNTHETIC_MAP_SECRET';
+  const original = globalThis.fetch;
+  t.after(() => { globalThis.fetch = original; });
+  t.mock.method(globalThis.console, 'warn', () => {});
+  const parcel = { consNumber: '123456789', address: { contact: 'Synthetic recipient', lines: ['1 Example Street'], postCode: 'D02AF30' },
+    scans: [{ parcel: '1', type: 'Delivered', date: '03/11/2026', time: '12:00:00' }],
+    drop: { type: 'Delivered', lat: 53, lng: -6 }, pod: { body: '/9j/4AAQ', mime: 'image/jpeg' } };
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; throw new Error(key); };
+  const output = await buildParcelEmbed(parcel, key);
+  assert.match(output.embeds[0].toJSON().title, /Delivered/);
+  assert.match(plainText(output), /Synthetic recipient|1 Example Street/);
+  assert.match(plainText(output), /Map preview unavailable/);
+  assert.match(plainText(output), /Open scan location|Route to address/);
+  assert.equal(output.files[0].name, 'pod.jpg');
+  assert.doesNotMatch(JSON.stringify(output.embeds.map(e => e.toJSON())), /SYNTHETIC_MAP_SECRET/);
+  assert.equal(calls, 1);
+  calls = 0;
+  globalThis.fetch = async url => {
+    calls++;
+    if (String(url).includes('/staticmap')) return new globalThis.Response('provider error', { headers: { 'content-type': 'text/html' } });
+    return new globalThis.Response(JSON.stringify({ status: 'OK', results: [{ geometry: { location: { lat: 53.001, lng: -6 } }, formatted_address: 'D02AF30' }] }), { headers: { 'content-type': 'application/json' } });
+  };
+  const failedImage = await buildParcelEmbed(parcel, key);
+  assert.equal(calls, 5, 'one geocode, three reverse variants, one static image; no retries');
+  assert.match(plainText(failedImage), /straight-line/);
+  assert.match(plainText(failedImage), /Map preview unavailable/);
+  assert.equal(failedImage.files[0].name, 'pod.jpg');
+  assert.equal(failedImage.files.length, 1);
+  assert.doesNotMatch(plainText(failedImage), /SYNTHETIC_MAP_SECRET/);
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7ioAAAAASUVORK5CYII=', 'base64');
+  for (const [lat, units] of [[53.001, /≈ \d+ m from/], [53.02, /≈ \d+\.\d km from/]]) {
+    globalThis.fetch = async url => String(url).includes('/staticmap')
+      ? new globalThis.Response(png, { headers: { 'content-type': 'image/png' } })
+      : new globalThis.Response(JSON.stringify({ status: 'OK', results: [{ geometry: { location: { lat, lng: -6 } }, formatted_address: 'D02AF30' }] }), { headers: { 'content-type': 'application/json' } });
+    const complete = await buildParcelEmbed(parcel, key);
+    assert.match(plainText(complete), units);
+    assert.match(plainText(complete), /straight-line/);
+    assert.equal(complete.files.find(file => file.name === 'route.png').attachment.equals(png), true);
+    assert.doesNotMatch(plainText(complete), /SYNTHETIC_MAP_SECRET|Map preview unavailable/);
+  }
+  calls = 0;
+  globalThis.fetch = async () => { calls++; throw new Error(key); };
+  for (const [value, apiKey] of [[parcel, ''], [{ ...parcel, drop: null }, key], [{ ...parcel, address: { postCode: 'invalid' } }, key]]) {
+    const basic = await buildParcelEmbed(value, apiKey);
+    assert.match(basic.embeds[0].toJSON().title, /Delivered/);
+  }
+  assert.equal(calls, 0);
 });

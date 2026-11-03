@@ -1,3 +1,23 @@
+# S09-07 completed offline — 2026-11-03
+
+Owner approved local progress while work PC unavailable. maps_impl handed off
+to root; maps_review ACCEPT. No active writer. Root1.1.29/bot0.2.14;
+extension unchanged6.3.0.70. /find presentation and /report preserved.
+
+Optional Maps requests now bounded (1000ms including body, max5 requests),
+streamed size/schema/image checks, fixed safe diagnostics. Core facts/POD/direct
+links survive failure; invalid/missing key/drop/Eircode skips enrichment entirely.
+No cache/new provider/retention. PNG structural validation only, no full decoder.
+
+Two new grouped tests: RED14/16 then15/16, focused16/16; full195/195 and7gates PASS.
+Evidence: [S09-07](evidence/S09-07.json). No live Google/Discord/browser calls,
+bot restart or command registration. Work-PC /find+/report smoke test remains
+deferred, not a blocker for completed offline implementation. Report-first
+implementation tasks complete; actual /report activation still pending.
+
+---
+
+
 # Find link polish — 2026-11-03
 
 Owner requested 👉 markers. /find map links now each on their own marked line.

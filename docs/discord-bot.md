@@ -204,3 +204,24 @@ registration, restart, real Discord/mobile report verification not yet performed
 ## Find high-level presentation — 2026-11-02
 
 /find presentation refreshed: headline status/count, latest event, grouped delivery address/contact/details, recorded location, map, POD, then plain chronological history (up to12). Empty optional fields, ANSI and duplicate address/searched-as removed. Evidence uncertainty remains in footer. GPS only with explicit Delivered/Carded drop.type; unknown/other types are not inferred from headline. Carded has no redelivery route. Distance labelled straight-line; route target encoded cap500 to protect1024 field size. /report behavior unchanged. Bot0.2.12/root1.1.27; extension remains6.3.0.70. Runtime restart/registration pending.
+
+## Optional Maps isolation — S09-07 (2026-11-03)
+
+/find keeps core facts, POD/404 and direct navigation links when Google lookup
+or static map fails. A short footer says map preview is unavailable. No Maps
+request without a configured key, valid Delivered/Carded drop and valid Eircode.
+Failed address lookup stops enrichment; reverse lookup failure stops its variants
+but does not prevent a static map using the resolved target. /report stays
+provider-independent. Distance remains approximate straight-line, not road distance
+or evidence of misdelivery.
+
+One request attempt,1000ms deadline including streamed body; at most5 requests
+per card (geocode1,reverse up to3,static1), about5s maximum I/O waiting excluding
+event-loop scheduling. No retry on provider failure, cache or retained geodata.
+JSON cap256000 bytes/max100 results; PNG cap2000000 bytes, MIME/signature/IHDR/IEND
+checks (not a complete decoder/CRC check). Invalid coordinates/status/schema,
+network/HTTP failure or timeout return unavailable. Fixed `[maps] UNAVAILABLE`
+codes TIMEOUT/HTTP/INVALID_RESPONSE/SIZE_LIMIT/NO_RESULT/REQUEST_FAILED only;
+no key, URL, coordinates or raw exceptions logged.
+Root1.1.29/bot0.2.14; extension unchanged6.3.0.70. Offline validated; no live
+Google/Discord check, registration or runtime restart in this task.

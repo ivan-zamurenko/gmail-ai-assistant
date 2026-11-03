@@ -512,3 +512,10 @@ Owner image-function PDF inspected privately. Image request now uses literal Bea
 ## Find high-level presentation — 2026-11-02
 
 Find presentation retains Administrator/ephemeral and mention neutralization. Explicit Delivered/Carded filter prevents using other/unknown drop types for Maps output. No new fields/provider flows or retention changes. Source uncertainty preserved. Synthetic fixtures only; no live calls or private data used.
+
+## 2026-11-03 — S09-07 Maps boundary
+
+Bounded optional requests including response body, streamed byte caps, redirect
+rejection and validated coordinates/schema. Diagnostics use fixed codes only;
+synthetic key-leak regression covers output/logs. No new provider/cache/retention,
+secrets reads or live requests. Invalid/missing inputs skip enrichment entirely.

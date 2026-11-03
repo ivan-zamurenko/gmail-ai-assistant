@@ -271,3 +271,6 @@ Escaped caption text, fixed raster data URI and restrictive CSP prevent caption 
 ## Discord Web copy controls — S09-18
 After updating extension, open Discord Web chat, click DPD extension icon and “Увімкнути копіювання report у Discord”. Two local controls appear beside recognized ready /report: image and caption. Paste image into WhatsApp first, then copy/paste caption. Refresh Discord requires activation again. Bot/command schema unchanged.
 The helper recognizes one message-content node and one exact driver-report.jpg attachment in the same rendered message; it rechecks at click, skips ambiguous/long-text-export-only messages and handles edited/removed rows. It is not a native Discord bot component. Actual Discord DOM/CORS/clipboard behavior needs work-PC smoke; synthetic tests cannot prove those. HTML export remains fallback.
+
+### S09-18 button styling follow-up — 2026-11-03
+Owner requested more polished controls. Scoped CSS adds DPD red image action, neutral caption action, distinct vector icons, rounded corners, hover/keyboard focus, reduced-motion support and green copied state. Copy behavior/access unchanged; loading/errors remain clear. Synthetic preview visually checked in isolated headless Chrome, not live Discord.

@@ -36,6 +36,8 @@ test('controls are unique, copy fresh paired data and reject recycled or removed
  let controls=f.row.children[0].children;
  await controls[0].callbacks.click();await controls[1].callbacks.click();
  assert.deepEqual(calls,[['image',url],['text',caption]]);
+ assert.equal(controls[0].textContent,'Картинку скопійовано');
+ assert.equal(controls[1].textContent,'Підпис скопійовано');
  f.row.children[0].remove();mount(f.row);assert.equal(f.row.children.length,2,'restore controls removed by Discord re-render');
  controls=f.row.children[1].children;
  f.content.innerText='Another message';await controls[1].callbacks.click();assert.equal(calls.length,2);

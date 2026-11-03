@@ -155,3 +155,7 @@
 - 2026-11-03 | root | completed S09-18 offline | Explicit activeTab Discord Web report controls; paired caption/image, bounded CORS JPEG conversion, no permanent Discord access/clipboard reads or bot changes. | test-first Missing module RED0/1; focused GREEN2/2; focused/full gates PASS; evidence/S09-18.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | S09-18 ready for work-PC smoke | extension6.3.0.81/root1.1.47;221/221 + full gates, IIFE parse, reviewer ACCEPT; detached toolbar recovery RED1/2 -> GREEN2/2 | local /tmp/DPD-Assistance-6.3.0.81.zip contains built dist, not committed; no bot restart | next: owner reload extension and explicitly enable Discord copy controls.
+
+- 2026-11-03 | root | S09-18 styling follow-up | owner-requested scoped Discord button styling, distinct icons, focus/hover/reduced-motion and copied state | existing regression RED1/2 -> GREEN2/2; synthetic Chrome screenshot visually checked | build/checks then extension6.3.0.82 package; no bot restart.
+
+- 2026-11-03 | root | S09-18 style ready | full gates221/221; extension6.3.0.82 packaged outside Git | source/evidence committed; no new permissions or bot restart | next: owner update existing dist/reload and re-enable Discord helper.

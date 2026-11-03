@@ -1,3 +1,10 @@
+# Discord copy styling ready — 2026-11-03
+
+Extension6.3.0.82/root1.1.48: scoped polished copy buttons with distinct icons and success state. Existing test expectations first RED then GREEN; full gates221/221, synthetic headless Chrome preview inspected. No bot changes/restart.
+Next: owner replaces loaded dist on work PC, reloads extension and Discord, enables helper again. Package local /tmp/DPD-Assistance-6.3.0.82.zip. No active writer.
+
+---
+
 # S09-18 completed offline — 2026-11-03
 
 Root integrator. Explicit activeTab Discord Web report controls; paired caption/image, bounded CORS JPEG conversion, no permanent Discord access/clipboard reads or bot changes.

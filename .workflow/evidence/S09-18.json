@@ -40,5 +40,14 @@
     "classic_script_parse": "PASS",
     "permanent_discord_host": false,
     "clipboard_read": false
+  },
+  "style_followup": {
+    "request": "Polished Discord copy buttons",
+    "regression": "Existing group RED1/2 -> GREEN2/2; no new tests",
+    "visual": "Synthetic local Chrome screenshot inspected, no customer data",
+    "scope": "Scoped CSS, distinct icons and copied/loading/error display; access unchanged",
+    "gates": "PASS7,221/221 tests",
+    "artifact": "/tmp/DPD-Assistance-6.3.0.82.zip",
+    "sha256": "0ac051d75256c1a81a439e3e0bc18f3e088c600e794bc171617f4a2f7221d6fb"
   }
 }

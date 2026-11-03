@@ -1,4 +1,5 @@
 import { readReport, imagePng } from './reportCopy.js';
+import { installCopyStyles } from './copyStyles.js';
 
 export function createReportControls({
   copyText = text => globalThis.navigator.clipboard.writeText(text),
@@ -15,23 +16,24 @@ export function createReportControls({
     if (previous) { previous.toolbar.remove(); mounted.delete(row); }
     if (!report) return;
     const doc = row.ownerDocument, toolbar = doc.createElement('div'), status = doc.createElement('span');
+    installCopyStyles(doc);
     toolbar.setAttribute('data-dpd-copy', 'true');
-    Object.assign(toolbar.style, { display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '8px 0', alignItems: 'center' });
     status.setAttribute('role', 'status');
-    Object.assign(status.style, { color: '#b5bac1', fontSize: '12px' });
-    for (const [label, action, success] of [
-      ['📋 Копіювати картинку', () => copyImage(report.url), 'Картинку скопійовано — встав у WhatsApp.'],
-      ['📋 Копіювати підпис', () => copyText(report.caption), 'Підпис скопійовано — встав у поле під картинкою.'],
+    for (const [kind, label, action, success, copied] of [
+      ['image', 'Копіювати картинку', () => copyImage(report.url), 'Картинку скопійовано — встав у WhatsApp.', 'Картинку скопійовано'],
+      ['caption', 'Копіювати підпис', () => copyText(report.caption), 'Підпис скопійовано — встав у поле під картинкою.', 'Підпис скопійовано'],
     ]) {
       const button = doc.createElement('button'); button.type = 'button'; button.textContent = label;
-      Object.assign(button.style, { background: '#404249', color: '#fff', border: '1px solid #666', borderRadius: '5px', padding: '8px 12px', cursor: 'pointer', font: '14px system-ui' });
+      button.className = 'dpd-copy-button';
+      button.setAttribute('data-kind', kind);
       button.addEventListener('click', async event => {
         event?.preventDefault?.(); event?.stopPropagation?.();
         const current = readReport(row);
-        if (!current || current.caption !== report.caption || current.url !== report.url) { status.textContent = 'Звіт змінився або недоступний. Спробуй новий /report.'; return; }
-        button.disabled = true;
-        try { await action(); status.textContent = success; }
-        catch { status.textContent = 'Не вдалося скопіювати. Перевір дозвіл браузера або спробуй новий /report.'; }
+        if (!current || current.caption !== report.caption || current.url !== report.url) { status.setAttribute('data-state', 'error'); status.textContent = 'Звіт змінився або недоступний. Спробуй новий /report.'; return; }
+        button.disabled = true; button.textContent = 'Копіювання…';
+        button.setAttribute('data-state', 'busy'); status.setAttribute('data-state', ''); status.textContent = '';
+        try { await action(); button.setAttribute('data-state', 'success'); button.textContent = copied; status.textContent = success; }
+        catch { button.setAttribute('data-state', ''); button.textContent = label; status.setAttribute('data-state', 'error'); status.textContent = 'Не вдалося скопіювати. Перевір дозвіл браузера або спробуй новий /report.'; }
         finally { button.disabled = false; }
       });
       toolbar.append(button);

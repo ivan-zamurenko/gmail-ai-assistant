@@ -32,6 +32,15 @@ export async function processLabelBatch({
 
       step('reading');
       const candidate = pickConsignment(await readCodes(image));
+      if (candidate?.contested) {
+        done({
+          from: photo.name, to: null, number: null, contested: true,
+          status: 'ambiguous', errorCode: 'ambiguous-barcode',
+          reason: candidate.reason, candidates: candidate.candidates,
+          error: 'Ambiguous barcode — manual review required',
+        });
+        continue;
+      }
       const pick = acceptExactConsignment(candidate);
 
       step('checking');

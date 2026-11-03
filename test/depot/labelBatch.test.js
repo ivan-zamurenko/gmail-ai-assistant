@@ -317,3 +317,31 @@ test('uncertain folder creation, cancellation and auth stop new effects while pr
     assert.doesNotMatch(JSON.stringify(results), /synthetic-secret/);
   }
 });
+
+test('ambiguous photo never reaches lookup, folder planning or filing in preview or live', async () => {
+  const strip = (number, parcel) => ({ text: `%00000000000${number}${parcel}000000`, format: 'CODE_128', reads: 1 });
+  for (const dryRun of [true, false]) {
+    for (const codes of [
+      [strip('123456789', 1), strip('987654321', 2)],
+      [strip('123456789', 1), strip('123456789', 2)],
+    ]) {
+      const calls = [];
+      const results = await processLabelBatch({
+        photos: [{ id: 'synthetic-photo', name: 'synthetic.jpg', createdTime: '2026-08-31T12:00:00Z' }],
+        dryRun,
+        loadPhoto: async () => ({}), readCodes: () => codes,
+        verify: async () => { calls.push('verify'); return true; },
+        folderFor: async () => { calls.push('folder'); return { path: '2026/08', taken: new Set(), unknown: 0 }; },
+        movePhoto: async () => { calls.push('move'); },
+      });
+      assert.deepEqual(calls, []);
+      assert.equal(results[0].status, 'ambiguous');
+      assert.equal(results[0].errorCode, 'ambiguous-barcode');
+      assert.equal(results[0].number, null);
+      assert.equal(results[0].to, null);
+      assert.equal(results[0].contested, true);
+      assert.equal(results[0].candidates.length, 2);
+      assert.match(results[0].error, /manual review/i);
+    }
+  }
+});

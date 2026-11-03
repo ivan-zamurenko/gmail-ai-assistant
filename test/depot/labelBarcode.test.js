@@ -167,3 +167,53 @@ test('contested barcode numbers cannot select a depot lookup target', () => {
   assert.equal(candidate.contested, true);
   assert.equal(acceptExactConsignment(candidate), null);
 });
+
+test('barcode conflicts preserve candidates without choosing by reads or PDF priority', () => {
+  const strip = (number, parcel, reads = 1) => ({
+    text: `%00000000000${number}${parcel}000000`, format: 'CODE_128', reads,
+  });
+  const pdf = (number, parcel) => ({
+    text: `%0000${number}${parcel};0000A0;PRIVATE_PAYLOAD;000000;${number};00/00/00`, format: 'PDF_417', reads: 100,
+  });
+  for (const [codes, reason] of [
+    [[strip('123456789', 1, 100), pdf('987654321', 2)], 'multiple-consignments'],
+    [[strip('123456789', 1), strip('123456789', 2, 100)], 'conflicting-parcels'],
+    [[pdf('123456789', 10), pdf('123456789', 20)], 'conflicting-parcels'],
+    [[strip('123456789', 1), pdf('123456789', 10)], 'conflicting-parcels'],
+    [[{ text: '12345678/1', format: 'CODE_128', reads: 5 }, { text: '12345678/11', format: 'CODE_128', reads: 1 }], 'conflicting-parcels'],
+  ]) {
+    for (const input of [codes, [...codes].reverse(), [...codes, codes[0]]]) {
+      const candidate = pickConsignment(input);
+      assert.equal(candidate.contested, true);
+      assert.equal(candidate.number, null, 'ambiguous result cannot present a winning number');
+      assert.equal(candidate.parcel, null);
+      assert.equal(candidate.reason, reason);
+      assert.equal(candidate.candidates.length, 2, 'repeat reads do not add a candidate');
+      assert.equal(acceptExactConsignment(candidate), null);
+      assert.doesNotMatch(JSON.stringify(candidate), /PRIVATE_PAYLOAD|;|"text"/);
+      assert.ok(candidate.candidates.every(item => /^\d{9}$/.test(item.number) && Number.isInteger(item.parcel)));
+    }
+  }
+  for (const invalid of [null, {}, [null], [{ ...strip('123456789', 1), format: 'PRIVATE_PAYLOAD' }]]) {
+    assert.equal(pickConsignment(invalid), null);
+  }
+  const invalidReads = pickConsignment([
+    { ...strip('123456789', 1), reads: 'PRIVATE_PAYLOAD' },
+    { ...strip('123456789', 2), reads: Infinity },
+  ]);
+  assert.equal(invalidReads.contested, true, 'invalid diagnostic counts cannot erase an identity conflict');
+  assert.ok(invalidReads.candidates.every(item => item.reads === 0));
+  assert.doesNotMatch(JSON.stringify(invalidReads), /PRIVATE_PAYLOAD/);
+  const repeated = pickConsignment([strip('123456789', 2), strip('123456789', 2)]);
+  assert.equal(repeated.contested, false);
+  assert.equal(repeated.parcel, 2);
+  for (const codes of [
+    [strip('123456789', 0), pdf('123456789', 10)],
+    [strip('123456789', 1), pdf('123456789', 11)],
+  ]) {
+    for (const input of [codes, [...codes].reverse()]) {
+      assert.equal(pickConsignment(input).contested, false);
+      assert.equal(pickConsignment(input).parcel, Number(codes[1].text.split(';')[0].slice(14)));
+    }
+  }
+});

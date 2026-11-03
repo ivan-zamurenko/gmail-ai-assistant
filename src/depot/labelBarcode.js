@@ -53,55 +53,49 @@ export function parseBarcode(text) {
 }
 
 /**
- * Picks one number out of everything a photo produced.
- *
- * A steeply tilted strip can still satisfy the Code128 checksum while a digit
- * pair is wrong — one photo read "132665732" four times and "138765732" once.
- * So the winner is the reading that repeated most, and PDF417 outranks Code128
- * because its record carries the number in plain text alongside the address.
- *
- * @param {{ text: string, format: string, reads: number }[]} codes
- * @returns {{ number: string, parcel: number|null, format: string, reads: number, contested: boolean } | null}
+ * Keep all distinct decoded identities. Reads are diagnostics, never votes.
+ * A routing strip carries only the last parcel digit; an exact PDF/legacy parcel
+ * may refine that digit, but cannot erase a contradictory reading.
+ * Unknown parcel metadata does not invent a conflict or replace a known parcel.
  */
 export function pickConsignment(codes) {
-  const byNumber = new Map();
-
+  if (!Array.isArray(codes)) return null;
+  const distinct = new Map();
   for (const code of codes) {
+    if (!code || !['CODE_128', 'PDF_417'].includes(code.format)) continue;
     const parsed = parseBarcode(code.text);
     if (!parsed) continue;
-
-    const pdfRouting = code.format === 'PDF_417'
-      ? PDF417_ROUTING.test(code.text.split(';', 1)[0])
-      : false;
-    const hasExactParcel = code.format !== 'PDF_417' || pdfRouting;
-    const entry = byNumber.get(parsed.number) || {
-      ...parsed,
-      parcel: hasExactParcel ? parsed.parcel : null,
-      format: code.format,
-      reads: 0,
-    };
-    entry.reads += code.reads;
-    if (code.format === 'PDF_417') {
-      // Code128 has only one parcel digit, so parcel 10 is encoded there as 0.
-      // PDF417 is authoritative only when its routing field carries the parcel;
-      // a missing parcel must not overwrite an exact Code128 parcel.
-      entry.format = 'PDF_417';
-    }
-    if (hasExactParcel && (entry.parcel === null || code.format === 'PDF_417')) {
-      entry.parcel = parsed.parcel;
-    }
-    byNumber.set(parsed.number, entry);
+    const precision = CODE128.test(code.text) ? 'last-digit' : 'exact';
+    const key = `${parsed.number}:${parsed.parcel}:${code.format}:${precision}`;
+    const candidate = distinct.get(key) ?? { ...parsed, format: code.format, reads: 0, precision };
+    const reads = Number.isSafeInteger(code.reads) && code.reads > 0 ? code.reads : 0;
+    candidate.reads = Math.min(Number.MAX_SAFE_INTEGER, candidate.reads + reads);
+    distinct.set(key, candidate);
   }
+  const candidates = [...distinct.values()];
+  if (!candidates.length) return null;
 
-  const ranked = Array.from(byNumber.values()).sort((a, b) => {
-    if ((a.format === 'PDF_417') !== (b.format === 'PDF_417')) return a.format === 'PDF_417' ? -1 : 1;
-    return b.reads - a.reads;
-  });
+  const numbers = new Set(candidates.map(item => item.number));
+  const exact = new Set(candidates.filter(item => item.precision === 'exact' && item.parcel !== null).map(item => item.parcel));
+  const digits = new Set(candidates.filter(item => item.precision === 'last-digit').map(item => item.parcel));
+  const fullParcel = [...exact][0];
+  const lastDigit = [...digits][0];
+  const conflict = exact.size > 1 || digits.size > 1
+    || (exact.size === 1 && digits.size === 1 && fullParcel % 10 !== lastDigit);
 
-  if (!ranked.length) return null;
+  if (numbers.size > 1 || conflict) {
+    return {
+      number: null, parcel: null, contested: true,
+      reason: numbers.size > 1 ? 'multiple-consignments' : 'conflicting-parcels',
+      candidates,
+    };
+  }
   return {
-    ...ranked[0],
-    contested: ranked.length > 1,
+    number: candidates[0].number,
+    parcel: fullParcel ?? lastDigit ?? null,
+    format: candidates.some(item => item.format === 'PDF_417') ? 'PDF_417' : candidates[0].format,
+    reads: candidates.reduce((sum, item) => Math.min(Number.MAX_SAFE_INTEGER, sum + item.reads), 0),
+    contested: false,
   };
 }
 

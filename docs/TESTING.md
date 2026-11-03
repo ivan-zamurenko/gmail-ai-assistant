@@ -1016,3 +1016,11 @@ bundler. No actual private files are imported by the config fixture loader.
 Actual Firebase setup module runs with synthetic fs/Admin adapters to verify
 bot-root path resolution and redaction of JSON/SDK errors (characterization after
 implementation). No live credentials, SDK authentication, Discord or browser startup tested.
+
+## S02-01/S02-02 — barcode boundaries
+
+Extended existing parser boundary test for nonstrings and exact strip tail.
+Two new grouped parser/batch regressions cover competing numbers/parcel
+identities, read-order/repetition, modulo10 compatibility and zero lookup/folder/
+move effects for ambiguity in dry/live. Synthetic payloads only; no camera or
+private-label corpus claims. Decoder provenance allowlist excludes raw markers.

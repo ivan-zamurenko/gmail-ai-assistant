@@ -88,3 +88,14 @@ return null. Duplicate reads affect diagnostics, not the number of parcels or
 lookup acceptance. Competing numbers remain contested (parcel conflicts S02-02).
 No separate labelParser exists in this checkout; no archived regex restored.
 Synthetic parser tests characterize payloads, not camera/decoder accuracy.
+
+## S02-02 — ambiguity blocks filing
+
+Distinct consignment or incompatible physical parcel readings return ambiguous
+with safe reason and candidate identity/provenance (never raw barcode text).
+Reads/PDF priority never select a winner. PDF/legacy exact parcel can refine
+Code128 last digit modulo10; differing exact parcels remain a conflict. Unknown
+PDF parcel stays unknown. Unsupported decoder formats are ignored.
+Batch returns ambiguous before lookup, folder planning, rename or move in both
+preview and live; the file remains in its source folder for manual review.
+Existing UI/Discord error counts include this outcome; no automatic resolve UI.

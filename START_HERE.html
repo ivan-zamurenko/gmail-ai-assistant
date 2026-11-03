@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S02-01 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S02-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1935,7 +1935,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S02-01 completed offline — 2026-11-03</h1><pre class="markdown"># S02-01 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S02-02 completed offline — 2026-11-03</h1><pre class="markdown"># S02-02 completed offline — 2026-11-03
+
+Root integrator. Conflicting numbers or physical parcels remain ambiguous; no lookup/folder/move, safe candidate metadata, modulo10 compatibility retained. drive_audit implementation/root review.
+Evidence: [S02-02](evidence/S02-02.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S02-01 completed offline — 2026-11-03
 
 Root integrator. Typed barcode input and exact Code128 tail; existing PDF unknown-parcel compatibility preserved, no new format inferred.
 Evidence: [S02-01](evidence/S02-01.json). No active writer.
@@ -2360,6 +2369,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root + config_review | completed S01-05 offline | config/Drive fail-fast and safe errors, two new groups, existing build regression extended; root1.1.30/bot0.2.15/extension6.3.0.71 | focused15/15 full197/197 gates PASS; evidence/S01-05.json | commit/push codex, no runtime activation.
 
 - 2026-11-03 | root | completed S02-01 offline | Typed barcode input and exact Code128 tail; existing PDF unknown-parcel compatibility preserved, no new format inferred. | test-first 9/10 before type/tail guards;10/10 after; focused/full gates PASS; evidence/S02-01.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S02-02 offline | Conflicting numbers or physical parcels remain ambiguous; no lookup/folder/move, safe candidate metadata, modulo10 compatibility retained. drive_audit implementation/root review. | test-first 17/19 initial and18/19 metadata;32/32 focused GREEN; focused/full gates PASS; evidence/S02-02.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3820,6 +3831,17 @@ return null. Duplicate reads affect diagnostics, not the number of parcels or
 lookup acceptance. Competing numbers remain contested (parcel conflicts S02-02).
 No separate labelParser exists in this checkout; no archived regex restored.
 Synthetic parser tests characterize payloads, not camera/decoder accuracy.
+
+## S02-02 — ambiguity blocks filing
+
+Distinct consignment or incompatible physical parcel readings return ambiguous
+with safe reason and candidate identity/provenance (never raw barcode text).
+Reads/PDF priority never select a winner. PDF/legacy exact parcel can refine
+Code128 last digit modulo10; differing exact parcels remain a conflict. Unknown
+PDF parcel stays unknown. Unsupported decoder formats are ignored.
+Batch returns ambiguous before lookup, folder planning, rename or move in both
+preview and live; the file remains in its source folder for manual review.
+Existing UI/Discord error counts include this outcome; no automatic resolve UI.
 </pre></article>
 <article id="doc-44" tabindex="-1" hidden><p class="path"><a href="docs/gmail-contract.md">docs/gmail-contract.md</a></p><h1>Gmail: очередь, факты и черновики</h1><pre class="markdown"># Gmail: очередь, факты и черновики
 
@@ -5335,6 +5357,14 @@ bundler. No actual private files are imported by the config fixture loader.
 Actual Firebase setup module runs with synthetic fs/Admin adapters to verify
 bot-root path resolution and redaction of JSON/SDK errors (characterization after
 implementation). No live credentials, SDK authentication, Discord or browser startup tested.
+
+## S02-01/S02-02 — barcode boundaries
+
+Extended existing parser boundary test for nonstrings and exact strip tail.
+Two new grouped parser/batch regressions cover competing numbers/parcel
+identities, read-order/repetition, modulo10 compatibility and zero lookup/folder/
+move effects for ambiguity in dry/live. Synthetic payloads only; no camera or
+private-label corpus claims. Decoder provenance allowlist excludes raw markers.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -6872,7 +6902,7 @@ Evidence: `.workflow/evidence/S02-01.json`. Обновить существую�
 Synthetic decoder results с двумя номерами и отдельно двумя parcel одного номера должны воспроизвести потерю неоднозначности в исходной агрегации.
 
 ```sh
-node --test test/unit/barcode-ambiguity.test.mjs
+node --test test/depot/labelBarcode.test.js test/depot/labelBatch.test.js
 ```
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.

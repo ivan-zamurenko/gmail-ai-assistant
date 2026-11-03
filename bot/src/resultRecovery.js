@@ -7,7 +7,7 @@ import { safeErrorMessage } from './errors.js';
 const PAGE_SIZE = 4;
 const button = (id, label) => new ButtonBuilder().setCustomId(id).setLabel(label).setStyle(ButtonStyle.Secondary);
 
-export function createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, resultMessage, cfg }) {
+export function createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, renderFind, resultMessage, cfg }) {
   return async function recover(interaction) {
     const actor = { requestedBy: interaction.user.id, guildId: interaction.guildId };
     let id;
@@ -57,7 +57,7 @@ export function createResultRecovery({ listResults, getResult, acknowledgeResult
       }
       const report = result.parcel?.report;
       const payload = report ? await renderDriverReport(result.parcel, { resultId: result.id, eircode: result.args?.eircode, apiKey: cfg.googleMapsApiKey })
-        : result.parcel ? await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey) : resultMessage(result);
+        : result.parcel ? await (renderFind ? renderFind(result.parcel, interaction) : buildParcelEmbed(result.parcel, cfg.googleMapsApiKey)) : resultMessage(result);
       await interaction.editReply(payload);
       if (report?.state === 'choose') return;
       // A failed ACK must not overwrite the successfully delivered card.

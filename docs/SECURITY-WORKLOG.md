@@ -596,3 +596,7 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | owner-requested HTML report attachment removed; no retrospective deletion of Discord messages/downloads. Authorized Mac bot restart after gates; no new data access or outbound workflow. Existing cleanup timers reset on restart as documented.
 
 2026-11-03 | root | owner-requested automatic Discord controls: static isolated top-frame script scoped to channels/*, ongoing page access replacing activeTab. Removed popup injection; clipboardWrite only on copy click. No token/session/API access, persistence or automatic sending. Synthetic fixtures; no bot restart. Browser may request site access on update.
+
+- 2026-11-03 | root | owner-authorized operator /find redesign: read-only navigation snapshots retained only in Mac memory,16-session bound, fixed14min expiry from interaction, actor/guild/channel bound and Admin runtime gate. No disk persistence/raw logging/exports or permission changes. Selected views suppress unbound POD/GPS; unknown parcel identity remains disclosed. Recovery ACK semantics unchanged. Synthetic fixtures only.
+
+- 2026-11-03 | root | operator-find activation: exact bot PID/cwd verified, authorized Mac restart after passing gates; Discord online confirmed without printing identity/config. In-memory cleanup timers reset as documented; no depot requests or customer messages initiated by agent.

@@ -1,3 +1,4 @@
+import { createFindViews } from './findViews.js';
 import { todoDisplayText, todoErrorMessage } from './todoService.js';
 import { normEircode } from './geo.js';
 import { renderDriverReport } from './driverReport.js';
@@ -24,12 +25,14 @@ export function createInteractionHandler({
     catch (failure) { console.error('Result delivery failed:', safeErrorMessage(failure, 'Discord operation failed')); }
   }
 
-  const recoverResult = createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, resultMessage, cfg });
+  const findViews = createFindViews({ buildParcelEmbed, apiKey: cfg.googleMapsApiKey });
+  const recoverResult = createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, renderFind: (parcel, interaction) => findViews.open(parcel, interaction), resultMessage, cfg });
 
   async function handleInteraction(interaction) {
+    const findButton = interaction.isButton?.() && interaction.customId?.startsWith('find:');
     const reportButton = interaction.isButton?.() && interaction.customId?.startsWith('report:');
     const recoveryButton = interaction.isButton?.() && interaction.customId?.startsWith('result:');
-    if (!interaction.isChatInputCommand() && !recoveryButton && !reportButton) return;
+    if (!interaction.isChatInputCommand() && !recoveryButton && !reportButton && !findButton) return;
 
     // Commands are guild-scoped at registration, but keep a runtime gate too: it
     // protects us if registration changes or an interaction is ever misrouted.
@@ -44,6 +47,10 @@ export function createInteractionHandler({
       return;
     }
 
+    if (findButton) {
+      await findViews.handle(interaction);
+      return;
+    }
     if (reportButton) {
       await handleReportButton(interaction);
       return;
@@ -295,7 +302,7 @@ export function createInteractionHandler({
       if (result.parcel) {
         const tm = result.parcel.timing;
         if (tm) console.log(`[find] depot phases: search ${duration(tm.search)}ms + detail ${duration(tm.detail)}ms + scans ${duration(tm.scans)}ms`);
-        const payload = await buildParcelEmbed(result.parcel, cfg.googleMapsApiKey);
+        const payload = await findViews.open(result.parcel, interaction);
         console.log(`[find] geo+map+render: ${((Date.now() - t1) / 1000).toFixed(1)}s`);
         await interaction.editReply(payload);
       } else {

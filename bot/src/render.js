@@ -2,8 +2,8 @@
  * bot/src/render.js
  * =================
  * Turns a raw parcel (from the extension) into Discord embeds: colour = status
- * at a glance, grouped essentials and optional map on the main card, then POD
- * and a bounded plain-text history for mobile and desktop.
+ * at a glance, depot details and paged scan history first, then recipient and
+ * explicitly consignment-level delivery evidence.
  */
 import { EmbedBuilder, AttachmentBuilder } from 'discord.js';
 import { fileURLToPath, URL } from 'node:url';
@@ -39,7 +39,10 @@ function shortDate(date) {
 const hms = (time) => (time || '').slice(0, 8);
 const coord = (value) => Number(value).toFixed(6);
 
-const MAX_HISTORY = 12;
+export const MAX_HISTORY = 12;
+export function findParcelNumbers(parcel) {
+  return [...new Set((Array.isArray(parcel?.scans) ? parcel.scans : []).filter(s => numberedParcel(s?.parcel)).map(s => String(Number(s.parcel))))].sort((a,b) => Number(a)-Number(b));
+}
 
 /** DD/MM/YYYY + HH:MM:SS → sortable ms; string dates sort wrong (10/08 vs 07/08). */
 function stamp({ date, time }) {
@@ -158,14 +161,23 @@ function parcelsBlock(parcels) {
 }
 
 const isNearestRoute = (scan) => /nearest route assigned/i.test(scan?.type || '');
+function visibleScans(scans) {
+  const relevant = scans.filter(scan => !isNearestRoute(scan));
+  return relevant.some(scan => numberedParcel(scan.parcel)) ? relevant.filter(scan => !/^0+$/.test(scan.parcel)) : relevant;
+}
+export function findHistoryPages(parcel, parcelNumber) {
+  const scans = normalize(parcel).scans.filter(scan => !parcelNumber || String(Number(scan.parcel)) === parcelNumber);
+  return Math.max(1, Math.ceil(visibleScans(scans).length / MAX_HISTORY));
+}
+
 
 /** Newest first with one aligned line per visible scan. */
-function historyBlock(scans, showParcel) {
+function historyBlock(scans, showParcel, page = 0) {
   const rows = scans.map((scan, index) => ({ scan, index })).sort((a, b) => {
     const difference = (Number.isFinite(stamp(b.scan)) ? stamp(b.scan) : -Infinity)
       - (Number.isFinite(stamp(a.scan)) ? stamp(a.scan) : -Infinity);
     return difference || b.index - a.index;
-  }).map(item => item.scan).filter((s) => !isNearestRoute(s)).slice(0, MAX_HISTORY);
+  }).map(item => item.scan).filter((s) => !isNearestRoute(s)).slice(page * MAX_HISTORY, (page + 1) * MAX_HISTORY);
   const lines = rows.map(s => {
     const route = displayRoute(s.route);
     const location = cadLocation(s);
@@ -175,7 +187,7 @@ function historyBlock(scans, showParcel) {
     return [dateTime, identity, s.type, route, location, bc && `Onward ${bc}`].filter(Boolean).join(' · ');
   });
 
-  const hidden = scans.filter((s) => !isNearestRoute(s)).length - lines.length;
+  const hidden = Math.max(0, scans.filter((s) => !isNearestRoute(s)).length - (page * MAX_HISTORY + lines.length));
   if (hidden > 0) lines.push(`… +${hidden} ${scans.some(scan => !Number.isFinite(stamp(scan))) ? 'not shown' : 'earlier'}`);
 
   return lines.join('\n') || 'No scan history.';
@@ -194,20 +206,22 @@ function lastEventLine(s) {
   ].filter(Boolean).join('\n');
 }
 
-export async function buildParcelEmbed(parcel, apiKey) {
+export async function buildParcelEmbed(parcel, apiKey, { parcelNumber, page = 0 } = {}) {
   if (Array.isArray(parcel?.scans) && parcel.scans.length > 1000) {
     return { embeds: [new EmbedBuilder().setTitle('Parcel data unavailable').setDescription('Scan limit exceeded; history was not truncated.')], files: [], allowedMentions: { parse: [] } };
   }
+  const allParcelNumbers = findParcelNumbers(parcel);
+  const unresolvedIdentity = visibleScans(normalize(parcel).scans).some(scan => !numberedParcel(scan.parcel) && !/^0+$/.test(scan.parcel));
+  const selected = typeof parcelNumber === 'string' && allParcelNumbers.includes(parcelNumber);
+  if (parcelNumber && !selected) throw new Error('Parcel selection unavailable');
+  if (selected) parcel = { ...parcel, scans: parcel.scans.filter(scan => String(Number(scan?.parcel)) === parcelNumber), drop: null, pod: null };
   const originalTarget = routeTarget(parcel?.address);
   parcel = normalize(parcel);
   const a = parcel.address;
   const consignee = [...new Set([a.contact, a.company].filter(Boolean))].join(', ');
 
-  const relevantScans = parcel.scans.filter((scan) => !isNearestRoute(scan));
-  // Parcel "0" is a consignment-level event (order received), not a physical box.
-  const numbered  = relevantScans.filter((sc) => numberedParcel(sc.parcel));
-  const scans     = numbered.length ? relevantScans.filter(sc => !/^0+$/.test(sc.parcel)) : relevantScans;
-  const unknownIdentity = scans.some(sc => !numberedParcel(sc.parcel) && !/^0+$/.test(sc.parcel));
+  const scans = visibleScans(parcel.scans);
+  const unknownIdentity = unresolvedIdentity || scans.some(sc => !numberedParcel(sc.parcel) && !/^0+$/.test(sc.parcel));
   // The honest current status is the latest real scan — the detail page goes stale
   // (still says "Delivered" after a later redirect).
   const invalidTime = scans.some(scan => !Number.isFinite(stamp(scan)));
@@ -230,14 +244,17 @@ export async function buildParcelEmbed(parcel, apiKey) {
   if (unknownIdentity) desc.push('Some scans have an unassigned parcel identity; latest status cannot be confirmed.');
   if (invalidTime) desc.push('Some scan timestamps are invalid or missing; latest status cannot be confirmed.');
 
-  const fields = [{ name: 'Latest event', value: lastEventLine(s) }];
-  const addressParts = [...new Set([...(a.lines ?? []), a.town, a.county].filter(Boolean))];
-  fields.push({ name: 'Delivery address', value: [consignee, ...addressParts, a.postCode].filter(Boolean).join('\n') || 'Address unavailable' });
-  const contact = [a.mobile && `Phone: ${a.mobile}`, a.email].filter(Boolean);
-  if (contact.length) fields.push({ name: 'Contact', value: contact.join('\n') });
-  const details = [parcel.arrangedDate && `Planned: ${parcel.arrangedDate}`, a.depot && `Depot: ${a.depot}`].filter(Boolean);
-  if (details.length) fields.push({ name: 'Delivery details', value: details.join(' · ') });
+  const fields = [{ name: 'Latest event', value: `${lastEventLine(s)}${cadLocation(s) ? '' : '\nDepot position: not recorded in latest scan'}` }];
+  const details = [selected ? `Selected parcel: ${parcelNumber}` : `Parcels in scan history: ${allParcelNumbers.length || 'unknown'}`,
+    parcel.arrangedDate && `Planned delivery: ${parcel.arrangedDate}`, a.depot && `Delivery depot: ${a.depot}`].filter(Boolean);
+  fields.push({ name: 'Parcel details', value: details.join('\n') });
   if (multi) fields.push({ name: 'Parcels', value: parcelsBlock(parcels) });
+  const recipientFields = [];
+  const evidenceFields = [];
+  const addressParts = [...new Set([...(a.lines ?? []), a.town, a.county].filter(Boolean))];
+  recipientFields.push({ name: 'Delivery address', value: [consignee, ...addressParts, a.postCode].filter(Boolean).join('\n') || 'Address unavailable' });
+  const contact = [a.mobile && `Phone: ${a.mobile}`, a.email].filter(Boolean);
+  if (contact.length) recipientFields.push({ name: 'Contact', value: contact.join('\n') });
   if (parcel.drop) {
     const attempted = parcel.drop.type === 'Carded';
     const dropEircode = enrich && addr ? await reverseGeocode(parcel.drop, apiKey) : null;
@@ -254,17 +271,23 @@ export async function buildParcelEmbed(parcel, apiKey) {
     const destination = eircode ?? originalTarget;
     location.push(`👉 [Open scan location](https://www.google.com/maps/search/?api=1&query=${parcel.drop.lat},${parcel.drop.lng})`
       + (!attempted && destination ? `\n👉 [Route to address](https://www.google.com/maps/dir/?api=1&origin=${parcel.drop.lat},${parcel.drop.lng}&destination=${destination}&travelmode=driving)` : ''));
-    fields.push({ name: 'Recorded location', value: location.join('\n') });
+    evidenceFields.push({ name: 'Recorded location', value: location.join('\n') });
   }
-  const historyStr = historyBlock(scans, multi || unknownIdentity);
+  const pageCount = Math.max(1, Math.ceil(scans.length / MAX_HISTORY));
+  page = Math.min(Math.max(0, Number.isSafeInteger(page) ? page : 0), pageCount - 1);
+  const historyStr = historyBlock(scans, multi || unknownIdentity, page);
 
   const mainEmbed = new EmbedBuilder()
     .setColor(colorFor(s.type))
-    .setTitle(`📦 ${parcel.consNumber} — ${s.type}${count}`)
+    .setTitle(`📦 ${parcel.consNumber}${selected ? ` · Parcel ${parcelNumber}` : ''} — ${s.type}${count}`)
     .setDescription(desc.join('\n\n') || null)
     .addFields(...fields);
   const notes = [];
-  if (parcel.drop || parcel.pod?.body) notes.push('Photo and location may refer to different parcels or events.');
+  if (selected) desc.push('Only this parcel’s scans are shown. Consignment-level photos and GPS are available in Overview.');
+  mainEmbed.setDescription(desc.join('\n\n') || null);
+  const evidenceEmbed = new EmbedBuilder().setColor(colorFor(s.type)).setTitle('📍 Delivery evidence');
+  if (evidenceFields.length) evidenceEmbed.addFields(...evidenceFields);
+  if (parcel.drop || parcel.pod?.body) evidenceEmbed.setFooter({ text: 'Photo and location may refer to different parcels or events. Historical evidence is not a confirmed current location.' });
   if (parcel.query !== '—' && parcel.query !== parcel.consNumber) notes.push(`Searched as ${parcel.query}`);
   if (notes.length) mainEmbed.setFooter({ text: notes.join(' · ') });
 
@@ -277,8 +300,9 @@ export async function buildParcelEmbed(parcel, apiKey) {
     extraEmbeds.push(new EmbedBuilder()
       .setColor(colorFor(s.type))
       .setTitle('POD photo')
+      .setFooter({ text: 'Consignment-level photo; physical parcel and event are not confirmed.' })
       .setImage('attachment://pod.jpg'));
-  } else {
+  } else if (!selected) {
     files.push(new AttachmentBuilder(POD_PLACEHOLDER, { name: 'pod-unavailable.png' }));
     extraEmbeds.push(new EmbedBuilder()
       .setColor(COLOR.other)
@@ -290,24 +314,26 @@ export async function buildParcelEmbed(parcel, apiKey) {
     const png = await mapImage(parcel.drop, addr, apiKey);
     if (png) {
       mapAvailable = true;
-      mainEmbed.setImage('attachment://route.png');
-      mainEmbed.addFields({ name: 'Map key', value: 'S · scan location   D · delivery address' });
+      evidenceEmbed.setImage('attachment://route.png');
+      evidenceEmbed.addFields({ name: 'Map key', value: 'S · scan location   D · delivery address' });
       files.push(new AttachmentBuilder(png, { name: 'route.png' }));
     }
   }
 
   if (enrich && !mapAvailable) {
     const note = 'Map preview unavailable; navigation links still available.';
-    mainEmbed.setFooter({ text: [...notes, note].join(' · ') });
+    evidenceEmbed.setFooter({ text: [evidenceEmbed.data.footer?.text, note].filter(Boolean).join(' · ') });
   }
 
-  // Its own embed so it renders below the map image.
+  // History stays above recipient and optional media.
   const historyEmbed = new EmbedBuilder()
     .setColor(colorFor(s.type))
     .setTitle(`History (${scans.length})`)
-    .setDescription(historyStr);
+    .setDescription(historyStr)
+    .setFooter({ text: `Page ${page + 1} of ${pageCount} · newest first` });
 
-  const embeds = [mainEmbed, ...extraEmbeds, historyEmbed];
+  const recipientEmbed = new EmbedBuilder().setColor(colorFor(s.type)).setTitle('👤 Recipient').addFields(...recipientFields);
+  const embeds = [mainEmbed, historyEmbed, recipientEmbed, ...(evidenceFields.length ? [evidenceEmbed] : []), ...extraEmbeds];
   const size = embeds.reduce((sum, embed) => {
     const data = embed.toJSON();
     return sum + (data.title?.length ?? 0) + (data.description?.length ?? 0)

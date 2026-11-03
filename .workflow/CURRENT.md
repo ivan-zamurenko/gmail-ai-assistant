@@ -1,3 +1,17 @@
+# Operator find ready and activated — 2026-11-03
+
+Root writer finished; reviewer find_internal_review ACCEPT. Root1.1.54/bot0.2.24; extension6.3.0.86 unchanged. Mac bot restarted, Discord online confirmed, no startup errors. No command re-registration/work-PC update.
+/find order: latest scan/depot details, history12/page, recipient, consignment-level evidence. Parcel buttons isolate scans and suppress unbound media. Unknown identity remains disclosed, no old bay carried forward. Snapshot navigation fixed14min/16 sessions, author/guild/channel binding; /result uses same view, no repeated depot/ACK.
+Test-first render/view regressions, focused12/12/full223/223 PASS7. Evidence: evidence/FIND-OPERATOR-2026-11-03.json. Live Discord pagination/attachments not verified; next owner fresh /find then parcel/history buttons. No active writer.
+
+---
+
+# Active operator find redesign — 2026-11-03
+
+Root writer/integrator on codex basea630120; find_internal_review read-only. Owner approved status/details/history-first private find, explicit parcel navigation and paged history. Scope bot render/findViews/interactions/recovery, focused tests/docs/versions. No extension/queue schema changes. Global POD/GPS cannot be attributed to selected parcel; selected view suppresses them. Test-first; retain recovery ACK semantics.
+
+---
+
 # S09-18 automatic compact controls ready — 2026-11-03
 
 Root writer finished; duplicate_review_new ACCEPT. Extension6.3.0.86/root1.1.53; bot0.2.23 unchanged. Static isolated content script restricted to Discord channels, no activeTab/popup activation. Compact32px icons with accessible titles; copy remains click-only.

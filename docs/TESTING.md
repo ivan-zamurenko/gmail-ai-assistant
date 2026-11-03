@@ -1131,3 +1131,6 @@ Two grouped synthetic tests cover same-message identity, ambiguous/placeholder r
 S09-18 duplicate-control regression also covers marked legacy toolbars outside recognized message rows, late legacy insertion and preservation of current controls. Synthetic DOM only; work-PC smoke remains necessary.
 
 S09-18 existing regression protects automatic content-script path scope, clipboardWrite without clipboardRead/activeTab, icon accessible names and titles after copy. Live automatic injection remains a work-PC smoke boundary.
+
+## Operator find follow-up
+Existing render expectations now require status/details → history → recipient → evidence. One new grouped render regression protects selected parcel isolation, old Bay not current, unassigned identity uncertainty and paging. Two grouped findViews regressions protect fixed expiry, actor/channel authorization, attachment clearing, no re-enqueue/ACK on navigation, and /result integration. Synthetic fixtures only; real Discord component editing/attachment replacement remains a live smoke boundary.

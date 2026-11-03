@@ -1100,3 +1100,11 @@ duplicate/serial/expiry/restart behavior characterized; serialized transaction
 fake distinguishes claim winner from local scheduling, not SDK contention.
 Additional alarm/in-flight identity/heartbeat assertions characterized after fix.
 Actual enforcement separately S09-03; real Chrome/MV3 timing remains untested.
+
+## S06-02 — proposal schema and prompt separation
+
+Two groups in test/ai/outputSchema.test.js cover strict fields/bounds/action/ref/
+numeric claim rejection, hostile text as data, whitelist context projection,
+stale/changed source and mandatory human review. Functional stub RED0/2 ->2/2;
+integration with actual case builder4/4. Zero network/effect ports; no model
+evaluation, semantic prose-proof or prompt-injection immunity claim.

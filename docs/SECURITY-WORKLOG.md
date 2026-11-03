@@ -563,3 +563,10 @@ Worker validates browser sender metadata before depot/OAuth/storage bridges.
 Listener binds expected/current Firebase UID across queue boundaries, stops on
 identity change and never replays claimed work. Fixed diagnostics/one in-flight
 health checks. Synthetic config adapters only; no live auth/provider/depot calls.
+
+## 2026-11-03 — S06-02 AI preparation
+
+Strict output schema and separate untrusted-message data; context whitelist
+excludes unknown fields. No provider/tool/network capabilities, no auto-send or
+policy override; human review always required. Synthetic adversarial evidence
+only, free prose remains unverified; no external AI data transmission.

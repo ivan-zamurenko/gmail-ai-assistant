@@ -50,3 +50,17 @@ S06-04 измеряет поведение реальной модели на р
 ## 8. Существующий Discord-бот не является AI transport
 
 `bot/src` обслуживает depot commands, rendering, Maps и todo. Это не реализация model calls и не интерфейс одобрения email. Не отправлять prompt/письмо/AI output в Firestore tasks или Discord без новой утверждённой границы данных. OWNER-D01 и S06-05 сохраняют обязательную ручную проверку; успешный bot pilot не закрывает AI quality gate.
+
+## S06-02 — prepared strict proposal boundary
+
+Provider-independent buildProposalPrompt projects bounded source-linked context
+into JSON user data beside constant system instructions; unknown fields/credentials
+are excluded. No model, tools, network, UI or effect adapter is present.
+validateProposal accepts exactly reply_text, needs_human, reason_codes, fact_refs.
+Unknown actions/fields, wrong types/lengths/refs and explicit numeric shipment/date
+claims without matching cited scan facts are blocked. Context must be linked,
+bounded and recent (5min). Accepted structure STILL returns needs_review,
+requiresHumanReview:true, proseVerified:false regardless of model needs_human.
+Free prose, dates written as words and semantic entailment are not automatically
+verified. No prompt-only security guarantee or live model quality claimed.
+Provider/privacy/budget/reply-policy gates remain pending.

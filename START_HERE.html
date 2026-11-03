@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-05 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S06-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1969,7 +1969,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-05 completed offline — 2026-11-03</h1><pre class="markdown"># S09-05 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S06-02 completed offline — 2026-11-03</h1><pre class="markdown"># S06-02 completed offline — 2026-11-03
+
+Root integrator. Strict provider-independent proposal schema and separate untrusted data; all accepted prose still requires human review, no model/tools/IO.
+Evidence: [S06-02](evidence/S06-02.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S09-05 completed offline — 2026-11-03
 
 Root integrator. Exact offscreen sender gate, single-flight lifecycle and UID-bound listener; claimed work never replayed. discord_audit isolated implementation/root review.
 Evidence: [S09-05](evidence/S09-05.json). No active writer.
@@ -2493,6 +2502,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S09-08 offline | Stable todo selection after successful display, transactional ownership, bounded replies/no mentions and honest partial clear. drive_audit isolated implementation/root review. | test-first 0/2 extracted baseline;review1/2 own-property error map;GREEN9/9; focused/full gates PASS; evidence/S09-08.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S09-05 offline | Exact offscreen sender gate, single-flight lifecycle and UID-bound listener; claimed work never replayed. discord_audit isolated implementation/root review. | test-first 1/3 actual-entrypoint RED to3/3 GREEN; existing serial/claim behavior characterized; focused/full gates PASS; evidence/S09-05.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S06-02 offline | Strict provider-independent proposal schema and separate untrusted data; all accepted prose still requires human review, no model/tools/IO. | test-first 0/2 functional stub RED;2/2 draft GREEN;4/4 integrated; focused/full gates PASS; evidence/S06-02.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -2844,6 +2855,20 @@ S06-04 измеряет поведение реальной модели на р
 ## 8. Существующий Discord-бот не является AI transport
 
 `bot/src` обслуживает depot commands, rendering, Maps и todo. Это не реализация model calls и не интерфейс одобрения email. Не отправлять prompt/письмо/AI output в Firestore tasks или Discord без новой утверждённой границы данных. OWNER-D01 и S06-05 сохраняют обязательную ручную проверку; успешный bot pilot не закрывает AI quality gate.
+
+## S06-02 — prepared strict proposal boundary
+
+Provider-independent buildProposalPrompt projects bounded source-linked context
+into JSON user data beside constant system instructions; unknown fields/credentials
+are excluded. No model, tools, network, UI or effect adapter is present.
+validateProposal accepts exactly reply_text, needs_human, reason_codes, fact_refs.
+Unknown actions/fields, wrong types/lengths/refs and explicit numeric shipment/date
+claims without matching cited scan facts are blocked. Context must be linked,
+bounded and recent (5min). Accepted structure STILL returns needs_review,
+requiresHumanReview:true, proseVerified:false regardless of model needs_human.
+Free prose, dates written as words and semantic entailment are not automatically
+verified. No prompt-only security guarantee or live model quality claimed.
+Provider/privacy/budget/reply-policy gates remain pending.
 </pre></article>
 <article id="doc-30" tabindex="-1" hidden><p class="path"><a href="docs/architecture.md">docs/architecture.md</a></p><h1>Архитектура DPD Assistance — расширение, Discord и Firestore</h1><pre class="markdown"># Архитектура DPD Assistance — расширение, Discord и Firestore
 
@@ -5629,6 +5654,14 @@ duplicate/serial/expiry/restart behavior characterized; serialized transaction
 fake distinguishes claim winner from local scheduling, not SDK contention.
 Additional alarm/in-flight identity/heartbeat assertions characterized after fix.
 Actual enforcement separately S09-03; real Chrome/MV3 timing remains untested.
+
+## S06-02 — proposal schema and prompt separation
+
+Two groups in test/ai/outputSchema.test.js cover strict fields/bounds/action/ref/
+numeric claim rejection, hostile text as data, whitelist context projection,
+stale/changed source and mandatory human review. Functional stub RED0/2 -&gt;2/2;
+integration with actual case builder4/4. Zero network/effect ports; no model
+evaluation, semantic prose-proof or prompt-injection immunity claim.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -8779,7 +8812,7 @@ Evidence: `.workflow/evidence/S06-01.json`. Обновить существую�
 Adversarial synthetic outputs и prompt-injection corpus создаются до validator; все непредусмотренные actions должны давать отказ без effects.
 
 ```sh
-node --test test/unit/ai-output.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/ai/outputSchema.test.js
 ```
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.

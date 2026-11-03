@@ -173,3 +173,7 @@
 - 2026-11-03 | root | duplicate fix ready | extension6.3.0.84 packaged locally;220/220 full gates | no bot restart, no new permissions | next: owner reload/enable, verify one toolbar.
 
 - 2026-11-03 | root | duplicate fix review complete | reviewer ACCEPT; stopped controller re-enable edge covered test-first RED1/2 then fixed; final full gates220/220 and archive rebuilt | evidence/S09-18.json | owner install6.3.0.84.
+
+- 2026-11-03 | root + duplicate_review_new | duplicate-controls incident reopened | owner confirms6.3.0.84 and Discord refresh still show gray controls; source/build include cleanup, historical gray toolbar uses same marker. Nested toolbar cleanup gap identified by read-only review, not confirmed live cause. No product changes/release. | next: inspect old button/parent markup only, without report data; add regression for confirmed failure before patch.
+
+- 2026-11-03 | root + duplicate_review_new | S09-18 document-wide cleanup ready | owner DOM confirms unretired marker; retirement now independent of message ancestry, current controls preserved, CSS restored each scan | existing regression RED1/2 -> GREEN2/2; full220/220 PASS7; synthetic Chrome CSS PASS; review ACCEPT | extension6.3.0.85/root1.1.52, bot unchanged; next owner work-PC verification.

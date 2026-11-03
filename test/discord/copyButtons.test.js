@@ -55,11 +55,20 @@ test('controls are unique, copy fresh paired data and reject recycled or removed
  const keys=['document','location','MutationObserver','__dpdReportCopy'];
  const saved=keys.map(key=>globalThis[key]);
  try {
-  const doc=new globalThis.EventTarget();doc.body={};doc.querySelectorAll=()=>[];
+  const orphan=f.row.ownerDocument.createElement('div');orphan.setAttribute('data-dpd-copy','true');
+  const live=rowFixture();
+  const doc=new globalThis.EventTarget();doc.body={};doc.createElement=live.row.ownerDocument.createElement;
+  doc.querySelectorAll=selector=>selector==='[data-dpd-copy="true"]'
+   ? [orphan,...live.row.children.filter(child=>child.parentNode===live.row)] : [live.row];
   globalThis.document=doc;globalThis.location={origin:'https://discord.com',pathname:'/channels/test'};
   globalThis.MutationObserver=class { observe() {} disconnect() {} };
   delete globalThis.__dpdReportCopy;
   startDiscordCopy();const first=globalThis.__dpdReportCopy;
+  assert.equal(orphan.getAttribute('data-dpd-copy-obsolete'),'true','legacy controls outside recognized rows must be retired');
+  const current=live.row.children[0];first.scan();
+  assert.equal(current.getAttribute('data-dpd-copy-obsolete'),null,'current toolbar remains visible');
+  const late=live.row.ownerDocument.createElement('div');late.setAttribute('data-dpd-copy','true');live.row.append(late);
+  first.scan();assert.equal(late.getAttribute('data-dpd-copy-obsolete'),'true','late legacy injector is retired');
   first.stop();startDiscordCopy();
   assert.notEqual(globalThis.__dpdReportCopy,first,'explicit re-enable revives a stopped controller');
  } finally {

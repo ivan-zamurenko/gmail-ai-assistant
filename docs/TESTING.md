@@ -1127,3 +1127,5 @@ Two grouped synthetic tests cover same-message identity, ambiguous/placeholder r
 - 2026-11-03 caption follow-up: extended existing Discord copy/HTML groups first (formatting RED1/3, emoji RED1/2) then GREEN3/3. Checks WhatsApp headings, blank lines, copied full caption, retained IMG-alt emoji/BR and existing URL safety. No new groups. Real WhatsApp styled-caption display remains owner smoke.
 
 - 2026-11-03 HTML export retired by owner: existing report attachment expectation changed first RED2/3, then verified without HTML. Removed obsolete whatsappExport module and its sole test group; extension formatter/copy regressions preserved.
+
+S09-18 duplicate-control regression also covers marked legacy toolbars outside recognized message rows, late legacy insertion and preservation of current controls. Synthetic DOM only; work-PC smoke remains necessary.

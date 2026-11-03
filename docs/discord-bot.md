@@ -283,3 +283,6 @@ Owner requested no generated HTML attachment. /report now returns image and capt
 
 ### Duplicate toolbar cleanup — 2026-11-03
 Owner showed old gray and new styled controls simultaneously after extension updates. New mount retires legacy direct-child toolbars visually in place (avoids old observers recreating removed nodes), updates installed scoped CSS, and uses versioned controller/DOM stop event for future observer handoff across surviving contexts. Ctrl+R clears legacy page contexts completely; re-enable helper afterward. Only extension-created toolbars affected; no message/depot changes.
+
+### Copy controls 6.3.0.85
+Legacy toolbar retirement now checks all extension-marked controls in the document, independent of message ancestry, preserving this controller’s own toolbars. Styles are restored on each scan; controller revision3 replaces prior helpers. No bot restart or permission changes. Owner DOM evidence confirmed an unretired old marker; complete live ancestor structure was not captured.

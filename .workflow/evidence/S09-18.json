@@ -68,7 +68,24 @@
     "scope": "Retire legacy UI in place, update CSS, future controller stop/handoff; bot unchanged",
     "artifact": "/tmp/DPD-Assistance-6.3.0.84.zip",
     "sha256": "435e093e57b5d109dc1b495e3f82412d140ecc31deddebf062e38afeb51c4fa5",
-    "live": "Work-PC old-context migration not yet verified",
+    "live": "Owner reports duplicate remains on6.3.0.84 after refresh; superseded by document-wide follow-up",
     "review": "discord_copy_review ACCEPT; stopped-controller re-enable regression added RED1/2 then fixed, full gates220/220"
+  },
+  "duplicate_document_followup": {
+    "date": "2026-11-03",
+    "observation": "Owner DOM screenshot shows data-dpd-copy=true legacy toolbar without obsolete marker; full ancestor structure unknown. No customer DOM saved.",
+    "scope": "Retire all foreign marked toolbars regardless of message ancestry, preserve owned controls, repair stylesheet per scan, controller revision3",
+    "regression": "Existing group extended first RED1/2 -> GREEN2/2; orphan, late legacy and current preservation",
+    "gates": "PASS7,220/220",
+    "browser": "Isolated local Chrome synthetic nested legacy inline-flex hidden; native button visible PASS. Live Discord unverified.",
+    "review": "duplicate_review_new ACCEPT",
+    "artifact": "/tmp/DPD-Assistance-6.3.0.85.zip",
+    "sha256": "d7d801c24c93cb75bd5c37f9ecd3d8791c1c08cf900de8d87736920ee228e1ee",
+    "versions": {
+      "extension": "6.3.0.85",
+      "root": "1.1.52",
+      "bot": "0.2.23 unchanged"
+    },
+    "next": "Owner update loaded dist, reload extension/Discord, enable helper; confirm single toolbar"
   }
 }

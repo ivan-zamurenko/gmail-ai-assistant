@@ -1,3 +1,29 @@
+# S09-18 document-wide cleanup ready — 2026-11-03
+
+Root writer finished; reviewer duplicate_review_new ACCEPT. Extension6.3.0.85, root1.1.52; bot0.2.23 unchanged/no restart. Existing regression RED1/2 -> GREEN2/2; full gates220/220; local synthetic Chrome CSS PASS. No live Discord confirmation.
+Retire foreign marked controls across document, preserve current controller controls, restore CSS per scan; revision3 replaces earlier controllers.
+Artifact /tmp/DPD-Assistance-6.3.0.85.zip; evidence/S09-18.json. Next owner: update loaded dist/reload extension and Discord, enable helper, confirm one toolbar. No active writer.
+
+---
+
+# Active S09-18 duplicate cleanup follow-up — 2026-11-03
+
+Writer/integrator root, codex base8e6c4eb. Scope: discord copy controls, existing regression, affected versions and handoff/evidence. Owner DOM screenshot confirms marked legacy toolbar lacks obsolete attribute; exact ancestor not shown. Retire foreign marked toolbars document-wide without relying on message ancestry; preserve current controls and hide in place. Test first.
+
+---
+
+# Duplicate controls: live issue unresolved — 2026-11-03
+
+Owner confirms extension6.3.0.84 and refreshed Discord still show old gray buttons.
+Root investigating S09-18 follow-up; reviewer duplicate_review_new read-only.
+No active code writer or product changes. Source/build cleanup verified present;
+nested legacy toolbar is an uncovered possibility, not a confirmed live cause.
+Awaiting minimal old-button/parent DOM screenshot without customer data.
+Next: reproduce confirmed failure test-first; then smallest fix, gates and release.
+Previous offline completion below does not establish live resolution.
+
+---
+
 # Duplicate copy controls fixed — 2026-11-03
 
 Extension6.3.0.84/root1.1.51 retires legacy toolbar UI and adds controller handoff; bot0.2.23 unchanged. Existing regression RED1/2 -> GREEN2/2; full gates220/220. No active writer.

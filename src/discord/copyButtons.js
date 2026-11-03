@@ -10,8 +10,8 @@ export function createReportControls({
     return globalThis.navigator.clipboard.write([new globalThis.ClipboardItem({ 'image/png': png })]);
   },
 } = {}) {
-  const mounted = new WeakMap();
-  return function mount(row) {
+  const mounted = new WeakMap(), owned = new WeakSet();
+  function mount(row) {
     const report = readReport(row), previous = mounted.get(row);
     // Legacy extension contexts can retain observers until page refresh. Hide their
     // controls in place so they do not continually recreate removed toolbars.
@@ -26,6 +26,7 @@ export function createReportControls({
     const doc = row.ownerDocument, toolbar = doc.createElement('div'), status = doc.createElement('span');
     installCopyStyles(doc);
     toolbar.setAttribute('data-dpd-copy', 'true');
+    owned.add(toolbar);
     status.setAttribute('role', 'status');
     for (const [kind, label, action, success, copied] of [
       ['image', 'Копіювати картинку', () => copyImage(report.url), 'Картинку скопійовано — встав у WhatsApp.', 'Картинку скопійовано'],
@@ -48,12 +49,21 @@ export function createReportControls({
     }
     toolbar.append(status); row.append(toolbar);
     mounted.set(row, { ...report, toolbar });
+  }
+  // Discord can move message wrappers. Retire only our marked toolbars,
+  // regardless of ancestry, while keeping this controller's controls alive.
+  mount.retireLegacyControls = doc => {
+    installCopyStyles(doc);
+    for (const toolbar of doc.querySelectorAll('[data-dpd-copy="true"]')) {
+      if (!owned.has(toolbar)) toolbar.setAttribute('data-dpd-copy-obsolete', 'true');
+    }
   };
+  return mount;
 }
 
 export function startDiscordCopy() {
   if (globalThis.location.origin !== 'https://discord.com' || !globalThis.location.pathname.startsWith('/channels/')) return;
-  if (globalThis.__dpdReportCopy?.version === 2) { globalThis.__dpdReportCopy.scan(); return; }
+  if (globalThis.__dpdReportCopy?.version === 3) { globalThis.__dpdReportCopy.scan(); return; }
   globalThis.__dpdReportCopy?.stop?.();
   // DOM event also retires helpers surviving in an older isolated context.
   document.dispatchEvent(new globalThis.Event('dpd-report-copy-stop'));
@@ -62,6 +72,7 @@ export function startDiscordCopy() {
   const scan = () => {
     if (stopped) return;
     for (const row of document.querySelectorAll('[id^="chat-messages-"]')) mount(row);
+    mount.retireLegacyControls(document);
   };
   const observer = new globalThis.MutationObserver(() => {
     if (timer) return;
@@ -73,7 +84,7 @@ export function startDiscordCopy() {
     if (globalThis.__dpdReportCopy?.stop === stop) delete globalThis.__dpdReportCopy;
   };
   document.addEventListener('dpd-report-copy-stop', stop);
-  globalThis.__dpdReportCopy = { version: 2, scan, stop };
+  globalThis.__dpdReportCopy = { version: 3, scan, stop };
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'id'] });
   scan();
 }

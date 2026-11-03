@@ -574,3 +574,7 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | S09-14: report-only validated Eircode retained in existing task args and 24h recovery; Admin/requester/guild protections preserved. Optional map uses existing server adapter, no keys/provider URLs exposed. No private configs read, live requests or deployment. Synthetic tests only.
 
 - 2026-11-03 | root | owner explicitly authorized command registration and bot restart in existing configured guild. Previous schema saved outside Git with restrictive file permissions; no credentials/customer data printed. Discord ready confirmed. No rules deploy or depot command executed.
+
+- 2026-11-03 | root | S09-15: map/POD composition local in bot memory with bounded decoding; no disk persistence/customer preview fixtures or new outbound service. Metadata removed, original evidence not regenerated/cropped. Caption stays under existing Admin/ephemeral/recovery protections. Operator note removed per owner request; no WhatsApp send, clipboard, rules or depot mutation.
+
+- 2026-11-03 | root | S09-15 runtime: reused owner-authorized Mac bot restart after passing gates; verified process cwd and Discord ready without printing identity/config. No command registration, rules deploy or outbound customer report initiated by agent.

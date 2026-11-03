@@ -2,6 +2,7 @@
 import { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
 import { fileURLToPath, URL, URLSearchParams } from 'node:url';
 import { normEircode, geocode, mapImage } from './geo.js';
+import { composeReportImage } from './reportImage.js';
 
 const PLACEHOLDER = fileURLToPath(new URL('../assets/pod-unavailable.png', import.meta.url));
 const clean = value => typeof value === 'string' ? value.replace(/[\x00-\x1f\x7f]/g, ' ')
@@ -33,25 +34,27 @@ export async function renderDriverReport(parcel, { resultId, offset = 0, eircode
   if (!destination) return { ...common,
     content: `Destination Eircode is missing or invalid. Run /report con_id:${clean(report.consNumber)} eircode:<correct Eircode>.`, components: [] };
   const text = buildDriverReportText(report, { eircode });
-  const operatorNote = eircode === undefined ? '' : 'Operator note: Manual destination Eircode. Check it matches the depot address before forwarding.\n\n';
   const body = parcel.pod?.body;
-  const files = typeof body === 'string' && body.length <= 700000 && /^[A-Za-z0-9+/=]+$/.test(body)
-    ? [new AttachmentBuilder(Buffer.from(body, 'base64'), { name: 'pod.jpg' })]
-    : [new AttachmentBuilder(PLACEHOLDER, { name: 'pod-unavailable.png' })];
-  let mapNote = '\n\nMap preview unavailable; use navigation links.';
+  const pod = typeof body === 'string' && body.length <= 700000 && /^[A-Za-z0-9+/=]+$/.test(body)
+    ? Buffer.from(body, 'base64') : undefined;
+  let map;
   if (point(report.event?.coords) && typeof apiKey === 'string' && apiKey.trim()) {
     try {
       const target = await geocode(destination, apiKey);
-      const png = target ? await mapImage(report.event.coords, target, apiKey) : null;
-      if (png) {
-        files.unshift(new AttachmentBuilder(png, { name: 'delivery-map.png' }));
-        mapNote = '\n\nMap: 🔴 recorded point · 🔵 delivery address.';
-      }
+      map = target ? await mapImage(report.event.coords, target, apiKey) : null;
     } catch { console.warn('[report] MAP_UNAVAILABLE'); }
   }
-  const content = operatorNote + text + mapNote;
-  if (content.length > 1900) files.push(new AttachmentBuilder(Buffer.from(text), { name: 'driver-report.txt' }));
-  return { ...common, content: content.length <= 1900 ? content : operatorNote + 'Driver report attached as text to preserve the complete address and links.' + mapNote, files, components: [] };
+  let image;
+  try {
+    image = new AttachmentBuilder(await composeReportImage({ map, pod }), { name: 'driver-report.jpg' });
+  } catch {
+    console.warn('[report] IMAGE_COMPOSITION_UNAVAILABLE');
+    image = new AttachmentBuilder(PLACEHOLDER, { name: 'images-unavailable.png' });
+  }
+  const files = [image];
+  if (text.length > 1900) files.push(new AttachmentBuilder(Buffer.from(text), { name: 'driver-report.txt' }));
+  return { ...common, content: text.length <= 1900 ? text : 'Driver report attached as text to preserve the complete address and links.', files, components: [] };
+
 }
 
 /** A manual value wins; invalid explicit input never silently falls back. */

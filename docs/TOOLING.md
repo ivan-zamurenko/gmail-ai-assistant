@@ -333,3 +333,7 @@ Gemini лишається другим кроком, а не першим: де�
 Останній пункт — найкритичніший. Gmail-пошук повертає лист доти, доки його
 не відкрили, тому без обліку та сама відповідь створювалась би на кожному
 тику. Це вирішує [processedStore.js](../src/storage/processedStore.js).
+
+## S09-15: local report image composition
+Bot-only pinned sharp0.35.5 (Node>=20.9), installed on current Node20.14 Mac. Separate reportImage adapter, lazy import so native-load failure does not stop bot startup. No browser canvas/server, no external image processor, no AI alteration of evidence. Uses rotate/contain/composite, strips metadata; 8MiB input/output,20M input pixels,1000px width, bounded height and processing timeout. Full photo and map attribution preserved. Native binary must be installed through npm ci in bot on target host; fallback preserves text when unavailable.
+Official references: [composite](https://sharp.pixelplumbing.com/api-composite/), [installation](https://sharp.pixelplumbing.com/install/).

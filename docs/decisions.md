@@ -199,3 +199,7 @@ time, separate current-location navigation to recorded pickup and correct delive
 map with both points, POD. Preserve exact event selection and distinguish Carded
 attempts from parcel collection. Implementation is locally verified; activation remains pending;
 WhatsApp clipboard/export interaction is still a proposal, not completed behavior.
+
+## REPORT-WHATSAPP-2026-11-03 — owner approved, S09-15
+Owner wants no manual text cleanup and all photos together, visible directly in WhatsApp chat; no PDF. /report automatically produces one map+POD JPEG and plain English caption with full navigation URLs. This removes the extra preparation button/state. Operator-only manual-Eircode note removed at owner request; override still affects report only, depot street address unchanged. No WhatsApp sending/API or clipboard access. Manual transfer: save one image, Copy Text, paste as its WhatsApp caption. Long reports retain full .txt export; arbitrary long captions/mobile rendering are not guaranteed.
+Previous /report pilot: owner says it appears to work; not evidence for every edge case. Bot always runs on Mac, extension on work PC. Existing explicit restart authorization applies to this trial; no command registration/schema change required.

@@ -1134,6 +1134,23 @@
         "bot/src/resultRecovery.js"
       ],
       "acceptance_count": 5
+    },
+    {
+      "id": "S09-15",
+      "title": "Готовий до пересилання report: карта та POD одним зображенням",
+      "stage": "S09",
+      "depends_on": [
+        "S09-14"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-15.md",
+      "context": [
+        "docs/decisions.md",
+        "docs/discord-bot.md",
+        "bot/src/driverReport.js",
+        "docs/TESTING.md"
+      ],
+      "acceptance_count": 5
     }
   ]
 }

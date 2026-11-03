@@ -1,3 +1,14 @@
+# S09-15 completed offline — 2026-11-03
+
+Root integrator. One local map/POD image and copy-ready caption without operator notes; contained pixels, bounded decode and metadata stripping. Independent review ACCEPT.
+Evidence: [S09-15](evidence/S09-15.json). No active writer.
+Bot0.2.18 restarted on Mac after gates; Discord ready confirmed. Command schema/extension unchanged.
+Owner previously reported /report works; new combined image needs owner WhatsApp trial.
+Next: fresh /report, save one image and paste Copy Text as caption. No WhatsApp API/clipboard.
+Roadmap30/56 done; no active writer.
+
+---
+
 # Bot activated — 2026-11-03
 
 Owner authorized registration/restart. Mac bot0.2.17 online, five guild commands registered including /report. Previous command schema saved locally for rollback. Owner reports work-PC extension6.3.0.80. Permanent topology: bot on Mac, depot Chrome extension on work PC.

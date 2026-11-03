@@ -174,3 +174,5 @@ I work at a DPD Ireland depot. The management system has no batch tooling, so I 
 *Chrome MV3 · Discord.js · Firebase · ZXing · Google APIs*
 
 `/report con_id:<number> [eircode:<correct destination>]` produces a compact driver report. Without override it uses the depot Eircode; invalid values require correction. Two navigation links, optional overview map and POD/404 can be forwarded manually. Manual Eircode changes only the report; verify it matches the shown street address. Updated command registration/runtime activation still pending.
+
+WhatsApp forwarding: `/report` now returns one combined map/POD JPEG and a clean caption. Save the image, copy the report text and paste it as the WhatsApp image caption. Navigation URLs stay clickable text; no automatic WhatsApp send.

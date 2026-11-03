@@ -1,6 +1,7 @@
 import test from 'node:test';
 import { URL } from 'node:url';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { reportSelection } from '../../src/depot/reportSelection.js';
 import { renderDriverReport, buildDriverReportText } from '../../bot/src/driverReport.js';
 import { executeTask } from '../../src/queue/executor.js';
@@ -60,11 +61,12 @@ test('driver report uses effective Eircode, current-location routes and optional
     assert.equal(url.searchParams.get('dir_action'), 'navigate');
   }
   assert.deepEqual(output.allowedMentions, { parse: [] });
-  assert.equal(output.files[0].name, 'pod-unavailable.png');
+  assert.equal(output.files[0].name, 'driver-report.jpg');
+  assert.equal(output.files.length, 1);
   const manual = await renderDriverReport({ report }, { eircode: 'd01 a1f2' });
   assert.match(manual.content, /D01A1F2/);
   assert.doesNotMatch(manual.content, /D02AF30/);
-  assert.match(manual.content, /Operator note/);
+  assert.doesNotMatch(manual.content, /Operator note|Map preview unavailable/);
   assert.doesNotMatch(buildDriverReportText(report, { eircode: 'D01A1F2' }), /Operator note/);
   const attempted = await renderDriverReport({ report: { ...report, event: { ...report.event, type: 'Carded' } } });
   assert.match(attempted.content, /Navigate to attempted delivery point/);
@@ -81,26 +83,27 @@ test('driver report uses effective Eircode, current-location routes and optional
   assert.doesNotMatch(long.content, /@everyone/);
 
   const requests = [];
-  const png = globalThis.Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7ioAAAAASUVORK5CYII=', 'base64');
+  const sharp = createRequire(new URL('../../bot/package.json', import.meta.url))('sharp');
+  const png = await sharp({ create: { width: 60, height: 40, channels: 3, background: '#aaddcc' } }).png().toBuffer();
   t.mock.method(globalThis, 'fetch', async url => {
     requests.push(url);
     return url.includes('/geocode/')
       ? new globalThis.Response(JSON.stringify({ status: 'OK', results: [{ geometry: { location: { lat: 54, lng: -7 } } }] }), { headers: { 'content-type': 'application/json' } })
       : new globalThis.Response(png, { headers: { 'content-type': 'image/png' } });
   });
-  const withMap = await renderDriverReport({ report, pod: { body: 'c3ludGhldGlj' } }, { eircode: 'D01A1F2', apiKey: 'PRIVATE_MAPS_KEY' });
+  const withMap = await renderDriverReport({ report, pod: { body: png.toString('base64') } }, { eircode: 'D01A1F2', apiKey: 'PRIVATE_MAPS_KEY' });
   assert.equal(requests.length, 2);
   assert.match(requests[0], /address=D01A1F2/);
   assert.match(requests[1], /53,-6/);
   assert.match(requests[1], /54,-7/);
-  assert.deepEqual(withMap.files.map(file => file.name), ['delivery-map.png', 'pod.jpg']);
+  assert.deepEqual(withMap.files.map(file => file.name), ['driver-report.jpg']);
   assert.doesNotMatch(withMap.content, /PRIVATE_MAPS_KEY/);
   globalThis.fetch = async () => { throw new Error('PRIVATE_MAPS_KEY'); };
   t.mock.method(globalThis.console, 'warn', () => {});
-  const failed = await renderDriverReport({ report, pod: { body: 'c3ludGhldGlj' } }, { apiKey: 'PRIVATE_MAPS_KEY' });
+  const failed = await renderDriverReport({ report, pod: { body: png.toString('base64') } }, { apiKey: 'PRIVATE_MAPS_KEY' });
   assert.match(failed.content, /destination=D02AF30/);
-  assert.equal(failed.files[0].name, 'pod.jpg');
-  assert.match(failed.content, /Map preview unavailable; use navigation links/);
+  assert.equal(failed.files[0].name, 'driver-report.jpg');
+  assert.doesNotMatch(failed.content, /Map preview unavailable|Operator note/);
   assert.doesNotMatch(failed.content, /PRIVATE_MAPS_KEY/);
 });
 

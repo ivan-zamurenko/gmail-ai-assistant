@@ -1111,3 +1111,6 @@ evaluation, semantic prose-proof or prompt-injection immunity claim.
 
 ## S09-14 report follow-up
 Existing report/command groups extended before code: optional normalized Eircode, invalid destination, selected-event override/recovery, no-origin navigation links, optional two-call map/POD and safe failure. Synthetic fetch only; real Discord/Maps/mobile not tested. Focused24/24 including todo regression after handler integration.
+
+## S09-15: WhatsApp image and caption
+Existing report group changed first (RED2/3) to require one image and no operator/map service text in caption. One new grouped image regression uses synthetic raster pixels: both panels and map bottom strip survive without cropping, EXIF orientation applied/metadata removed, malformed/missing/oversized inputs become placeholders. Report selection/recovery/admission regressions retained. Preview inspected with synthetic map and existing404 asset; no customer data. Real WhatsApp caption limits/display require owner trial.

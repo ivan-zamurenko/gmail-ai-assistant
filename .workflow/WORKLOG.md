@@ -145,3 +145,5 @@
 - 2026-11-03 | root | S09-16 activated | bot0.2.20 restarted, Discord ready/no startup errors; full gates218/218, reviewer ACCEPT | timers for new replies only, real14/30min wait untested | next: owner observe fresh response cleanup.
 
 - 2026-11-03 | root | experiment pending owner | owner uses WhatsApp Web on work PC; prepared local synthetic clipboard image+text probe at /tmp/dpd-whatsapp-probe/whatsapp-copy-test.html, no network/customer data or bot changes | JS syntax checked only; browser may choose just one clipboard representation | next: owner paste into own-chat draft, report whether caption survives; do not promise one-click transfer.
+
+- 2026-11-03 | root | second clipboard experiment prepared | owner screenshot showed image only from combined copy; caption absence not independently confirmed. Owner approved two-button trial; local /tmp/dpd-whatsapp-probe/whatsapp-two-buttons.html writes image and text separately, no network/customer data | VM smoke passed separate MIME/text and denied-permission feedback; bot unchanged | next: owner paste image first, then copy/paste caption in WhatsApp Web; production integration only after usability result.

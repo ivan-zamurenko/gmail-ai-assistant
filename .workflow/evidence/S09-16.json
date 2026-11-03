@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-16",
+  "outcome": "passed",
+  "base_sha": "eb267ed",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "All new replies auto-cleanup: fixed private14min and normal/DM30min; late edit fails honestly, long barcode final/error DM survives progress expiry.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/responseLifecycle.test.js test/queue/delivery.test.mjs",
+      "exit_code": 1,
+      "result": "RED4/6 including missing lifecycle and error-DM regression; focused GREEN7/7"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/bot/responseLifecycle.test.js test/queue/delivery.test.mjs",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS7 stages,218/218 tests; browser NOT RUN"
+    }
+  ],
+  "untested": [
+    "Actual Discord deletion after14/30min (clock-injected tests only)",
+    "Cleanup during process restart/network or permission failure is best-effort"
+  ],
+  "external_effects": [
+    "Authorized Mac bot restart after full checks; Discord ready; no history purge or depot action"
+  ],
+  "next_step": "Owner observe deletion of fresh command reply while Mac bot stays running",
+  "review": "cleanup_review ACCEPT; independent focused7/7"
+}

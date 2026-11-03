@@ -139,3 +139,7 @@
 - 2026-11-03 | root | S09-15 layout follow-up | owner requested side-by-side map/POD and scanned point legend; existing regression changed first RED0/1 then focused4/4 | no new test groups, no image crop | full gates then Mac bot restart.
 
 - 2026-11-03 | root | S09-15 horizontal layout activated | full gates PASS7/216 tests; synthetic preview checked, Mac bot0.2.19 restarted and Discord ready | no extension/command changes | next: owner fresh /report.
+
+- 2026-11-03 | root | completed S09-16 offline | All new replies auto-cleanup: fixed private14min and normal/DM30min; late edit fails honestly, long barcode final/error DM survives progress expiry. | test-first RED4/6 including missing lifecycle and error-DM regression; focused GREEN7/7; focused/full gates PASS; evidence/S09-16.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | S09-16 activated | bot0.2.20 restarted, Discord ready/no startup errors; full gates218/218, reviewer ACCEPT | timers for new replies only, real14/30min wait untested | next: owner observe fresh response cleanup.

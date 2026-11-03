@@ -35,9 +35,9 @@
 | `extension_owner` | S01-02; S03-01…S03-05; S07-01…S07-03; S09-05 | Depot, точний lookup, MV3, listener, preview/apply, popup |
 | `drive_owner` | S01-01; S02-01…S02-03; S04-01…S04-05 | Barcode, фізична посилка, іменування, Drive batches і recovery |
 | `gmail_ai_owner` | S02-04; S05-01…S05-05; S06-01…S06-05 | Номери з тексту, Gmail, підтверджені факти, AI proposal і чернетки з ручною перевіркою |
-| `discord_owner` | S09-01…S09-04; S09-06…S09-15 | Queue contract/rules, доступ, доставка відповіді, Maps, картки й report |
+| `discord_owner` | S09-01…S09-04; S09-06…S09-16 | Queue contract/rules, доступ, доставка відповіді, Maps, картки й report |
 
-Усього 56 задачі, кожна має одну основну роль. Завершені задачі не виконувати
+Усього 57 задачі, кожна має одну основну роль. Завершені задачі не виконувати
 повторно. Інший фахівець допомагає review, а не створює другу реалізацію.
 `integrator` координує доручення, перевіряє результат і веде спільний стан.
 Поточний writer може поєднувати свою роль та integrator після явної передачі.
@@ -166,3 +166,6 @@ S09-14 belongs to discord_owner, depends on completed S09-13/S09-07. Owner-appro
 
 ### S09-15 — WhatsApp-ready report
 Owner approved single combined image + copy-ready caption. discord_owner/root implementation, whatsapp_review independent read-only review. New total56 tasks; historical roadmap review remains a dated snapshot.
+
+### S09-16 response cleanup
+Owner approved14min private/30min normal and DM. discord_owner/root writer; cleanup_review read-only. Current roadmap57 tasks. Timer lifecycle is separate from queue recovery and never replays depot.

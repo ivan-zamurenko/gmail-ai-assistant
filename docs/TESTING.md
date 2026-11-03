@@ -1114,3 +1114,6 @@ Existing report/command groups extended before code: optional normalized Eircode
 
 ## S09-15: WhatsApp image and caption
 Existing report group changed first (RED2/3) to require one image and no operator/map service text in caption. One new grouped image regression uses synthetic raster pixels: both panels and map bottom strip survive without cropping, EXIF orientation applied/metadata removed, malformed/missing/oversized inputs become placeholders. Report selection/recovery/admission regressions retained. Preview inspected with synthetic map and existing404 asset; no customer data. Real WhatsApp caption limits/display require owner trial.
+
+## S09-16: response lifetime
+Two small groups with injected clock/scheduler: fixed14min private deadline incl defer/edits, late-edit rejection, failed-send no cleanup,30min ordinary/DM, private followup deadline and fixed-code failure handling. Existing barcode delivery group extended first to prove error-DM survives expired progress; success ACK boundary retained. No real waiting/token/Discord in tests. Runtime restart and network failure are documented best-effort boundaries, not durable deletion guarantees.

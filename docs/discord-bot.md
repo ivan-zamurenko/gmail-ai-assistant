@@ -257,3 +257,9 @@ Image adapter accepts bounded JPEG/PNG/WebP, auto-orients, strips EXIF and uses4
 
 ## Report layout follow-up — 2026-11-03
 Owner requested map left/POD right in one image, dark background and exact legend: red scanned point · blue delivery address. S09-15 follow-up uses1600x864 canvas, two792px contain panels with16px gap and72px header. No crop or change to caption/navigation. Supersedes vertical layout; no command/extension changes.
+
+## Response auto-cleanup — S09-16
+New responses from all commands and report/result buttons share responseLifecycle at runtime boundary. Private reply/defer deletes at interaction.createdTimestamp+14min; normal replies and DMs at send+30min. Updates do not renew timers. Followup visibility follows returned Discord flags. Already missing messages are harmless; failures emit fixed cleanup diagnostic, never replay depot.
+After private expiry final edit rejects, so a result cannot be falsely ACKed as displayed. Barcode progress stops after expiry; final/error DM remains independent and gets30min cleanup. Queue retention unchanged.
+Best-effort while Mac bot runs: restart loses timers, network/permission failure may leave a message visible; no old-history purge. A successfully delivered result already ACKed/deleted from recovery cannot be recovered solely because its Discord copy expired.
+[Discord interaction token lifetime](https://github.com/discord/discord-api-docs/blob/main/developers/interactions/receiving-and-responding.mdx).

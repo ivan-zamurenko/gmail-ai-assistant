@@ -183,4 +183,10 @@ test('barcode DM is the final delivery boundary even if the progress message exp
   assert.equal(dm, 1);
   assert.equal(f.documents.size, 0);
   assert.equal(f.creates(), 1);
+  const failed = createInteractionHandler({ cfg: { guildId: actor.guildId },
+    enqueueAndWait: async () => { throw new Error('Synthetic queue failure'); } });
+  edits = 0;
+  await failed(request);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(dm, 2, 'expired progress must not prevent error DM');
 });

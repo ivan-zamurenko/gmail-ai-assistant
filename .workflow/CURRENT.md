@@ -1,3 +1,13 @@
+# S09-16 completed offline — 2026-11-03
+
+Root integrator. All new replies auto-cleanup: fixed private14min and normal/DM30min; late edit fails honestly, long barcode final/error DM survives progress expiry.
+Evidence: [S09-16](evidence/S09-16.json). No active writer.
+Bot0.2.20 restarted on Mac; Discord ready. New private answers14min from interaction, ordinary/DM30min from send. Timers memory-only; restart loses them.
+Next: owner observes fresh reply deletion; real14/30min wait not performed here. No old-message purge.
+Roadmap31/57 done; no active writer.
+
+---
+
 # S09-15 horizontal layout activated — 2026-11-03
 
 Owner-requested map left/POD right; legend: scanned point · delivery address. Bot0.2.19 on Mac, Discord ready after restart. Full gates PASS7,216 tests; existing layout test RED then GREEN, synthetic preview inspected. No command/extension change. Next: fresh /report owner check. No active writer.

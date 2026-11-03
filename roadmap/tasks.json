@@ -1151,6 +1151,23 @@
         "docs/TESTING.md"
       ],
       "acceptance_count": 5
+    },
+    {
+      "id": "S09-16",
+      "title": "Автоочищення всіх відповідей бота",
+      "stage": "S09",
+      "depends_on": [
+        "S09-04"
+      ],
+      "gates": [],
+      "path": "roadmap/tasks/S09-16.md",
+      "context": [
+        "bot/src/index.js",
+        "bot/src/interactions.js",
+        "docs/discord-bot.md",
+        "docs/SECURITY.md"
+      ],
+      "acceptance_count": 5
     }
   ]
 }

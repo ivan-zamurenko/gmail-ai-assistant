@@ -172,11 +172,12 @@ export function createInteractionHandler({
         let published = null;
         let edits = Promise.resolve();
         const onProgress = (progress) => {
+          if (interaction.autoCleanupExpired) return;
           const now = Date.now();
           if (!shouldPublishBarcodeProgress(published, progress, now)) return;
           published = { ...progress, publishedAt: now };
           edits = edits
-            .then(() => interaction.editReply(renderBarcodeProgress(progress, dryRun)))
+            .then(() => interaction.autoCleanupExpired ? undefined : interaction.editReply(renderBarcodeProgress(progress, dryRun)))
             .catch((err) => console.error('Barcode progress update failed:', safeErrorMessage(err, 'Discord operation failed')));
         };
 
@@ -195,13 +196,13 @@ export function createInteractionHandler({
             await interaction.user.send(resultMessage(result));
             delivered = true;
             await acknowledge(interaction, result);
-            await interaction.editReply('✅ Scan Drive Labels завершено — фінальний звіт надіслано в DM.');
+            if (!interaction.autoCleanupExpired) await interaction.editReply('✅ Scan Drive Labels завершено — фінальний звіт надіслано в DM.');
           },
           async (err) => {
             await edits;
             const message = `⚠️ Scan Drive Labels: ${safeErrorMessage(err, 'Discord operation failed')}`;
-            await interaction.editReply(message);
             await interaction.user.send(message);
+            if (!interaction.autoCleanupExpired) await interaction.editReply(message);
           },
         ).catch(async err => {
           console.error('Barcode result delivery failed:', safeErrorMessage(err, 'Discord operation failed'));

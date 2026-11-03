@@ -206,3 +206,6 @@ Previous /report pilot: owner says it appears to work; not evidence for every ed
 
 ## Report layout follow-up — 2026-11-03
 Owner requested map left/POD right in one image, dark background and exact legend: red scanned point · blue delivery address. S09-15 follow-up uses1600x864 canvas, two792px contain panels with16px gap and72px header. No crop or change to caption/navigation. Supersedes vertical layout; no command/extension changes.
+
+## RESPONSE-CLEANUP-2026-11-03 — owner approved
+All new bot replies: ephemeral delete14min from interaction creation (Discord token15min limit); ordinary channel replies/DM delete30min after send. Edits do not extend deadline. No prior-message purge or change to private access. Memory timers best-effort, lost on restart; no interaction credentials persisted. This UI cleanup is independent of24h undelivered result recovery. Successfully ACKed results do not reappear in /result after auto-delete. Owner confirmed14/30 split after limitation explained.

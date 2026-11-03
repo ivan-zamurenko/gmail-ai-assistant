@@ -580,3 +580,7 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | S09-15 runtime: reused owner-authorized Mac bot restart after passing gates; verified process cwd and Discord ready without printing identity/config. No command registration, rules deploy or outbound customer report initiated by agent.
 
 - 2026-11-03 | root | authorized report-layout restart on Mac after gates; exact project process verified. No customer fixture or image regeneration, no new outbound service, no depot action.
+
+- 2026-11-03 | root | S09-16 owner approved UI deletion of all new replies at14/30min. In-memory timers only, no persisted tokens/content/IDs, no logs with raw errors. Existing Admin/ephemeral and24h undelivered recovery unchanged. No retrospective purge or depot retries. Cleanup failure safely logged by fixed code; restart loses timers.
+
+- 2026-11-03 | root | S09-16 activated via authorized Mac bot restart after full gates, exact cwd verified. No message history purge, rules deployment or depot action; token/content not logged or persisted.

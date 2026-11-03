@@ -1,3 +1,4 @@
+import { createResponseLifecycle } from './responseLifecycle.js';
 import { safeErrorMessage } from './errors.js';
 /** Running bot: configuration and adapters are wired here, outside the testable handler. */
 import { Client, Events, GatewayIntentBits } from 'discord.js';
@@ -20,8 +21,9 @@ const handleInteraction = createInteractionHandler({
   cfg, enqueueAndWait, acknowledgeResult, buildParcelEmbed, listResults, getResult,
   addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList,
 });
+const withCleanup = createResponseLifecycle();
 client.on(Events.InteractionCreate, interaction => {
-  handleInteraction(interaction).catch(err => console.error('Interaction failed:', safeErrorMessage(err, 'Discord operation failed')));
+  handleInteraction(withCleanup(interaction)).catch(err => console.error('Interaction failed:', safeErrorMessage(err, 'Discord operation failed')));
 });
 
 // Best-effort physical cleanup; recovery independently denies expired data.

@@ -113,3 +113,5 @@
 - 2026-11-03 | root | completed S04-01 offline | Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review. | test-first 5/7 RED to7/7 GREEN;focused26/26; focused/full gates PASS; evidence/S04-01.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S09-03 offline | Actual local Emulator enforcement; expired cancellation summary type/size fixed. Two groups and sensitivity control, nested parcel schema gap retained; no deploy. | test-first Actual Emulator1/2 RED to2/2 GREEN; focused/full gates PASS; evidence/S09-03.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S05-02 offline | Bounded plain/nested MIME and exact read-only message adapter; HTML/unsupported encoding require review, attachment metadata only. Prepared module, no automatic mailbox reading. | test-first 0/2 functional RED;review0/2 unnamed attachment/charset;GREEN10/10; focused/full gates PASS; evidence/S05-02.json | separate commit/push, next independent task.

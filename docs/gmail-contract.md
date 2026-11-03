@@ -95,3 +95,17 @@ failures throw safe errors, never empty success. Popup distinguishes missing
 label, empty, complete and partial lists; estimate is not a processed count.
 Only GET, one auth token for enumeration, no body reading or label mutations.
 Source: [Gmail messages.list](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list).
+
+## S05-02 — prepared message adapter, not automatic mailbox processing
+
+getMessage reads one explicit ID with GET format=full and rejects response identity
+mismatch. Pure normalizeMessage returns ready/needs_review plus safe reason,
+message/thread IDs, separate header arrays, plain text and attachment metadata.
+Duplicate headers remain for later policy review. Nested plain MIME and UTF-8
+base64url are decoded; HTML-only and unsupported charset require review.
+Attachments (including Content-Disposition without filename) are never decoded
+or fetched. No HTML execution, recipient inference, log/body export or writes.
+Limits12 depth/100 parts,64Ki UTF-16 text,128Ki encoded processed text,16Ki header
+characters (4Ki per header); failed parsing returns no partial body. These are
+normalization limits, not an HTTP streaming body cap. No popup auto-reader yet.
+Source: [Gmail messages.get](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/get).

@@ -1056,3 +1056,11 @@ denial assertion sensitivity. Time boundary uses server-generated reached expiry
 not exact equality between separate requests. No browser/live evidence claimed.
 References: [Firebase local testing](https://firebase.google.com/docs/rules/unit-tests),
 [demo projects](https://firebase.google.com/docs/emulator-suite/connect_firestore).
+
+## S05-02 — bounded MIME
+
+Two grouped synthetic tests in test/gmail/mime.test.js: nested Unicode/headers/
+attachments and malformed/size/depth/HTML/charset/identity/read-only failures.
+Functional stub RED0/2, review RED0/2 for unnamed attachment/charset, GREEN10/10
+with labels suite. HTML is data only; no rendering/network image loads tested.
+Adapter prepared but not automatically invoked by the popup.

@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-03 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S05-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1945,7 +1945,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-03 completed offline — 2026-11-03</h1><pre class="markdown"># S09-03 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S05-02 completed offline — 2026-11-03</h1><pre class="markdown"># S05-02 completed offline — 2026-11-03
+
+Root integrator. Bounded plain/nested MIME and exact read-only message adapter; HTML/unsupported encoding require review, attachment metadata only. Prepared module, no automatic mailbox reading.
+Evidence: [S05-02](evidence/S05-02.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S09-03 completed offline — 2026-11-03
 
 Root integrator. Actual local Emulator enforcement; expired cancellation summary type/size fixed. Two groups and sensitivity control, nested parcel schema gap retained; no deploy.
 Evidence: [S09-03](evidence/S09-03.json). No active writer.
@@ -2414,6 +2423,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S04-01 offline | Validated selected Drive folder and bounded complete listing; dedup, raster/parent filters and explicit skipped entries. drive_audit implementation/root review. | test-first 5/7 RED to7/7 GREEN;focused26/26; focused/full gates PASS; evidence/S04-01.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S09-03 offline | Actual local Emulator enforcement; expired cancellation summary type/size fixed. Two groups and sensitivity control, nested parcel schema gap retained; no deploy. | test-first Actual Emulator1/2 RED to2/2 GREEN; focused/full gates PASS; evidence/S09-03.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S05-02 offline | Bounded plain/nested MIME and exact read-only message adapter; HTML/unsupported encoding require review, attachment metadata only. Prepared module, no automatic mailbox reading. | test-first 0/2 functional RED;review0/2 unnamed attachment/charset;GREEN10/10; focused/full gates PASS; evidence/S05-02.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3995,6 +4006,20 @@ failures throw safe errors, never empty success. Popup distinguishes missing
 label, empty, complete and partial lists; estimate is not a processed count.
 Only GET, one auth token for enumeration, no body reading or label mutations.
 Source: [Gmail messages.list](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list).
+
+## S05-02 — prepared message adapter, not automatic mailbox processing
+
+getMessage reads one explicit ID with GET format=full and rejects response identity
+mismatch. Pure normalizeMessage returns ready/needs_review plus safe reason,
+message/thread IDs, separate header arrays, plain text and attachment metadata.
+Duplicate headers remain for later policy review. Nested plain MIME and UTF-8
+base64url are decoded; HTML-only and unsupported charset require review.
+Attachments (including Content-Disposition without filename) are never decoded
+or fetched. No HTML execution, recipient inference, log/body export or writes.
+Limits12 depth/100 parts,64Ki UTF-16 text,128Ki encoded processed text,16Ki header
+characters (4Ki per header); failed parsing returns no partial body. These are
+normalization limits, not an HTTP streaming body cap. No popup auto-reader yet.
+Source: [Gmail messages.get](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/get).
 </pre></article>
 <article id="doc-45" tabindex="-1" hidden><p class="path"><a href="docs/handoff.md">docs/handoff.md</a></p><h1>Передача состояния между сессиями</h1><pre class="markdown"># Передача состояния между сессиями
 
@@ -5461,6 +5486,14 @@ denial assertion sensitivity. Time boundary uses server-generated reached expiry
 not exact equality between separate requests. No browser/live evidence claimed.
 References: [Firebase local testing](https://firebase.google.com/docs/rules/unit-tests),
 [demo projects](https://firebase.google.com/docs/emulator-suite/connect_firestore).
+
+## S05-02 — bounded MIME
+
+Two grouped synthetic tests in test/gmail/mime.test.js: nested Unicode/headers/
+attachments and malformed/size/depth/HTML/charset/identity/read-only failures.
+Functional stub RED0/2, review RED0/2 for unnamed attachment/charset, GREEN10/10
+with labels suite. HTML is data only; no rendering/network image loads tested.
+Adapter prepared but not automatically invoked by the popup.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -8193,7 +8226,7 @@ Gmail queue отличается от Firestore tasks и Discord todos. Исхо
 Создать вложенные MIME и malformed base64url fixtures до реализации; точный normalized DTO должен быть проверен независимо от удобства parser.
 
 ```sh
-node --test test/unit/gmail-mime.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/gmail/mime.test.js
 ```
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.

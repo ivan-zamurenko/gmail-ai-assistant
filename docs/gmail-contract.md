@@ -5,7 +5,7 @@
 
 ## 1. Что действительно есть
 
-`findLabelId(name)` находит ID метки, `listByLabel(labelId)` возвращает IDs одного ответа `messages.list`, `moveLabels(messageId,{add,remove})` выполняет modify. Popup показывает число писем под `AI-Reply`. Константы `AI-Replied` и `AI-Failed` не означают работающую обработку очереди.
+`findLabelId(name)` находит ID метки, `listByLabel(labelId)` возвращает bounded DTO `{ids,complete,reason}` всех прочитанных страниц `messages.list`, `moveLabels(messageId,{add,remove})` выполняет modify. Popup показывает число писем под `AI-Reply`. Константы `AI-Replied` и `AI-Failed` не означают работающую обработку очереди.
 
 Нет полного read message, MIME traversal, AI reply, draft creation, send, background poll или recovery pipeline. Обещание auto-reply в README относится к планам. Новый manifest запрашивает `gmail.readonly`, в отличие от первого ZIP. `moveLabels()` как helper существует, но в этом baseline не имеет нужного mutating scope. Перед S05-05 отдельно проверить/согласовать минимальные права для draft; не считать их уже выданными.
 
@@ -86,3 +86,12 @@ Drive зупиняє нові ефекти після uncertain/auth/cancel, з�
 раніше успішні exact targets для ручного продовження. Нової кнопки Cancel,
 автоматичного reconcile або persistent Drive journal тут немає. Gmail scopes
 і доступність mutation UI не змінено. Реальні API/Chrome не перевірялися.
+
+## S05-01 — bounded enumeration
+
+Default20 pages/1000 unique IDs; options capped100/10000. Duplicate IDs deduped,
+repeated page tokens and limits return explicit partial outcome. Malformed/API
+failures throw safe errors, never empty success. Popup distinguishes missing
+label, empty, complete and partial lists; estimate is not a processed count.
+Only GET, one auth token for enumeration, no body reading or label mutations.
+Source: [Gmail messages.list](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list).

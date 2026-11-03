@@ -107,3 +107,5 @@
 - 2026-11-03 | root | completed S02-01 offline | Typed barcode input and exact Code128 tail; existing PDF unknown-parcel compatibility preserved, no new format inferred. | test-first 9/10 before type/tail guards;10/10 after; focused/full gates PASS; evidence/S02-01.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S02-02 offline | Conflicting numbers or physical parcels remain ambiguous; no lookup/folder/move, safe candidate metadata, modulo10 compatibility retained. drive_audit implementation/root review. | test-first 17/19 initial and18/19 metadata;32/32 focused GREEN; focused/full gates PASS; evidence/S02-02.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S05-01 offline | Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review. | test-first 5/8 RED to8/8 GREEN; focused/full gates PASS; evidence/S05-01.json | separate commit/push, next independent task.

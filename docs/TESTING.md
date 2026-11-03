@@ -1024,3 +1024,10 @@ Two new grouped parser/batch regressions cover competing numbers/parcel
 identities, read-order/repetition, modulo10 compatibility and zero lookup/folder/
 move effects for ambiguity in dry/live. Synthetic payloads only; no camera or
 private-label corpus claims. Decoder provenance allowlist excludes raw markers.
+
+## S05-01 — Gmail enumeration
+
+Existing list test now covers three pages/dedup; two new grouped tests cover
+loop/page/message budgets/schema/errors and actual gmailFlow with synthetic DOM.
+Missing label, empty, partial and API403 differ; all enumerating requests GET.
+RED5/8 to GREEN8/8; no mailbox/Chrome execution.

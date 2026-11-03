@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "S05-01",
+  "outcome": "passed",
+  "base_sha": "1000ca0",
+  "branch": "codex",
+  "completed_on": "2026-11-03",
+  "scope": "Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/gmail/labels.test.js",
+      "exit_code": 1,
+      "result": "5/8 RED to8/8 GREEN"
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/gmail/labels.test.js",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS (full offline gates)"
+    }
+  ],
+  "untested": [
+    "Live services/credentials",
+    "Real Chrome/Discord/depot interaction"
+  ],
+  "external_effects": [],
+  "next_step": "Continue independently executable roadmap tasks; defer owner policy/live gates"
+}

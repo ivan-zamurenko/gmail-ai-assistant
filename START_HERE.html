@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S02-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S05-01 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1935,7 +1935,16 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S02-02 completed offline — 2026-11-03</h1><pre class="markdown"># S02-02 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S05-01 completed offline — 2026-11-03</h1><pre class="markdown"># S05-01 completed offline — 2026-11-03
+
+Root integrator. Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review.
+Evidence: [S05-01](evidence/S05-01.json). No active writer.
+Owner authorized whole independent roadmap pass; continue ready tasks.
+Live activation/registration and owner-policy tasks remain deferred.
+
+---
+
+# S02-02 completed offline — 2026-11-03
 
 Root integrator. Conflicting numbers or physical parcels remain ambiguous; no lookup/folder/move, safe candidate metadata, modulo10 compatibility retained. drive_audit implementation/root review.
 Evidence: [S02-02](evidence/S02-02.json). No active writer.
@@ -2371,6 +2380,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S02-01 offline | Typed barcode input and exact Code128 tail; existing PDF unknown-parcel compatibility preserved, no new format inferred. | test-first 9/10 before type/tail guards;10/10 after; focused/full gates PASS; evidence/S02-01.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S02-02 offline | Conflicting numbers or physical parcels remain ambiguous; no lookup/folder/move, safe candidate metadata, modulo10 compatibility retained. drive_audit implementation/root review. | test-first 17/19 initial and18/19 metadata;32/32 focused GREEN; focused/full gates PASS; evidence/S02-02.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed S05-01 offline | Bounded complete Gmail label enumeration with dedup and explicit partial/missing/empty/error UI; mail_audit implementation/root review. | test-first 5/8 RED to8/8 GREEN; focused/full gates PASS; evidence/S05-01.json | separate commit/push, next independent task.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3850,7 +3861,7 @@ Existing UI/Discord error counts include this outcome; no automatic resolve UI.
 
 ## 1. Что действительно есть
 
-`findLabelId(name)` находит ID метки, `listByLabel(labelId)` возвращает IDs одного ответа `messages.list`, `moveLabels(messageId,{add,remove})` выполняет modify. Popup показывает число писем под `AI-Reply`. Константы `AI-Replied` и `AI-Failed` не означают работающую обработку очереди.
+`findLabelId(name)` находит ID метки, `listByLabel(labelId)` возвращает bounded DTO `{ids,complete,reason}` всех прочитанных страниц `messages.list`, `moveLabels(messageId,{add,remove})` выполняет modify. Popup показывает число писем под `AI-Reply`. Константы `AI-Replied` и `AI-Failed` не означают работающую обработку очереди.
 
 Нет полного read message, MIME traversal, AI reply, draft creation, send, background poll или recovery pipeline. Обещание auto-reply в README относится к планам. Новый manifest запрашивает `gmail.readonly`, в отличие от первого ZIP. `moveLabels()` как helper существует, но в этом baseline не имеет нужного mutating scope. Перед S05-05 отдельно проверить/согласовать минимальные права для draft; не считать их уже выданными.
 
@@ -3931,6 +3942,15 @@ Drive зупиняє нові ефекти після uncertain/auth/cancel, з�
 раніше успішні exact targets для ручного продовження. Нової кнопки Cancel,
 автоматичного reconcile або persistent Drive journal тут немає. Gmail scopes
 і доступність mutation UI не змінено. Реальні API/Chrome не перевірялися.
+
+## S05-01 — bounded enumeration
+
+Default20 pages/1000 unique IDs; options capped100/10000. Duplicate IDs deduped,
+repeated page tokens and limits return explicit partial outcome. Malformed/API
+failures throw safe errors, never empty success. Popup distinguishes missing
+label, empty, complete and partial lists; estimate is not a processed count.
+Only GET, one auth token for enumeration, no body reading or label mutations.
+Source: [Gmail messages.list](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list).
 </pre></article>
 <article id="doc-45" tabindex="-1" hidden><p class="path"><a href="docs/handoff.md">docs/handoff.md</a></p><h1>Передача состояния между сессиями</h1><pre class="markdown"># Передача состояния между сессиями
 
@@ -5365,6 +5385,13 @@ Two new grouped parser/batch regressions cover competing numbers/parcel
 identities, read-order/repetition, modulo10 compatibility and zero lookup/folder/
 move effects for ambiguity in dry/live. Synthetic payloads only; no camera or
 private-label corpus claims. Decoder provenance allowlist excludes raw markers.
+
+## S05-01 — Gmail enumeration
+
+Existing list test now covers three pages/dedup; two new grouped tests cover
+loop/page/message budgets/schema/errors and actual gmailFlow with synthetic DOM.
+Missing label, empty, partial and API403 differ; all enumerating requests GET.
+RED5/8 to GREEN8/8; no mailbox/Chrome execution.
 </pre></article>
 <article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -8011,7 +8038,7 @@ Evidence: `.workflow/evidence/S04-05.json`. Обновить существую�
 Fixture первая страница с nextPageToken и вторая с дополнительным ID воспроизводит текущий неполный результат labels.js.
 
 ```sh
-node --test test/unit/gmail-pagination.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/gmail/labels.test.js
 ```
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.

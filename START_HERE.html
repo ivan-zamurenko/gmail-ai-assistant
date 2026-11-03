@@ -1,6 +1,6 @@
 <!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DPD Assistance - Markdown execution kit</title><style>
 :root{color-scheme:light dark;--bg:#f5f6f7;--panel:#fff;--text:#20282f;--muted:#53616c;--line:#d7dde2;--accent:#aa1735}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,sans-serif}header{padding:16px 24px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center;flex-wrap:wrap}header strong{font-size:20px}header span{color:var(--muted)}button,input{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px}button{cursor:pointer}#toggle{margin-left:auto}#layout{display:grid;grid-template-columns:320px minmax(0,1fr)}aside{height:calc(100vh - 85px);position:sticky;top:0;overflow:auto;padding:16px;border-right:1px solid var(--line);background:var(--panel)}#search{width:100%;margin-bottom:10px}.nav{display:block;padding:10px;color:var(--text);text-decoration:none;border-bottom:1px solid var(--line);line-height:1.4}.nav small{display:block;font-size:11px;color:var(--muted);overflow-wrap:anywhere}.nav.active{border-left:4px solid var(--accent);background:var(--bg)}main{min-width:0;padding:28px clamp(18px,4vw,64px)}article{max-width:1100px;margin:auto}h1{font-size:32px;line-height:1.2}.path{font-size:13px;overflow-wrap:anywhere}a{color:var(--accent)}.markdown{font:15px/1.7 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel);padding:24px;border:1px solid var(--line);border-radius:8px}.hint{font-size:13px;color:var(--muted)}[hidden]{display:none!important}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}body.dark{--bg:#15191d;--panel:#20262c;--text:#e6ebef;--muted:#aebac3;--line:#46515b;--accent:#ff9eb2}@media(max-width:850px){#layout{grid-template-columns:1fr}aside{position:static;height:auto;max-height:40vh;border-bottom:1px solid var(--line)}main{padding:20px 12px}.markdown{padding:14px}h1{font-size:25px}}
-</style></head><body><header><strong>DPD Assistance</strong><span>Комплект v1.2 / 54 задачі / 124 Markdown-файлів</span><button id="toggle" type="button">Світла / темна</button></header><div id="layout"><aside aria-label="Документи"><label for="search">Пошук</label><input id="search" type="search" placeholder="S01-01, dryRun, Gmail..."><p id="count" class="hint" aria-live="polite"></p><nav><a class="nav" href="#doc-0" data-target="doc-0">DPD Assistance — робочий комплект v1.2<small>00_READ_FIRST.md</small></a>
+</style></head><body><header><strong>DPD Assistance</strong><span>Комплект v1.2 / 54 задачі / 125 Markdown-файлів</span><button id="toggle" type="button">Світла / темна</button></header><div id="layout"><aside aria-label="Документи"><label for="search">Пошук</label><input id="search" type="search" placeholder="S01-01, dryRun, Gmail..."><p id="count" class="hint" aria-live="polite"></p><nav><a class="nav" href="#doc-0" data-target="doc-0">DPD Assistance — робочий комплект v1.2<small>00_READ_FIRST.md</small></a>
 <a class="nav" href="#doc-1" data-target="doc-1">README.md<small>README.md</small></a>
 <a class="nav" href="#doc-2" data-target="doc-2">Установка комплекта без потери существующей работы<small>INSTALL_RU.md</small></a>
 <a class="nav" href="#doc-3" data-target="doc-3">DPD Assistance — Agent Instructions<small>AGENTS.md</small></a>
@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-14 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Автономний прохід завершено — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -49,81 +49,82 @@
 <a class="nav" href="#doc-46" data-target="doc-46">Gates: решения и реальные внешние проверки<small>docs/owner-gates.md</small></a>
 <a class="nav" href="#doc-47" data-target="doc-47">Как владельцу вести проект с агентами<small>docs/owner-workflow.md</small></a>
 <a class="nav" href="#doc-48" data-target="doc-48">Структура проекта v1.2 и назначение каждого слоя<small>docs/project-structure.md</small></a>
-<a class="nav" href="#doc-49" data-target="doc-49">Безопасность, данные клиентов и пределы автономности<small>docs/security-and-privacy.md</small></a>
-<a class="nav" href="#doc-50" data-target="doc-50">Project skill: минимум, который нужен<small>docs/skills-policy.md</small></a>
-<a class="nav" href="#doc-51" data-target="doc-51">Источники, происхождение и границы применимости<small>docs/SOURCES.md</small></a>
-<a class="nav" href="#doc-52" data-target="doc-52">TDD, регрессии и небольшие коммиты<small>docs/testing-and-commits.md</small></a>
-<a class="nav" href="#doc-53" data-target="doc-53">Testing strategy<small>docs/TESTING.md</small></a>
-<a class="nav" href="#doc-54" data-target="doc-54">Toolchain v1.2 — две установки и три уровня проверок<small>docs/toolchain.md</small></a>
-<a class="nav" href="#doc-55" data-target="doc-55">Решение OWNER-D02 — учесть существующий Discord-бот<small>OWNER_DECISION_DISCORD_RU.md</small></a>
-<a class="nav" href="#doc-56" data-target="doc-56">Решение: ИИ готовит ответ, человек проверяет<small>OWNER_DECISION_GMAIL_RU.md</small></a>
-<a class="nav" href="#doc-57" data-target="doc-57">Контекст для обсуждения проекта<small>prompts/CHATGPT_PROJECT_RU.md</small></a>
-<a class="nav" href="#doc-58" data-target="doc-58">Продолжить без повторного исследования всего проекта<small>prompts/CONTINUE_RU.md</small></a>
-<a class="nav" href="#doc-59" data-target="doc-59">Завершить сессию и сохранить состояние<small>prompts/HANDOFF_RU.md</small></a>
-<a class="nav" href="#doc-60" data-target="doc-60">Read-only знакомство с DPD Assistance<small>prompts/READ_ONLY_RU.md</small></a>
-<a class="nav" href="#doc-61" data-target="doc-61">Готовые сообщения агенту<small>prompts/README.md</small></a>
-<a class="nav" href="#doc-62" data-target="doc-62">Проверка ограниченного diff без редактирования<small>prompts/REVIEW_RU.md</small></a>
-<a class="nav" href="#doc-63" data-target="doc-63">Выполнить одну карточку<small>prompts/TASK_RU.md</small></a>
-<a class="nav" href="#doc-64" data-target="doc-64">Решения владельца: что пока не определено<small>QUESTIONS_RU.md</small></a>
-<a class="nav" href="#doc-65" data-target="doc-65">Совместимость и последовательность изменений данных<small>roadmap/MIGRATIONS.md</small></a>
-<a class="nav" href="#doc-66" data-target="doc-66">Проверяемые вехи, не большие коммиты<small>roadmap/MILESTONES.md</small></a>
-<a class="nav" href="#doc-67" data-target="doc-67">S00-01 — Безопасно принять существующий репозиторий<small>roadmap/tasks/S00-01.md</small></a>
-<a class="nav" href="#doc-68" data-target="doc-68">S00-02 — Воспроизводимо установить и собрать toolchain<small>roadmap/tasks/S00-02.md</small></a>
-<a class="nav" href="#doc-69" data-target="doc-69">S00-03 — Создать независимый fixture test harness<small>roadmap/tasks/S00-03.md</small></a>
-<a class="nav" href="#doc-70" data-target="doc-70">S00-04 — Подключить обязательные CI проверки<small>roadmap/tasks/S00-04.md</small></a>
-<a class="nav" href="#doc-71" data-target="doc-71">S00-05 — Проверить обнаружение инструкций в выбранном агенте<small>roadmap/tasks/S00-05.md</small></a>
-<a class="nav" href="#doc-72" data-target="doc-72">S01-01 — Сделать Drive Dry Run действительно немутирующим<small>roadmap/tasks/S01-01.md</small></a>
-<a class="nav" href="#doc-73" data-target="doc-73">S01-02 — Проверять вкладку, origin и границу инъекции<small>roadmap/tasks/S01-02.md</small></a>
-<a class="nav" href="#doc-74" data-target="doc-74">S01-03 — Убрать чувствительные данные из журналов и ошибок<small>roadmap/tasks/S01-03.md</small></a>
-<a class="nav" href="#doc-75" data-target="doc-75">S01-04 — Разделить API ошибки и ограничить повторы<small>roadmap/tasks/S01-04.md</small></a>
-<a class="nav" href="#doc-76" data-target="doc-76">S01-05 — Валидировать локальную конфигурацию двух runtime<small>roadmap/tasks/S01-05.md</small></a>
-<a class="nav" href="#doc-77" data-target="doc-77">S02-01 — Зафиксировать поддерживаемые barcode форматы<small>roadmap/tasks/S02-01.md</small></a>
-<a class="nav" href="#doc-78" data-target="doc-78">S02-02 — Не скрывать неоднозначность номера и parcel<small>roadmap/tasks/S02-02.md</small></a>
-<a class="nav" href="#doc-79" data-target="doc-79">S02-03 — Уточнить дату и детерминированное именование<small>roadmap/tasks/S02-03.md</small></a>
-<a class="nav" href="#doc-80" data-target="doc-80">S02-04 — Проверять извлечение consignment из текста<small>roadmap/tasks/S02-04.md</small></a>
-<a class="nav" href="#doc-81" data-target="doc-81">S03-01 — Проверять depot HTML и результаты lookup<small>roadmap/tasks/S03-01.md</small></a>
-<a class="nav" href="#doc-82" data-target="doc-82">S03-02 — Реализовать согласованный рабочий календарь<small>roadmap/tasks/S03-02.md</small></a>
-<a class="nav" href="#doc-83" data-target="doc-83">S03-03 — Зафиксировать eligibility policy статусов<small>roadmap/tasks/S03-03.md</small></a>
-<a class="nav" href="#doc-84" data-target="doc-84">S03-04 — Показывать полный немутирующий depot preview<small>roadmap/tasks/S03-04.md</small></a>
-<a class="nav" href="#doc-85" data-target="doc-85">S03-05 — Безопасно применять подтверждённый reschedule<small>roadmap/tasks/S03-05.md</small></a>
-<a class="nav" href="#doc-86" data-target="doc-86">S04-01 — Проверять Drive folder scope и полный список файлов<small>roadmap/tasks/S04-01.md</small></a>
-<a class="nav" href="#doc-87" data-target="doc-87">S04-02 — Согласовать Drive plan/apply и коллизии имён<small>roadmap/tasks/S04-02.md</small></a>
-<a class="nav" href="#doc-88" data-target="doc-88">S04-03 — Выбрать и реализовать восстанавливаемый runner<small>roadmap/tasks/S04-03.md</small></a>
-<a class="nav" href="#doc-89" data-target="doc-89">S04-04 — Добавить journal, cancel и сверку неопределённых writes<small>roadmap/tasks/S04-04.md</small></a>
-<a class="nav" href="#doc-90" data-target="doc-90">S04-05 — Проверить Drive на разрешённой тестовой папке<small>roadmap/tasks/S04-05.md</small></a>
-<a class="nav" href="#doc-91" data-target="doc-91">S05-01 — Обрабатывать все страницы Gmail очереди<small>roadmap/tasks/S05-01.md</small></a>
-<a class="nav" href="#doc-92" data-target="doc-92">S05-02 — Нормализовать Gmail message и MIME без side effects<small>roadmap/tasks/S05-02.md</small></a>
-<a class="nav" href="#doc-93" data-target="doc-93">S05-03 — Связать candidates письма с подтверждёнными depot фактами<small>roadmap/tasks/S05-03.md</small></a>
-<a class="nav" href="#doc-94" data-target="doc-94">S05-04 — Определить безопасную reply/draft policy<small>roadmap/tasks/S05-04.md</small></a>
-<a class="nav" href="#doc-95" data-target="doc-95">S05-05 — Создавать подтверждённый draft без повторных эффектов<small>roadmap/tasks/S05-05.md</small></a>
-<a class="nav" href="#doc-96" data-target="doc-96">S06-01 — Зафиксировать контракт и выбор AI provider<small>roadmap/tasks/S06-01.md</small></a>
-<a class="nav" href="#doc-97" data-target="doc-97">S06-02 — Валидировать AI output и игнорировать инструкции из данных<small>roadmap/tasks/S06-02.md</small></a>
-<a class="nav" href="#doc-98" data-target="doc-98">S06-03 — Создать synthetic evaluation и критерии качества<small>roadmap/tasks/S06-03.md</small></a>
-<a class="nav" href="#doc-99" data-target="doc-99">S06-04 — Проверить AI в разрешённом shadow режиме<small>roadmap/tasks/S06-04.md</small></a>
-<a class="nav" href="#doc-100" data-target="doc-100">S06-05 — Связать ответ ИИ, ручную проверку и черновик Gmail<small>roadmap/tasks/S06-05.md</small></a>
-<a class="nav" href="#doc-101" data-target="doc-101">S07-01 — Показывать фактический прогресс и partial outcomes<small>roadmap/tasks/S07-01.md</small></a>
-<a class="nav" href="#doc-102" data-target="doc-102">S07-02 — Отображать только реально доступные capabilities<small>roadmap/tasks/S07-02.md</small></a>
-<a class="nav" href="#doc-103" data-target="doc-103">S07-03 — Проверить клавиатуру, ошибки и устойчивость popup<small>roadmap/tasks/S07-03.md</small></a>
-<a class="nav" href="#doc-104" data-target="doc-104">S08-01 — Проверить собранное расширение в Chrome<small>roadmap/tasks/S08-01.md</small></a>
-<a class="nav" href="#doc-105" data-target="doc-105">S08-02 — Собирать чистый релизный артефакт<small>roadmap/tasks/S08-02.md</small></a>
-<a class="nav" href="#doc-106" data-target="doc-106">S08-03 — Провести ограниченный межсервисный пилот<small>roadmap/tasks/S08-03.md</small></a>
-<a class="nav" href="#doc-107" data-target="doc-107">S08-04 — Подготовить допуск, остановку и rollback релиза<small>roadmap/tasks/S08-04.md</small></a>
-<a class="nav" href="#doc-108" data-target="doc-108">S09-01 — Зафиксировать совместимость bot/extension queue контракта<small>roadmap/tasks/S09-01.md</small></a>
-<a class="nav" href="#doc-109" data-target="doc-109">S09-02 — Проверить доступ и параметры Discord-команд<small>roadmap/tasks/S09-02.md</small></a>
-<a class="nav" href="#doc-110" data-target="doc-110">S09-03 — Проверить Firestore rules на локальном Emulator<small>roadmap/tasks/S09-03.md</small></a>
-<a class="nav" href="#doc-111" data-target="doc-111">S09-04 — Сохранить результат при сбое доставки Discord reply<small>roadmap/tasks/S09-04.md</small></a>
-<a class="nav" href="#doc-112" data-target="doc-112">S09-05 — Проверить listener lifecycle и границу runtime messages<small>roadmap/tasks/S09-05.md</small></a>
-<a class="nav" href="#doc-113" data-target="doc-113">S09-06 — Проверить карточки find, историю и минимизацию данных<small>roadmap/tasks/S09-06.md</small></a>
-<a class="nav" href="#doc-114" data-target="doc-114">S09-07 — Изолировать optional Maps от основного ответа find<small>roadmap/tasks/S09-07.md</small></a>
-<a class="nav" href="#doc-115" data-target="doc-115">S09-08 — Проверить изоляцию и устойчивость личного todo<small>roadmap/tasks/S09-08.md</small></a>
-<a class="nav" href="#doc-116" data-target="doc-116">S09-09 — Связать Discord CAD с общей проверкой preview/apply<small>roadmap/tasks/S09-09.md</small></a>
-<a class="nav" href="#doc-117" data-target="doc-117">S09-10 — Перевірити й укріпити наявний режим parcel<small>roadmap/tasks/S09-10.md</small></a>
-<a class="nav" href="#doc-118" data-target="doc-118">S09-11 — Перевірити й укріпити наявний режим barcodes<small>roadmap/tasks/S09-11.md</small></a>
-<a class="nav" href="#doc-119" data-target="doc-119">S09-12 — Провести разрешённый пилот существующего бота<small>roadmap/tasks/S09-12.md</small></a>
-<a class="nav" href="#doc-120" data-target="doc-120">S09-13 — Короткий driver report для повторної доставки в Discord<small>roadmap/tasks/S09-13.md</small></a>
-<a class="nav" href="#doc-121" data-target="doc-121">S09-14 — Report: ручний Eircode, навігація та карта<small>roadmap/tasks/S09-14.md</small></a>
-<a class="nav" href="#doc-122" data-target="doc-122">Локальные инструменты комплекта<small>tools/README.md</small></a>
-<a class="nav" href="#doc-123" data-target="doc-123">Рабочий процесс DPD Assistance<small>WORKFLOW_RU.md</small></a></nav></aside><main><p class="hint">Документи доступні офлайн. Тут показано повний Markdown; джерелом залишаються файли .md. Поточні статуси задач дивіться в .workflow/CURRENT.md та .workflow/state.json.</p><article id="doc-0" tabindex="-1"><p class="path"><a href="00_READ_FIRST.md">00_READ_FIRST.md</a></p><h1>DPD Assistance — робочий комплект v1.2</h1><pre class="markdown"># DPD Assistance — робочий комплект v1.2
+<a class="nav" href="#doc-49" data-target="doc-49">Повний перегляд roadmap — 2026-11-03<small>docs/ROADMAP_REVIEW_2026-11-03.md</small></a>
+<a class="nav" href="#doc-50" data-target="doc-50">Безопасность, данные клиентов и пределы автономности<small>docs/security-and-privacy.md</small></a>
+<a class="nav" href="#doc-51" data-target="doc-51">Project skill: минимум, который нужен<small>docs/skills-policy.md</small></a>
+<a class="nav" href="#doc-52" data-target="doc-52">Источники, происхождение и границы применимости<small>docs/SOURCES.md</small></a>
+<a class="nav" href="#doc-53" data-target="doc-53">TDD, регрессии и небольшие коммиты<small>docs/testing-and-commits.md</small></a>
+<a class="nav" href="#doc-54" data-target="doc-54">Testing strategy<small>docs/TESTING.md</small></a>
+<a class="nav" href="#doc-55" data-target="doc-55">Toolchain v1.2 — две установки и три уровня проверок<small>docs/toolchain.md</small></a>
+<a class="nav" href="#doc-56" data-target="doc-56">Решение OWNER-D02 — учесть существующий Discord-бот<small>OWNER_DECISION_DISCORD_RU.md</small></a>
+<a class="nav" href="#doc-57" data-target="doc-57">Решение: ИИ готовит ответ, человек проверяет<small>OWNER_DECISION_GMAIL_RU.md</small></a>
+<a class="nav" href="#doc-58" data-target="doc-58">Контекст для обсуждения проекта<small>prompts/CHATGPT_PROJECT_RU.md</small></a>
+<a class="nav" href="#doc-59" data-target="doc-59">Продолжить без повторного исследования всего проекта<small>prompts/CONTINUE_RU.md</small></a>
+<a class="nav" href="#doc-60" data-target="doc-60">Завершить сессию и сохранить состояние<small>prompts/HANDOFF_RU.md</small></a>
+<a class="nav" href="#doc-61" data-target="doc-61">Read-only знакомство с DPD Assistance<small>prompts/READ_ONLY_RU.md</small></a>
+<a class="nav" href="#doc-62" data-target="doc-62">Готовые сообщения агенту<small>prompts/README.md</small></a>
+<a class="nav" href="#doc-63" data-target="doc-63">Проверка ограниченного diff без редактирования<small>prompts/REVIEW_RU.md</small></a>
+<a class="nav" href="#doc-64" data-target="doc-64">Выполнить одну карточку<small>prompts/TASK_RU.md</small></a>
+<a class="nav" href="#doc-65" data-target="doc-65">Решения владельца: что пока не определено<small>QUESTIONS_RU.md</small></a>
+<a class="nav" href="#doc-66" data-target="doc-66">Совместимость и последовательность изменений данных<small>roadmap/MIGRATIONS.md</small></a>
+<a class="nav" href="#doc-67" data-target="doc-67">Проверяемые вехи, не большие коммиты<small>roadmap/MILESTONES.md</small></a>
+<a class="nav" href="#doc-68" data-target="doc-68">S00-01 — Безопасно принять существующий репозиторий<small>roadmap/tasks/S00-01.md</small></a>
+<a class="nav" href="#doc-69" data-target="doc-69">S00-02 — Воспроизводимо установить и собрать toolchain<small>roadmap/tasks/S00-02.md</small></a>
+<a class="nav" href="#doc-70" data-target="doc-70">S00-03 — Создать независимый fixture test harness<small>roadmap/tasks/S00-03.md</small></a>
+<a class="nav" href="#doc-71" data-target="doc-71">S00-04 — Подключить обязательные CI проверки<small>roadmap/tasks/S00-04.md</small></a>
+<a class="nav" href="#doc-72" data-target="doc-72">S00-05 — Проверить обнаружение инструкций в выбранном агенте<small>roadmap/tasks/S00-05.md</small></a>
+<a class="nav" href="#doc-73" data-target="doc-73">S01-01 — Сделать Drive Dry Run действительно немутирующим<small>roadmap/tasks/S01-01.md</small></a>
+<a class="nav" href="#doc-74" data-target="doc-74">S01-02 — Проверять вкладку, origin и границу инъекции<small>roadmap/tasks/S01-02.md</small></a>
+<a class="nav" href="#doc-75" data-target="doc-75">S01-03 — Убрать чувствительные данные из журналов и ошибок<small>roadmap/tasks/S01-03.md</small></a>
+<a class="nav" href="#doc-76" data-target="doc-76">S01-04 — Разделить API ошибки и ограничить повторы<small>roadmap/tasks/S01-04.md</small></a>
+<a class="nav" href="#doc-77" data-target="doc-77">S01-05 — Валидировать локальную конфигурацию двух runtime<small>roadmap/tasks/S01-05.md</small></a>
+<a class="nav" href="#doc-78" data-target="doc-78">S02-01 — Зафиксировать поддерживаемые barcode форматы<small>roadmap/tasks/S02-01.md</small></a>
+<a class="nav" href="#doc-79" data-target="doc-79">S02-02 — Не скрывать неоднозначность номера и parcel<small>roadmap/tasks/S02-02.md</small></a>
+<a class="nav" href="#doc-80" data-target="doc-80">S02-03 — Уточнить дату и детерминированное именование<small>roadmap/tasks/S02-03.md</small></a>
+<a class="nav" href="#doc-81" data-target="doc-81">S02-04 — Проверять извлечение consignment из текста<small>roadmap/tasks/S02-04.md</small></a>
+<a class="nav" href="#doc-82" data-target="doc-82">S03-01 — Проверять depot HTML и результаты lookup<small>roadmap/tasks/S03-01.md</small></a>
+<a class="nav" href="#doc-83" data-target="doc-83">S03-02 — Реализовать согласованный рабочий календарь<small>roadmap/tasks/S03-02.md</small></a>
+<a class="nav" href="#doc-84" data-target="doc-84">S03-03 — Зафиксировать eligibility policy статусов<small>roadmap/tasks/S03-03.md</small></a>
+<a class="nav" href="#doc-85" data-target="doc-85">S03-04 — Показывать полный немутирующий depot preview<small>roadmap/tasks/S03-04.md</small></a>
+<a class="nav" href="#doc-86" data-target="doc-86">S03-05 — Безопасно применять подтверждённый reschedule<small>roadmap/tasks/S03-05.md</small></a>
+<a class="nav" href="#doc-87" data-target="doc-87">S04-01 — Проверять Drive folder scope и полный список файлов<small>roadmap/tasks/S04-01.md</small></a>
+<a class="nav" href="#doc-88" data-target="doc-88">S04-02 — Согласовать Drive plan/apply и коллизии имён<small>roadmap/tasks/S04-02.md</small></a>
+<a class="nav" href="#doc-89" data-target="doc-89">S04-03 — Выбрать и реализовать восстанавливаемый runner<small>roadmap/tasks/S04-03.md</small></a>
+<a class="nav" href="#doc-90" data-target="doc-90">S04-04 — Добавить journal, cancel и сверку неопределённых writes<small>roadmap/tasks/S04-04.md</small></a>
+<a class="nav" href="#doc-91" data-target="doc-91">S04-05 — Проверить Drive на разрешённой тестовой папке<small>roadmap/tasks/S04-05.md</small></a>
+<a class="nav" href="#doc-92" data-target="doc-92">S05-01 — Обрабатывать все страницы Gmail очереди<small>roadmap/tasks/S05-01.md</small></a>
+<a class="nav" href="#doc-93" data-target="doc-93">S05-02 — Нормализовать Gmail message и MIME без side effects<small>roadmap/tasks/S05-02.md</small></a>
+<a class="nav" href="#doc-94" data-target="doc-94">S05-03 — Связать candidates письма с подтверждёнными depot фактами<small>roadmap/tasks/S05-03.md</small></a>
+<a class="nav" href="#doc-95" data-target="doc-95">S05-04 — Определить безопасную reply/draft policy<small>roadmap/tasks/S05-04.md</small></a>
+<a class="nav" href="#doc-96" data-target="doc-96">S05-05 — Создавать подтверждённый draft без повторных эффектов<small>roadmap/tasks/S05-05.md</small></a>
+<a class="nav" href="#doc-97" data-target="doc-97">S06-01 — Зафиксировать контракт и выбор AI provider<small>roadmap/tasks/S06-01.md</small></a>
+<a class="nav" href="#doc-98" data-target="doc-98">S06-02 — Валидировать AI output и игнорировать инструкции из данных<small>roadmap/tasks/S06-02.md</small></a>
+<a class="nav" href="#doc-99" data-target="doc-99">S06-03 — Создать synthetic evaluation и критерии качества<small>roadmap/tasks/S06-03.md</small></a>
+<a class="nav" href="#doc-100" data-target="doc-100">S06-04 — Проверить AI в разрешённом shadow режиме<small>roadmap/tasks/S06-04.md</small></a>
+<a class="nav" href="#doc-101" data-target="doc-101">S06-05 — Связать ответ ИИ, ручную проверку и черновик Gmail<small>roadmap/tasks/S06-05.md</small></a>
+<a class="nav" href="#doc-102" data-target="doc-102">S07-01 — Показывать фактический прогресс и partial outcomes<small>roadmap/tasks/S07-01.md</small></a>
+<a class="nav" href="#doc-103" data-target="doc-103">S07-02 — Отображать только реально доступные capabilities<small>roadmap/tasks/S07-02.md</small></a>
+<a class="nav" href="#doc-104" data-target="doc-104">S07-03 — Проверить клавиатуру, ошибки и устойчивость popup<small>roadmap/tasks/S07-03.md</small></a>
+<a class="nav" href="#doc-105" data-target="doc-105">S08-01 — Проверить собранное расширение в Chrome<small>roadmap/tasks/S08-01.md</small></a>
+<a class="nav" href="#doc-106" data-target="doc-106">S08-02 — Собирать чистый релизный артефакт<small>roadmap/tasks/S08-02.md</small></a>
+<a class="nav" href="#doc-107" data-target="doc-107">S08-03 — Провести ограниченный межсервисный пилот<small>roadmap/tasks/S08-03.md</small></a>
+<a class="nav" href="#doc-108" data-target="doc-108">S08-04 — Подготовить допуск, остановку и rollback релиза<small>roadmap/tasks/S08-04.md</small></a>
+<a class="nav" href="#doc-109" data-target="doc-109">S09-01 — Зафиксировать совместимость bot/extension queue контракта<small>roadmap/tasks/S09-01.md</small></a>
+<a class="nav" href="#doc-110" data-target="doc-110">S09-02 — Проверить доступ и параметры Discord-команд<small>roadmap/tasks/S09-02.md</small></a>
+<a class="nav" href="#doc-111" data-target="doc-111">S09-03 — Проверить Firestore rules на локальном Emulator<small>roadmap/tasks/S09-03.md</small></a>
+<a class="nav" href="#doc-112" data-target="doc-112">S09-04 — Сохранить результат при сбое доставки Discord reply<small>roadmap/tasks/S09-04.md</small></a>
+<a class="nav" href="#doc-113" data-target="doc-113">S09-05 — Проверить listener lifecycle и границу runtime messages<small>roadmap/tasks/S09-05.md</small></a>
+<a class="nav" href="#doc-114" data-target="doc-114">S09-06 — Проверить карточки find, историю и минимизацию данных<small>roadmap/tasks/S09-06.md</small></a>
+<a class="nav" href="#doc-115" data-target="doc-115">S09-07 — Изолировать optional Maps от основного ответа find<small>roadmap/tasks/S09-07.md</small></a>
+<a class="nav" href="#doc-116" data-target="doc-116">S09-08 — Проверить изоляцию и устойчивость личного todo<small>roadmap/tasks/S09-08.md</small></a>
+<a class="nav" href="#doc-117" data-target="doc-117">S09-09 — Связать Discord CAD с общей проверкой preview/apply<small>roadmap/tasks/S09-09.md</small></a>
+<a class="nav" href="#doc-118" data-target="doc-118">S09-10 — Перевірити й укріпити наявний режим parcel<small>roadmap/tasks/S09-10.md</small></a>
+<a class="nav" href="#doc-119" data-target="doc-119">S09-11 — Перевірити й укріпити наявний режим barcodes<small>roadmap/tasks/S09-11.md</small></a>
+<a class="nav" href="#doc-120" data-target="doc-120">S09-12 — Провести разрешённый пилот существующего бота<small>roadmap/tasks/S09-12.md</small></a>
+<a class="nav" href="#doc-121" data-target="doc-121">S09-13 — Короткий driver report для повторної доставки в Discord<small>roadmap/tasks/S09-13.md</small></a>
+<a class="nav" href="#doc-122" data-target="doc-122">S09-14 — Report: ручний Eircode, навігація та карта<small>roadmap/tasks/S09-14.md</small></a>
+<a class="nav" href="#doc-123" data-target="doc-123">Локальные инструменты комплекта<small>tools/README.md</small></a>
+<a class="nav" href="#doc-124" data-target="doc-124">Рабочий процесс DPD Assistance<small>WORKFLOW_RU.md</small></a></nav></aside><main><p class="hint">Документи доступні офлайн. Тут показано повний Markdown; джерелом залишаються файли .md. Поточні статуси задач дивіться в .workflow/CURRENT.md та .workflow/state.json.</p><article id="doc-0" tabindex="-1"><p class="path"><a href="00_READ_FIRST.md">00_READ_FIRST.md</a></p><h1>DPD Assistance — робочий комплект v1.2</h1><pre class="markdown"># DPD Assistance — робочий комплект v1.2
 
 Комплект встановлено в чинний `gmail-ai-assistant`, гілка `codex`.
 Мета цього налаштування — узгоджені інструкції, документація, roadmap і локальні
@@ -1983,7 +1984,20 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-14 completed offline — 2026-11-03</h1><pre class="markdown"># S09-14 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Автономний прохід завершено — 2026-11-03</h1><pre class="markdown"># Автономний прохід завершено — 2026-11-03
+
+**29/55 done, 26 відкладено; no_ready_task.** Root integrator, codex. No active writer.
+12 задач цього проходу завершено й окремо закомічено/запушено, остання S09-14 `b98facc`.
+[Повний перегляд усіх етапів і причин відкладення](../docs/ROADMAP_REVIEW_2026-11-03.md).
+
+Full offline gates PASS7 / tests215; Firestore Emulator2/2. Real browser/services/mobile NOT RUN.
+Bot restart/command registration, extension update, rules deployment and pilot remain separate.
+Next: owner depot/calendar/Drive/Gmail/AI decisions or authorized work-PC pilot; do not guess gates.
+Report override implemented; no WhatsApp auto-send/clipboard button. New MIME/case/AI modules are not a complete email workflow.
+
+---
+
+# S09-14 completed offline — 2026-11-03
 
 Root integrator. Report-only Eircode override, independent device-location navigation, optional map plus POD with explicit fallback; event/recovery and todo preserved.
 Evidence: [S09-14](evidence/S09-14.json). No active writer.
@@ -2529,6 +2543,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root | completed S06-02 offline | Strict provider-independent proposal schema and separate untrusted data; all accepted prose still requires human review, no model/tools/IO. | test-first 0/2 functional stub RED;2/2 draft GREEN;4/4 integrated; focused/full gates PASS; evidence/S06-02.json | separate commit/push, next independent task.
 
 - 2026-11-03 | root | completed S09-14 offline | Report-only Eircode override, independent device-location navigation, optional map plus POD with explicit fallback; event/recovery and todo preserved. | test-first Existing report/command expectations RED 1/4, fallback RED 3/4; focused GREEN 24/24; focused/full gates PASS; evidence/S09-14.json | separate commit/push, next independent task.
+
+- 2026-11-03 | root | completed full roadmap audit | 54 initial cards reviewed + approved S09-14; 12 independently executable tasks committed/pushed, 29/55 done, 26 deferred with exact reasons | docs/ROADMAP_REVIEW_2026-11-03.md; next=no_ready_task; full gates215 tests + emulator2 | no active writer; await policy/access for remaining tasks.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -2830,6 +2846,9 @@ Do not infer S09-07 completion from report implementation.
 
 ### Report follow-up — 2026-11-03
 S09-14 belongs to discord_owner, depends on completed S09-13/S09-07. Owner-approved destination override/navigation/map implemented offline; activation remains separate. Current roadmap has55 tasks.
+
+### Autonomous pass handoff — 2026-11-03
+29/55 done; no active writer. See [full roadmap review](ROADMAP_REVIEW_2026-11-03.md) for completed commits and all26 deferred reasons. No ready task without pending policy/access/dependencies. Do not redo completed report/Maps tasks or activate live services from an offline evidence entry.
 </pre></article>
 <article id="doc-29" tabindex="-1" hidden><p class="path"><a href="docs/ai-boundary.md">docs/ai-boundary.md</a></p><h1>AI-подсистема: отделить планы от работающей интеграции</h1><pre class="markdown"># AI-подсистема: отделить планы от работающей интеграции
 
@@ -4379,7 +4398,112 @@ Slash schema — commands.js; permissions и reply — index.js; Firestore produ
 
 Не переименовывать старые 41 task IDs ради вставки нового этапа. S09 — параллельный поток существующего бота; порядок определяется depends_on, а не номером папки. Не создавать два независимых CI, дублирующих один и тот же full suite без причины. Один integrator владеет общими contract mirrors, rules, locks и state.
 </pre></article>
-<article id="doc-49" tabindex="-1" hidden><p class="path"><a href="docs/security-and-privacy.md">docs/security-and-privacy.md</a></p><h1>Безопасность, данные клиентов и пределы автономности</h1><pre class="markdown"># Безопасность, данные клиентов и пределы автономности
+<article id="doc-49" tabindex="-1" hidden><p class="path"><a href="docs/ROADMAP_REVIEW_2026-11-03.md">docs/ROADMAP_REVIEW_2026-11-03.md</a></p><h1>Повний перегляд roadmap — 2026-11-03</h1><pre class="markdown"># Повний перегляд roadmap — 2026-11-03
+
+Статус після автономного проходу: **29 із 55 задач done; 26 відкладено**.
+Переглянуто всі 54 початкові картки; додано S09-14 для вже погодженого доповнення report.
+12 задач завершено в цьому проході (11 початкових + S09-14), кожна окремим commit/push у `codex`.
+Done означає виконану локальну прийомку картки, а не production verification.
+`node tools/roadmap.mjs next` повертає `no_ready_task`. Це стан поточного графа й погоджень, не твердження про відсутність будь-яких майбутніх покращень.
+
+## Етапи
+
+| Етап | Done / усього | Завершені картки |
+|---|---:|---|
+| S00 — Принятие проекта и инструменты | 4/5 | S00-01, S00-02, S00-03, S00-04 |
+| S01 — Приоритетные защитные исправления | 5/5 | S01-01, S01-02, S01-03, S01-04, S01-05 |
+| S02 — Идентификаторы, неоднозначность и именование | 3/4 | S02-01, S02-02, S02-04 |
+| S03 — Проверяемые depot действия | 1/5 | S03-01 |
+| S04 — Надёжная пакетная обработка Drive | 1/5 | S04-01 |
+| S05 — Gmail от очереди до подтверждённого draft | 3/5 | S05-01, S05-02, S05-03 |
+| S06 — Контролируемый AI | 1/5 | S06-02 |
+| S07 — Понятный и устойчивый интерфейс | 1/3 | S07-02 |
+| S08 — Браузерная проверка и согласованный выпуск | 0/4 | — |
+| S09 — Discord-бот и общая очередь Firestore | 10/14 | S09-01, S09-02, S09-03, S09-04, S09-05, S09-06, S09-07, S09-08, S09-13, S09-14 |
+
+## Зроблено в цьому проході
+
+| Task | Commit | Результат |
+|---|---|---|
+| [S02-01](../roadmap/tasks/S02-01.md) | `5bbbc36` | Строгі межі підтриманих barcode форматів. |
+| [S02-02](../roadmap/tasks/S02-02.md) | `1000ca0` | Неоднозначні фізичні посилки зупиняють filing до ефектів. |
+| [S05-01](../roadmap/tasks/S05-01.md) | `3c698cd` | Gmail pagination, dedup, ліміти та явний partial результат. |
+| [S04-01](../roadmap/tasks/S04-01.md) | `2af9e21` | Перевірка folder scope, bounded enumeration та пропуск непідтриманих файлів. |
+| [S09-03](../roadmap/tasks/S09-03.md) | `2c9289e` | Реальні emulator перевірки Firestore rules; виправлено cancellation summary validation. |
+| [S05-02](../roadmap/tasks/S05-02.md) | `a694ccd` | Обмежений MIME/plain-text reader; HTML-only/charset/attachments не стають довіреним текстом. |
+| [S05-03](../roadmap/tasks/S05-03.md) | `dd13a44` | Case context: підтверджений зв’язок автора, точний lookup, джерело і freshness. |
+| [S07-02](../roadmap/tasks/S07-02.md) | `3af1b97` | Правдиві capability стани; ключ не означає працюючий AI, непогоджені Gmail mutations заблоковані. |
+| [S09-08](../roadmap/tasks/S09-08.md) | `5396228` | Todo: стабільний вибір, ownership, транзакції та чесний partial clear. |
+| [S09-05](../roadmap/tasks/S09-05.md) | `b52e0d4` | Runtime sender і UID-bound listener; без сліпого повторення claimed роботи. |
+| [S06-02](../roadmap/tasks/S06-02.md) | `c0fc7f1` | Строгий AI proposal contract; без provider/tools/IO, завжди ручна перевірка. |
+| [S09-14](../roadmap/tasks/S09-14.md) | `b98facc` | Report: optional Eircode, два current-location links, optional map/POD і fallback. |
+
+Для кожної задачі є `.workflow/evidence/&lt;TASK&gt;.json` і стислий запис у WORKLOG.
+Review/ізольовані реалізації: roadmap_drive_audit, roadmap_mail_audit, roadmap_discord_audit; лише root інтегрував спільні файли, state, locks і журнал.
+
+## Відкладено — точна причина для кожної картки
+
+Прямі рішення власника та залежні від них роботи розділені в поясненнях нижче.
+Не вважати відкладені задачі виконаними й не розблоковувати gates припущенням.
+
+| Task | Що потрібне перед реалізацією/завершенням |
+|---|---|
+| [S00-05](../roadmap/tasks/S00-05.md) | Підтвердити фактичне підхоплення інструкцій у вибраній IDE/новій сесії. Читання skill у цій сесії не доводить discovery в Copilot. |
+| [S02-03](../roadmap/tasks/S02-03.md) | Обрати джерело дати для Drive filing, часовий пояс, поведінку existing names та unknown/ambiguous. |
+| [S03-02](../roadmap/tasks/S03-02.md) | Уточнити календар: часовий пояс, cut-off, bank holidays. Робочі дні вже погоджено; не перепитувати це загалом. |
+| [S03-03](../roadmap/tasks/S03-03.md) | Узгодити дозволені дії для PENDING / DELIVERED / OFD / GOODS HELD та інших depot статусів. |
+| [S03-04](../roadmap/tasks/S03-04.md) | Залежить від календаря S03-02 і правил статусів S03-03; повний preview не може вигадувати eligibility. |
+| [S03-05](../roadmap/tasks/S03-05.md) | Залежить від S03-04; визначити потрібність/порядок logCall і допустимі поля. Live consent лишається dry_run:false. |
+| [S04-02](../roadmap/tasks/S04-02.md) | Залежить від S02-03: правила іменування, конфліктів і застарілого filing plan. |
+| [S04-03](../roadmap/tasks/S04-03.md) | Залежить від S04-02; погодити простий durable runner та допустиму глибину архітектурних змін. |
+| [S04-04](../roadmap/tasks/S04-04.md) | Після S04-03: durable journal, cancel і reconciliation мають відповідати обраному runner. |
+| [S04-05](../roadmap/tasks/S04-05.md) | Після S04-04: погоджена тестова Drive папка та дозволений реальний roundtrip, дані й доступ. |
+| [S05-04](../roadmap/tasks/S05-04.md) | Узгодити recipients/Reply-To/reply-all, мову, exclusions і labels. Ручна перевірка відповіді вже погоджена. |
+| [S05-05](../roadmap/tasks/S05-05.md) | Залежить від S05-04: створення draft потребує окремо погодженого workflow і OAuth scope; поточний scope read-only. |
+| [S06-01](../roadmap/tasks/S06-01.md) | Обрати AI provider/model, дозволені дані, мету та бюджет. |
+| [S06-03](../roadmap/tasks/S06-03.md) | Еталонні результати evaluation залежать від reply policy S05-04. |
+| [S06-04](../roadmap/tasks/S06-04.md) | Після S06-01/S06-03: дозволений AI shadow, dataset, privacy і бюджет. |
+| [S06-05](../roadmap/tasks/S06-05.md) | Залежить від S05-05/S06-03: з’єднання proposal з підтвердженим draft, без auto-send. |
+| [S07-01](../roadmap/tasks/S07-01.md) | Повний progress/partial UI залежить від preview, durable runner та draft workflow. |
+| [S07-03](../roadmap/tasks/S07-03.md) | Клавіатура/помилки/відновлення фінального UI після S07-01. |
+| [S08-01](../roadmap/tasks/S08-01.md) | Після runner та UI: реальний Chrome smoke/restart. Node VM тести цього не замінюють. |
+| [S08-02](../roadmap/tasks/S08-02.md) | Після S08-01: чистий release artifact і погоджений склад випуску. |
+| [S08-03](../roadmap/tasks/S08-03.md) | Після залежностей: дозволений cross-service pilot із визначеними акаунтами, даними та ефектами. |
+| [S08-04](../roadmap/tasks/S08-04.md) | Після реального пілоту: рішення про випуск, канал, stop/rollback. |
+| [S09-09](../roadmap/tasks/S09-09.md) | CAD preview/apply залежить від S03-05 і depot policy; додатковий confirm_live не вводити. |
+| [S09-10](../roadmap/tasks/S09-10.md) | Укріплення чинного parcel залежить від S09-09, календаря й статусів. Існуючу команду не вимикати. |
+| [S09-11](../roadmap/tasks/S09-11.md) | Укріплення чинного barcodes залежить від S09-09, Drive policy та durable journal. Існуючу команду не вимикати. |
+| [S09-12](../roadmap/tasks/S09-12.md) | Реальний Discord/Firebase/depot pilot потребує S09-09, визначеного scope/test account/data і доступу. |
+
+## Що обговорити наступного разу
+
+1. Depot: статуси, календар і logCall — відкриває preview/apply та Discord reschedule strengthening.
+2. Drive: дата/іменування/collisions, потім вибір durable runner.
+3. Gmail: адресати/Reply-To/мова/labels; AI: provider, payload і бюджет.
+4. Коли буде робочий ПК: окремо узгодити оновлення/реєстрацію команд, extension/rules та обмежений pilot.
+5. IDE discovery evidence можна закрити окремо від продуктового пілоту.
+
+## Перевірки та межі
+
+Фінальна продуктова перевірка: `node tools/checks.mjs` — PASS 7 gates, включно з **215/215** наявних і доданих мінімальних regression tests.
+Firestore Emulator — окремо **2/2** (`npm run test:rules` з локальним pinned JAR); це перевірка правил, не deployed Firebase.
+S09-14: існуючі очікування спочатку RED 1/4, fallback RED 3/4; focused GREEN 24/24. Нових test groups для report не додано.
+Реальний Chrome, робочий depot, Discord/mobile, Gmail/Drive/AI integrations цим проходом не тестувалися.
+Сервіси не запускалися/не перезапускалися, команди не реєструвалися, rules не deploy, main не merge.
+Нові MIME/case/AI модулі — перевірені будівельні блоки; повний автоматичний email workflow ще не підключений.
+AI schema не доводить правдивість довільного prose; будь-який proposal потребує людини.
+Карти report — огляд двох точок, не дорожній маршрут; навігаційні посилання будують маршрут на пристрої.
+Manual Eircode не переписує depot street address: оператор звіряє їх перед пересиланням.
+Todo cap — простий ліміт, не транзакційна quota. Fatal listener/auth помилка може вимагати reload/rebinding; claimed дію автоматично не повторюємо.
+Встановлення залежностей попереджало про Node&gt;=24 для вже наявного @zxing/library; поточний Node20.14 пройшов локальні gates. Runtime upgrade не входив у цей прохід.
+
+## Передача іншому агенту
+
+Почати з AGENTS, AGENT_ASSIGNMENTS і CURRENT. Немає активного writer або незавершеної дорученої задачі.
+Не повторювати закриті картки. Для відкладеної роботи спочатку отримати відсутнє рішення/доступ; потім claim одного task у CURRENT/state, test-first мінімум, journal, scoped commit/push.
+Продовжувати з `codex`; зберегти несумісні з scope приватні/користувацькі файли.
+</pre></article>
+<article id="doc-50" tabindex="-1" hidden><p class="path"><a href="docs/security-and-privacy.md">docs/security-and-privacy.md</a></p><h1>Безопасность, данные клиентов и пределы автономности</h1><pre class="markdown"># Безопасность, данные клиентов и пределы автономности
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -4438,7 +4562,7 @@ Dry Run должен проверяться инструментально по 
 
 Текущие риски для S09: terminal task удаляется до подтверждения Discord reply; claimed restart не имеет доказанного recovery; sender в worker не проверяется; parcel rules только map, не вложенная schema; optional Maps exception может терять основную карточку. Это не сертификат эксплуатации или воспроизведённая атака, а наблюдаемые точки проверки.
 </pre></article>
-<article id="doc-50" tabindex="-1" hidden><p class="path"><a href="docs/skills-policy.md">docs/skills-policy.md</a></p><h1>Project skill: минимум, который нужен</h1><pre class="markdown"># Project skill: минимум, который нужен
+<article id="doc-51" tabindex="-1" hidden><p class="path"><a href="docs/skills-policy.md">docs/skills-policy.md</a></p><h1>Project skill: минимум, который нужен</h1><pre class="markdown"># Project skill: минимум, который нужен
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -4463,7 +4587,7 @@ Skill обновлён для существующих bot/Firestore/offscreen, 
 
 Актуальне джерело skill — [.agents/skills/dpd-task-delivery/SKILL.md](../.agents/skills/dpd-task-delivery/SKILL.md). Архівний skill.zip не встановлюється: він дублював би застарілі інструкції.
 </pre></article>
-<article id="doc-51" tabindex="-1" hidden><p class="path"><a href="docs/SOURCES.md">docs/SOURCES.md</a></p><h1>Источники, происхождение и границы применимости</h1><pre class="markdown"># Источники, происхождение и границы применимости
+<article id="doc-52" tabindex="-1" hidden><p class="path"><a href="docs/SOURCES.md">docs/SOURCES.md</a></p><h1>Источники, происхождение и границы применимости</h1><pre class="markdown"># Источники, происхождение и границы применимости
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -4511,7 +4635,7 @@ Skill обновлён для существующих bot/Firestore/offscreen, 
 
 Не переносить из source comments утверждения про бесплатные Maps quotas, вечный lifetime offscreen или полную надёжность UID в качестве подтверждённых внешних фактов. Поручение касается согласования MD с приложенными исходниками.
 </pre></article>
-<article id="doc-52" tabindex="-1" hidden><p class="path"><a href="docs/testing-and-commits.md">docs/testing-and-commits.md</a></p><h1>TDD, регрессии и небольшие коммиты</h1><pre class="markdown"># TDD, регрессии и небольшие коммиты
+<article id="doc-53" tabindex="-1" hidden><p class="path"><a href="docs/testing-and-commits.md">docs/testing-and-commits.md</a></p><h1>TDD, регрессии и небольшие коммиты</h1><pre class="markdown"># TDD, регрессии и небольшие коммиты
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -4580,7 +4704,7 @@ git diff --cached --check
 
 [TEST_MATRIX](discord/TEST_MATRIX.md) разделяет source, offline, Emulator, browser и authorized integration. Старые baseline logs — история первого ZIP; новые проверки имеют собственные cwd/source hash и не наследуют PASS автоматически.
 </pre></article>
-<article id="doc-53" tabindex="-1" hidden><p class="path"><a href="docs/TESTING.md">docs/TESTING.md</a></p><h1>Testing strategy</h1><pre class="markdown"># Testing strategy
+<article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/TESTING.md">docs/TESTING.md</a></p><h1>Testing strategy</h1><pre class="markdown"># Testing strategy
 
 Цей документ пояснює, які ризики перевіряють тести DPD Assistance, де вони
 зберігаються та як додавати нові сценарії. Це жива карта покриття, а не копія
@@ -5694,7 +5818,7 @@ evaluation, semantic prose-proof or prompt-injection immunity claim.
 ## S09-14 report follow-up
 Existing report/command groups extended before code: optional normalized Eircode, invalid destination, selected-event override/recovery, no-origin navigation links, optional two-call map/POD and safe failure. Synthetic fetch only; real Discord/Maps/mobile not tested. Focused24/24 including todo regression after handler integration.
 </pre></article>
-<article id="doc-54" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
+<article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5812,7 +5936,7 @@ Drive VM probe: його linker не підтримує нинішній module 
 під час встановлення комплекту. Для інструкцій — roadmap/doc validators,
 `node --test tools/tests/*.test.mjs` та генерація offline reader.
 </pre></article>
-<article id="doc-55" tabindex="-1" hidden><p class="path"><a href="OWNER_DECISION_DISCORD_RU.md">OWNER_DECISION_DISCORD_RU.md</a></p><h1>Решение OWNER-D02 — учесть существующий Discord-бот</h1><pre class="markdown"># Решение OWNER-D02 — учесть существующий Discord-бот
+<article id="doc-56" tabindex="-1" hidden><p class="path"><a href="OWNER_DECISION_DISCORD_RU.md">OWNER_DECISION_DISCORD_RU.md</a></p><h1>Решение OWNER-D02 — учесть существующий Discord-бот</h1><pre class="markdown"># Решение OWNER-D02 — учесть существующий Discord-бот
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5841,7 +5965,7 @@ Drive VM probe: його linker не підтримує нинішній module 
 
 [Discord contract](docs/discord-bot.md) · [Queue](docs/queue-contract.md) · [Runbook](docs/discord/RUNBOOK_RU.md) · [Roadmap](roadmap/ROADMAP.md) · [Обновление v1.2](docs/audit/UPDATE_V1_2.md).
 </pre></article>
-<article id="doc-56" tabindex="-1" hidden><p class="path"><a href="OWNER_DECISION_GMAIL_RU.md">OWNER_DECISION_GMAIL_RU.md</a></p><h1>Решение: ИИ готовит ответ, человек проверяет</h1><pre class="markdown"># Решение: ИИ готовит ответ, человек проверяет
+<article id="doc-57" tabindex="-1" hidden><p class="path"><a href="OWNER_DECISION_GMAIL_RU.md">OWNER_DECISION_GMAIL_RU.md</a></p><h1>Решение: ИИ готовит ответ, человек проверяет</h1><pre class="markdown"># Решение: ИИ готовит ответ, человек проверяет
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5880,7 +6004,7 @@ G_GMAIL_POLICY остаётся `pending`, поскольку частично �
 
 Установить через сравнение и объединение файлов по [INSTALL_RU.md](INSTALL_RU.md). Не заменять заполненный `.workflow/CURRENT.md` или `.workflow/state.json` новым шаблоном; сохранить уже выполненную работу в реальном checkout.
 </pre></article>
-<article id="doc-57" tabindex="-1" hidden><p class="path"><a href="prompts/CHATGPT_PROJECT_RU.md">prompts/CHATGPT_PROJECT_RU.md</a></p><h1>Контекст для обсуждения проекта</h1><pre class="markdown"># Контекст для обсуждения проекта
+<article id="doc-58" tabindex="-1" hidden><p class="path"><a href="prompts/CHATGPT_PROJECT_RU.md">prompts/CHATGPT_PROJECT_RU.md</a></p><h1>Контекст для обсуждения проекта</h1><pre class="markdown"># Контекст для обсуждения проекта
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5908,7 +6032,7 @@ folder dry-run уже захищено регресіями. Перевірки 
 
 Источник — последний gmail-ai-assistant-main.zip: Chrome + существующий Node Discord bot + Firestore. Сначала GITHUB_BASELINE, не старый BASELINE. Зберігай обидва lockfile та поточний набір test/ (docs/TESTING.md); поддерживай оба contract.js и rules согласованно. Для S09 читай discord-bot/queue-contract. Не пересоздавай бота. Parcel/barcodes/retry вже реалізовані; перевірити чинні контракти й регресії; register/start/deploy не выполнять как локальную проверку. OWNER-D01: почтовые ответы только с проверкой человека; /todo done не email approval.
 </pre></article>
-<article id="doc-58" tabindex="-1" hidden><p class="path"><a href="prompts/CONTINUE_RU.md">prompts/CONTINUE_RU.md</a></p><h1>Продолжить без повторного исследования всего проекта</h1><pre class="markdown"># Продолжить без повторного исследования всего проекта
+<article id="doc-59" tabindex="-1" hidden><p class="path"><a href="prompts/CONTINUE_RU.md">prompts/CONTINUE_RU.md</a></p><h1>Продолжить без повторного исследования всего проекта</h1><pre class="markdown"># Продолжить без повторного исследования всего проекта
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5930,7 +6054,7 @@ folder dry-run уже захищено регресіями. Перевірки 
 
 Источник — последний gmail-ai-assistant-main.zip: Chrome + существующий Node Discord bot + Firestore. Сначала GITHUB_BASELINE, не старый BASELINE. Зберігай обидва lockfile та поточний набір test/ (docs/TESTING.md); поддерживай оба contract.js и rules согласованно. Для S09 читай discord-bot/queue-contract. Не пересоздавай бота. Parcel/barcodes/retry вже реалізовані; перевірити чинні контракти й регресії; register/start/deploy не выполнять как локальную проверку. OWNER-D01: почтовые ответы только с проверкой человека; /todo done не email approval.
 </pre></article>
-<article id="doc-59" tabindex="-1" hidden><p class="path"><a href="prompts/HANDOFF_RU.md">prompts/HANDOFF_RU.md</a></p><h1>Завершить сессию и сохранить состояние</h1><pre class="markdown"># Завершить сессию и сохранить состояние
+<article id="doc-60" tabindex="-1" hidden><p class="path"><a href="prompts/HANDOFF_RU.md">prompts/HANDOFF_RU.md</a></p><h1>Завершить сессию и сохранить состояние</h1><pre class="markdown"># Завершить сессию и сохранить состояние
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5947,7 +6071,7 @@ ID/scope, фактические branch/base SHA, изменённые пути,
 Дай короткий текст продолжения, который опирается на файлы, не весь чат.
 ```
 </pre></article>
-<article id="doc-60" tabindex="-1" hidden><p class="path"><a href="prompts/READ_ONLY_RU.md">prompts/READ_ONLY_RU.md</a></p><h1>Read-only знакомство с DPD Assistance</h1><pre class="markdown"># Read-only знакомство с DPD Assistance
+<article id="doc-61" tabindex="-1" hidden><p class="path"><a href="prompts/READ_ONLY_RU.md">prompts/READ_ONLY_RU.md</a></p><h1>Read-only знакомство с DPD Assistance</h1><pre class="markdown"># Read-only знакомство с DPD Assistance
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5969,7 +6093,7 @@ roadmap по одному запросу объяснить код. Непров
 
 Источник — последний gmail-ai-assistant-main.zip: Chrome + существующий Node Discord bot + Firestore. Сначала GITHUB_BASELINE, не старый BASELINE. Зберігай обидва lockfile та поточний набір test/ (docs/TESTING.md); поддерживай оба contract.js и rules согласованно. Для S09 читай discord-bot/queue-contract. Не пересоздавай бота. Parcel/barcodes/retry вже реалізовані; перевірити чинні контракти й регресії; register/start/deploy не выполнять как локальную проверку. OWNER-D01: почтовые ответы только с проверкой человека; /todo done не email approval.
 </pre></article>
-<article id="doc-61" tabindex="-1" hidden><p class="path"><a href="prompts/README.md">prompts/README.md</a></p><h1>Готовые сообщения агенту</h1><pre class="markdown"># Готовые сообщения агенту
+<article id="doc-62" tabindex="-1" hidden><p class="path"><a href="prompts/README.md">prompts/README.md</a></p><h1>Готовые сообщения агенту</h1><pre class="markdown"># Готовые сообщения агенту
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -5985,7 +6109,7 @@ roadmap по одному запросу объяснить код. Непров
 
 Перед отправкой заменять только обозначенные `&lt;TASK_ID&gt;` и `&lt;BASE_SHA&gt;` фактическими значениями. Не вставлять tokens, клиентские письма или ZIP целиком в каждый запрос. Первое сообщение для реализации S00-01: [AGENT_START_RU.md](../AGENT_START_RU.md).
 </pre></article>
-<article id="doc-62" tabindex="-1" hidden><p class="path"><a href="prompts/REVIEW_RU.md">prompts/REVIEW_RU.md</a></p><h1>Проверка ограниченного diff без редактирования</h1><pre class="markdown"># Проверка ограниченного diff без редактирования
+<article id="doc-63" tabindex="-1" hidden><p class="path"><a href="prompts/REVIEW_RU.md">prompts/REVIEW_RU.md</a></p><h1>Проверка ограниченного diff без редактирования</h1><pre class="markdown"># Проверка ограниченного diff без редактирования
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6013,7 +6137,7 @@ ambiguous identifiers, неверные status/calendar decisions, stale plans,
 
 Источник — последний gmail-ai-assistant-main.zip: Chrome + существующий Node Discord bot + Firestore. Сначала GITHUB_BASELINE, не старый BASELINE. Зберігай обидва lockfile та поточний набір test/ (docs/TESTING.md); поддерживай оба contract.js и rules согласованно. Для S09 читай discord-bot/queue-contract. Не пересоздавай бота. Parcel/barcodes/retry вже реалізовані; перевірити чинні контракти й регресії; register/start/deploy не выполнять как локальную проверку. OWNER-D01: почтовые ответы только с проверкой человека; /todo done не email approval.
 </pre></article>
-<article id="doc-63" tabindex="-1" hidden><p class="path"><a href="prompts/TASK_RU.md">prompts/TASK_RU.md</a></p><h1>Выполнить одну карточку</h1><pre class="markdown"># Выполнить одну карточку
+<article id="doc-64" tabindex="-1" hidden><p class="path"><a href="prompts/TASK_RU.md">prompts/TASK_RU.md</a></p><h1>Выполнить одну карточку</h1><pre class="markdown"># Выполнить одну карточку
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6047,7 +6171,7 @@ exit codes, остаточным риском и ближайшим шагом.
 
 Источник — последний gmail-ai-assistant-main.zip: Chrome + существующий Node Discord bot + Firestore. Сначала GITHUB_BASELINE, не старый BASELINE. Зберігай обидва lockfile та поточний набір test/ (docs/TESTING.md); поддерживай оба contract.js и rules согласованно. Для S09 читай discord-bot/queue-contract. Не пересоздавай бота. Parcel/barcodes/retry вже реалізовані; перевірити чинні контракти й регресії; register/start/deploy не выполнять как локальную проверку. OWNER-D01: почтовые ответы только с проверкой человека; /todo done не email approval.
 </pre></article>
-<article id="doc-64" tabindex="-1" hidden><p class="path"><a href="QUESTIONS_RU.md">QUESTIONS_RU.md</a></p><h1>Решения владельца: что пока не определено</h1><pre class="markdown"># Решения владельца: что пока не определено
+<article id="doc-65" tabindex="-1" hidden><p class="path"><a href="QUESTIONS_RU.md">QUESTIONS_RU.md</a></p><h1>Решения владельца: что пока не определено</h1><pre class="markdown"># Решения владельца: что пока не определено
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6090,7 +6214,7 @@ G_PRIVACY также охватывает Discord, Firestore и Maps; G_RELEASE 
 
 Уже известно: существующий бот должен учитываться в MD (OWNER-D02), а AI-ответы пока проверяет человек (OWNER-D01). Эти вопросы повторно не открывать.
 </pre></article>
-<article id="doc-65" tabindex="-1" hidden><p class="path"><a href="roadmap/MIGRATIONS.md">roadmap/MIGRATIONS.md</a></p><h1>Совместимость и последовательность изменений данных</h1><pre class="markdown"># Совместимость и последовательность изменений данных
+<article id="doc-66" tabindex="-1" hidden><p class="path"><a href="roadmap/MIGRATIONS.md">roadmap/MIGRATIONS.md</a></p><h1>Совместимость и последовательность изменений данных</h1><pre class="markdown"># Совместимость и последовательность изменений данных
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6128,7 +6252,7 @@ S09 изменения не создают новую БД: используют
 
 Не переприсваивать executorUid у claimed задачи без сверки её внешнего исхода. Не очищать tasks/todos массово как migration step. Retention и доставка terminal reply — S09-04; browser rules — S09-03; lifecycle — S09-05. Локальные config файлы нового снимка импортируются статически; не мигрировать несуществующий src/storage по старой карте.
 </pre></article>
-<article id="doc-66" tabindex="-1" hidden><p class="path"><a href="roadmap/MILESTONES.md">roadmap/MILESTONES.md</a></p><h1>Проверяемые вехи, не большие коммиты</h1><pre class="markdown"># Проверяемые вехи, не большие коммиты
+<article id="doc-67" tabindex="-1" hidden><p class="path"><a href="roadmap/MILESTONES.md">roadmap/MILESTONES.md</a></p><h1>Проверяемые вехи, не большие коммиты</h1><pre class="markdown"># Проверяемые вехи, не большие коммиты
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6181,7 +6305,7 @@ S09 изменения не создают новую БД: используют
 Окрема можливість після S09-02/S09-04/S09-06 (прямі Maps URLs без provider calls); не змінює готовність
 базового пілоту S09-12. Реалізація ще не почалась.
 </pre></article>
-<article id="doc-67" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-01.md">roadmap/tasks/S00-01.md</a></p><h1>S00-01 — Безопасно принять существующий репозиторий</h1><pre class="markdown"># S00-01 — Безопасно принять существующий репозиторий
+<article id="doc-68" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-01.md">roadmap/tasks/S00-01.md</a></p><h1>S00-01 — Безопасно принять существующий репозиторий</h1><pre class="markdown"># S00-01 — Безопасно принять существующий репозиторий
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6269,7 +6393,7 @@ Evidence: `.workflow/evidence/S00-01.json`. Обновить существую�
 
 Принять именно последний GitHub ZIP: он содержит bot/Firestore/offscreen и не содержит .git. Исторические commit SHA и dirty tree первого ZIP не подставлять как актуальные. Сохранить существующие docs/SECURITY.md и поточні product tests; сверить фактический checkout.
 </pre></article>
-<article id="doc-68" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-02.md">roadmap/tasks/S00-02.md</a></p><h1>S00-02 — Воспроизводимо установить и собрать toolchain</h1><pre class="markdown"># S00-02 — Воспроизводимо установить и собрать toolchain
+<article id="doc-69" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-02.md">roadmap/tasks/S00-02.md</a></p><h1>S00-02 — Воспроизводимо установить и собрать toolchain</h1><pre class="markdown"># S00-02 — Воспроизводимо установить и собрать toolchain
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6363,7 +6487,7 @@ Evidence: `.workflow/evidence/S00-02.json`. Обновить существую�
 
 Две установки: root npm ci и npm --prefix bot ci, два lockfile. Сборка включает offscreen. src/config/local.js отсутствует в архиве и статически импортируется: synthetic build config готовить отдельно без перезаписи и без bot secrets. Не запускать bot start/register в build tests.
 </pre></article>
-<article id="doc-69" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-03.md">roadmap/tasks/S00-03.md</a></p><h1>S00-03 — Создать независимый fixture test harness</h1><pre class="markdown"># S00-03 — Создать независимый fixture test harness
+<article id="doc-70" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-03.md">roadmap/tasks/S00-03.md</a></p><h1>S00-03 — Создать независимый fixture test harness</h1><pre class="markdown"># S00-03 — Создать независимый fixture test harness
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6458,7 +6582,7 @@ Evidence: `.workflow/evidence/S00-03.json`. Обновить существую�
 
 Root npm test уже существует, test/ містить поточні модульні регресії, зокрема bot imports. Сохранять их; harness расширяется Firebase/Discord/Chrome fixtures без import-time startup и real credentials. Отсутствующий discord.js означает необходимость bot install, не product RED.
 </pre></article>
-<article id="doc-70" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-04.md">roadmap/tasks/S00-04.md</a></p><h1>S00-04 — Подключить обязательные CI проверки</h1><pre class="markdown"># S00-04 — Подключить обязательные CI проверки
+<article id="doc-71" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-04.md">roadmap/tasks/S00-04.md</a></p><h1>S00-04 — Подключить обязательные CI проверки</h1><pre class="markdown"># S00-04 — Подключить обязательные CI проверки
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6547,7 +6671,7 @@ Evidence: `.workflow/evidence/S00-04.json`. Обновить существую�
 
 CI устанавливает оба locks, запускает старый security suite и новые тесты; не имеет production credentials и не выполняет Discord register, bot start или Firestore deploy. Bot tests и docs tooling не выдаются за реальные внешние проверки.
 </pre></article>
-<article id="doc-71" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-05.md">roadmap/tasks/S00-05.md</a></p><h1>S00-05 — Проверить обнаружение инструкций в выбранном агенте</h1><pre class="markdown"># S00-05 — Проверить обнаружение инструкций в выбранном агенте
+<article id="doc-72" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S00-05.md">roadmap/tasks/S00-05.md</a></p><h1>S00-05 — Проверить обнаружение инструкций в выбранном агенте</h1><pre class="markdown"># S00-05 — Проверить обнаружение инструкций в выбранном агенте
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6634,7 +6758,7 @@ Evidence: `.workflow/evidence/S00-05.json`. Обновить существую�
 
 Агент должен обнаружить bot/queue contracts, два runtime и S09. Read-only проверка называет підключені find/all/todo/parcel/barcodes/retry, не запускает сервисы.
 </pre></article>
-<article id="doc-72" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-01.md">roadmap/tasks/S01-01.md</a></p><h1>S01-01 — Сделать Drive Dry Run действительно немутирующим</h1><pre class="markdown"># S01-01 — Сделать Drive Dry Run действительно немутирующим
+<article id="doc-73" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-01.md">roadmap/tasks/S01-01.md</a></p><h1>S01-01 — Сделать Drive Dry Run действительно немутирующим</h1><pre class="markdown"># S01-01 — Сделать Drive Dry Run действительно немутирующим
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6725,7 +6849,7 @@ Evidence: `.workflow/evidence/S01-01.json`. Обновить существую�
 
 Перепроверить исходный defect на новой source-копии с hash/cwd; логи первого ZIP исторические. Новый scanner сохраняет вызов folderOf до dryRun guard, но это статическое наблюдение отдельно от нового runtime probe.
 </pre></article>
-<article id="doc-73" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-02.md">roadmap/tasks/S01-02.md</a></p><h1>S01-02 — Проверять вкладку, origin и границу инъекции</h1><pre class="markdown"># S01-02 — Проверять вкладку, origin и границу инъекции
+<article id="doc-74" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-02.md">roadmap/tasks/S01-02.md</a></p><h1>S01-02 — Проверять вкладку, origin и границу инъекции</h1><pre class="markdown"># S01-02 — Проверять вкладку, origin и границу инъекции
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6818,7 +6942,7 @@ Evidence: `.workflow/evidence/S01-02.json`. Обновить существую�
 
 В новом popup уже есть hostname/protocol checks, а queue executor ищет DEPOT_URL_PATTERN. Проверять достаточность обоих путей; не утверждать, что guards отсутствуют. Worker sender boundary — отдельная S09-05.
 </pre></article>
-<article id="doc-74" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-03.md">roadmap/tasks/S01-03.md</a></p><h1>S01-03 — Убрать чувствительные данные из журналов и ошибок</h1><pre class="markdown"># S01-03 — Убрать чувствительные данные из журналов и ошибок
+<article id="doc-75" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-03.md">roadmap/tasks/S01-03.md</a></p><h1>S01-03 — Убрать чувствительные данные из журналов и ошибок</h1><pre class="markdown"># S01-03 — Убрать чувствительные данные из журналов и ошибок
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -6915,7 +7039,7 @@ Evidence: `.workflow/evidence/S01-03.json`. Обновить существую�
 
 В обоих runtime уже есть safeErrorMessage. Сохранить redaction, проверить непокрытые logger/error paths и projection через executor/render. Не считать старый raw URL defect автоматически актуальным после новых helpers.
 </pre></article>
-<article id="doc-75" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-04.md">roadmap/tasks/S01-04.md</a></p><h1>S01-04 — Разделить API ошибки и ограничить повторы</h1><pre class="markdown"># S01-04 — Разделить API ошибки и ограничить повторы
+<article id="doc-76" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-04.md">roadmap/tasks/S01-04.md</a></p><h1>S01-04 — Разделить API ошибки и ограничить повторы</h1><pre class="markdown"># S01-04 — Разделить API ошибки и ограничить повторы
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7011,7 +7135,7 @@ Evidence: `.workflow/evidence/S01-04.json`. Обновить существую�
 
 Bounded transport/errors применяются и к bot queue/Maps. Timeout claimed отличается от pending и delivery error. Детальная реализация lost reply — S09-04, optional Maps — S09-07; не объединять всё в один refactor.
 </pre></article>
-<article id="doc-76" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-05.md">roadmap/tasks/S01-05.md</a></p><h1>S01-05 — Валидировать локальную конфигурацию двух runtime</h1><pre class="markdown"># S01-05 — Валидировать локальную конфигурацию двух runtime
+<article id="doc-77" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S01-05.md">roadmap/tasks/S01-05.md</a></p><h1>S01-05 — Валидировать локальную конфигурацию двух runtime</h1><pre class="markdown"># S01-05 — Валидировать локальную конфигурацию двух runtime
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7098,7 +7222,7 @@ fix(config): [S01-05] validate bot and extension configuration
 
 Evidence: `.workflow/evidence/S01-05.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-77" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-01.md">roadmap/tasks/S02-01.md</a></p><h1>S02-01 — Зафиксировать поддерживаемые barcode форматы</h1><pre class="markdown"># S02-01 — Зафиксировать поддерживаемые barcode форматы
+<article id="doc-78" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-01.md">roadmap/tasks/S02-01.md</a></p><h1>S02-01 — Зафиксировать поддерживаемые barcode форматы</h1><pre class="markdown"># S02-01 — Зафиксировать поддерживаемые barcode форматы
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7182,7 +7306,7 @@ Evidence: `.workflow/evidence/S02-01.json`. Обновить существую�
 
 В новом source snapshot parser находится в `parseBarcode()` файла `src/depot/labelBarcode.js`. Отдельного `labelParser.js` нет; не восстанавливать его из первого ZIP. Проверять существующий parser, а не создавать второй ради старого пути.
 </pre></article>
-<article id="doc-78" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-02.md">roadmap/tasks/S02-02.md</a></p><h1>S02-02 — Не скрывать неоднозначность номера и parcel</h1><pre class="markdown"># S02-02 — Не скрывать неоднозначность номера и parcel
+<article id="doc-79" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-02.md">roadmap/tasks/S02-02.md</a></p><h1>S02-02 — Не скрывать неоднозначность номера и parcel</h1><pre class="markdown"># S02-02 — Не скрывать неоднозначность номера и parcel
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7263,7 +7387,7 @@ fix(barcodes): [S02-02] preserve ambiguous identifiers
 
 Evidence: `.workflow/evidence/S02-02.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-79" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-03.md">roadmap/tasks/S02-03.md</a></p><h1>S02-03 — Уточнить дату и детерминированное именование</h1><pre class="markdown"># S02-03 — Уточнить дату и детерминированное именование
+<article id="doc-80" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-03.md">roadmap/tasks/S02-03.md</a></p><h1>S02-03 — Уточнить дату и детерминированное именование</h1><pre class="markdown"># S02-03 — Уточнить дату и детерминированное именование
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7346,7 +7470,7 @@ fix(naming): [S02-03] make filing names policy-driven
 
 Evidence: `.workflow/evidence/S02-03.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-80" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-04.md">roadmap/tasks/S02-04.md</a></p><h1>S02-04 — Проверять извлечение consignment из текста</h1><pre class="markdown"># S02-04 — Проверять извлечение consignment из текста
+<article id="doc-81" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S02-04.md">roadmap/tasks/S02-04.md</a></p><h1>S02-04 — Проверять извлечение consignment из текста</h1><pre class="markdown"># S02-04 — Проверять извлечение consignment из текста
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7432,7 +7556,7 @@ test(parser): [S02-04] bound consignment candidate extraction
 
 Evidence: `.workflow/evidence/S02-04.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-81" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-01.md">roadmap/tasks/S03-01.md</a></p><h1>S03-01 — Проверять depot HTML и результаты lookup</h1><pre class="markdown"># S03-01 — Проверять depot HTML и результаты lookup
+<article id="doc-82" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-01.md">roadmap/tasks/S03-01.md</a></p><h1>S03-01 — Проверять depot HTML и результаты lookup</h1><pre class="markdown"># S03-01 — Проверять depot HTML и результаты lookup
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7524,7 +7648,7 @@ Evidence: `.workflow/evidence/S03-01.json`. Обновить существую�
 
 Lookup используется и ботом. Contract включает scans/drop/timing; executor отправляет минимизированную проекцию. Проверять response shape против bot render, а не только popup.
 </pre></article>
-<article id="doc-82" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-02.md">roadmap/tasks/S03-02.md</a></p><h1>S03-02 — Реализовать согласованный рабочий календарь</h1><pre class="markdown"># S03-02 — Реализовать согласованный рабочий календарь
+<article id="doc-83" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-02.md">roadmap/tasks/S03-02.md</a></p><h1>S03-02 — Реализовать согласованный рабочий календарь</h1><pre class="markdown"># S03-02 — Реализовать согласованный рабочий календарь
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7610,7 +7734,7 @@ Evidence: `.workflow/evidence/S03-02.json`. Обновить существую�
 
 Согласованный calendar/timezone должен быть общим для будущего parcel handler и depot logic. Текущий validateFutureWorkday использует local timezone процесса Node и не заменяет depot holidays policy.
 </pre></article>
-<article id="doc-83" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-03.md">roadmap/tasks/S03-03.md</a></p><h1>S03-03 — Зафиксировать eligibility policy статусов</h1><pre class="markdown"># S03-03 — Зафиксировать eligibility policy статусов
+<article id="doc-84" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-03.md">roadmap/tasks/S03-03.md</a></p><h1>S03-03 — Зафиксировать eligibility policy статусов</h1><pre class="markdown"># S03-03 — Зафиксировать eligibility policy статусов
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7692,7 +7816,7 @@ feat(depot): [S03-03] enforce confirmed eligibility rules
 
 Evidence: `.workflow/evidence/S03-03.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-84" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-04.md">roadmap/tasks/S03-04.md</a></p><h1>S03-04 — Показывать полный немутирующий depot preview</h1><pre class="markdown"># S03-04 — Показывать полный немутирующий depot preview
+<article id="doc-85" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-04.md">roadmap/tasks/S03-04.md</a></p><h1>S03-04 — Показывать полный немутирующий depot preview</h1><pre class="markdown"># S03-04 — Показывать полный немутирующий depot preview
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7778,7 +7902,7 @@ Evidence: `.workflow/evidence/S03-04.json`. Обновить существую�
 
 Preview должен быть пригоден и для Discord, но текущий all выводит только count/details без durable preview ID. Не называть этот summary уже готовым approval protocol.
 </pre></article>
-<article id="doc-85" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-05.md">roadmap/tasks/S03-05.md</a></p><h1>S03-05 — Безопасно применять подтверждённый reschedule</h1><pre class="markdown"># S03-05 — Безопасно применять подтверждённый reschedule
+<article id="doc-86" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-05.md">roadmap/tasks/S03-05.md</a></p><h1>S03-05 — Безопасно применять подтверждённый reschedule</h1><pre class="markdown"># S03-05 — Безопасно применять подтверждённый reschedule
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7867,7 +7991,7 @@ Evidence: `.workflow/evidence/S03-05.json`. Обновить существую�
 
 Общий apply используется popup и S09-09. Явне dry_run:false є live-підтвердженням; внутрішня перевірка актуальності цілі й дати не додає другого підтвердження. Не вызывать повторно другую depot-вкладку при неизвестном внешнем результате.
 </pre></article>
-<article id="doc-86" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-01.md">roadmap/tasks/S04-01.md</a></p><h1>S04-01 — Проверять Drive folder scope и полный список файлов</h1><pre class="markdown"># S04-01 — Проверять Drive folder scope и полный список файлов
+<article id="doc-87" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-01.md">roadmap/tasks/S04-01.md</a></p><h1>S04-01 — Проверять Drive folder scope и полный список файлов</h1><pre class="markdown"># S04-01 — Проверять Drive folder scope и полный список файлов
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -7948,7 +8072,7 @@ fix(drive): [S04-01] bound folder listing and pagination
 
 Evidence: `.workflow/evidence/S04-01.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-87" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-02.md">roadmap/tasks/S04-02.md</a></p><h1>S04-02 — Согласовать Drive plan/apply и коллизии имён</h1><pre class="markdown"># S04-02 — Согласовать Drive plan/apply и коллизии имён
+<article id="doc-88" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-02.md">roadmap/tasks/S04-02.md</a></p><h1>S04-02 — Согласовать Drive plan/apply и коллизии имён</h1><pre class="markdown"># S04-02 — Согласовать Drive plan/apply и коллизии имён
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8030,7 +8154,7 @@ feat(drive): [S04-02] validate filing plans before apply
 
 Evidence: `.workflow/evidence/S04-02.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-88" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-03.md">roadmap/tasks/S04-03.md</a></p><h1>S04-03 — Выбрать и реализовать восстанавливаемый runner</h1><pre class="markdown"># S04-03 — Выбрать и реализовать восстанавливаемый runner
+<article id="doc-89" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-03.md">roadmap/tasks/S04-03.md</a></p><h1>S04-03 — Выбрать и реализовать восстанавливаемый runner</h1><pre class="markdown"># S04-03 — Выбрать и реализовать восстанавливаемый runner
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8124,7 +8248,7 @@ Evidence: `.workflow/evidence/S04-03.json`. Обновить существую�
 
 Offscreen/worker уже существуют для Discord queue, но scanner не подключён к ним. Использовать их как baseline анализа, не создавать второй queue service и не объявлять Drive migration автоматически выполненной.
 </pre></article>
-<article id="doc-89" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-04.md">roadmap/tasks/S04-04.md</a></p><h1>S04-04 — Добавить journal, cancel и сверку неопределённых writes</h1><pre class="markdown"># S04-04 — Добавить journal, cancel и сверку неопределённых writes
+<article id="doc-90" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-04.md">roadmap/tasks/S04-04.md</a></p><h1>S04-04 — Добавить journal, cancel и сверку неопределённых writes</h1><pre class="markdown"># S04-04 — Добавить journal, cancel и сверку неопределённых writes
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8211,7 +8335,7 @@ Evidence: `.workflow/evidence/S04-04.json`. Обновить существую�
 
 Firestore tasks текущего бота не являются полноценным журналом Drive batch. Совместимость runner и queue ownership описать до внедрения, избегая второй конкурирующей модели результата.
 </pre></article>
-<article id="doc-90" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-05.md">roadmap/tasks/S04-05.md</a></p><h1>S04-05 — Проверить Drive на разрешённой тестовой папке</h1><pre class="markdown"># S04-05 — Проверить Drive на разрешённой тестовой папке
+<article id="doc-91" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-05.md">roadmap/tasks/S04-05.md</a></p><h1>S04-05 — Проверить Drive на разрешённой тестовой папке</h1><pre class="markdown"># S04-05 — Проверить Drive на разрешённой тестовой папке
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8291,7 +8415,7 @@ test(drive): [S04-05] record approved sandbox roundtrip
 
 Evidence: `.workflow/evidence/S04-05.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-91" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-01.md">roadmap/tasks/S05-01.md</a></p><h1>S05-01 — Обрабатывать все страницы Gmail очереди</h1><pre class="markdown"># S05-01 — Обрабатывать все страницы Gmail очереди
+<article id="doc-92" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-01.md">roadmap/tasks/S05-01.md</a></p><h1>S05-01 — Обрабатывать все страницы Gmail очереди</h1><pre class="markdown"># S05-01 — Обрабатывать все страницы Gmail очереди
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8376,7 +8500,7 @@ Evidence: `.workflow/evidence/S05-01.json`. Обновить существую�
 
 Gmail queue отличается от Firestore tasks и Discord todos. Исходный manifest теперь gmail.readonly; scope достаточность проверяется по конкретному будущему действию.
 </pre></article>
-<article id="doc-92" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-02.md">roadmap/tasks/S05-02.md</a></p><h1>S05-02 — Нормализовать Gmail message и MIME без side effects</h1><pre class="markdown"># S05-02 — Нормализовать Gmail message и MIME без side effects
+<article id="doc-93" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-02.md">roadmap/tasks/S05-02.md</a></p><h1>S05-02 — Нормализовать Gmail message и MIME без side effects</h1><pre class="markdown"># S05-02 — Нормализовать Gmail message и MIME без side effects
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8458,7 +8582,7 @@ feat(gmail): [S05-02] normalize bounded message context
 
 Evidence: `.workflow/evidence/S05-02.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-93" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-03.md">roadmap/tasks/S05-03.md</a></p><h1>S05-03 — Связать candidates письма с подтверждёнными depot фактами</h1><pre class="markdown"># S05-03 — Связать candidates письма с подтверждёнными depot фактами
+<article id="doc-94" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-03.md">roadmap/tasks/S05-03.md</a></p><h1>S05-03 — Связать candidates письма с подтверждёнными depot фактами</h1><pre class="markdown"># S05-03 — Связать candidates письма с подтверждёнными depot фактами
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8540,7 +8664,7 @@ feat(workflow): [S05-03] bind messages to verified case facts
 
 Evidence: `.workflow/evidence/S05-03.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-94" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-04.md">roadmap/tasks/S05-04.md</a></p><h1>S05-04 — Определить безопасную reply/draft policy</h1><pre class="markdown"># S05-04 — Определить безопасную reply/draft policy
+<article id="doc-95" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-04.md">roadmap/tasks/S05-04.md</a></p><h1>S05-04 — Определить безопасную reply/draft policy</h1><pre class="markdown"># S05-04 — Определить безопасную reply/draft policy
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8624,7 +8748,7 @@ feat(gmail): [S05-04] enforce approved reply policy
 
 Evidence: `.workflow/evidence/S05-04.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-95" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-05.md">roadmap/tasks/S05-05.md</a></p><h1>S05-05 — Создавать подтверждённый draft без повторных эффектов</h1><pre class="markdown"># S05-05 — Создавать подтверждённый draft без повторных эффектов
+<article id="doc-96" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-05.md">roadmap/tasks/S05-05.md</a></p><h1>S05-05 — Создавать подтверждённый draft без повторных эффектов</h1><pre class="markdown"># S05-05 — Создавать подтверждённый draft без повторных эффектов
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8711,7 +8835,7 @@ Evidence: `.workflow/evidence/S05-05.json`. Обновить существую�
 
 Новый manifest не выдаёт прав draft автоматически. Проверить и согласовать необходимые scopes до реального draft. Discord todo/confirm_live не разрешают письмо; OWNER-D01 сохраняется.
 </pre></article>
-<article id="doc-96" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-01.md">roadmap/tasks/S06-01.md</a></p><h1>S06-01 — Зафиксировать контракт и выбор AI provider</h1><pre class="markdown"># S06-01 — Зафиксировать контракт и выбор AI provider
+<article id="doc-97" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-01.md">roadmap/tasks/S06-01.md</a></p><h1>S06-01 — Зафиксировать контракт и выбор AI provider</h1><pre class="markdown"># S06-01 — Зафиксировать контракт и выбор AI provider
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8794,7 +8918,7 @@ feat(ai): [S06-01] define approved provider boundary
 
 Evidence: `.workflow/evidence/S06-01.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-97" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-02.md">roadmap/tasks/S06-02.md</a></p><h1>S06-02 — Валидировать AI output и игнорировать инструкции из данных</h1><pre class="markdown"># S06-02 — Валидировать AI output и игнорировать инструкции из данных
+<article id="doc-98" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-02.md">roadmap/tasks/S06-02.md</a></p><h1>S06-02 — Валидировать AI output и игнорировать инструкции из данных</h1><pre class="markdown"># S06-02 — Валидировать AI output и игнорировать инструкции из данных
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8876,7 +9000,7 @@ feat(ai): [S06-02] validate proposals and isolate untrusted text
 
 Evidence: `.workflow/evidence/S06-02.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-98" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-03.md">roadmap/tasks/S06-03.md</a></p><h1>S06-03 — Создать synthetic evaluation и критерии качества</h1><pre class="markdown"># S06-03 — Создать synthetic evaluation и критерии качества
+<article id="doc-99" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-03.md">roadmap/tasks/S06-03.md</a></p><h1>S06-03 — Создать synthetic evaluation и критерии качества</h1><pre class="markdown"># S06-03 — Создать synthetic evaluation и критерии качества
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -8957,7 +9081,7 @@ test(ai): [S06-03] add safety-weighted proposal evaluation
 
 Evidence: `.workflow/evidence/S06-03.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-99" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-04.md">roadmap/tasks/S06-04.md</a></p><h1>S06-04 — Проверить AI в разрешённом shadow режиме</h1><pre class="markdown"># S06-04 — Проверить AI в разрешённом shadow режиме
+<article id="doc-100" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-04.md">roadmap/tasks/S06-04.md</a></p><h1>S06-04 — Проверить AI в разрешённом shadow режиме</h1><pre class="markdown"># S06-04 — Проверить AI в разрешённом shadow режиме
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9037,7 +9161,7 @@ test(ai): [S06-04] record approved shadow evaluation
 
 Evidence: `.workflow/evidence/S06-04.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-100" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-05.md">roadmap/tasks/S06-05.md</a></p><h1>S06-05 — Связать ответ ИИ, ручную проверку и черновик Gmail</h1><pre class="markdown"># S06-05 — Связать ответ ИИ, ручную проверку и черновик Gmail
+<article id="doc-101" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-05.md">roadmap/tasks/S06-05.md</a></p><h1>S06-05 — Связать ответ ИИ, ручную проверку и черновик Gmail</h1><pre class="markdown"># S06-05 — Связать ответ ИИ, ручную проверку и черновик Gmail
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9129,7 +9253,7 @@ Evidence: `.workflow/evidence/S06-05.json`. Обновить CURRENT/state; со
 
 Место ручной проверки не переносится в Discord этим обновлением. Не публиковать письмо/AI reply в tasks или Discord без отдельного решения. Существующий bot не реализует email approval.
 </pre></article>
-<article id="doc-101" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S07-01.md">roadmap/tasks/S07-01.md</a></p><h1>S07-01 — Показывать фактический прогресс и partial outcomes</h1><pre class="markdown"># S07-01 — Показывать фактический прогресс и partial outcomes
+<article id="doc-102" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S07-01.md">roadmap/tasks/S07-01.md</a></p><h1>S07-01 — Показывать фактический прогресс и partial outcomes</h1><pre class="markdown"># S07-01 — Показывать фактический прогресс и partial outcomes
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9219,7 +9343,7 @@ Evidence: `.workflow/evidence/S07-01.json`. Обновить существую�
 
 Discord уже отдельная поверхность status/result. Не дублировать её как новый bot widget; синхронизировать смысл partial outcomes с S09-06/S09-09. Почтовые review controls остаются отдельными.
 </pre></article>
-<article id="doc-102" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S07-02.md">roadmap/tasks/S07-02.md</a></p><h1>S07-02 — Отображать только реально доступные capabilities</h1><pre class="markdown"># S07-02 — Отображать только реально доступные capabilities
+<article id="doc-103" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S07-02.md">roadmap/tasks/S07-02.md</a></p><h1>S07-02 — Отображать только реально доступные capabilities</h1><pre class="markdown"># S07-02 — Отображать только реально доступные capabilities
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9306,7 +9430,7 @@ Evidence: `.workflow/evidence/S07-02.json`. Обновить существую�
 
 Явно различать find/all/todo implemented и parcel/barcodes unavailable. Наличие offscreen queue и AI config не означает активный Gmail/AI capability.
 </pre></article>
-<article id="doc-103" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S07-03.md">roadmap/tasks/S07-03.md</a></p><h1>S07-03 — Проверить клавиатуру, ошибки и устойчивость popup</h1><pre class="markdown"># S07-03 — Проверить клавиатуру, ошибки и устойчивость popup
+<article id="doc-104" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S07-03.md">roadmap/tasks/S07-03.md</a></p><h1>S07-03 — Проверить клавиатуру, ошибки и устойчивость popup</h1><pre class="markdown"># S07-03 — Проверить клавиатуру, ошибки и устойчивость popup
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9389,7 +9513,7 @@ test(ui): [S07-03] improve keyboard and error-state accessibility
 
 Evidence: `.workflow/evidence/S07-03.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
 </pre></article>
-<article id="doc-104" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-01.md">roadmap/tasks/S08-01.md</a></p><h1>S08-01 — Проверить собранное расширение в Chrome</h1><pre class="markdown"># S08-01 — Проверить собранное расширение в Chrome
+<article id="doc-105" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-01.md">roadmap/tasks/S08-01.md</a></p><h1>S08-01 — Проверить собранное расширение в Chrome</h1><pre class="markdown"># S08-01 — Проверить собранное расширение в Chrome
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9479,7 +9603,7 @@ Evidence: `.workflow/evidence/S08-01.json`. Обновить существую�
 
 В Chrome проверять собранные popup/background/offscreen и message flow; Node fixtures недостаточны. Реальная очередь проверяется отдельно S09-12 на разрешённом project.
 </pre></article>
-<article id="doc-105" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-02.md">roadmap/tasks/S08-02.md</a></p><h1>S08-02 — Собирать чистый релизный артефакт</h1><pre class="markdown"># S08-02 — Собирать чистый релизный артефакт
+<article id="doc-106" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-02.md">roadmap/tasks/S08-02.md</a></p><h1>S08-02 — Собирать чистый релизный артефакт</h1><pre class="markdown"># S08-02 — Собирать чистый релизный артефакт
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9569,7 +9693,7 @@ Evidence: `.workflow/evidence/S08-02.json`. Обновить существую�
 
 Extension artifact не содержит bot/config/service account. Bot deploy и source bundle отдельны, оба locks сохранены. Отсутствующий файл ключа в ZIP не доказывает отсутствие inline secret в dist.
 </pre></article>
-<article id="doc-106" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-03.md">roadmap/tasks/S08-03.md</a></p><h1>S08-03 — Провести ограниченный межсервисный пилот</h1><pre class="markdown"># S08-03 — Провести ограниченный межсервисный пилот
+<article id="doc-107" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-03.md">roadmap/tasks/S08-03.md</a></p><h1>S08-03 — Провести ограниченный межсервисный пилот</h1><pre class="markdown"># S08-03 — Провести ограниченный межсервисный пилот
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9660,7 +9784,7 @@ Evidence: `.workflow/evidence/S08-03.json`. Обновить существую�
 
 `docs/release-runbook.md` — целевой документ этой карточки, в исходном ZIP его нет. Перед любым разрешённым пилотом создать минимальный runbook с scope, остановкой и сверкой неопределённых операций; после пилота заполнить результат. S08-04 затем дополняет его допуском и rollback. Нельзя ждать будущую S08-04 как скрытую зависимость начала пилота.
 </pre></article>
-<article id="doc-107" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-04.md">roadmap/tasks/S08-04.md</a></p><h1>S08-04 — Подготовить допуск, остановку и rollback релиза</h1><pre class="markdown"># S08-04 — Подготовить допуск, остановку и rollback релиза
+<article id="doc-108" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S08-04.md">roadmap/tasks/S08-04.md</a></p><h1>S08-04 — Подготовить допуск, остановку и rollback релиза</h1><pre class="markdown"># S08-04 — Подготовить допуск, остановку и rollback релиза
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9750,7 +9874,7 @@ Rollback включает совместимость bot/extension/schema/rules 
 
 Отчёты KIT и аудиты исходных ZIP сохраняются как исторические свидетельства. Новые фактические проверки этой карточки записывать в собственный evidence; не переписывать исторический VALIDATION.md результатами приложения.
 </pre></article>
-<article id="doc-108" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-01.md">roadmap/tasks/S09-01.md</a></p><h1>S09-01 — Зафиксировать совместимость bot/extension queue контракта</h1><pre class="markdown"># S09-01 — Зафиксировать совместимость bot/extension queue контракта
+<article id="doc-109" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-01.md">roadmap/tasks/S09-01.md</a></p><h1>S09-01 — Зафиксировать совместимость bot/extension queue контракта</h1><pre class="markdown"># S09-01 — Зафиксировать совместимость bot/extension queue контракта
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9841,7 +9965,7 @@ test(queue): [S09-01] protect shared task vocabulary
 
 Evidence: `.workflow/evidence/S09-01.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-109" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-02.md">roadmap/tasks/S09-02.md</a></p><h1>S09-02 — Проверить доступ и параметры Discord-команд</h1><pre class="markdown"># S09-02 — Проверить доступ и параметры Discord-команд
+<article id="doc-110" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-02.md">roadmap/tasks/S09-02.md</a></p><h1>S09-02 — Проверить доступ и параметры Discord-команд</h1><pre class="markdown"># S09-02 — Проверить доступ и параметры Discord-команд
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -9929,7 +10053,7 @@ test(discord): [S09-02] enforce command admission
 
 Evidence: `.workflow/evidence/S09-02.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-110" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-03.md">roadmap/tasks/S09-03.md</a></p><h1>S09-03 — Проверить Firestore rules на локальном Emulator</h1><pre class="markdown"># S09-03 — Проверить Firestore rules на локальном Emulator
+<article id="doc-111" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-03.md">roadmap/tasks/S09-03.md</a></p><h1>S09-03 — Проверить Firestore rules на локальном Emulator</h1><pre class="markdown"># S09-03 — Проверить Firestore rules на локальном Emulator
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10018,7 +10142,7 @@ test(firestore): [S09-03] verify executor access rules
 
 Evidence: `.workflow/evidence/S09-03.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-111" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-04.md">roadmap/tasks/S09-04.md</a></p><h1>S09-04 — Сохранить результат при сбое доставки Discord reply</h1><pre class="markdown"># S09-04 — Сохранить результат при сбое доставки Discord reply
+<article id="doc-112" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-04.md">roadmap/tasks/S09-04.md</a></p><h1>S09-04 — Сохранить результат при сбое доставки Discord reply</h1><pre class="markdown"># S09-04 — Сохранить результат при сбое доставки Discord reply
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10119,7 +10243,7 @@ tests. Runtime schema2/rules/extension не змінені, metadata additive bo
 cleanup після restart. Batch/multiple list buttons — озвучений engineering
 default після optional UX запиту, не окремий запис про згоду власника.
 </pre></article>
-<article id="doc-112" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-05.md">roadmap/tasks/S09-05.md</a></p><h1>S09-05 — Проверить listener lifecycle и границу runtime messages</h1><pre class="markdown"># S09-05 — Проверить listener lifecycle и границу runtime messages
+<article id="doc-113" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-05.md">roadmap/tasks/S09-05.md</a></p><h1>S09-05 — Проверить listener lifecycle и границу runtime messages</h1><pre class="markdown"># S09-05 — Проверить listener lifecycle и границу runtime messages
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10207,7 +10331,7 @@ fix(queue): [S09-05] guard listener lifecycle and sender
 
 Evidence: `.workflow/evidence/S09-05.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-113" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-06.md">roadmap/tasks/S09-06.md</a></p><h1>S09-06 — Проверить карточки find, историю и минимизацию данных</h1><pre class="markdown"># S09-06 — Проверить карточки find, историю и минимизацию данных
+<article id="doc-114" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-06.md">roadmap/tasks/S09-06.md</a></p><h1>S09-06 — Проверить карточки find, историю и минимизацию данных</h1><pre class="markdown"># S09-06 — Проверить карточки find, историю и минимизацию данных
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10304,7 +10428,7 @@ fix(discord): [S09-06] validate parcel information cards
 
 Evidence: `.workflow/evidence/S09-06.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-114" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-07.md">roadmap/tasks/S09-07.md</a></p><h1>S09-07 — Изолировать optional Maps от основного ответа find</h1><pre class="markdown"># S09-07 — Изолировать optional Maps от основного ответа find
+<article id="doc-115" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-07.md">roadmap/tasks/S09-07.md</a></p><h1>S09-07 — Изолировать optional Maps от основного ответа find</h1><pre class="markdown"># S09-07 — Изолировать optional Maps от основного ответа find
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10399,7 +10523,7 @@ request+body deadline, one attempt, максимум5 запитів на кар
 .workflow/evidence/S09-07.json. Оновлення візуального оформлення /find збережено.
 Реальні API/Discord/browser не запускалися; runtime activation pending.
 </pre></article>
-<article id="doc-115" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-08.md">roadmap/tasks/S09-08.md</a></p><h1>S09-08 — Проверить изоляцию и устойчивость личного todo</h1><pre class="markdown"># S09-08 — Проверить изоляцию и устойчивость личного todo
+<article id="doc-116" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-08.md">roadmap/tasks/S09-08.md</a></p><h1>S09-08 — Проверить изоляцию и устойчивость личного todo</h1><pre class="markdown"># S09-08 — Проверить изоляцию и устойчивость личного todo
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10484,7 +10608,7 @@ test(discord): [S09-08] protect personal todo operations
 
 Evidence: `.workflow/evidence/S09-08.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-116" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-09.md">roadmap/tasks/S09-09.md</a></p><h1>S09-09 — Связать Discord CAD с общей проверкой preview/apply</h1><pre class="markdown"># S09-09 — Связать Discord CAD с общей проверкой preview/apply
+<article id="doc-117" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-09.md">roadmap/tasks/S09-09.md</a></p><h1>S09-09 — Связать Discord CAD с общей проверкой preview/apply</h1><pre class="markdown"># S09-09 — Связать Discord CAD с общей проверкой preview/apply
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10575,7 +10699,7 @@ fix(discord): [S09-09] bind CAD apply to approved preview
 
 Evidence: `.workflow/evidence/S09-09.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-117" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-10.md">roadmap/tasks/S09-10.md</a></p><h1>S09-10 — Перевірити й укріпити наявний режим parcel</h1><pre class="markdown"># S09-10 — Перевірити й укріпити наявний режим parcel
+<article id="doc-118" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-10.md">roadmap/tasks/S09-10.md</a></p><h1>S09-10 — Перевірити й укріпити наявний режим parcel</h1><pre class="markdown"># S09-10 — Перевірити й укріпити наявний режим parcel
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10665,7 +10789,7 @@ feat(discord): [S09-10] connect approved parcel mode
 
 Evidence: `.workflow/evidence/S09-10.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-118" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-11.md">roadmap/tasks/S09-11.md</a></p><h1>S09-11 — Перевірити й укріпити наявний режим barcodes</h1><pre class="markdown"># S09-11 — Перевірити й укріпити наявний режим barcodes
+<article id="doc-119" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-11.md">roadmap/tasks/S09-11.md</a></p><h1>S09-11 — Перевірити й укріпити наявний режим barcodes</h1><pre class="markdown"># S09-11 — Перевірити й укріпити наявний режим barcodes
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10756,7 +10880,7 @@ feat(discord): [S09-11] connect reviewed barcode mode
 
 Evidence: `.workflow/evidence/S09-11.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-119" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-12.md">roadmap/tasks/S09-12.md</a></p><h1>S09-12 — Провести разрешённый пилот существующего бота</h1><pre class="markdown"># S09-12 — Провести разрешённый пилот существующего бота
+<article id="doc-120" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-12.md">roadmap/tasks/S09-12.md</a></p><h1>S09-12 — Провести разрешённый пилот существующего бота</h1><pre class="markdown"># S09-12 — Провести разрешённый пилот существующего бота
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](../../docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 
@@ -10842,7 +10966,7 @@ test(discord): [S09-12] record authorized bot pilot
 
 Evidence: `.workflow/evidence/S09-12.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
 </pre></article>
-<article id="doc-120" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-13.md">roadmap/tasks/S09-13.md</a></p><h1>S09-13 — Короткий driver report для повторної доставки в Discord</h1><pre class="markdown"># S09-13 — Короткий driver report для повторної доставки в Discord
+<article id="doc-121" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-13.md">roadmap/tasks/S09-13.md</a></p><h1>S09-13 — Короткий driver report для повторної доставки в Discord</h1><pre class="markdown"># S09-13 — Короткий driver report для повторної доставки в Discord
 
 &gt; Канал відповіді уточнено власником 2026-10-26: чат групи Discord, не DM.
 &gt; Зберегти чинну приватну (ephemeral) видимість; це не дозвіл показувати PII
@@ -11002,7 +11126,7 @@ Callbacks/recovery preserve Admin/requester/guild/24h boundaries. `/find` stays
 full operational card. See queue-contract for wire shape and evidence/S09-13.json
 for exact test/live boundaries. Registration and runtime activation are separate.
 </pre></article>
-<article id="doc-121" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-14.md">roadmap/tasks/S09-14.md</a></p><h1>S09-14 — Report: ручний Eircode, навігація та карта</h1><pre class="markdown"># S09-14 — Report: ручний Eircode, навігація та карта
+<article id="doc-122" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-14.md">roadmap/tasks/S09-14.md</a></p><h1>S09-14 — Report: ручний Eircode, навігація та карта</h1><pre class="markdown"># S09-14 — Report: ручний Eircode, навігація та карта
 
 Owner approved REPORT-DESTINATION-2026-11-03. Role: discord_owner; root integrates.
 Depends on S09-13 and S09-07. Actual state: `.workflow/state.json`.
@@ -11025,7 +11149,7 @@ An invalid destination response is acknowledged after successful display; rerun 
 
 `.workflow/evidence/S09-14.json`; existing report/commands tests before implementation, then admission/recovery/Maps/todo regressions and full offline gates. Never use real parcel data in fixtures.
 </pre></article>
-<article id="doc-122" tabindex="-1" hidden><p class="path"><a href="tools/README.md">tools/README.md</a></p><h1>Локальные инструменты комплекта</h1><pre class="markdown"># Локальные инструменты комплекта
+<article id="doc-123" tabindex="-1" hidden><p class="path"><a href="tools/README.md">tools/README.md</a></p><h1>Локальные инструменты комплекта</h1><pre class="markdown"># Локальные инструменты комплекта
 
 Эти `.mjs` используют только Node built-ins и не требуют npm install. Они не импортируют product runtime и не выполняют команды, прочитанные из Markdown. Проверенная версия среды указана в [VALIDATION](../docs/audit/VALIDATION.md).
 
@@ -11094,7 +11218,7 @@ Drive probe також прив’язаний до старого module graph:
 
 Інструменти перевіряють структуру документації та evidence, але не підтверджують живі інтеграції. Чинні правила власника в AGENTS мають перевагу над архівними інструкціями.
 </pre></article>
-<article id="doc-123" tabindex="-1" hidden><p class="path"><a href="WORKFLOW_RU.md">WORKFLOW_RU.md</a></p><h1>Рабочий процесс DPD Assistance</h1><pre class="markdown"># Рабочий процесс DPD Assistance
+<article id="doc-124" tabindex="-1" hidden><p class="path"><a href="WORKFLOW_RU.md">WORKFLOW_RU.md</a></p><h1>Рабочий процесс DPD Assistance</h1><pre class="markdown"># Рабочий процесс DPD Assistance
 
 &gt; **Адаптація до робочого проєкту, 2026-10-23.** Поточний стан і пріоритет рішень: [LOCAL_BASELINE](docs/audit/LOCAL_BASELINE.md). Нижче збережено план комплекту v1.2; його вихідний ZIP і старі перевірки не є поточним checkout. Майбутні задачі не запускаються автоматично. Спілкування з власником — українською.
 

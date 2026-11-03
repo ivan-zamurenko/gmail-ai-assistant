@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-18 document-wide cleanup ready — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-18 automatic compact controls ready — 2026-11-03<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1206,6 +1206,8 @@ Owner showed old gray and new styled controls simultaneously after extension upd
 
 ### Copy controls 6.3.0.85
 Legacy toolbar retirement now checks all extension-marked controls in the document, independent of message ancestry, preserving this controller’s own toolbars. Styles are restored on each scan; controller revision3 replaces prior helpers. No bot restart or permission changes. Owner DOM evidence confirmed an unretired old marker; complete live ancestor structure was not captured.
+
+Copy controls6.3.0.86: automatically appear for recognized reports in Discord Web channels. Two32px icon buttons replace full labels; hover titles and accessible labels identify image/caption actions, green check confirms copy. Errors remain visible, success status remains accessible without expanding row. No popup enable action; update extension and refresh Discord once. Login SPA transition/site-access restrictions can require reload/Chrome site permission. Bot unchanged.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -2035,7 +2037,21 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-18 document-wide cleanup ready — 2026-11-03</h1><pre class="markdown"># S09-18 document-wide cleanup ready — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-18 automatic compact controls ready — 2026-11-03</h1><pre class="markdown"># S09-18 automatic compact controls ready — 2026-11-03
+
+Root writer finished; duplicate_review_new ACCEPT. Extension6.3.0.86/root1.1.53; bot0.2.23 unchanged. Static isolated content script restricted to Discord channels, no activeTab/popup activation. Compact32px icons with accessible titles; copy remains click-only.
+Test-first RED1/2 -&gt; GREEN2/2, full220/220 PASS7; synthetic Chrome geometry/visual checked. Real automatic injection/site-permission update remains untested. Prior duplicate issue confirmed resolved by owner after refresh.
+Artifact /tmp/DPD-Assistance-6.3.0.86.zip; evidence/S09-18.json. Next owner update dist/reload extension + Discord once, allow site access if prompted. Login-to-channels SPA may need one refresh. No active writer.
+
+---
+
+# Active S09-18 automatic compact controls — 2026-11-03
+
+Writer root; codex base1649b33. Owner confirmed duplicate issue resolved after refresh, requests automatic controls and compact icons. Scope manifest/static content script, popup activation removal, copy controls/styles, existing tests, docs/versions. Reviewer duplicate_review_new read-only. Test-first; no bot changes.
+
+---
+
+# S09-18 document-wide cleanup ready — 2026-11-03
 
 Root writer finished; reviewer duplicate_review_new ACCEPT. Extension6.3.0.85, root1.1.52; bot0.2.23 unchanged/no restart. Existing regression RED1/2 -&gt; GREEN2/2; full gates220/220; local synthetic Chrome CSS PASS. No live Discord confirmation.
 Retire foreign marked controls across document, preserve current controller controls, restore CSS per scan; revision3 replaces earlier controllers.
@@ -2752,6 +2768,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root + duplicate_review_new | duplicate-controls incident reopened | owner confirms6.3.0.84 and Discord refresh still show gray controls; source/build include cleanup, historical gray toolbar uses same marker. Nested toolbar cleanup gap identified by read-only review, not confirmed live cause. No product changes/release. | next: inspect old button/parent markup only, without report data; add regression for confirmed failure before patch.
 
 - 2026-11-03 | root + duplicate_review_new | S09-18 document-wide cleanup ready | owner DOM confirms unretired marker; retirement now independent of message ancestry, current controls preserved, CSS restored each scan | existing regression RED1/2 -&gt; GREEN2/2; full220/220 PASS7; synthetic Chrome CSS PASS; review ACCEPT | extension6.3.0.85/root1.1.52, bot unchanged; next owner work-PC verification.
+
+- 2026-11-03 | root + duplicate_review_new | S09-18 automatic compact controls | owner confirmed duplicate fix after refresh; requested automatic injection and icons. Scoped static channels script, removed popup activation/activeTab,32px accessible icon buttons | existing regression RED1/2 -&gt; GREEN2/2; full220/220 PASS7; synthetic Chrome layout PASS, review ACCEPT | extension6.3.0.86/root1.1.53; bot unchanged; owner work-PC automatic-load smoke next.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4047,6 +4065,8 @@ Owner confirmed preserving report text styling/emojis when pasted into WhatsApp.
 
 ### HTML export removed — owner decision 2026-11-03
 Owner requested no generated HTML attachment. /report now returns image and caption only, plus existing .txt fallback for unusually long reports. open-for-whatsapp.html generation/module retired; S09-17 remains historical completed work, superseded by this decision. Discord Web extension copy buttons and WhatsApp caption formatter remain; extension version unchanged6.3.0.83. Previously downloaded HTML/files and already sent messages are not removed.
+
+Owner decision2026-11-03: automatic Discord report copy controls and compact icon buttons approved. Supersedes manual popup activation; persistent content-script access limited to Discord channels URLs. Clipboard copy remains explicit per click; no WhatsApp automation. Owner also confirmed prior duplicate buttons resolved after refreshing tab.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6076,6 +6096,8 @@ Two grouped synthetic tests cover same-message identity, ambiguous/placeholder r
 - 2026-11-03 HTML export retired by owner: existing report attachment expectation changed first RED2/3, then verified without HTML. Removed obsolete whatsappExport module and its sole test group; extension formatter/copy regressions preserved.
 
 S09-18 duplicate-control regression also covers marked legacy toolbars outside recognized message rows, late legacy insertion and preservation of current controls. Synthetic DOM only; work-PC smoke remains necessary.
+
+S09-18 existing regression protects automatic content-script path scope, clipboardWrite without clipboardRead/activeTab, icon accessible names and titles after copy. Live automatic injection remains a work-PC smoke boundary.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

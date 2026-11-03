@@ -99,4 +99,4 @@ Large barcode tasks may run for up to two hours. Deploy the matching
 write its bounded `execMs` result after a long scan.
 
 ## Discord Web copy helper
-S09-18 adds activeTab and clipboardWrite. User explicitly activates helper from extension popup in Discord Web; no permanent Discord host access or clipboard reads. It copies only a recognized visible report/its attachment on click and never sends messages. No Discord tokens, session data or content are persisted/logged. Refresh requires activation again; existing HTML export remains fallback.
+S09-18 (owner update 2026-11-03, extension6.3.0.86): static content script automatically loads only on https://discord.com/channels/*, top frame, isolated world. This grants ongoing content-script access to matching Discord pages; activeTab removed, clipboardWrite retained, no clipboardRead. Recognized report/attachment copy still requires a button click; no Discord tokens, messages, session data or content are sent, persisted or logged. Browser site-access policy can block automatic loading. If login navigates into channels without document reload, refresh once. HTML export was removed at owner request.

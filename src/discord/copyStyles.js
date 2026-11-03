@@ -2,12 +2,12 @@
 const icon = path => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`)}")`;
 export const COPY_STYLES = `
 [data-dpd-copy][data-dpd-copy-obsolete="true"] { display:none!important; }
-[data-dpd-copy] { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:12px 0 6px; }
+[data-dpd-copy] { display:inline-flex; width:max-content; max-width:100%; gap:6px; flex-wrap:wrap; align-items:center; padding:6px 0; }
 [data-dpd-copy] .dpd-copy-button {
- appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:9px;
- min-height:40px; padding:9px 15px; border:1px solid rgba(255,255,255,.13); border-radius:10px;
- background:#353741; color:#f4f5f8; font:600 13px/20px system-ui,sans-serif;
- letter-spacing:.1px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.12);
+ appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:0;
+ width:32px; height:32px; flex:none; padding:0; border:1px solid rgba(255,255,255,.13); border-radius:10px;
+ background:#353741; color:#f4f5f8; font:0/0 system-ui,sans-serif;
+ letter-spacing:0; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.12);
  transition:background .15s,border-color .15s,box-shadow .15s,transform .15s;
 }
 [data-dpd-copy] .dpd-copy-button[data-kind="image"] { background:#b91c43; border-color:#d83259; }
@@ -22,8 +22,9 @@ export const COPY_STYLES = `
 [data-dpd-copy] .dpd-copy-button[data-state="success"]::before { mask-image:${icon('<path d="m5 12 4 4L19 6"/>')}; }
 [data-dpd-copy] .dpd-copy-button:disabled { cursor:wait; opacity:.7; }
 [data-dpd-copy] [role="status"] { flex-basis:100%; color:#b5bac1; font:12px/18px system-ui,sans-serif; }
+[data-dpd-copy] [role="status"]:not([data-state="error"]) { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 [data-dpd-copy] [role="status"]:empty { display:none; }
-[data-dpd-copy] [role="status"][data-state="error"] { color:#ffb0b7; }
+[data-dpd-copy] [role="status"][data-state="error"] { color:#ffb0b7; max-width:260px; }
 @media (prefers-reduced-motion:reduce) { [data-dpd-copy] .dpd-copy-button { transition:none; transform:none!important; } }
 `;
 

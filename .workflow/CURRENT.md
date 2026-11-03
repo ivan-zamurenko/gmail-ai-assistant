@@ -1,3 +1,17 @@
+# S09-18 automatic compact controls ready — 2026-11-03
+
+Root writer finished; duplicate_review_new ACCEPT. Extension6.3.0.86/root1.1.53; bot0.2.23 unchanged. Static isolated content script restricted to Discord channels, no activeTab/popup activation. Compact32px icons with accessible titles; copy remains click-only.
+Test-first RED1/2 -> GREEN2/2, full220/220 PASS7; synthetic Chrome geometry/visual checked. Real automatic injection/site-permission update remains untested. Prior duplicate issue confirmed resolved by owner after refresh.
+Artifact /tmp/DPD-Assistance-6.3.0.86.zip; evidence/S09-18.json. Next owner update dist/reload extension + Discord once, allow site access if prompted. Login-to-channels SPA may need one refresh. No active writer.
+
+---
+
+# Active S09-18 automatic compact controls — 2026-11-03
+
+Writer root; codex base1649b33. Owner confirmed duplicate issue resolved after refresh, requests automatic controls and compact icons. Scope manifest/static content script, popup activation removal, copy controls/styles, existing tests, docs/versions. Reviewer duplicate_review_new read-only. Test-first; no bot changes.
+
+---
+
 # S09-18 document-wide cleanup ready — 2026-11-03
 
 Root writer finished; reviewer duplicate_review_new ACCEPT. Extension6.3.0.85, root1.1.52; bot0.2.23 unchanged/no restart. Existing regression RED1/2 -> GREEN2/2; full gates220/220; local synthetic Chrome CSS PASS. No live Discord confirmation.

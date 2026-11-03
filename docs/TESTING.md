@@ -1129,3 +1129,5 @@ Two grouped synthetic tests cover same-message identity, ambiguous/placeholder r
 - 2026-11-03 HTML export retired by owner: existing report attachment expectation changed first RED2/3, then verified without HTML. Removed obsolete whatsappExport module and its sole test group; extension formatter/copy regressions preserved.
 
 S09-18 duplicate-control regression also covers marked legacy toolbars outside recognized message rows, late legacy insertion and preservation of current controls. Synthetic DOM only; work-PC smoke remains necessary.
+
+S09-18 existing regression protects automatic content-script path scope, clipboardWrite without clipboardRead/activeTab, icon accessible names and titles after copy. Live automatic injection remains a work-PC smoke boundary.

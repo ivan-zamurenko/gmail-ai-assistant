@@ -86,6 +86,23 @@
       "root": "1.1.52",
       "bot": "0.2.23 unchanged"
     },
-    "next": "Owner update loaded dist, reload extension/Discord, enable helper; confirm single toolbar"
+    "next": "Owner update loaded dist, reload extension/Discord, enable helper; confirm single toolbar",
+    "live": "Owner confirmed duplicates resolved after refreshing Discord tab."
+  },
+  "automatic_compact_followup": {
+    "date": "2026-11-03",
+    "scope": "Owner requests automatic loading and compact icons; static channels-only script replaces popup activation and activeTab.32px icon buttons with accessible labels/titles; error status visible.",
+    "regression": "Existing group extended test-first RED1/2 -> GREEN2/2; exact manifest scope and accessible icon state",
+    "gates": "PASS7,220/220; initial lint test-global and whitespace findings corrected",
+    "browser": "Synthetic local Chrome geometry check PASS toolbar<90px/button32px and accessible title; screenshot inspected. Reviewer suggested gap0 centering applied. Automatic injection/live clipboard not tested on work PC.",
+    "review": "duplicate_review_new ACCEPT",
+    "artifact": "/tmp/DPD-Assistance-6.3.0.86.zip",
+    "sha256": "257391346227b692855e6ad2da0cd4b42f81f8ee9d342b79e22b5445368cd823",
+    "versions": {
+      "extension": "6.3.0.86",
+      "root": "1.1.53",
+      "bot": "0.2.23 unchanged"
+    },
+    "next": "Update loaded dist/reload extension and Discord once; accept site access if Chrome asks. No popup activation or bot restart."
   }
 }

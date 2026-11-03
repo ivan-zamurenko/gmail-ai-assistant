@@ -34,15 +34,21 @@ export function createReportControls({
     ]) {
       const button = doc.createElement('button'); button.type = 'button'; button.textContent = label;
       button.className = 'dpd-copy-button';
+      const setLabel = text => {
+        button.textContent = text;
+        button.setAttribute('aria-label', text);
+        button.setAttribute('title', text);
+      };
+      setLabel(label);
       button.setAttribute('data-kind', kind);
       button.addEventListener('click', async event => {
         event?.preventDefault?.(); event?.stopPropagation?.();
         const current = readReport(row);
         if (!current || current.caption !== report.caption || current.url !== report.url) { status.setAttribute('data-state', 'error'); status.textContent = 'Звіт змінився або недоступний. Спробуй новий /report.'; return; }
-        button.disabled = true; button.textContent = 'Копіювання…';
+        button.disabled = true; setLabel('Копіювання…');
         button.setAttribute('data-state', 'busy'); status.setAttribute('data-state', ''); status.textContent = '';
-        try { await action(); button.setAttribute('data-state', 'success'); button.textContent = copied; status.textContent = success; }
-        catch { button.setAttribute('data-state', ''); button.textContent = label; status.setAttribute('data-state', 'error'); status.textContent = 'Не вдалося скопіювати. Перевір дозвіл браузера або спробуй новий /report.'; }
+        try { await action(); button.setAttribute('data-state', 'success'); setLabel(copied); status.textContent = success; }
+        catch { button.setAttribute('data-state', ''); setLabel(label); status.setAttribute('data-state', 'error'); status.textContent = 'Не вдалося скопіювати. Перевір дозвіл браузера або спробуй новий /report.'; }
         finally { button.disabled = false; }
       });
       toolbar.append(button);
@@ -63,7 +69,7 @@ export function createReportControls({
 
 export function startDiscordCopy() {
   if (globalThis.location.origin !== 'https://discord.com' || !globalThis.location.pathname.startsWith('/channels/')) return;
-  if (globalThis.__dpdReportCopy?.version === 3) { globalThis.__dpdReportCopy.scan(); return; }
+  if (globalThis.__dpdReportCopy?.version === 4) { globalThis.__dpdReportCopy.scan(); return; }
   globalThis.__dpdReportCopy?.stop?.();
   // DOM event also retires helpers surviving in an older isolated context.
   document.dispatchEvent(new globalThis.Event('dpd-report-copy-stop'));
@@ -84,7 +90,7 @@ export function startDiscordCopy() {
     if (globalThis.__dpdReportCopy?.stop === stop) delete globalThis.__dpdReportCopy;
   };
   document.addEventListener('dpd-report-copy-stop', stop);
-  globalThis.__dpdReportCopy = { version: 3, scan, stop };
+  globalThis.__dpdReportCopy = { version: 4, scan, stop };
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'id'] });
   scan();
 }

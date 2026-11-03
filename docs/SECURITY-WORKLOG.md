@@ -594,3 +594,5 @@ only, free prose remains unverified; no external AI data transmission.
 - 2026-11-03 | root | caption presentation follow-up: pure shared formatting, Unicode emoji extraction, full URL preserved. No new permissions or outbound data. Authorized Mac bot restart after gates; Discord ready; existing cleanup timers reset as documented. Synthetic data only.
 
 - 2026-11-03 | root | owner-requested HTML report attachment removed; no retrospective deletion of Discord messages/downloads. Authorized Mac bot restart after gates; no new data access or outbound workflow. Existing cleanup timers reset on restart as documented.
+
+2026-11-03 | root | owner-requested automatic Discord controls: static isolated top-frame script scoped to channels/*, ongoing page access replacing activeTab. Removed popup injection; clipboardWrite only on copy click. No token/session/API access, persistence or automatic sending. Synthetic fixtures; no bot restart. Browser may request site access on update.

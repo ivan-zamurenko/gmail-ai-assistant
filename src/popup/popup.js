@@ -1,4 +1,3 @@
-import { initDiscordCopy } from './discordCopyFlow.js';
 /**
  * popup/popup.js
  * ==============
@@ -73,5 +72,3 @@ document.querySelectorAll('details.section').forEach(detail => {
     if (!isOpen) detail.open = true;
   });
 });
-
-void initDiscordCopy();

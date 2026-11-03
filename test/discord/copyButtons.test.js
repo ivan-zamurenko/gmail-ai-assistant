@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { attachmentUrl, readReport, imagePng } from '../../src/discord/reportCopy.js';
 import { createReportControls, startDiscordCopy } from '../../src/discord/copyButtons.js';
@@ -38,16 +39,24 @@ test('report copy binds one row and bounds trusted image reads before decoding',
 });
 
 test('controls are unique, copy fresh paired data and reject recycled or removed messages', async () => {
+ const manifest=JSON.parse(readFileSync(new globalThis.URL('../../manifest.json',import.meta.url)));
+ assert.deepEqual(manifest.content_scripts,[{matches:['https://discord.com/channels/*'],js:['src/discord/entry.js'],run_at:'document_idle'}],'automatic injection limited to Discord channels');
+ assert.equal(manifest.permissions.includes('clipboardRead'),false);
+ assert.equal(manifest.permissions.includes('activeTab'),false);
+ assert.equal(manifest.permissions.includes('clipboardWrite'),true);
  const f=rowFixture(),calls=[];
  const mount=createReportControls({copyText:async t=>calls.push(['text',t]),copyImage:async u=>calls.push(['image',u])});
  const legacy=f.row.ownerDocument.createElement('div');legacy.setAttribute('data-dpd-copy','true');f.row.append(legacy);
  mount(f.row);mount(f.row);assert.equal(f.row.children.length,2);
  assert.equal(legacy.getAttribute('data-dpd-copy-obsolete'),'true','legacy controls cannot remain visible after activation');
  let controls=f.row.children[1].children;
+ assert.equal(controls[0].getAttribute('aria-label'),'Копіювати картинку');
+ assert.equal(controls[1].getAttribute('title'),'Копіювати підпис');
  await controls[0].callbacks.click();await controls[1].callbacks.click();
  assert.deepEqual(calls,[['image',url],['text',caption.replace('Parcel recovery & redelivery','*Parcel recovery & redelivery*').replace('Consignment:','*Consignment:*').replace('Deliver to','🏠 *Deliver to*')]]);
  assert.equal(controls[0].textContent,'Картинку скопійовано');
  assert.equal(controls[1].textContent,'Підпис скопійовано');
+ assert.equal(controls[1].getAttribute('title'),'Підпис скопійовано');
  f.row.children[1].remove();mount(f.row);assert.equal(f.row.children.length,3,'restore controls removed by Discord re-render');
  controls=f.row.children[2].children;
  f.content.innerText='Another message';await controls[1].callbacks.click();assert.equal(calls.length,2);

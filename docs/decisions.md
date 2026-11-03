@@ -221,3 +221,5 @@ Owner confirmed preserving report text styling/emojis when pasted into WhatsApp.
 
 ### HTML export removed — owner decision 2026-11-03
 Owner requested no generated HTML attachment. /report now returns image and caption only, plus existing .txt fallback for unusually long reports. open-for-whatsapp.html generation/module retired; S09-17 remains historical completed work, superseded by this decision. Discord Web extension copy buttons and WhatsApp caption formatter remain; extension version unchanged6.3.0.83. Previously downloaded HTML/files and already sent messages are not removed.
+
+Owner decision2026-11-03: automatic Discord report copy controls and compact icon buttons approved. Supersedes manual popup activation; persistent content-script access limited to Discord channels URLs. Clipboard copy remains explicit per click; no WhatsApp automation. Owner also confirmed prior duplicate buttons resolved after refreshing tab.

@@ -286,3 +286,5 @@ Owner showed old gray and new styled controls simultaneously after extension upd
 
 ### Copy controls 6.3.0.85
 Legacy toolbar retirement now checks all extension-marked controls in the document, independent of message ancestry, preserving this controller’s own toolbars. Styles are restored on each scan; controller revision3 replaces prior helpers. No bot restart or permission changes. Owner DOM evidence confirmed an unretired old marker; complete live ancestor structure was not captured.
+
+Copy controls6.3.0.86: automatically appear for recognized reports in Discord Web channels. Two32px icon buttons replace full labels; hover titles and accessible labels identify image/caption actions, green check confirms copy. Errors remain visible, success status remains accessible without expanding row. No popup enable action; update extension and refresh Discord once. Login SPA transition/site-access restrictions can require reload/Chrome site permission. Bot unchanged.

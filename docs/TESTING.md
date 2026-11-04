@@ -560,6 +560,16 @@ test/
   ідентичність серії та `checkedAt`; session і текст помилки не потрапляють у результат.
 - REVIEW лишається в retry (`remainingRecoveryTargets`). `executor.test.js` перевіряє
   «Перевірка: N» окремо від «Помилки: N» у preview і live підсумках Discord.
+
+**Apply labels lost responses and allows one writer per tab (S03-05)**
+
+- POST, що обірвався мережею: 1 запис, `ERROR` «outcome uncertain», не «Перенесено»,
+  лишається в retry.
+- Зайнята вкладка: live відмовляє до будь-якого читання, dry-run працює; блокування
+  знімається після успіху й після помилки. `test/utils/errors.test.js` — обидва
+  повідомлення доходять до оператора без заміни на загальне.
+- Звірки «дата вже стоїть» немає (чекає перевірки реальної форми); не перевіряє
+  реальну поведінку depot при повторному POST і блокування між вкладками.
 ### `test/depot/lookup.test.js`
 
 **Lookup requires the zero marker before searching a legacy eight-digit number**

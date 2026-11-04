@@ -30,6 +30,8 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       "Unexpected trigger href",
       "Reschedule form not found",
       "Reschedule rejected by server",
+      "Reschedule outcome uncertain; check the depot before retrying",
+      "Another reschedule is already running in this tab",
       "Reschedule: server did not confirm. See console for details.",
       "Status not found — depot page structure may have changed",
       "Not the correct depot page (unexpected origin)",
@@ -364,11 +366,17 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     await recheck();
     assertCalendarPlan();
     progress('SAVE', 'POST date form; waiting for server confirmation');
-    const res = await fetch(actionUrl, {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
-    });
+    let res;
+    try {
+      res = await fetch(actionUrl, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      });
+    } catch {
+      // The request may have reached the depot; never call this a failure or a rollback.
+      throw new Error('Reschedule outcome uncertain; check the depot before retrying');
+    }
     if (!res.ok) throw new Error(`Reschedule POST returned HTTP ${res.status}`);
 
     const responseText = await res.text();
@@ -441,10 +449,17 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   // ── Entry point ────────────────────────────────────────────────────────────────
 
+  let ownsLock = false;
   try {
 
     if (!isDepotPage()) throw new Error('Not the correct depot page (unexpected origin)');
     if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error('Unsupported depot mode');
+    // One live writer per tab: popup and Discord can inject into the same page.
+    if (!dryRun) {
+      if (window.__dpdAssistanceRescheduleLock) throw new Error('Another reschedule is already running in this tab');
+      window.__dpdAssistanceRescheduleLock = true;
+      ownsLock = true;
+    }
     console.log(`[DPD reschedule] START | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'}`);
     assertCalendarPlan();
     const arrangedDate = plan.targetDate.split('-').reverse().join('/');
@@ -500,5 +515,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   } catch (err) {
     console.error('[DPD reschedule] FATAL |', safeFailure(err));
     return { __error: safeFailure(err) };
+  } finally {
+    if (ownsLock) window.__dpdAssistanceRescheduleLock = false;
   }
 }

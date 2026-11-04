@@ -1,3 +1,11 @@
+# S03-05 safe apply partially done — 2026-11-04
+
+Copilot; no active writer. Live reschedule: lost POST response → ERROR «outcome uncertain» (stays in retry, never success/rollback); one live run per tab (page lock, dry-run allowed); messages reach popup/Discord. Reconcile «date already set» removed by owner choice until the real form is checked.
+Root1.1.68/extension6.3.0.100; bot0.2.29. RED→GREEN; full 241/241 PASS7; review finding fixed. No live depot action.
+S03-05 blocked: owner runs read-only snippets/discover_reschedule_form.js for a parcel without rearrangement and reports only arranged-date + checked arrange. S09-09 waits on S03-05.
+
+---
+
 # S03-04 depot preview done — 2026-11-04
 
 Copilot done; no active writer. Preview now separates eligible / skipped / needs-review (REVIEW) / failed (ERROR) with own counters; plan carries date, calendar+policy versions and per-item checkedAt. Popup and Discord show «Перевірка» separately (owner decision). REVIEW stays in same-day retry.

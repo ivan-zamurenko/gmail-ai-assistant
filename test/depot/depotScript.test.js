@@ -38,6 +38,8 @@ async function runReschedule(mode, {
   requestedDate = '',
   formAction = '/save',
   fetchError = null,
+  postThrows = false,
+  busy = false,
 } = {}) {
   const original = new Map();
   for (const key of ['window', 'document', 'DOMParser', 'fetch', 'Date']) {
@@ -128,6 +130,7 @@ async function runReschedule(mode, {
       search: '?session=synthetic&UID=synthetic',
     },
   };
+  if (busy) globalThis.window.__dpdAssistanceRescheduleLock = true;
   globalThis.document = {
     querySelector: () => ({
       getAttribute: () => "javascript:CL('123', 'P')",
@@ -155,6 +158,8 @@ async function runReschedule(mode, {
     else if (options.method === 'POST' && String(url).endsWith('/save')) {
       saveWrites += 1;
       saveBody = options.body;
+      // The request left the browser; only the response is lost.
+      if (postThrows) throw new TypeError('Failed to fetch');
       responseStatus = saveStatuses?.[saveWrites - 1] ?? saveStatus;
       body = 'saved';
     }
@@ -192,7 +197,8 @@ async function runReschedule(mode, {
         ? (targets ?? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }])
         : [],
     }));
-    return { result, pendingReads, rescheduleReads, saveWrites, saveBody, diagnostics, logWrites, scanReads };
+    const lockAfter = globalThis.window.__dpdAssistanceRescheduleLock ?? false;
+    return { result, pendingReads, rescheduleReads, saveWrites, saveBody, diagnostics, logWrites, scanReads, lockAfter };
   } finally {
     for (const [key, state] of original) {
       if (state.exists) globalThis[key] = state.value;
@@ -595,4 +601,33 @@ test('preview separates eligible, skipped, needs-review and failed parcels witho
     assert.doesNotMatch(JSON.stringify(result), /session=|synthetic outage/);
   }
   assert.match(JSON.stringify(cases.review.diagnostics), /DONE.*Review: 1.*Errors: 0/);
+});
+
+test('a lost response after the date POST is uncertain and stays for a checked retry', async () => {
+  const lost = await runReschedule('labels', { serialized: true, postThrows: true });
+
+  assert.equal(lost.saveWrites, 1);
+  assert.equal(lost.result.changed, 0);
+  assert.equal(lost.result.errors, 1);
+  assert.equal(lost.result.results[0].action, 'ERROR');
+  assert.equal(lost.result.results[0].reason, 'Reschedule outcome uncertain; check the depot before retrying');
+  assert.doesNotMatch(JSON.stringify(lost.result), /rolled back|Перенесено/);
+  assert.equal(remainingRecoveryTargets(lost.result.results, lost.result).length, 1);
+});
+
+test('a second live run in the same tab is refused while one is writing', async () => {
+  const blocked = await runReschedule('labels', { serialized: true, busy: true });
+  assert.equal(blocked.result.__error, 'Another reschedule is already running in this tab');
+  assert.equal(blocked.scanReads + blocked.rescheduleReads + blocked.saveWrites, 0);
+
+  const preview = await runReschedule('labels', { serialized: true, busy: true, dryRun: true });
+  assert.equal(preview.result.eligible, 1, 'a read-only preview is not blocked');
+
+  const live = await runReschedule('labels', { serialized: true });
+  assert.equal(live.result.changed, 1);
+  assert.equal(live.lockAfter, false, 'the lock is released after the run');
+
+  const failed = await runReschedule('labels', { serialized: true, saveStatus: 500 });
+  assert.equal(failed.result.errors, 1);
+  assert.equal(failed.lockAfter, false, 'the lock is released after a failure');
 });

@@ -16,6 +16,8 @@ export function safeErrorMessage(error, fallback = 'Unexpected error') {
     "Unexpected trigger href",
     "Reschedule form not found",
     "Reschedule rejected by server",
+    "Reschedule outcome uncertain; check the depot before retrying",
+    "Another reschedule is already running in this tab",
     "Reschedule: server did not confirm. See console for details.",
     "Status not found — depot page structure may have changed",
     "Not the correct depot page (unexpected origin)",

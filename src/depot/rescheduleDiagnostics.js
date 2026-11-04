@@ -9,6 +9,8 @@ const REASONS = new Set([
   'Cancelled OFD; parcel never returned to depot', 'No eligible physical parcel in depot',
   'Scan history unavailable or malformed', 'Consignment identity mismatch; manual review required',
   'Eligibility changed before save; manual review required',
+  'Reschedule outcome uncertain; check the depot before retrying',
+  'Another reschedule is already running in this tab',
 ]);
 const safeReason = reason => REASONS.has(reason) ? reason : safeErrorMessage(new Error(reason), 'Depot operation failed');
 

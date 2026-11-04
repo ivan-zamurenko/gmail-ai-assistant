@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "task_id": "S03-05",
+  "outcome": "partial",
+  "scope": "Safe apply: lost-response labelling, one live writer per tab, operator-visible messages. Reconcile deferred.",
+  "base_sha": "fb57de6",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js",
+      "exit_code": 1,
+      "result": "lost POST response reported as generic 'Reschedule failed'; second live run in the same tab was not refused (reconcile test also RED, feature later removed)",
+      "boundary": "local checkout; synthetic depot page/fetch; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/utils/errors.test.js",
+      "exit_code": 1,
+      "result": "lock and uncertain messages replaced by 'Depot operation failed' (found by code review); first run was a test-code ReferenceError, fixed, not counted",
+      "boundary": "local checkout; synthetic depot page/fetch; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/utils/ test/depot/ test/queue/",
+      "exit_code": 0,
+      "result": "124/124",
+      "boundary": "local checkout; synthetic depot page/fetch; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages: lint, 241/241, build, artifacts, docs, diff-check",
+      "boundary": "local checkout; synthetic depot page/fetch; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "manual",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "code-review subagent",
+      "exit_code": null,
+      "result": "1 medium finding (message hidden behind generic error) fixed; flagged unverified form assumption for reconcile -> reconcile removed",
+      "boundary": "static review",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Criteria 1, 2, 5 already met: live re-reads + RECHECK (S03-03), preserved form fields + sameOrigin (S01-02), logCall removed (LOGCALL-REMOVE-2026-11-04).",
+    "Owner chose to drop the form-date reconcile until the real form is checked with the read-only snippet; owner believes it would be fine but did not verify.",
+    "Per-tab lock in page MAIN; cross-tab double writes are mitigated only by RECHECK.",
+    "Versions: extension 6.3.0.100, root 1.1.68."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "src/depot/depotScript.js",
+    "src/depot/rescheduleDiagnostics.js",
+    "src/utils/errors.js",
+    "test/depot/depotScript.test.js",
+    "test/utils/errors.test.js",
+    "docs/depot-contract.md",
+    "docs/TESTING.md",
+    "roadmap/tasks/S03-05.md",
+    "manifest.json",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Real depot response to a repeated POST",
+    "Cross-tab concurrent live runs",
+    "Real arranged-date pre-fill behaviour of the rearrange form"
+  ],
+  "residual_risk": [
+    "After an uncertain outcome a retry POSTs again without reconcile (same target date)."
+  ],
+  "blocker": "Критерій 4: звірка «дата вже стоїть» перед повторним POST потребує підтвердження реальної форми власником (поле arranged-date порожнє для посилки без перенесення). Решту реалізовано й закомічено.",
+  "next_step": "Owner: run snippets/discover_reschedule_form.js read-only for a parcel without rearrangement and report only arranged-date and the checked arrange option; then implement reconcile and close S03-05. S09-09 depends on S03-05.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

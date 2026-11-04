@@ -53,3 +53,12 @@ test('popup displays a controlled error and restores its button after provider f
     else globalThis.chrome = previous;
   }
 });
+
+test('operator-actionable reschedule messages survive the safe error filter', () => {
+  for (const message of [
+    'Another reschedule is already running in this tab',
+    'Reschedule outcome uncertain; check the depot before retrying',
+  ]) {
+    assert.equal(extensionError(new Error(message), 'Depot operation failed'), message);
+  }
+});

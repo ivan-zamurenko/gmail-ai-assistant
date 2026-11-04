@@ -5,6 +5,7 @@ const REASONS = new Set([
   'Unsupported consignment status; manual review required', 'Scan history missing; manual review required',
   'Scan identity or timestamp invalid; manual review required', 'Conflicting latest scans; manual review required',
   'Unknown latest scan; manual review required', 'CAD today; parcel remains in depot',
+  'NearRoute today; parcel remains in depot',
   'Cancelled OFD; parcel never returned to depot', 'No eligible physical parcel in depot',
   'Scan history unavailable or malformed', 'Consignment identity mismatch; manual review required',
   'Eligibility changed before save; manual review required',

@@ -145,13 +145,14 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         return decision('REVIEW', 'Conflicting latest scans; manual review required');
       }
       const last = latest[0];
-      if (!['cad', 'cad scan', 'cancelled out for delivery', 'out for delivery', 'delivered',
+      if (!['cad', 'cad scan', 'nearroute', 'cancelled out for delivery', 'out for delivery', 'delivered',
         'return to depot', 'returned to depot', 'goods held', 'pending', 'carded',
         'failed delivery', 'incorrect address'].includes(last.type)) {
         return decision('REVIEW', 'Unknown latest scan; manual review required');
       }
-      if (['cad', 'cad scan'].includes(last.type) && last.day === today) {
-        allowed = decision('CHANGE_DATE', 'CAD today; parcel remains in depot');
+      if (['cad', 'cad scan', 'nearroute'].includes(last.type) && last.day === today) {
+        allowed = decision('CHANGE_DATE', last.type === 'nearroute'
+          ? 'NearRoute today; parcel remains in depot' : 'CAD today; parcel remains in depot');
       } else if (status === STATUS.PENDING && last.type === 'cancelled out for delivery'
           && !entries.some(entry => ['return to depot', 'returned to depot'].includes(entry.type))) {
         allowed ??= decision('CHANGE_DATE', 'Cancelled OFD; parcel never returned to depot');

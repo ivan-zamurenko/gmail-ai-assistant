@@ -17,6 +17,8 @@ test('extension console includes every outcome and safe reasons with owner-appro
   logRescheduleResult({ results: [{ consNumber: '123456789', action: 'CHANGE_DATE', reason: 'CAD today; parcel remains in depot' }, { consNumber: '123456780', action: 'SKIP', reason: 'No eligible physical parcel in depot' }] }, logger);
   assert.match(lines.at(-2), /123456789 → ✅ Перенесено \(SAVED\)/);
   assert.match(lines.at(-1), /123456780 → ⏭️ Пропущено/);
+  logRescheduleResult({ dryRun: true, results: [{ consNumber: '123456789', action: 'CHANGE_DATE', reason: 'NearRoute today; parcel remains in depot' }] }, logger);
+  assert.match(lines.at(-1), /🔎 Буде перенесено.*NearRoute today/);
   logRescheduleResult({ __error: 'Reschedule rejected by server' }, logger);
   assert.match(lines.at(-1), /FATAL.*rejected/);
 });

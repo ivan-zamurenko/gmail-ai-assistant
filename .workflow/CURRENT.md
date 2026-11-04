@@ -1,3 +1,17 @@
+# NearRoute eligibility ready — 2026-11-04
+
+Root done; no active writer. Root1.1.65/extension6.3.0.97; bot0.2.29 unchanged. Latest today NearRoute accepted alongside CAD. Mixed OFD+remaining CAD/NearRoute physical parcel permits whole-series next-working-day change; later movement/recheck still blocks.
+Existing RED16/18→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. No live verification.
+Artifact /tmp/DPD-Assistance-6.3.0.97.zip. Next scoped commit/push and owner work-PC update; no restart/merge/live action.
+
+---
+
+# NearRoute eligibility active — 2026-11-04
+
+Root sole writer; owner permits NearRoute and reiterates mixed OFD/CAD two-parcel series. Scope latest-today NearRoute alongside CAD, existing regression matrix/diagnostic allowlist, versions/docs. Pending source/whole-series save/calendar unchanged. Next test-first then review/gates; no live replay.
+
+---
+
 # Pending parser follow-up ready — 2026-11-04
 
 Root done; no active writer. Root1.1.64/extension6.3.0.96; bot0.2.29 unchanged. Owner explicitly excludes administrative row entirely: Par#0 is skipped before name/date/time checks. Strict adjacent date/time parser supports br textContent. Physical parcel policy unchanged; batch source remains Pending.

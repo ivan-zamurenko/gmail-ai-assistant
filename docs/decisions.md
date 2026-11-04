@@ -327,3 +327,6 @@ Owner supplied a live example of Pending with creation row Par#0 followed by phy
 
 ### 2026-11-04 — Skip administrative Par#0 completely
 Owner reports persistent Pending scan REVIEW and explicitly instructs to skip the administrative row without checking it. Supersedes the earlier exact Order received title/timestamp condition: Par#0 rows are now excluded before type/date/time parsing. Physical parcels1+ retain identity, timestamp, latest-movement and return policy. Date/time text accepts an adjacent fixed-width boundary because HTML br need not contribute whitespace to textContent. Batch source remains the existing Pending list; target remains next working day. Actual live failure cause beyond these reproduced parser gaps is not yet verified.
+
+### 2026-11-04 — NearRoute and mixed two-parcel series
+Owner permits NearRoute and reiterates that one parcel OFD plus another remaining in depot with CAD permits changing the entire series. NearRoute is accepted case-insensitively as latest physical-parcel evidence today, parallel to CAD; stale or superseded NearRoute does not permit a write. Existing Pending-list source, next-working-day calendar, whole-series write and fresh evidence recheck remain. Goods Held retains its specific note-to-today rule.

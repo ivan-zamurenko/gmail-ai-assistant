@@ -93,9 +93,9 @@
     }
   ],
   "versions": {
-    "root": "1.1.64",
+    "root": "1.1.65",
     "bot": "0.2.29",
-    "extension": "6.3.0.96"
+    "extension": "6.3.0.97"
   },
   "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks. Console-progress diff ACCEPT; no request/policy changes or unsafe data.",
   "untested": [
@@ -167,6 +167,19 @@
     ],
     "untested": [
       "Real depot DOM and installed extension behavior"
+    ],
+    "live_actions": false
+  },
+  "nearroute_followup": {
+    "date": "2026-11-04",
+    "rule": "Latest today NearRoute alongside CAD permits whole-series change; mixed OFD+other physical CAD/NearRoute retained",
+    "checks": [
+      "Existing groups RED16/18→GREEN18/18",
+      "node tools/checks.mjs PASS7,236/236",
+      "calendar_review diff ACCEPT"
+    ],
+    "untested": [
+      "Installed extension/real NearRoute history"
     ],
     "live_actions": false
   }

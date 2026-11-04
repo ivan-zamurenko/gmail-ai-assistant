@@ -236,3 +236,7 @@
 - 2026-11-04 root — owner explicitly excludes administrative row entirely after persistent generic REVIEW. Implemented Par#0 early skip and strict adjacent date/time parser for br textContent. RED16/17→focused21/21; preserved physical history validation. Pending source unchanged. Next reviewer/full gates and extension6.3.0.96; no live action.
 
 - 2026-11-04 root — verified parser follow-up full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.96/root1.1.64; bot unchanged. Artifact prepared; Pending list selection unchanged, real depot smoke remains unverified. Next scoped commit/push and owner update.
+
+- 2026-11-04 root — implemented owner NearRoute eligibility alongside latest-today CAD; mixed OFD/CAD rule retained and expanded in existing regression. RED16/18→GREEN18/18; no live requests. Next reviewer/full gates, extension6.3.0.97/root1.1.65; bot unchanged.
+
+- 2026-11-04 root — NearRoute follow-up complete offline: full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.97/root1.1.65 package ready; bot unchanged. No real depot call. Next commit/push and owner extension update.

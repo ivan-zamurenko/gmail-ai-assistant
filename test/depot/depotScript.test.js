@@ -448,6 +448,15 @@ const scan = (parcel, type, time = '09:00:00', date = '03/11/2026') => ({ parcel
 test('parcel histories decide series eligibility, never route or aggregate status alone', async () => {
   const cases = [
     ['PENDING', [scan('1', 'CAD scan')], true],
+    ['PENDING', [scan('1', 'NearRoute')], true],
+    ['PENDING', [scan('1', ' nearroute ')], true],
+    ['PENDING', [scan('1', 'NearRoute', '09:00:00', '02/11/2026')], false],
+    ['PENDING', [scan('1', 'NearRoute'), scan('1', 'Out for delivery', '10:00:00')], false],
+    ['PENDING', [scan('1', 'NearRoute'), scan('1', 'Delivered', '10:00:00')], false],
+    ['OFD', [scan('1', 'Out for delivery'), scan('2', 'NearRoute')], true],
+    ['PENDING', [scan('1', 'Out for delivery'), scan('2', 'CAD scan')], true],
+    ['OFD', [scan('1', 'Out for delivery'), scan('2', 'CAD scan', '09:00:00', '02/11/2026')], false],
+    ['OFD', [scan('1', 'Out for delivery'), scan('2', 'CAD scan'), scan('2', 'Out for delivery', '10:00:00')], false],
     ['PENDING', [scan('0', 'Order received', '14:59:47', '02/11/2026'), scan('1', 'Received into depot', '01:11:21'), scan('1', 'CAD scan', '07:25:26')], true],
     ['PENDING', [scan('0', 'Order received')], false],
     ['PENDING', [scan('0', 'Order received via synthetic system', '', ''), { ...scan('1', 'CAD scan'), dateTimeText: '03/11/202609:00:00' }], true],
@@ -476,6 +485,10 @@ test('parcel histories decide series eligibility, never route or aggregate statu
     assert.equal(result.logWrites, 0, 'reschedule must not call Log Call');
     assert.ok(result.result.results[0].reason);
   }
+  const nearPreview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [scan('1', 'NearRoute')] });
+  assert.equal(nearPreview.result.eligible, 1);
+  assert.match(nearPreview.result.results[0].reason, /NearRoute today/);
+  assert.equal(nearPreview.saveWrites, 0);
   const all = await runReschedule('cad', { route: 'other', scans: [scan('1', 'Cancelled out for delivery')] });
   assert.equal(all.saveWrites, 1, 'all must evaluate non-CAD candidates too');
   const preview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [scan('0', 'Ignored administrative row', '', ''), { ...scan('1', 'CAD scan'), dateTimeText: '03/11/202609:00:00' }] });
@@ -520,9 +533,11 @@ test('missing or conflicting scan evidence refuses writes; changed evidence is c
     assert.equal(mismatched.logWrites, 0);
     assert.equal(mismatched.scanReads, 0);
   }
-  const changed = await runReschedule('labels', {
-    scans: [scan('1', 'CAD scan')], afterScans: [scan('1', 'CAD scan'), scan('1', 'Delivered', '10:00:00')],
-  });
-  assert.equal(changed.saveWrites, 0);
-  assert.equal(changed.result.errors, 1);
+  for (const type of ['CAD scan', 'NearRoute']) {
+    const changed = await runReschedule('labels', {
+      scans: [scan('1', type)], afterScans: [scan('1', type), scan('1', 'Delivered', '10:00:00')],
+    });
+    assert.equal(changed.saveWrites, 0);
+    assert.equal(changed.result.errors, 1);
+  }
 });

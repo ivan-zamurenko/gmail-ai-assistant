@@ -377,10 +377,15 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     let changed = 0, skipped = 0, errors = 0, eligible = 0;
     const results = [];
     for (const [index, pkg] of packages.entries()) {
-      // Fixed phase/reason strings and batch position only. Never log a target,
-      // raw status, Notes, session URL or form/server body. No polling/timer spam.
+      // Owner-approved public con_id on outcomes only. Internal ConsId, raw status,
+      // Notes, session URL and form/server bodies stay out of diagnostics.
       const prefix = `[DPD reschedule] [${index + 1}/${packages.length}]`;
-      const progress = (phase, message) => console.log(`${prefix} ${phase} | ${message}`);
+      const number = /^\d{8,9}$|^\d{14}$/.test(String(pkg.consNumber ?? '')) ? String(pkg.consNumber) : 'невідомий con_id';
+      const outcome = label => `${number} → ${label}`;
+      const progress = (phase, message) => {
+        const label = { SAVED: '✅ Перенесено', WOULD_CHANGE: '🔎 Буде перенесено', SKIPPED: '⏭️ Пропущено' }[phase];
+        console.log(`${prefix} ${phase} | ${label ? `${outcome(label)} | ` : ''}${message}`);
+      };
       try {
         progress('CHECK', 'Reading current status and parcel evidence');
         const initial = await readEligibility(pkg);
@@ -401,14 +406,14 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
           eligible++;
         } else if (action === 'ERROR') {
           errors++;
-          console.warn(`${prefix} REVIEW | ${reason}`);
+          console.warn(`${prefix} REVIEW | ${outcome('⚠️ Потрібна перевірка')} | ${reason}`);
         } else {
           skipped++;
           progress('SKIPPED', reason);
         }
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action, reason });
       } catch (err) {
-        console.error(`${prefix} ERROR | ${safeFailure(err, 'Reschedule failed')}`);
+        console.error(`${prefix} ERROR | ${outcome('❌ Помилка')} | ${safeFailure(err, 'Reschedule failed')}`);
         errors++;
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR', reason: safeFailure(err, 'Reschedule failed') });
       }

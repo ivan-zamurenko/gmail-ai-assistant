@@ -1,3 +1,18 @@
+# Console con_id outcomes ready — 2026-11-04
+
+Root completed; no active writer. Root1.1.62/extension6.3.0.94, bot0.2.29 unchanged.
+Owner-approved public con_id + emoji outcome in depot MAIN and extension Console. Numeric number only; internal/customer/session fields remain excluded. No policy/network changes.
+Existing RED16/18→GREEN18/18; full236/236 PASS7; calendar_review ACCEPT.
+Artifact /tmp/DPD-Assistance-6.3.0.94.zip. Next owner work-PC update; original depot failure not yet established. Scoped codex commit/push next; no merge/live action.
+
+---
+
+# Console con_id outcomes active — 2026-11-04
+
+Root sole writer on codex; owner explicitly requests public con_id plus emoji result in Console. Narrow exception to identifier-free diagnostics: only validated consignment number, never internal ConsId/customer/session data. Scope two diagnostic paths, existing tests, root/extension version/docs. No policy/network changes. Next test-first and checks.
+
+---
+
 # Reschedule pagination activated in bot — 2026-11-04
 
 Bot0.2.29 restarted after exact old PID/cwd check; ClientReady confirmed and process alive. No command registration/depot replay. Source8e4a76a; full236/236 PASS7 and review ACCEPT. Extension6.3.0.93 artifact /tmp/DPD-Assistance-6.3.0.93.zip requires work-PC installation. First push rejected by GitHub commit_refs failure; retry succeeded; product commit pushed to codex. No active product writer. Original depot failure still needs visible new output.

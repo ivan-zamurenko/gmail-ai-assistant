@@ -318,3 +318,6 @@ policy, confirmation criteria, direct form flow, or removed LogCall decision.
 
 ### 2026-11-04 — Reschedule result visibility
 Owner requests per-item extension-console outcomes and paged Discord output after reporting no date changes. Existing MAIN phase logs remain; final safe indexed outcomes also appear in extension caller Console. Private Discord snapshot pages preserve bounded full results; barcode DM uses a full text attachment. No policy changes or live replay. The actual depot failure remains unidentified until a new result is observed. Activate bot0.2.29 before installing extension6.3.0.93 due to the new optional result envelope.
+
+### 2026-11-04 — Owner-approved con_id console outcomes
+Owner explicitly requests con_id followed by emoji result. This overrides the prior no-tracking-identifiers console rule only for the public consignment number in reschedule outcome lines. Validate8/9/14digits; never print internal ConsId, Notes, customer data, session or raw provider fields. Confirmed save uses ✅ Перенесено, dry-run uses 🔎 Буде перенесено, skips/errors/review remain distinct. Both depot MAIN and extension final mirror show it.

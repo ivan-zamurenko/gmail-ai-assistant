@@ -647,3 +647,5 @@ only, free prose remains unverified; no external AI data transmission.
   POST; successful write message is emitted only after confirmation.
 
 - 2026-11-04 root — implemented owner-requested reschedule visibility: private bounded versioned result envelope, actor/guild/channel snapshot navigation, suppressed mentions and barcode DM text report. Extension console uses indexes and allowlisted reasons, no tracking/customer/session fields. Offline tests only; no new provider, live request or rule deployment.
+
+- 2026-11-04 root — explicit owner instruction permits public con_id in local reschedule Console outcome lines. Validated numeric number only; internal IDs and customer/session/provider data remain excluded. No new outbound data or live requests. Existing diagnostics regressions updated to preserve remaining redaction boundaries.

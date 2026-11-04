@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Reschedule pagination activated in bot — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Console con_id outcomes ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,22 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Reschedule pagination activated in bot — 2026-11-04</h1><pre class="markdown"># Reschedule pagination activated in bot — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Console con_id outcomes ready — 2026-11-04</h1><pre class="markdown"># Console con_id outcomes ready — 2026-11-04
+
+Root completed; no active writer. Root1.1.62/extension6.3.0.94, bot0.2.29 unchanged.
+Owner-approved public con_id + emoji outcome in depot MAIN and extension Console. Numeric number only; internal/customer/session fields remain excluded. No policy/network changes.
+Existing RED16/18→GREEN18/18; full236/236 PASS7; calendar_review ACCEPT.
+Artifact /tmp/DPD-Assistance-6.3.0.94.zip. Next owner work-PC update; original depot failure not yet established. Scoped codex commit/push next; no merge/live action.
+
+---
+
+# Console con_id outcomes active — 2026-11-04
+
+Root sole writer on codex; owner explicitly requests public con_id plus emoji result in Console. Narrow exception to identifier-free diagnostics: only validated consignment number, never internal ConsId/customer/session data. Scope two diagnostic paths, existing tests, root/extension version/docs. No policy/network changes. Next test-first and checks.
+
+---
+
+# Reschedule pagination activated in bot — 2026-11-04
 
 Bot0.2.29 restarted after exact old PID/cwd check; ClientReady confirmed and process alive. No command registration/depot replay. Source8e4a76a; full236/236 PASS7 and review ACCEPT. Extension6.3.0.93 artifact /tmp/DPD-Assistance-6.3.0.93.zip requires work-PC installation. First push rejected by GitHub commit_refs failure; retry succeeded; product commit pushed to codex. No active product writer. Original depot failure still needs visible new output.
 
@@ -3026,6 +3041,10 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 root — verified visibility follow-up: full236/236 PASS7; reviewer ACCEPT20/20. Review-found JSON byte mismatch reproduced then fixed; existing DM regression proves last-row attachment and ACK-after-send (7/7 DM/views). No live depot execution. Next commit/push, bot activation before work-PC extension6.3.0.93.
 
 - 2026-11-04 root — runtime activated: bot0.2.29 exact-process restart, ClientReady and detached liveness verified; no depot action/registration. Product commit8e4a76a. First push rejected remotely (commit_refs); retry succeeded; product commit pushed to codex. Extension6.3.0.93 still needs owner work-PC installation.
+
+- 2026-11-04 root — implemented explicit owner request con_id + emoji Console outcomes. Narrow override permits validated public number only. Existing regression RED16/18→GREEN18/18; no policy/network changes. Next review/full gates and extension6.3.0.94 package.
+
+- 2026-11-04 root — complete: con_id/emoji Console follow-up full236/236 PASS7, reviewer ACCEPT. Artifact6.3.0.94; root1.1.62; bot unchanged. No live verification or depot request. Next scoped codex commit/push and owner extension update.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4418,6 +4437,9 @@ policy, confirmation criteria, direct form flow, or removed LogCall decision.
 
 ### 2026-11-04 — Reschedule result visibility
 Owner requests per-item extension-console outcomes and paged Discord output after reporting no date changes. Existing MAIN phase logs remain; final safe indexed outcomes also appear in extension caller Console. Private Discord snapshot pages preserve bounded full results; barcode DM uses a full text attachment. No policy changes or live replay. The actual depot failure remains unidentified until a new result is observed. Activate bot0.2.29 before installing extension6.3.0.93 due to the new optional result envelope.
+
+### 2026-11-04 — Owner-approved con_id console outcomes
+Owner explicitly requests con_id followed by emoji result. This overrides the prior no-tracking-identifiers console rule only for the public consignment number in reschedule outcome lines. Validate8/9/14digits; never print internal ConsId, Notes, customer data, session or raw provider fields. Confirmed save uses ✅ Перенесено, dry-run uses 🔎 Буде перенесено, skips/errors/review remain distinct. Both depot MAIN and extension final mirror show it.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6603,6 +6625,8 @@ remain absent. Initial RED16/17; no new test group or live calls.
 Existing executor preview regression first failed10/11 until all30 rows survived the optional versioned result envelope. New grouped UI tests protect every row across bounded Discord pages, actor/channel/admin gates, expiry, recovery discrimination and no re-enqueue/ACK during navigation. Console regression checks safe per-index outcomes and fatal errors without identifiers/raw text. Synthetic only; installed extension/Discord components and the original live depot failure are unverified.
 
 Existing barcode DM delivery regression also checks full text attachment including last row and unACKed task during send. Escape-heavy producer fixture must pass consumer serialized-size validation.
+
+Console con_id follow-up: existing two diagnostic groups changed first16/18→18/18. They now require owner-approved numeric public number and emoji outcome while preserving internal-ID/raw-text redaction, malformed-number fallback, serialized MAIN execution, dry-run distinction and no false success after save failure. No new test group.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

@@ -1201,3 +1201,5 @@ remain absent. Initial RED16/17; no new test group or live calls.
 Existing executor preview regression first failed10/11 until all30 rows survived the optional versioned result envelope. New grouped UI tests protect every row across bounded Discord pages, actor/channel/admin gates, expiry, recovery discrimination and no re-enqueue/ACK during navigation. Console regression checks safe per-index outcomes and fatal errors without identifiers/raw text. Synthetic only; installed extension/Discord components and the original live depot failure are unverified.
 
 Existing barcode DM delivery regression also checks full text attachment including last row and unACKed task during send. Escape-heavy producer fixture must pass consumer serialized-size validation.
+
+Console con_id follow-up: existing two diagnostic groups changed first16/18→18/18. They now require owner-approved numeric public number and emoji outcome while preserving internal-ID/raw-text redaction, malformed-number fallback, serialized MAIN execution, dry-run distinction and no false success after save failure. No new test group.

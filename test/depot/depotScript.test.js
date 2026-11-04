@@ -399,7 +399,7 @@ test('reschedule refuses a cross-origin form action before posting session field
 });
 
 
-test('depot diagnostics show ordered progress without identities, raw bodies or false success', async () => {
+test('depot diagnostics show ordered progress with approved con_id, no private fields or false success', async () => {
   const success = await runReschedule('labels', { serialized: true });
   assert.equal(success.result.changed, 1);
   const lines = success.diagnostics.map(args => args.join(' '));
@@ -413,19 +413,20 @@ test('depot diagnostics show ordered progress without identities, raw bodies or 
     previous = index;
   }
   assert.match(log, /DONE.*Changed: 1/);
-  assert.doesNotMatch(log, /123456789|7654321|session=|ConsId=/);
+  assert.match(log, /123456789 → ✅ Перенесено/);
+  assert.doesNotMatch(log, /7654321|session=|ConsId=/);
   const preview = await runReschedule('labels', { dryRun: true });
   const previewLog = JSON.stringify(preview.diagnostics);
-  assert.match(previewLog, /WOULD_CHANGE/);
+  assert.match(previewLog, /WOULD_CHANGE.*123456789 → 🔎 Буде перенесено/);
   assert.doesNotMatch(previewLog, /\[1\/1\] (?:FORM|RECHECK|SAVE|SAVED) \|/);
   assert.match(previewLog, /DONE.*Eligible: 1.*Changed: 0/);
   const skipped = await runReschedule('labels', { status: 'GOODS HELD' });
-  assert.match(JSON.stringify(skipped.diagnostics), /SKIPPED.*No confirmed delivery-date change/);
+  assert.match(JSON.stringify(skipped.diagnostics), /SKIPPED.*123456789 → ⏭️ Пропущено.*No confirmed delivery-date change/);
   const review = await runReschedule('labels', { status: 'SYNTHETIC_PRIVATE_STATUS' });
   assert.match(JSON.stringify(review.diagnostics), /REVIEW/);
   assert.doesNotMatch(JSON.stringify(review.diagnostics), /SYNTHETIC_PRIVATE_STATUS/);
   const rejected = await runReschedule('labels', { saveStatus: 500 });
-  assert.match(JSON.stringify(rejected.diagnostics), /\[1\/1\] ERROR/);
+  assert.match(JSON.stringify(rejected.diagnostics), /\[1\/1\] ERROR.*123456789 → ❌ Помилка/);
   assert.doesNotMatch(JSON.stringify(rejected.diagnostics), /\[1\/1\] SAVED/);
   const failure = await runReschedule('labels', { fetchError: '<html>synthetic-secret Bearer synthetic-token</html>' });
   assert.equal(failure.result.errors, 1);

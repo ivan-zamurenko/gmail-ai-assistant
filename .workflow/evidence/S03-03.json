@@ -93,9 +93,9 @@
     }
   ],
   "versions": {
-    "root": "1.1.61",
+    "root": "1.1.62",
     "bot": "0.2.29",
-    "extension": "6.3.0.93"
+    "extension": "6.3.0.94"
   },
   "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks. Console-progress diff ACCEPT; no request/policy changes or unsafe data.",
   "untested": [
@@ -123,5 +123,19 @@
       "Real Discord page components, extension installation and real depot incident"
     ],
     "compatibility": "Result envelope v1 in existing parcel map; task schema2/rules unchanged. Activate bot0.2.29 before extension6.3.0.93. Legacy details fallback retained."
+  },
+  "console_con_id_followup": {
+    "date": "2026-11-04",
+    "authorization": "Owner explicitly requested con_id followed by emoji result; numeric public number only in local Console",
+    "checks": [
+      "Existing diagnostics RED16/18→GREEN18/18",
+      "node tools/checks.mjs PASS7,236/236",
+      "calendar_review diff ACCEPT"
+    ],
+    "untested": [
+      "Installed work-PC Console output",
+      "Original live depot failure remains unidentified"
+    ],
+    "runtime": "No bot change/restart or live depot request"
   }
 }

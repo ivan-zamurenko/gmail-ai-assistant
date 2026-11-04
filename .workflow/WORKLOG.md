@@ -224,3 +224,7 @@
 - 2026-11-04 root — verified visibility follow-up: full236/236 PASS7; reviewer ACCEPT20/20. Review-found JSON byte mismatch reproduced then fixed; existing DM regression proves last-row attachment and ACK-after-send (7/7 DM/views). No live depot execution. Next commit/push, bot activation before work-PC extension6.3.0.93.
 
 - 2026-11-04 root — runtime activated: bot0.2.29 exact-process restart, ClientReady and detached liveness verified; no depot action/registration. Product commit8e4a76a. First push rejected remotely (commit_refs); retry succeeded; product commit pushed to codex. Extension6.3.0.93 still needs owner work-PC installation.
+
+- 2026-11-04 root — implemented explicit owner request con_id + emoji Console outcomes. Narrow override permits validated public number only. Existing regression RED16/18→GREEN18/18; no policy/network changes. Next review/full gates and extension6.3.0.94 package.
+
+- 2026-11-04 root — complete: con_id/emoji Console follow-up full236/236 PASS7, reviewer ACCEPT. Artifact6.3.0.94; root1.1.62; bot unchanged. No live verification or depot request. Next scoped codex commit/push and owner extension update.

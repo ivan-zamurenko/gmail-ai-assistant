@@ -22,7 +22,10 @@ export function logRescheduleResult(result, logger = console) {
   rows.forEach((row, i) => {
     const action = row.action === 'CHANGE_DATE' ? (result.dryRun ? 'WOULD_CHANGE' : 'SAVED')
       : ['SKIP', 'ERROR', 'REVIEW'].includes(row.action) ? row.action : 'REVIEW';
-    const line = `[DPD reschedule] [${i + 1}/${rows.length}] ${action} | ${safeReason(row.reason)}`;
+    const number = /^\d{8,9}$|^\d{14}$/.test(String(row.consNumber ?? '')) ? String(row.consNumber) : 'невідомий con_id';
+    const label = { SAVED: '✅ Перенесено', WOULD_CHANGE: '🔎 Буде перенесено', SKIP: '⏭️ Пропущено',
+      ERROR: '❌ Помилка', REVIEW: '⚠️ Потрібна перевірка' }[action];
+    const line = `[DPD reschedule] [${i + 1}/${rows.length}] ${number} → ${label} (${action}) | ${safeReason(row.reason)}`;
     (action === 'ERROR' ? logger.error : logger.log).call(logger, line);
   });
 }

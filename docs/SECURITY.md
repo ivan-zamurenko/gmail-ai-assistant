@@ -102,3 +102,6 @@ write its bounded `execMs` result after a long scan.
 S09-18 (owner update 2026-11-03, extension6.3.0.86): static content script automatically loads only on https://discord.com/channels/*, top frame, isolated world. This grants ongoing content-script access to matching Discord pages; activeTab removed, clipboardWrite retained, no clipboardRead. Recognized report/attachment copy still requires a button click; no Discord tokens, messages, session data or content are sent, persisted or logged. Browser site-access policy can block automatic loading. If login navigates into channels without document reload, refresh once. HTML export was removed at owner request.
 
 Operator /find navigation holds at most16 result snapshots in bot memory for up to14min from original interaction creation. Owner/guild/channel and Administrator checks protect edits; clicks do not refresh expiry. Restarts discard snapshots. This UI cache is separate from24h undelivered result retention and does not replay depot actions.
+
+### Owner exception — 2026-11-04 reschedule console
+Explicit owner request allows the validated public consignment number (con_id) alongside local reschedule outcome/emoji. Internal ConsId, customer fields, Notes, auth/session data and raw responses remain prohibited. This exception does not authorize copying real numbers into repository evidence or external logs.

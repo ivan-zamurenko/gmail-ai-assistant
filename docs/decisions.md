@@ -265,3 +265,31 @@ Current date-save form is addressed by consignment ConsId with no physical parce
 selector. Do not claim parcel-specific mutation without depot evidence. G_DEPOT_POLICY
 remains pending; runtime unchanged. Manual parcel command retains chosen-date
 semantics unless owner explicitly changes it.
+
+### DEPOT-POLICY-2026-11-04 — series scope and CAD clarification
+
+Owner confirms a delivery-date change applies to the entire consignment/series;
+a single physical parcel cannot receive its own date. Latest stated eligibility:
+Pending/Goods Held status AND a CAD scan today (Irish day). This is an explicit
+owner rule, not an inference from the current code. Still clarify whether the
+previous aggregate Delivered/OFD example is an exception to this status list,
+and whether the earlier GH Notes TO TODAY condition remains additional.
+Log Call decision remains unanswered; no behavior change or gate completion.
+
+## DEPOT-POLICY-IMPLEMENT-2026-11-04
+
+Owner explicitly authorized implementation after confirming this table:
+- PENDING + today's CAD scan.
+- PENDING + Cancelled out for delivery on a physical parcel which has NEVER had
+  Return to depot (before or after cancellation). Other parcels' return scans
+  do not count against that parcel.
+- GOODS HELD + Notes confirming a date change TO TODAY; no CAD requirement.
+- OFD/DELIVERED + a physical parcel remains in depot and has today's CAD scan.
+Dates refer to Europe/Dublin. Mutation changes the entire consignment; manual
+parcel retains selected date, automatic modes use next working day. Later OFD
+or delivery on the same parcel invalidates an earlier CAD as presence evidence.
+LogCall existing best-effort behavior is preserved, not redesigned in this task.
+Unknown/malformed/ambiguous evidence stops automation and explains the reason.
+This supersedes the earlier partial Pending/GH-only interpretation; CAD route in
+Pending List alone is not proof. Candidate list remains the current depot list;
+non-CAD rows must be checked too to support the cancelled/GH branches.

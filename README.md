@@ -39,7 +39,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 ## What It Does
 
 ### 1 · Reschedule future-dated parcels
-Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews the target list and date before anything is written; it does not establish each parcel’s status eligibility.
+Reads the current depot list and checks each series against physical-parcel history: Pending with today’s CAD or cancelled OFD without any return on that parcel; Goods Held with a confirmed date change to today; OFD/Delivered with a remaining parcel whose latest CAD is today. It computes the next Irish working day and changes the whole series. **Dry-run mode** shows eligibility, reasons and target date without writes; live execution rechecks evidence before Save.
 
 Automatic and manually selected dates use **Europe/Dublin**, excluding weekends and Irish public/bank holidays (including Good Friday and Christmas bank closures). The verified calendar covers **2026–2027**; dates outside coverage stop with an update message. Dry-run shows the target date and calendar version. Retry expires at Irish midnight; old recovery records from before this calendar release are discarded rather than reinterpreted.
 

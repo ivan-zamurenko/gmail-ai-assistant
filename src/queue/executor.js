@@ -1,4 +1,5 @@
 import { irishDay, manualDateMessage, prepareDepotArgs } from '../../shared/depotCalendar.js';
+import { resultDetails } from './resultDetails.js';
 import { reportSelection } from '../depot/reportSelection.js';
 /**
  * src/queue/executor.js
@@ -31,8 +32,6 @@ import { loadConfig }      from '../config/config.js';
 const done  = (summary, details) => ({ status: STATUS.DONE,  summary, details });
 const error = (summary)          => ({ status: STATUS.ERROR, summary });
 
-// Discord caps a message near 2000 chars, so the per-parcel block is bounded.
-const MAX_DETAIL_LINES = 25;
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
 const config = loadConfig();
 
@@ -49,24 +48,16 @@ async function findDepotTabs() {
   return tabs;
 }
 
-/** Trims a line list to fit Discord and notes how many were hidden. */
-function block(lines) {
-  if (lines.length <= MAX_DETAIL_LINES) return lines.join('\n');
-  const shown = lines.slice(0, MAX_DETAIL_LINES);
-  shown.push(`… ще ${lines.length - MAX_DETAIL_LINES}`);
-  return shown.join('\n');
-}
-
 /** The same per-parcel detail the depot console shows, rendered for Discord. */
 function detailsFor(res) {
-  if (res.dryRun) {
+  if (res.dryRun && !res.results) {
     const lines = (res.packages ?? []).map((p) => `${String(p.consNumber).padEnd(11)} ${p.consId}`);
-    return lines.length ? block(lines) : undefined;
+    return resultDetails(lines);
   }
   const lines = (res.results ?? []).map((r) =>
     `${String(r.consNumber).padEnd(11)} ${ACTION_ICON[r.action] ?? '•'} ${r.action}` +
-    (r.status ? ` (${r.status})` : ''));
-  return lines.length ? block(lines) : undefined;
+    (r.status ? ` (${r.status})` : '') + (r.reason ? ` — ${r.reason}` : ''));
+  return resultDetails(lines);
 }
 
 /** Mirrors the popup's showDepotResult, condensed to one Discord line. */
@@ -74,7 +65,9 @@ function summarize(res) {
   // Order matters: an empty scan returns a warning with no count, so it must be
   // checked before the dry-run line that reads res.count.
   if (res.warning) return res.warning;
-  if (res.dryRun)  return `Dry run: оброблено б ${res.count} посилок(и)` + (res.date ? ` | Дата: ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})` : '');
+  if (res.dryRun)  return `Dry run: перевірено ${res.count} серій` + (Number.isInteger(res.eligible)
+    ? ` | Дозволено: ${res.eligible} | Пропущено: ${res.skipped} | Помилки: ${res.errors}` : '')
+    + (res.date ? ` | Дата: ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})` : '');
   return `Готово — Змінено: ${res.changed} | Пропущено: ${res.skipped} | Помилки: ${res.errors}`;
 }
 

@@ -197,3 +197,13 @@
 - 2026-11-03 | root + calendar_review | S03-02 completed offline | Irish calendar shared across validators/callers; bounded coverage, dated previews, mutation freshness, recoveryv3 and retry midnight guards | full230/230 PASS7, independent35/35/review ACCEPT; evidence/S03-02.json | commit/push codex; no restart/merge/work-PC activation.
 
 - 2026-11-04 | owner + root | S03-03 partial policy clarification | remaining physical parcel in depot can justify transfer despite aggregate Delivered/OFD; GH note TO TODAY accepted; Log Call explanation requested | source inspected, no actual failure claimed; decisions DEPOT-POLICY-2026-11-04 | next exact depot-presence scan evidence and Log Call choice; no runtime edits.
+
+- 2026-11-04 | owner + root | S03-03 scope clarified | date changes whole series; latest eligibility Pending/Goods Held AND CAD today | recorded in decisions; runtime unchanged | clarify Delivered/OFD exception and GH note precedence before implementation.
+
+- 2026-11-04 | owner + root | S03-03 implementation authorized | final four-branch policy, return-ever veto for cancelled parcel, whole-series mutation; LogCall unchanged | decisions DEPOT-POLICY-IMPLEMENT-2026-11-04 | root writer/calendar_review read-only; next test-first.
+
+- 2026-11-04 | root + calendar_review | S03-03 implemented/test-first | nested pure parcel-history policy, exact identity joins, refreshed apply checks, policy-aware dry-run and reasons across popup/queue/barcodes | initial RED11/17→GREEN17/17; barcode preview RED then fixed; reviewer unknown scan/identity mismatch reproduced and fixed; focused38/38 | next independent review/full gates; no live effects.
+
+- 2026-11-04 | root + calendar_review | S03-03 completed offline | parcel-isolated eligibility for whole-series changes, fresh exact-identity/read-before-save, read-only previews with reasons | full233/233 PASS7; independent32/32/review ACCEPT; evidence/S03-03.json | commit/push codex; no restart/register/merge; work-PC scan/Notes smoke pending.
+
+- 2026-11-04 | root | S03-03 final delivery check | long policy details exceeded Firestore2000 limit; existing preview regression RED then bounded shared formatter | final233/233 PASS7; tooling38/38 | package6.3.0.90 and scoped commit/push; runtime remains unchanged.

@@ -618,3 +618,13 @@ only, free prose remains unverified; no external AI data transmission.
   async reads/confirmation. No permission/OAuth/queue/rules changes.
 - Synthetic local tests only; no live services, customer data, or manual private-config inspection
   for this work. Build uses existing private configuration without displaying it.
+
+## 2026-11-04 — S03-03
+
+- Added exact consignment-number/internal-ID checks before joining current detail
+  and physical-parcel history; repeated before date save. Unknown/ambiguous
+  evidence produces bounded static reasons and no date write.
+- Notes/history remain in depot MAIN; outbound summaries contain approved existing
+  identifiers plus static policy reasons, no raw Notes/session/response bodies.
+- Dry-run only reads detail/history/Notes. Existing best-effort LogCall unchanged;
+  no live actions, credentials inspection, permission/rules/deployment changes.

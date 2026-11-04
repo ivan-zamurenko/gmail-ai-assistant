@@ -1,9 +1,10 @@
 import test, { beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import vm from 'node:vm';
 
 import { depotMain as injectedDepotMain } from '../../src/depot/depotScript.js';
 
-import { prepareDepotArgs } from '../../shared/depotCalendar.js';
+import { prepareDepotArgs, irishDay } from '../../shared/depotCalendar.js';
 const depotMain = args => injectedDepotMain(prepareDepotArgs(args));
 const RealDate = Date;
 beforeEach(() => { globalThis.Date = class extends RealDate {
@@ -18,6 +19,14 @@ function fakeText(textContent = '') {
 
 async function runReschedule(mode, {
   status = 'PENDING',
+  detailNumber = null,
+  detailId = null,
+  scans = null,
+  afterScans = null,
+  dryRun = false,
+  route = 'cad',
+  logCallEnabled = false,
+  serialized = false,
   notes = '',
   now = '2026-11-03T12:00:00Z',
   crossMidnight = false,
@@ -41,6 +50,9 @@ async function runReschedule(mode, {
   );
   const diagnostics = [];
   let pendingReads = 0;
+  let currentConsId = '7654321';
+  let scanReads = 0;
+  let logWrites = 0;
   let rescheduleReads = 0;
   let saveWrites = 0;
   let saveBody = '';
@@ -57,7 +69,7 @@ async function runReschedule(mode, {
         }
         if (selector === 'tbody tr') {
           return [{
-            querySelectorAll: () => [fakeText(''), { querySelector: () => link }, fakeText('cad')],
+            querySelectorAll: () => [fakeText(''), { querySelector: () => link }, fakeText(route)],
           }];
         }
         return [];
@@ -71,9 +83,26 @@ async function runReschedule(mode, {
         }
         return [];
       },
-      getElementById: () => null,
+      getElementById: id => {
+        const targetNumber = targets?.find(target => target.consId === currentConsId)?.consNumber ?? '123456789';
+        if (id === 'hiddenConsBarcodeValue') return { value: detailNumber ?? targetNumber.replace(/^0(?=\d{8}$)/, '') };
+        if (id === 'hiddenConsIdValue') return { value: detailId ?? currentConsId };
+        return id === 'btnLogCall' && logCallEnabled ? { closest: () => ({ getAttribute: () => '/log', elements: [] }) } : null;
+      },
+      querySelector: () => null,
     },
-    notes: { body: fakeText(notes) },
+    notes: { body: fakeText(notes), querySelectorAll: () => [] },
+    scans: {
+      getElementById: id => id === 'MAINTABLE' ? {} : null,
+      querySelectorAll: () => {
+        const day = irishDay(new RealDate(now)).split('-').reverse().join('/');
+        const history = (scanReads > 1 && afterScans) || scans || [{ parcel: '1', type: 'CAD scan', date: day, time: '09:00:00' }];
+        return history.map(scan => ({ querySelectorAll: () => Array.from({ length: 12 }, (_, i) => ({
+          textContent: ({ 1: scan.route ?? 'cad', 3: scan.type, 4: `${scan.date} ${scan.time}`, 7: scan.parcel })[i] ?? '',
+          getAttribute: () => null,
+        })) }));
+      },
+    },
     form: {
       querySelector: (selector) => selector === 'form'
         ? { getAttribute: () => formAction, elements: [] }
@@ -120,7 +149,9 @@ async function runReschedule(mode, {
     if (fetchError) throw new Error(fetchError);
     let body;
     let responseStatus = 200;
-    if (options.method === 'POST' && String(url).endsWith('/save')) {
+    if (String(url).endsWith('/log')) { logWrites++; body = 'saved'; }
+    else if (String(url).includes('woScanningHistoryList.p')) { scanReads++; body = 'scans'; }
+    else if (options.method === 'POST' && String(url).endsWith('/save')) {
       saveWrites += 1;
       saveBody = options.body;
       responseStatus = saveStatuses?.[saveWrites - 1] ?? saveStatus;
@@ -129,7 +160,9 @@ async function runReschedule(mode, {
     else if (String(url).includes('woConsignmentList.p')) {
       pendingReads += 1;
       body = 'pending';
-    } else if (String(url).includes('woConsignmentDetails.p')) body = 'detail';
+    } else if (String(url).includes('woConsignmentDetails.p')) {
+      currentConsId = new globalThis.URL(url).searchParams.get('ConsId'); body = 'detail';
+    }
     else if (String(url).endsWith('/notes')) body = 'notes';
     else if (String(url).includes('woRearrangeConsignment.p')) {
       rescheduleReads += 1;
@@ -146,15 +179,19 @@ async function runReschedule(mode, {
   for (const key of consoleMethods.keys()) globalThis.console[key] = (...args) => diagnostics.push(args);
 
   try {
-    const result = await depotMain({
-      dryRun: false,
+    const run = serialized ? vm.runInNewContext(`(${injectedDepotMain.toString()})`, {
+      Date: globalThis.Date, Intl, URL: globalThis.URL, URLSearchParams: globalThis.URLSearchParams,
+      window: globalThis.window, document: globalThis.document, DOMParser: globalThis.DOMParser, fetch: globalThis.fetch, console: globalThis.console,
+    }) : injectedDepotMain;
+    const result = await run(prepareDepotArgs({
+      dryRun,
       mode,
       date: requestedDate,
       targets: mode !== 'cad'
         ? (targets ?? [{ consNumber: '123456789', consId: '7654321', type: 'PopUp' }])
         : [],
-    });
-    return { result, pendingReads, rescheduleReads, saveWrites, saveBody, diagnostics };
+    }));
+    return { result, pendingReads, rescheduleReads, saveWrites, saveBody, diagnostics, logWrites, scanReads };
   } finally {
     for (const [key, state] of original) {
       if (state.exists) globalThis[key] = state.value;
@@ -182,40 +219,19 @@ async function onDepotPage(run) {
   }
 }
 
-test('label dry-run uses exact verified targets without reading Pending List', async () => {
-  const original = {
-    log: globalThis.console.log,
-    table: globalThis.console.table,
-    warn: globalThis.console.warn,
-  };
-  globalThis.console.log = () => {};
-  globalThis.console.table = () => {};
-  globalThis.console.warn = () => {};
-
-  try {
-    const result = await onDepotPage(() => depotMain({
-      dryRun: true,
-      mode: 'labels',
-      targets: [
-        { consNumber: '012345678', consId: '7654321', type: 'PopUp' },
-        // Duplicate target must not schedule the same internal consignment twice.
-        { consNumber: '012345678', consId: '7654321', type: 'PopUp' },
-      ],
-    }));
-
-    assert.deepEqual(result, {
-      dryRun: true,
-      count: 1,
-      packages: [{ consNumber: '012345678', consId: '7654321' }],
-      date: prepareDepotArgs({}).calendar.targetDate.split('-').reverse().join('/'),
-      calendarVersion: 'IE-BPFI-2026-2027-v1',
-      calendarTimeZone: 'Europe/Dublin',
-    });
-  } finally {
-    globalThis.console.log = original.log;
-    globalThis.console.table = original.table;
-    globalThis.console.warn = original.warn;
-  }
+test('label dry-run verifies policy without reading Pending List or writing', async () => {
+  const preview = await runReschedule('labels', { dryRun: true, serialized: true,
+    targets: [{ consNumber: '012345678', consId: '7654321' }, { consNumber: '012345678', consId: '7654321' }],
+  });
+  assert.equal(preview.result.count, 1);
+  assert.equal(preview.result.eligible, 1);
+  assert.equal(preview.result.results[0].reason, 'CAD today; parcel remains in depot');
+  assert.equal(preview.result.date, '04/11/2026');
+  assert.equal(preview.result.calendarVersion, 'IE-BPFI-2026-2027-v1');
+  assert.equal(preview.pendingReads, 0);
+  assert.equal(preview.scanReads, 1);
+  assert.equal(preview.saveWrites, 0);
+  assert.equal(preview.logWrites, 0);
 });
 
 test('invalid exact label targets are rejected before depot access', async () => {
@@ -260,6 +276,7 @@ test('CAD and label targets share the same PENDING reschedule rules', async () =
       consId: '7654321',
       status: 'PENDING',
       action: 'CHANGE_DATE',
+      reason: 'CAD today; parcel remains in depot',
     }],
   };
 
@@ -281,6 +298,7 @@ test('GOODS HELD without qualifying notes never reaches reschedule', async () =>
       consId: '7654321',
       status: 'GOODS HELD',
       action: 'SKIP',
+      reason: 'No confirmed delivery-date change to today',
     }],
   });
   assert.equal(labels.pendingReads, 0);
@@ -398,4 +416,72 @@ test('Irish midnight during form loading prevents the subsequent save', async ()
   assert.equal(labels.result.changed, 0);
   assert.equal(labels.result.errors, 1);
   assert.match(JSON.stringify(labels.diagnostics), /Calendar plan expired/);
+});
+
+const scan = (parcel, type, time = '09:00:00', date = '03/11/2026') => ({ parcel, type, time, date });
+
+test('parcel histories decide series eligibility, never route or aggregate status alone', async () => {
+  const cases = [
+    ['PENDING', [scan('1', 'CAD scan')], true],
+    ['  pending ', [scan('1', '  cad-SCAN  ')], true],
+    ['PENDING', [scan('1', 'CAD scan', '09:00:00', '02/11/2026')], false],
+    ['PENDING', [scan('1', 'Delivered')], false],
+    ['PENDING', [scan('1', 'CAD scan'), scan('1', 'Out for delivery', '10:00:00')], false],
+    ['OFD', [scan('1', 'CAD scan'), scan('1', 'Delivered', '10:00:00')], false],
+    ['DELIVERED', [scan('1', 'Delivered'), scan('2', 'Delivered'), scan('3', 'CAD scan')], true],
+    ['OFD', [scan('1', 'Out for delivery'), scan('2', 'CAD scan')], true],
+    ['UNKNOWN', [scan('1', 'CAD scan')], false],
+    ['PENDING', [scan('1', 'Cancelled out for delivery')], true],
+    ['PENDING', [scan('1', 'Return to depot', '08:00:00'), scan('1', 'Cancelled out for delivery')], false],
+    ['PENDING', [scan('1', 'Cancelled out for delivery'), scan('1', 'Returned to depot', '10:00:00')], false],
+    ['PENDING', [scan('1', 'Cancelled out for delivery'), scan('2', 'Return to depot')], true],
+    ['PENDING', [scan('1', 'Cancelled out for delivery'), scan('1', 'Delivered', '10:00:00')], false],
+  ];
+  for (const [status, scans, allowed] of cases) {
+    const result = await runReschedule('labels', { status, scans, logCallEnabled: true });
+    assert.equal(result.saveWrites, Number(allowed), JSON.stringify({ status, scans }));
+    assert.equal(result.logWrites, Number(allowed));
+    assert.ok(result.result.results[0].reason);
+  }
+  const all = await runReschedule('cad', { route: 'other', scans: [scan('1', 'Cancelled out for delivery')] });
+  assert.equal(all.saveWrites, 1, 'all must evaluate non-CAD candidates too');
+});
+
+test('Goods Held requires an exact non-negated valid note TO today, with no CAD requirement', async () => {
+  for (const [notes, allowed] of [
+    ['Del. date changed FROM 01/01/20 TO 03/11/26', true],
+    ['del.  date changed FROM 01/01/2020 TO 03/11/2026', true],
+    ['NOT Del. date changed FROM 01/01/20 TO 03/11/26', false],
+    ['Del. date changed FROM 31/02/26 TO 03/11/26', false],
+    ['Del. date changed FROM 01/01/20 TO 03/11/2600', false],
+    ['Del. date changed FROM 01/01/20 TO 04/11/26', false],
+  ]) {
+    const result = await runReschedule('labels', { status: 'GOODS HELD', notes, scans: [], logCallEnabled: true });
+    assert.equal(result.saveWrites, Number(allowed), notes);
+    assert.equal(result.logWrites, Number(allowed));
+  }
+});
+
+test('missing or conflicting scan evidence refuses writes; changed evidence is checked before save', async () => {
+  for (const scans of [[scan('1', 'New unknown depot event')], [], [scan('', 'CAD scan')], [scan('1', 'CAD scan', '25:00:00')],
+    [scan('1', 'CAD scan', '09:00:00', '31/02/2026')],
+    [scan('1', 'CAD scan'), scan('1', 'Delivered')],
+    [scan('1', 'CAD scan'), scan('', 'Delivered', '10:00:00')],
+  ]) {
+    const result = await runReschedule('labels', { scans, logCallEnabled: true });
+    assert.equal(result.saveWrites, 0);
+    assert.equal(result.logWrites, 0);
+    assert.equal(result.result.results[0].action, 'ERROR', 'ambiguous evidence remains recoverable for review');
+  }
+  for (const identity of [{ detailNumber: '987654321' }, { detailId: '999' }, { detailNumber: '' }]) {
+    const mismatched = await runReschedule('labels', { ...identity, logCallEnabled: true });
+    assert.equal(mismatched.saveWrites, 0);
+    assert.equal(mismatched.logWrites, 0);
+    assert.equal(mismatched.scanReads, 0);
+  }
+  const changed = await runReschedule('labels', {
+    scans: [scan('1', 'CAD scan')], afterScans: [scan('1', 'CAD scan'), scan('1', 'Delivered', '10:00:00')],
+  });
+  assert.equal(changed.saveWrites, 0);
+  assert.equal(changed.result.errors, 1);
 });

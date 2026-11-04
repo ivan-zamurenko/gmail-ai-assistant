@@ -17,7 +17,7 @@ export const commands = [
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand(s =>
       s.setName('all')
-       .setDescription('Знайти всі CAD-посилки з майбутньою датою і перенести')
+       .setDescription('Перевірити список depot і перенести серії за сканами та Notes')
        .addBooleanOption(dryRunOption))
     .addSubcommand(s =>
       s.setName('parcel')
@@ -28,7 +28,7 @@ export const commands = [
           .setRequired(true))
        .addStringOption(o =>
          o.setName('new_date')
-          .setDescription('Дата YYYY-MM-DD — майбутня, не субота й не неділя')
+          .setDescription('Дата YYYY-MM-DD — майбутній робочий день за календарем Ірландії')
           .setRequired(true))
        .addBooleanOption(dryRunOption))
     .addSubcommand(s =>

@@ -1153,3 +1153,30 @@ storage reads crossing midnight, Irish-day expiry and refusal of legacy v2 recor
 No live Chrome/depot/Discord or private data is needed. This does not validate
 actual depot opening hours, the separate console diagnostic, or future holiday
 announcements beyond the bounded calendar snapshot.
+
+### S03-03 — parcel-history eligibility for whole-series rescheduling
+
+Existing `test/depot/depotScript.test.js` now supplies synthetic Scanning History
+cells using the established lookup indexes (type3/date4/parcel7;12 cells).
+Three new grouped risks cover owner policy: today's/latest CAD, multi-parcel
+Delivered/OFD with remaining CAD parcel, cancelled OFD with Return-to-depot veto
+anywhere on that same parcel (other parcels isolated), and GH exact valid Notes
+TO TODAY without CAD. Normalized text, stale CAD, later movement, unknown/tied/
+invalid scans, missing identity and fresh detail identity mismatches refuse writes.
+Fresh evidence is reread after form load; a newly delivered parcel prevents Save.
+
+The existing dry-run test executes serialized MAIN in a VM, checks actual
+eligibility/date/reason and zero LogCall/Save. Live existing HTTP/form/regression
+expectations remain. Existing queue/barcode preview groups protect reason display
+and eligible count rather than raw candidate count. Calendar serialization now
+mocks actual read-only detail/history and asserts zero policy errors, preventing
+metadata alone from masquerading as a successful preview.
+
+All cases are synthetic. Actual CAD scan label spelling and Notes-cell formatting,
+full history completeness and current-list coverage still need a work-PC smoke.
+Unknown event spellings return review rather than guessing from route='cad'.
+No real depot mutations, Log Call, bot activation or command registration tested.
+
+The existing all-preview case also supplies30 long reasons and asserts the2000-
+character Firestore/Discord bound plus an omitted-row indicator. Both executor
+paths use the same small resultDetails formatter; no duplicate suite was added.

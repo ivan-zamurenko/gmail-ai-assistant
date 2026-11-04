@@ -5,7 +5,7 @@
  * MUST be self-contained — no imports, no outer scope references.
  *
  * Modes:
- *   'cad'    — reads the pending list, processes only CAD-scanned parcels
+ *   'cad'    — reads the current pending list and checks parcel-history eligibility
  *   'labels' — receives exact targets resolved from Drive label photos
  *   'manual' — receives one exact target and an operator-selected date
  *
@@ -17,6 +17,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   function safeFailure(error, fallback = 'Depot operation failed') {
     const known = new Set([
+      "Scan history unavailable or malformed",
+      "Consignment identity mismatch; manual review required",
+      "Eligibility changed before save; manual review required",
       "Calendar plan missing or invalid; refresh the operation",
       "Calendar plan expired at Irish midnight; refresh the operation",
       "Manual date must use YYYY-MM-DD",
@@ -91,22 +94,67 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   // ── Classify ───────────────────────────────────────────────────────────────────
 
-  function buildNotesPattern(todayShort) {
-    const escaped = todayShort.replace(/\//g, '\\/');
-    return new RegExp(
-      `Del\\.\\s*date\\s*changed\\s*FROM\\s*\\d{2}\\/\\d{2}\\/\\d{2}\\s*TO\\s*${escaped}`, 'i'
-    );
+  const normalize = value => String(value ?? '').trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+  const decision = (action, reason) => ({ action, reason });
+
+  function civilDate(value) {
+    const match = /^(\d{2})\/(\d{2})\/(\d{4}|\d{2})$/.exec(value);
+    if (!match) return null;
+    const year = match[3].length === 2 ? 2000 + Number(match[3]) : Number(match[3]);
+    const date = new Date(Date.UTC(year, Number(match[2]) - 1, Number(match[1])));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== Number(match[2]) - 1 || date.getUTCDate() !== Number(match[1])) return null;
+    return date.toISOString().slice(0, 10);
   }
 
-  function classify(status, notes, todayShort) {
-    if (status === STATUS.PENDING || status === STATUS.DELIVERED || status === STATUS.OFD)
-      return { action: 'CHANGE_DATE', reason: status };
+  // Pure policy: the physical-parcel evidence permits one whole-series change.
+  // Unknown latest events are not evidence that a parcel is still in the depot.
+  function classify(status, notes, scans, today) {
     if (status === STATUS.GOODS_HELD) {
-      return buildNotesPattern(todayShort).test(notes)
-        ? { action: 'CHANGE_DATE', reason: 'GOODS HELD → Future Dated yesterday' }
-        : { action: 'SKIP',        reason: 'GOODS HELD → Book In or manual GH scan' };
+      const confirmed = notes.some(note => {
+        const match = /^del\.\s*date\s+changed\s+from\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s+to\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s*$/i.exec(note.trim());
+        return match && civilDate(match[1]) && civilDate(match[2]) === today;
+      });
+      return confirmed ? decision('CHANGE_DATE', 'Confirmed delivery-date change to today')
+        : decision('SKIP', 'No confirmed delivery-date change to today');
     }
-    return { action: 'SKIP', reason: `Unknown status: "${status}"` };
+    if (![STATUS.PENDING, STATUS.OFD, STATUS.DELIVERED].includes(status)) {
+      return decision('REVIEW', 'Unsupported consignment status; manual review required');
+    }
+    if (!scans.length) return decision('REVIEW', 'Scan history missing; manual review required');
+    const parcels = new Map();
+    for (const scan of scans) {
+      const day = civilDate(scan.date);
+      const time = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(scan.time);
+      if (!/^[1-9]\d{0,5}$/.test(scan.parcel) || !/^\d{2}\/\d{2}\/\d{4}$/.test(scan.date) || !day || day > today
+          || !time || Number(time[1]) > 23 || Number(time[2]) > 59 || Number(time[3] ?? 0) > 59 || !scan.type) {
+        return decision('REVIEW', 'Scan identity or timestamp invalid; manual review required');
+      }
+      const stamp = `${day}T${time[1]}:${time[2]}:${time[3] ?? '00'}`;
+      const entries = parcels.get(scan.parcel) ?? [];
+      entries.push({ ...scan, day, stamp, type: normalize(scan.type) });
+      parcels.set(scan.parcel, entries);
+    }
+    let allowed = null;
+    for (const entries of parcels.values()) {
+      const lastStamp = entries.reduce((latest, entry) => entry.stamp > latest ? entry.stamp : latest, '');
+      const latest = entries.filter(entry => entry.stamp === lastStamp);
+      if (new Set(latest.map(entry => entry.type)).size !== 1) {
+        return decision('REVIEW', 'Conflicting latest scans; manual review required');
+      }
+      const last = latest[0];
+      if (!['cad', 'cad scan', 'cancelled out for delivery', 'out for delivery', 'delivered',
+        'return to depot', 'returned to depot', 'goods held', 'pending', 'carded',
+        'failed delivery', 'incorrect address'].includes(last.type)) {
+        return decision('REVIEW', 'Unknown latest scan; manual review required');
+      }
+      if (['cad', 'cad scan'].includes(last.type) && last.day === today) {
+        allowed = decision('CHANGE_DATE', 'CAD today; parcel remains in depot');
+      } else if (status === STATUS.PENDING && last.type === 'cancelled out for delivery'
+          && !entries.some(entry => ['return to depot', 'returned to depot'].includes(entry.type))) {
+        allowed ??= decision('CHANGE_DATE', 'Cancelled OFD; parcel never returned to depot');
+      }
+    }
+    return allowed ?? decision('SKIP', 'No eligible physical parcel in depot');
   }
 
   // ── Origin guard ───────────────────────────────────────────────────────────────
@@ -203,15 +251,58 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   }
 
   async function getNotes(consDoc) {
-    for (const s of consDoc.querySelectorAll('script')) {
-      const m = s.textContent.match(/ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*['"]([^'"]+)['"]/);
-      if (!m) continue;
-      try {
-        const doc = await fetchDoc(m[1]);
-        return doc.body?.textContent?.trim() ?? '';
-      } catch { return ''; }
+    for (const script of consDoc.querySelectorAll('script')) {
+      const match = script.textContent.match(/ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*['"]([^'"]+)['"]/);
+      if (!match) continue;
+      const doc = await fetchDoc(match[1]);
+      // Match complete note cells, not a substring in arbitrary/negated prose.
+      const cells = Array.from(doc.querySelectorAll('td')).map(cell => cell.textContent?.trim() ?? '');
+      return cells.length ? cells : [doc.body?.textContent?.trim() ?? ''];
     }
-    return '';
+    return [];
+  }
+
+  async function readEligibility(pkg) {
+    const consDoc = await fetchConsignment(pkg.consId, pkg.type);
+    // The zero prefix is the existing explicit marker for a legacy 8-digit
+    // number. No suffix/approximate match may join another series' scan history.
+    const expectedNumber = pkg.consNumber.replace(/^0(?=\d{8}$)/, '');
+    const actualNumber = consDoc.getElementById('hiddenConsBarcodeValue')?.value ?? '';
+    let actualId = consDoc.getElementById('hiddenConsIdValue')?.value
+      || consDoc.querySelector('input[name="ConsId" i]')?.value;
+    if (!actualId) {
+      const ids = new Set();
+      for (const element of consDoc.querySelectorAll('[href*="ConsId="], [action*="ConsId="]')) {
+        const raw = element.getAttribute('href') || element.getAttribute('action') || '';
+        const id = new URLSearchParams(raw.split('?')[1] ?? '').get('ConsId');
+        if (id) ids.add(id);
+      }
+      if (ids.size === 1) actualId = [...ids][0];
+    }
+    if (actualNumber !== expectedNumber || actualId !== pkg.consId) {
+      throw new Error('Consignment identity mismatch; manual review required');
+    }
+    const status = normalize(consDoc.querySelectorAll('h1 b')[1]?.textContent).toUpperCase();
+    if (!status) throw new Error('Status not found — depot page structure may have changed');
+    let notes = [], scans = [];
+    if (status === STATUS.GOODS_HELD) notes = await getNotes(consDoc);
+    else if ([STATUS.PENDING, STATUS.OFD, STATUS.DELIVERED].includes(status)) {
+      const { session, uid } = getSessionParams();
+      const doc = await fetchDoc(`/scripts/cgiip.exe/WService=wsInterlink/woScanningHistoryList.p`
+        + `?session=${encodeURIComponent(session)}&form=theForm&ConsBarcode=${encodeURIComponent(actualNumber)}&UID=${encodeURIComponent(uid)}`);
+      if (!doc.getElementById('MAINTABLE')) throw new Error('Scan history unavailable or malformed');
+      const rows = Array.from(doc.querySelectorAll('#MAINTABLE tbody tr'));
+      if (rows.length > 1000) throw new Error('Scan history unavailable or malformed');
+      scans = rows.map(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 12) throw new Error('Scan history unavailable or malformed');
+        const text = cell => cell.textContent?.trim() ?? '';
+        const [date = '', time = '', ...extra] = text(cells[4]).split(/\s+/);
+        if (extra.length) throw new Error('Scan history unavailable or malformed');
+        return { parcel: text(cells[7]), type: cells[3].getAttribute('title')?.trim() || text(cells[3]), date, time };
+      });
+    }
+    return { status, consDoc, ...classify(status, notes, scans, plan.today) };
   }
 
   // ── Actions ────────────────────────────────────────────────────────────────────
@@ -262,7 +353,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     }
   }
 
-  async function submitReschedule(consId, tomorrowInput) {
+  async function submitReschedule(consId, tomorrowInput, recheck) {
     const { session } = getSessionParams();
     const formUrl = `/scripts/cgiip.exe/WService=wsInterlink/woRearrangeConsignment.p` +
       `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}`;
@@ -296,6 +387,8 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     body.delete('arranged-cancel');
 
     assertCalendarPlan();
+    await recheck();
+    assertCalendarPlan();
     const res = await fetch(actionUrl, {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -324,37 +417,35 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   // ── Process loop ───────────────────────────────────────────────────────────────
 
-  async function processPackages(packages, todayShort, tomorrowInput) {
-    let changed = 0, skipped = 0, errors = 0;
+  async function processPackages(packages, arrangedDate) {
+    let changed = 0, skipped = 0, errors = 0, eligible = 0;
     const results = [];
-
     for (const pkg of packages) {
       try {
-        const consDoc = await fetchConsignment(pkg.consId, pkg.type);
-        const status  = consDoc.querySelectorAll('h1 b')[1]?.textContent.trim() ?? '';
-        if (!status) throw new Error('Status not found — depot page structure may have changed');
-
-        const notes = status === STATUS.GOODS_HELD ? await getNotes(consDoc) : '';
-        const { action } = classify(status, notes, todayShort);
-
+        const initial = await readEligibility(pkg);
+        const { status, reason } = initial;
+        const action = initial.action === 'REVIEW' ? 'ERROR' : initial.action;
         if (action === 'CHANGE_DATE') {
-          assertCalendarPlan();
-          await logCall(pkg.consId, consDoc);
-          await submitReschedule(pkg.consId, tomorrowInput);
-          changed++;
-        } else {
-          skipped++;
-        }
-
-        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action });
+          if (!dryRun) {
+            assertCalendarPlan();
+            await logCall(pkg.consId, initial.consDoc);
+            await submitReschedule(pkg.consId, arrangedDate, async () => {
+              const fresh = await readEligibility(pkg);
+              if (fresh.action !== 'CHANGE_DATE') throw new Error('Eligibility changed before save; manual review required');
+            });
+            changed++;
+          }
+          eligible++;
+        } else if (action === 'ERROR') errors++;
+        else skipped++;
+        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action, reason });
       } catch (err) {
         console.error('[reschedule]', safeFailure(err, 'Reschedule failed'));
         errors++;
-        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR' });
+        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR', reason: safeFailure(err, 'Reschedule failed') });
       }
     }
-
-    return { changed, skipped, errors, results };
+    return { changed, skipped, errors, results, ...(dryRun && { eligible }) };
   }
 
   // ── Entry point ────────────────────────────────────────────────────────────────
@@ -365,13 +456,11 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error('Unsupported depot mode');
     console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'}`);
     assertCalendarPlan();
-    const [year, month, day] = plan.today.split('-');
-    const todayShort = `${day}/${month}/${year.slice(-2)}`;
     const arrangedDate = plan.targetDate.split('-').reverse().join('/');
     const allRows = mode === 'cad' ? await fetchPendingList() : [];
     const exactTargets = Array.isArray(targets) ? targets : [];
     const packages = mode === 'cad'
-      ? allRows.filter(r => r.route === 'cad')
+      ? Array.from(new Map(allRows.filter(row => /^\d{9}$/.test(row.consNumber) && /^\d+$/.test(row.consId)).map(row => [row.consId, row])).values())
       : Array.from(new Map(exactTargets.flatMap((target) => {
         const consNumber = String(target?.consNumber ?? '').trim();
         const consId = String(target?.consId ?? '').trim();
@@ -389,15 +478,17 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         warning = 'Pending list came back empty — the list page did not load or its layout changed.';
       } else if (mode === 'cad') {
         const routes = [...new Set(allRows.map(r => r.route))].filter(Boolean);
-        warning = `No CAD parcels among ${allRows.length} pending. Routes seen: ${routes.join(', ') || '(all blank)'}`;
+        warning = `No exact consignment targets among ${allRows.length} pending. Routes seen: ${routes.join(', ') || '(all blank)'}`;
       }
       console.warn('[depotMain] NO_TARGETS');
       return { changed: 0, skipped: 0, errors: 0, warning };
     }
 
+    const result = await processPackages(packages, arrangedDate);
     if (dryRun) {
       console.log(`DRY RUN — ${packages.length} parcel(s) would be processed.`);
       return {
+        ...result,
         dryRun: true,
         count:  packages.length,
         packages: packages.map(({ consNumber, consId }) => ({ consNumber, consId })),
@@ -407,7 +498,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       };
     }
 
-    const result = await processPackages(packages, todayShort, arrangedDate);
     console.log(`Done | Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
     return result;
 

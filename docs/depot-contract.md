@@ -118,3 +118,39 @@ console-only futureDateCheck diagnostic still formats its note-date locally;
 it is not used by these reschedule execution paths. Status/logCall policy remains
 unchanged and awaits S03-03. Bot activation/work-PC extension installation remain
 separate from this offline implementation.
+
+## S03-03 — implemented owner policy, 2026-11-04
+
+Authoritative decision: DEPOT-POLICY-IMPLEMENT-2026-11-04 in decisions.md.
+The entire consignment date changes; parcel IDs only identify qualifying evidence.
+PENDING requires a latest CAD today, or latest Cancelled out for delivery without
+any Return/Returned to depot anywhere in that physical parcel's history.
+OFD/DELIVERED requires some parcel's latest unambiguous CAD today; another parcel's
+delivery/return does not overwrite its facts. GOODS HELD requires a complete,
+non-negated valid `Del. date changed FROM ... TO <today>` note cell, with no CAD
+or note-creation-date requirement. Case/whitespace/hyphen normalization is bounded;
+CAD/CAD scan and owner-named cancelled/return events are exact recognized labels.
+The latest scan is a conservative presence check; unknown latest events, missing
+identity/timestamps, future dates or conflicting simultaneous events need review.
+
+The current list supplies candidates without a route='cad' shortcut. This does
+not crawl other depot sections or promise the list includes every series in depot.
+Detail number and internal ConsId must match the exact candidate before reading
+history; the existing explicit leading-zero legacy marker is normalized exactly.
+Read-only preview checks the same policy, shows eligible/skipped/errors and static
+reasons. Live apply rereads identity/status/history immediately before Save after
+form load; a changed decision stops Save. No blind replay. LogCall keeps existing
+best-effort semantics and order; it may already have happened if this final
+recheck refuses Save. Its side effect/content remains unverified on the live depot.
+
+Returned result reasons contain no notes/session contents. REVIEW becomes ERROR
+so retry retains the target; intentional SKIP remains terminal. Queue schema is
+unchanged. Manual parcel uses the operator's valid date, automatic modes use the
+next Irish working day. The standalone futureDateCheck console is a historical
+diagnostic and does not implement this policy; never use it to authorize apply.
+Live DOM variants/history completeness still need work-PC validation; unsupported
+formats fail closed. No new endpoint beyond the existing Scanning History lookup.
+
+Policy detail summaries share a bounded formatter: at most25 displayed rows,
+1800 characters plus a remaining-row indicator, under the existing2000-character
+Firestore limit. Full history/Notes are never sent as reasons.

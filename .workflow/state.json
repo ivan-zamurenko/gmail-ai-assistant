@@ -83,8 +83,8 @@
       "block_reason": null
     },
     "S03-03": {
-      "status": "todo",
-      "evidence": null,
+      "status": "done",
+      "evidence": ".workflow/evidence/S03-03.json",
       "block_reason": null
     },
     "S03-04": {
@@ -310,9 +310,9 @@
       "note": "OWNER-D01 (2026-10-09): \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0440\u0443\u0447\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 AI-\u043e\u0442\u0432\u0435\u0442\u043e\u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u0430; auto-send \u0441\u0435\u0439\u0447\u0430\u0441 \u0432\u043d\u0435 scope. \u041e\u0441\u0442\u0430\u044e\u0442\u0441\u044f scope/exclusions, \u044f\u0437\u044b\u043a, \u0430\u0434\u0440\u0435\u0441\u0430\u0442\u044b/Reply-To, labels \u0438 \u0432\u043d\u0435\u0448\u043d\u0438\u0439 \u0434\u043e\u043f\u0443\u0441\u043a; gate pending."
     },
     "G_DEPOT_POLICY": {
-      "status": "pending",
-      "evidence": null,
-      "note": "\u0420\u0430\u0437\u0440\u0435\u0448\u0451\u043d\u043d\u044b\u0435 \u0441\u0442\u0430\u0442\u0443\u0441\u044b, \u043f\u043e\u043b\u044f \u0444\u043e\u0440\u043c\u044b \u0438 \u043f\u0440\u0430\u0432\u0438\u043b\u0430 logCall."
+      "status": "approved",
+      "evidence": "docs/decisions.md#depot-policy-implement-2026-11-04",
+      "note": "Confirmed parcel-history eligibility and whole-series date change; existing form/LogCall behavior retained. No new LogCall semantics or live authorization."
     },
     "G_CALENDAR": {
       "status": "approved",

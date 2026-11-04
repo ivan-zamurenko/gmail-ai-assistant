@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import process from 'node:process';
-import { URL } from 'node:url';
+import { URL, URLSearchParams } from 'node:url';
 import { calendarPlan, irishDay, validateManualDate, prepareDepotArgs } from '../../shared/depotCalendar.js';
 import { depotMain } from '../../src/depot/depotScript.js';
 import { build } from 'esbuild';
@@ -59,9 +59,19 @@ test('serialized depot preview uses dated calendar plan and rejects missing/stal
   let requests = 0;
   const context = vm.createContext({
     Date: class extends Date { constructor(...args) { super(...(args.length ? args : [now])); } },
-    Intl, URL, console: { log() {}, warn() {}, error() {} },
+    Intl, URL, URLSearchParams, console: { log() {}, warn() {}, error() {} },
     window: { location: { href: 'http://synthetic.interlink.local/home' } },
-    fetch() { requests++; throw new Error('Unexpected IO'); },
+    fetch(url, options) {
+      assert.notEqual(options?.method, 'POST');
+      requests++;
+      return { ok: true, text: async () => String(url).includes('woScanningHistoryList') ? 'scans' : 'detail' };
+    },
+    DOMParser: class { parseFromString(kind) {
+      return kind === 'detail' ? { querySelectorAll: () => [{}, { textContent: 'PENDING' }],
+        getElementById: id => ({ value: id === 'hiddenConsBarcodeValue' ? '123456789' : '7654321' }) }
+        : { getElementById: () => ({}), querySelectorAll: () => [{ querySelectorAll: () =>
+          Array.from({ length: 12 }, (_, i) => ({ textContent: ({ 3: 'CAD scan', 4: '24/12/2026 09:00:00', 7: '1' })[i] ?? '', getAttribute: () => null })) }] };
+    } },
   });
   const run = vm.runInContext(`(${depotMain.toString()})`, context);
   const args = { mode: 'labels', dryRun: true, calendar: plan,
@@ -70,11 +80,13 @@ test('serialized depot preview uses dated calendar plan and rejects missing/stal
   assert.equal(result.date, '30/12/2026');
   assert.equal(result.calendarVersion, plan.version);
   assert.equal(result.calendarTimeZone, 'Europe/Dublin');
+  assert.equal(result.eligible, 1);
+  assert.equal(result.errors, 0);
   for (const calendar of [undefined, { ...plan, today: '2026-12-23' }, { ...plan, targetDate: '2026-12-32' }]) {
     assert.match((await run({ ...args, calendar })).__error, /Calendar plan/);
   }
   assert.match((await run({ ...args, mode: 'manual', date: '2026-12-31' })).__error, /Calendar plan/);
-  assert.equal(requests, 0);
+  assert.equal(requests, 2, 'invalid/stale plans must not add any requests');
 });
 
 test('popup retry confirmation crossing Irish midnight does not rewrite or execute saved targets', async (t) => {

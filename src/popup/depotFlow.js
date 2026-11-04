@@ -65,13 +65,16 @@ export function initDepotFlow({
 
   function showDepotResult(result) {
     if (result.dryRun) {
-      setDepotStatus('done', `Dry run: ${result.count} parcel(s) would be processed | ${result.date} (${result.calendarTimeZone}; ${result.calendarVersion})`);
+      setDepotStatus('done', `Dry run: checked ${result.count} consignments | Eligible: ${result.eligible} | Skipped: ${result.skipped} | Errors: ${result.errors} | ${result.date} (${result.calendarTimeZone}; ${result.calendarVersion})`);
     } else if (result.warning) {
       setDepotStatus('done', result.warning);
     } else {
       setDepotStatus('done',
         `Done — Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`
       );
+    }
+    for (const entry of (result.results ?? []).slice(0, 25)) {
+      log.info(`${entry.consNumber} — ${entry.action}: ${entry.reason ?? ''}`);
     }
   }
 
@@ -192,8 +195,9 @@ export function initDepotFlow({
       return ` | Reschedule failed | Retry saved: ${remaining.length}`;
     }
     if (res.dryRun) {
-      log.info(`Dry run — ${res.count} parcel(s) would be rescheduled | ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})`);
-      return ` | Would reschedule ${res.count}`;
+      log.info(`Dry run — checked ${res.count} | Eligible: ${res.eligible} | Skipped: ${res.skipped} | Errors: ${res.errors} | ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})`);
+      for (const entry of (res.results ?? []).slice(0, 25)) log.info(`${entry.consNumber} — ${entry.action}: ${entry.reason ?? ''}`);
+      return ` | Would reschedule ${res.eligible} | Errors: ${res.errors}`;
     }
     if (res.warning) {
       log.warn(res.warning);

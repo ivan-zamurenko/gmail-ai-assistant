@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S03-02 completed offline — 2026-11-03<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S03-03 completed offline — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -210,7 +210,7 @@ It is a small **distributed system**: a Chrome MV3 extension does the work insid
 ## What It Does
 
 ### 1 · Reschedule future-dated parcels
-Scans the pending list, keeps only CAD-scanned parcels, computes the next valid working day (weekends + Irish holidays aware), and submits each reschedule in one action. **Dry-run mode** previews the target list and date before anything is written; it does not establish each parcel’s status eligibility.
+Reads the current depot list and checks each series against physical-parcel history: Pending with today’s CAD or cancelled OFD without any return on that parcel; Goods Held with a confirmed date change to today; OFD/Delivered with a remaining parcel whose latest CAD is today. It computes the next Irish working day and changes the whole series. **Dry-run mode** shows eligibility, reasons and target date without writes; live execution rechecks evidence before Save.
 
 Automatic and manually selected dates use **Europe/Dublin**, excluding weekends and Irish public/bank holidays (including Good Friday and Christmas bank closures). The verified calendar covers **2026–2027**; dates outside coverage stop with an update message. Dry-run shows the target date and calendar version. Retry expires at Irish midnight; old recovery records from before this calendar release are discarded rather than reinterpreted.
 
@@ -2053,7 +2053,38 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S03-02 completed offline — 2026-11-03</h1><pre class="markdown"># S03-02 completed offline — 2026-11-03
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S03-03 completed offline — 2026-11-04</h1><pre class="markdown"># S03-03 completed offline — 2026-11-04
+
+Root integrator done; calendar_review ACCEPT; no active writer.
+Root1.1.58/bot0.2.28/extension6.3.0.90; runtime not activated.
+Whole-series changes from physical parcel evidence: Pending+today latest CAD or
+cancelled OFD with no return ever on same parcel; GH Notes TO TODAY;
+OFD/Delivered+remaining parcel latest CAD today. Current list candidates all checked.
+Unknown/invalid/tied scans and identity mismatch stop with review/errors. Fresh
+read before Save; policy-aware preview/reasons. Existing LogCall unchanged.
+Test-first/full233/233 PASS7; reviewer independent32/32; evidence/S03-03.json.
+Actual CAD wording/Notes/history completeness need work-PC smoke. Bot restart,
+command-description registration, extension install and merge not performed.
+Next: work-PC smoke when available; S03-04 is a separate follow-up.
+Final delivery checks PASS; bounded policy details fit Firestore/Discord.
+Source ready for scoped codex commit/push; artifact /tmp/DPD-Assistance-6.3.0.90.zip.
+
+---
+
+# S03-03 active — 2026-11-04
+
+Root sole writer/integrator on codex base2be703a; calendar_review read-only.
+Owner approved implementation: Pending+today CAD; Pending+cancelled OFD without
+any Return to depot in that physical parcel history; GH+Notes TO TODAY;
+OFD/Delivered+remaining physical parcel with today CAD. Whole-series date change.
+Scope depotScript scan/note policy and dry-run/live checks, existing tests,
+executor/popup reason presentation, docs/versions/evidence. LogCall preserved.
+Existing dirty decision/worklog/reader changes are this session&#39;s clarification.
+Next minimal RED matrix then implementation; no live/deploy/merge.
+
+---
+
+# S03-02 completed offline — 2026-11-03
 
 Root integrator finished; calendar_review ACCEPT. No active writer.
 Root1.1.57/bot0.2.27/extension6.3.0.89; previous runtime remains unchanged.
@@ -2881,6 +2912,16 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root + calendar_review | S03-02 completed offline | Irish calendar shared across validators/callers; bounded coverage, dated previews, mutation freshness, recoveryv3 and retry midnight guards | full230/230 PASS7, independent35/35/review ACCEPT; evidence/S03-02.json | commit/push codex; no restart/merge/work-PC activation.
 
 - 2026-11-04 | owner + root | S03-03 partial policy clarification | remaining physical parcel in depot can justify transfer despite aggregate Delivered/OFD; GH note TO TODAY accepted; Log Call explanation requested | source inspected, no actual failure claimed; decisions DEPOT-POLICY-2026-11-04 | next exact depot-presence scan evidence and Log Call choice; no runtime edits.
+
+- 2026-11-04 | owner + root | S03-03 scope clarified | date changes whole series; latest eligibility Pending/Goods Held AND CAD today | recorded in decisions; runtime unchanged | clarify Delivered/OFD exception and GH note precedence before implementation.
+
+- 2026-11-04 | owner + root | S03-03 implementation authorized | final four-branch policy, return-ever veto for cancelled parcel, whole-series mutation; LogCall unchanged | decisions DEPOT-POLICY-IMPLEMENT-2026-11-04 | root writer/calendar_review read-only; next test-first.
+
+- 2026-11-04 | root + calendar_review | S03-03 implemented/test-first | nested pure parcel-history policy, exact identity joins, refreshed apply checks, policy-aware dry-run and reasons across popup/queue/barcodes | initial RED11/17→GREEN17/17; barcode preview RED then fixed; reviewer unknown scan/identity mismatch reproduced and fixed; focused38/38 | next independent review/full gates; no live effects.
+
+- 2026-11-04 | root + calendar_review | S03-03 completed offline | parcel-isolated eligibility for whole-series changes, fresh exact-identity/read-before-save, read-only previews with reasons | full233/233 PASS7; independent32/32/review ACCEPT; evidence/S03-03.json | commit/push codex; no restart/register/merge; work-PC scan/Notes smoke pending.
+
+- 2026-11-04 | root | S03-03 final delivery check | long policy details exceeded Firestore2000 limit; existing preview regression RED then bounded shared formatter | final233/233 PASS7; tooling38/38 | package6.3.0.90 and scoped commit/push; runtime remains unchanged.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4220,6 +4261,34 @@ Current date-save form is addressed by consignment ConsId with no physical parce
 selector. Do not claim parcel-specific mutation without depot evidence. G_DEPOT_POLICY
 remains pending; runtime unchanged. Manual parcel command retains chosen-date
 semantics unless owner explicitly changes it.
+
+### DEPOT-POLICY-2026-11-04 — series scope and CAD clarification
+
+Owner confirms a delivery-date change applies to the entire consignment/series;
+a single physical parcel cannot receive its own date. Latest stated eligibility:
+Pending/Goods Held status AND a CAD scan today (Irish day). This is an explicit
+owner rule, not an inference from the current code. Still clarify whether the
+previous aggregate Delivered/OFD example is an exception to this status list,
+and whether the earlier GH Notes TO TODAY condition remains additional.
+Log Call decision remains unanswered; no behavior change or gate completion.
+
+## DEPOT-POLICY-IMPLEMENT-2026-11-04
+
+Owner explicitly authorized implementation after confirming this table:
+- PENDING + today&#39;s CAD scan.
+- PENDING + Cancelled out for delivery on a physical parcel which has NEVER had
+  Return to depot (before or after cancellation). Other parcels&#39; return scans
+  do not count against that parcel.
+- GOODS HELD + Notes confirming a date change TO TODAY; no CAD requirement.
+- OFD/DELIVERED + a physical parcel remains in depot and has today&#39;s CAD scan.
+Dates refer to Europe/Dublin. Mutation changes the entire consignment; manual
+parcel retains selected date, automatic modes use next working day. Later OFD
+or delivery on the same parcel invalidates an earlier CAD as presence evidence.
+LogCall existing best-effort behavior is preserved, not redesigned in this task.
+Unknown/malformed/ambiguous evidence stops automation and explains the reason.
+This supersedes the earlier partial Pending/GH-only interpretation; CAD route in
+Pending List alone is not proof. Candidate list remains the current depot list;
+non-CAD rows must be checked too to support the cancelled/GH branches.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4341,6 +4410,42 @@ console-only futureDateCheck diagnostic still formats its note-date locally;
 it is not used by these reschedule execution paths. Status/logCall policy remains
 unchanged and awaits S03-03. Bot activation/work-PC extension installation remain
 separate from this offline implementation.
+
+## S03-03 — implemented owner policy, 2026-11-04
+
+Authoritative decision: DEPOT-POLICY-IMPLEMENT-2026-11-04 in decisions.md.
+The entire consignment date changes; parcel IDs only identify qualifying evidence.
+PENDING requires a latest CAD today, or latest Cancelled out for delivery without
+any Return/Returned to depot anywhere in that physical parcel&#39;s history.
+OFD/DELIVERED requires some parcel&#39;s latest unambiguous CAD today; another parcel&#39;s
+delivery/return does not overwrite its facts. GOODS HELD requires a complete,
+non-negated valid `Del. date changed FROM ... TO &lt;today&gt;` note cell, with no CAD
+or note-creation-date requirement. Case/whitespace/hyphen normalization is bounded;
+CAD/CAD scan and owner-named cancelled/return events are exact recognized labels.
+The latest scan is a conservative presence check; unknown latest events, missing
+identity/timestamps, future dates or conflicting simultaneous events need review.
+
+The current list supplies candidates without a route=&#39;cad&#39; shortcut. This does
+not crawl other depot sections or promise the list includes every series in depot.
+Detail number and internal ConsId must match the exact candidate before reading
+history; the existing explicit leading-zero legacy marker is normalized exactly.
+Read-only preview checks the same policy, shows eligible/skipped/errors and static
+reasons. Live apply rereads identity/status/history immediately before Save after
+form load; a changed decision stops Save. No blind replay. LogCall keeps existing
+best-effort semantics and order; it may already have happened if this final
+recheck refuses Save. Its side effect/content remains unverified on the live depot.
+
+Returned result reasons contain no notes/session contents. REVIEW becomes ERROR
+so retry retains the target; intentional SKIP remains terminal. Queue schema is
+unchanged. Manual parcel uses the operator&#39;s valid date, automatic modes use the
+next Irish working day. The standalone futureDateCheck console is a historical
+diagnostic and does not implement this policy; never use it to authorize apply.
+Live DOM variants/history completeness still need work-PC validation; unsupported
+formats fail closed. No new endpoint beyond the existing Scanning History lookup.
+
+Policy detail summaries share a bounded formatter: at most25 displayed rows,
+1800 characters plus a remaining-row indicator, under the existing2000-character
+Firestore limit. Full history/Notes are never sent as reasons.
 </pre></article>
 <article id="doc-42" tabindex="-1" hidden><p class="path"><a href="docs/discord/TEST_MATRIX.md">docs/discord/TEST_MATRIX.md</a></p><h1>Discord и очередь — матрица проверок</h1><pre class="markdown"># Discord и очередь — матрица проверок
 
@@ -6301,6 +6406,33 @@ storage reads crossing midnight, Irish-day expiry and refusal of legacy v2 recor
 No live Chrome/depot/Discord or private data is needed. This does not validate
 actual depot opening hours, the separate console diagnostic, or future holiday
 announcements beyond the bounded calendar snapshot.
+
+### S03-03 — parcel-history eligibility for whole-series rescheduling
+
+Existing `test/depot/depotScript.test.js` now supplies synthetic Scanning History
+cells using the established lookup indexes (type3/date4/parcel7;12 cells).
+Three new grouped risks cover owner policy: today&#39;s/latest CAD, multi-parcel
+Delivered/OFD with remaining CAD parcel, cancelled OFD with Return-to-depot veto
+anywhere on that same parcel (other parcels isolated), and GH exact valid Notes
+TO TODAY without CAD. Normalized text, stale CAD, later movement, unknown/tied/
+invalid scans, missing identity and fresh detail identity mismatches refuse writes.
+Fresh evidence is reread after form load; a newly delivered parcel prevents Save.
+
+The existing dry-run test executes serialized MAIN in a VM, checks actual
+eligibility/date/reason and zero LogCall/Save. Live existing HTTP/form/regression
+expectations remain. Existing queue/barcode preview groups protect reason display
+and eligible count rather than raw candidate count. Calendar serialization now
+mocks actual read-only detail/history and asserts zero policy errors, preventing
+metadata alone from masquerading as a successful preview.
+
+All cases are synthetic. Actual CAD scan label spelling and Notes-cell formatting,
+full history completeness and current-list coverage still need a work-PC smoke.
+Unknown event spellings return review rather than guessing from route=&#39;cad&#39;.
+No real depot mutations, Log Call, bot activation or command registration tested.
+
+The existing all-preview case also supplies30 long reasons and asserts the2000-
+character Firestore/Discord bound plus an omitted-row indicator. Both executor
+paths use the same small resultDetails formatter; no duplicate suite was added.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -8252,7 +8384,7 @@ The test file above now exists; earlier ZIP absence notes are historical.
 ## Разрешённая область изменений
 
 - `src/depot/depotScript.js`
-- `test/unit/depot-policy.test.mjs`
+- `test/depot/depotScript.test.js`
 - `docs/depot-contract.md`
 - `docs/decisions.md`
 
@@ -8275,7 +8407,7 @@ The test file above now exists; earlier ZIP absence notes are historical.
 Сначала превратить подтверждённую владельцем таблицу в независимые test cases. До ответа не угадывать допустимость DELIVERED/OFD.
 
 ```sh
-node --test test/unit/depot-policy.test.mjs
+node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js
 ```
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.
@@ -8307,6 +8439,15 @@ feat(depot): [S03-03] enforce confirmed eligibility rules
 ```
 
 Evidence: `.workflow/evidence/S03-03.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
+
+## Current delivery — 2026-11-04
+
+Owner policy and implementation authorized in DEPOT-POLICY-IMPLEMENT-2026-11-04.
+Pure policy stays nested in self-contained depotMain (no lost outer imports).
+Existing depot/queue/barcode/calendar regressions extended; no duplicate policy
+suite. Scope also includes popup/executor/barcode reason presentation and accurate
+command descriptions, versions/docs/evidence. Existing LogCall remains unchanged.
+The historical test-file-absence note above no longer describes this checkout.
 </pre></article>
 <article id="doc-85" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S03-04.md">roadmap/tasks/S03-04.md</a></p><h1>S03-04 — Показывать полный немутирующий depot preview</h1><pre class="markdown"># S03-04 — Показывать полный немутирующий depot preview
 

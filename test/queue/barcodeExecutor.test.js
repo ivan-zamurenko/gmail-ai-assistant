@@ -87,12 +87,15 @@ test('Discord barcode dry run previews the same exact target without local write
       reschedule: async ({ dryRun, targets }) => ({ result: {
         dryRun,
         count: targets.length,
+        eligible: 0, skipped: 1, errors: 0,
+        results: targets.map(item => ({ ...item, action: 'SKIP', reason: 'No eligible physical parcel in depot' })),
         packages: targets,
       } }),
     });
 
     assert.equal(result.status, 'done');
-    assert.match(result.summary, /Dry run.*Reschedule: 1/);
+    assert.match(result.details, /No eligible physical parcel/);
+    assert.match(result.summary, /Dry run.*Reschedule: 0/);
   }
 });
 

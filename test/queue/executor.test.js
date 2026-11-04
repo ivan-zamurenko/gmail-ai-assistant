@@ -350,7 +350,7 @@ test('all mode defaults an omitted dryRun to a depot preview', async (t) => {
     scripting: {
       executeScript: async ({ func, args }) => {
         injections.push({ name: func.name, args });
-        return [{ result: { dryRun: true, count: 0, packages: [] } }];
+        return [{ result: { dryRun: true, count: 30, eligible: 0, skipped: 30, errors: 0, packages: [], results: Array.from({ length: 30 }, () => ({ consNumber: '123456789', status: 'PENDING', action: 'SKIP', reason: 'No eligible physical parcel in depot; operator review of complete history required' })) } }];
       },
     },
   };
@@ -362,6 +362,10 @@ test('all mode defaults an omitted dryRun to a depot preview', async (t) => {
     schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'all' },
   });
   assert.equal(result.status, 'done');
+  assert.match(result.summary, /Дозволено: 0/);
+  assert.match(result.details, /No eligible physical parcel/);
+  assert.ok(result.details.length <= 2000, 'details must fit Firestore and Discord limits');
+  assert.match(result.details, /ще/);
   assert.deepEqual(injections, [{ name: 'depotMain', args: [prepareDepotArgs({ dryRun: true, mode: 'cad' })] }]);
 });
 

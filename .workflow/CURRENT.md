@@ -1,3 +1,34 @@
+# S03-03 completed offline — 2026-11-04
+
+Root integrator done; calendar_review ACCEPT; no active writer.
+Root1.1.58/bot0.2.28/extension6.3.0.90; runtime not activated.
+Whole-series changes from physical parcel evidence: Pending+today latest CAD or
+cancelled OFD with no return ever on same parcel; GH Notes TO TODAY;
+OFD/Delivered+remaining parcel latest CAD today. Current list candidates all checked.
+Unknown/invalid/tied scans and identity mismatch stop with review/errors. Fresh
+read before Save; policy-aware preview/reasons. Existing LogCall unchanged.
+Test-first/full233/233 PASS7; reviewer independent32/32; evidence/S03-03.json.
+Actual CAD wording/Notes/history completeness need work-PC smoke. Bot restart,
+command-description registration, extension install and merge not performed.
+Next: work-PC smoke when available; S03-04 is a separate follow-up.
+Final delivery checks PASS; bounded policy details fit Firestore/Discord.
+Source ready for scoped codex commit/push; artifact /tmp/DPD-Assistance-6.3.0.90.zip.
+
+---
+
+# S03-03 active — 2026-11-04
+
+Root sole writer/integrator on codex base2be703a; calendar_review read-only.
+Owner approved implementation: Pending+today CAD; Pending+cancelled OFD without
+any Return to depot in that physical parcel history; GH+Notes TO TODAY;
+OFD/Delivered+remaining physical parcel with today CAD. Whole-series date change.
+Scope depotScript scan/note policy and dry-run/live checks, existing tests,
+executor/popup reason presentation, docs/versions/evidence. LogCall preserved.
+Existing dirty decision/worklog/reader changes are this session's clarification.
+Next minimal RED matrix then implementation; no live/deploy/merge.
+
+---
+
 # S03-02 completed offline — 2026-11-03
 
 Root integrator finished; calendar_review ACCEPT. No active writer.

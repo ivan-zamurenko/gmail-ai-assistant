@@ -1,4 +1,5 @@
 import { safeErrorMessage } from '../utils/errors.js';
+import { resultDetails } from './resultDetails.js';
 /**
  * Executes `/reschedule barcodes` in the offscreen DOM context.
  * Drive image decoding stays here; authenticated depot access is delegated to
@@ -15,7 +16,6 @@ import {
   COMMANDS, RESCHEDULE_MODE, STATUS, TASK_SCHEMA_VERSION,
 } from './contract.js';
 
-const MAX_DETAIL_LINES = 25;
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
 
 const done = (summary, details) => ({ status: STATUS.DONE, summary, details });
@@ -31,16 +31,13 @@ async function scanWithDriveAdapter(options) {
 }
 
 function detailsFor(res) {
-  const lines = res.dryRun
+  const legacyPreview = res.dryRun && !res.results;
+  const lines = legacyPreview
     ? (res.packages ?? []).map(pkg => `${String(pkg.consNumber).padEnd(11)} ${pkg.consId}`)
     : (res.results ?? []).map(item =>
       `${String(item.consNumber).padEnd(11)} ${ACTION_ICON[item.action] ?? '•'} ${item.action}`
-      + (item.status ? ` (${item.status})` : ''));
-  if (lines.length > MAX_DETAIL_LINES) {
-    lines.length = MAX_DETAIL_LINES;
-    lines.push(`… ще ${(res.dryRun ? res.packages : res.results).length - MAX_DETAIL_LINES}`);
-  }
-  return lines.length ? lines.join('\n') : undefined;
+      + (item.status ? ` (${item.status})` : '') + (item.reason ? ` — ${item.reason}` : ''));
+  return resultDetails(lines);
 }
 
 export async function executeBarcodeTask(task, ports = {}) {
@@ -131,7 +128,9 @@ export async function executeBarcodeTask(task, ports = {}) {
   if (dryRun) {
     return (photoErrors ? error : done)(
       `Dry run — Фото: ${results.length} | Розпізнано: ${recognized}`
-      + ` | Reschedule: ${res.count ?? 0} | File errors: ${photoErrors}`,
+      + ` | Reschedule: ${res.eligible ?? res.count ?? 0} | File errors: ${photoErrors}`
+      + (Number.isInteger(res.eligible) ? ` | Skipped: ${res.skipped} | Depot errors: ${res.errors}` : '')
+      + (res.date ? ` | Date: ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})` : ''),
       detailsFor(res),
     );
   }

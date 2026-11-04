@@ -508,3 +508,47 @@ test('live CAD never reuses a preview list; a busy tab stops live without trying
   assert.match(blocked.summary, /already running in this tab/);
   assert.deepEqual(injections.map(i => i.tab), [1], 'a busy tab must not push the live run to another tab');
 });
+
+test('parcel: unusable lookups and dates never reach a depot date change (fixed Irish clock)', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 10, 4, 12) }); // Wed 4 Nov 2026
+  const originalChrome = globalThis.chrome;
+  t.after(() => { globalThis.chrome = originalChrome; });
+  let lookup;
+  const calls = [];
+  globalThis.chrome = {
+    tabs: { query: async () => [{ id: 7, url: 'http://synthetic.interlink.local/home' }], update: async () => ({}) },
+    scripting: { executeScript: async ({ func }) => {
+      calls.push(func.name);
+      return func.name === 'depotLookup' ? [{ result: [lookup] }] : [{ result: { dryRun: true, count: 1, eligible: 1, results: [] } }];
+    } },
+  };
+  const parcel = (newDate, dryRun = false) => executeTask({ schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule',
+    args: { mode: 'parcel', conId: '123456789', newDate, dryRun } });
+
+  for (const result of [
+    { query: '123456789', ok: false, reason: '0 matches' },
+    { query: '123456789', ok: false, reason: '3 matches' },
+    { query: '123456789', ok: false, reason: 'no scans', consNumber: '123456789', consId: '7654321' },
+    { query: '123456789', ok: true, consNumber: '123456789', consId: '' },
+  ]) {
+    lookup = result;
+    calls.length = 0;
+    const outcome = await parcel('2026-11-05');
+    assert.equal(outcome.status, 'error', JSON.stringify(result));
+    assert.deepEqual(calls, ['depotLookup'], `${result.reason ?? 'no consId'} must stop before depotMain`);
+  }
+
+  lookup = { query: '123456789', ok: true, consNumber: '123456789', consId: '7654321' };
+  for (const [date, message] of [['2026-11-04', /пізніше/], ['2026-11-07', /суботою|неділею/], ['2026-12-25', /святковим/], ['05/11/2026', /YYYY-MM-DD/]]) {
+    calls.length = 0;
+    const outcome = await parcel(date);
+    assert.equal(outcome.status, 'error', date);
+    assert.match(outcome.summary, message, date);
+    assert.deepEqual(calls, [], `${date} is rejected before any depot access`);
+  }
+
+  calls.length = 0;
+  const ok = await parcel('2026-11-05', true);
+  assert.equal(ok.status, 'done');
+  assert.deepEqual(calls, ['depotLookup', 'depotMain']);
+});

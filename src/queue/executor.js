@@ -192,7 +192,8 @@ const manualDateError = manualDateMessage;
 async function runParcel({ conId, newDate, dryRun }) {
   const { result: lookup, reason: lookupReason } = await injectLookup(conId);
   if (lookupReason) return error(lookupReason);
-  if (!lookup?.consNumber) return error(findFailure(lookup));
+  // Only one confirmed consignment may continue; "no scans" still carries a number.
+  if (!lookup?.ok || !lookup.consNumber) return error(findFailure(lookup ?? {}));
   if (!lookup.consId) return error('Depot lookup не повернув точний внутрішній ConsId');
 
   const targetNumber = /^0\d{8}$/.test(conId) ? conId : lookup.consNumber;

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-10",
+  "outcome": "passed",
+  "scope": "Verify and harden existing Discord /reschedule parcel: shared calendar, single confirmed consignment, no write on unusable lookup/date.",
+  "base_sha": "349ef47",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/executor.test.js",
+      "exit_code": 1,
+      "result": "lookup 'no scans' with consNumber+consId still injected depotMain",
+      "boundary": "local checkout; synthetic chrome fakes; fixed Irish clock; network guard; no live depot/Discord",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/ test/bot/ test/depot/",
+      "exit_code": 0,
+      "result": "156/156",
+      "boundary": "local checkout; synthetic chrome fakes; fixed Irish clock; network guard; no live depot/Discord",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS after trailing-newline fix: lint, 249/249, build, artifacts, docs",
+      "boundary": "local checkout; synthetic chrome fakes; fixed Irish clock; network guard; no live depot/Discord",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "G_DISCORD_MODES approved by owner 2026-11-04 (decisions.md).",
+    "Criterion 1/4: bot validation and executor share shared/depotCalendar.js; calendar.test.js + new fixed-clock executor test (today, Saturday, Christmas, wrong format) reject before any depot access.",
+    "Criterion 2: 0/N matches, no scans, missing ConsId stop before depotMain (fixed runParcel to require lookup.ok).",
+    "Criterion 3/5: dry_run:false only confirmation; live re-reads + RECHECK (S03-03..05); lost reply no replay (S09-04).",
+    "Versions: extension 6.3.0.103, root 1.1.72."
+  ],
+  "gates": [
+    "G_DISCORD_MODES approved"
+  ],
+  "changed_paths": [
+    "src/queue/executor.js",
+    "test/queue/executor.test.js",
+    "docs/discord-bot.md",
+    "docs/decisions.md",
+    "roadmap/tasks/S09-10.md",
+    "manifest.json",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Live /reschedule parcel on the work PC (S09-12)"
+  ],
+  "residual_risk": [],
+  "blocker": null,
+  "next_step": "S09-11 needs S04-04 and G_DRIVE_POLICY; remaining cards need owner decisions.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

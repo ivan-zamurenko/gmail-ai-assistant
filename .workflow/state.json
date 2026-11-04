@@ -253,8 +253,8 @@
       "block_reason": null
     },
     "S09-10": {
-      "status": "todo",
-      "evidence": null,
+      "status": "done",
+      "evidence": ".workflow/evidence/S09-10.json",
       "block_reason": null
     },
     "S09-11": {
@@ -355,9 +355,9 @@
       "note": "Конкретный test guild/Firebase project/executor, permissions register/start/rules, разрешённые поля Discord и operational scope."
     },
     "G_DISCORD_MODES": {
-      "status": "pending",
-      "evidence": null,
-      "note": "all/parcel/barcodes/retry вже реалізовані. Gate стосується лише нової семантики чи розширення scope; не є дозволом на live запуск."
+      "status": "approved",
+      "evidence": "docs/decisions.md#g-discord-modes-2026-11-04--owner-approved",
+      "note": "parcel and barcodes stay enabled as implemented; no live/access approval"
     }
   }
 }

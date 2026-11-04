@@ -307,3 +307,14 @@ Navigation retains up to16 snapshots in Mac bot memory for at most14min from ori
 Overview has separate parcel summaries and no combined scan history. Selected parcel history uses bold separated scan entries and colored status badges/border; sole parcel opens automatically. Yellow Goods Held, light green Delivered, red failed/Carded, pink Pending. No POD/placeholder in find. Optional map is one scan pin, no geocoding needed; only bound Delivered/Carded coordinates with valid time and no same-time conflicting status/location. Old extension/results lack per-scan coordinates: card still works but map is omitted. Update work-PC dist to6.3.0.87 for maps and to stop find POD requests. /report unchanged.
 
 Find bot0.2.26/extension6.3.0.88 supports red Failed Delivery/Incorrect Address with attempted-delivery GPS. Return to depot is red but does not contribute GPS. /report still uses Delivered/Carded only.
+
+## S09-10 — `/reschedule parcel` (2026-11-04)
+
+Режим увімкнено рішенням G_DISCORD_MODES. Бот (`validation.js`) і executor перевіряють
+дату одним `shared/depotCalendar.js` (майбутній робочий день Ірландії, без вихідних і
+свят, формат YYYY-MM-DD). Executor спершу робить точний lookup; далі йде лише один
+підтверджений consignment з внутрішнім ConsId. «0 matches», «N matches», «no scans» і
+відсутній ConsId зупиняють задачу до `depotMain` (виправлено: раніше «no scans» з номером
+доходив до depotMain, де давав REVIEW без запису). Dry-run за замовчуванням; live —
+лише `dry_run:false`, з повторним читанням і RECHECK перед Save. Повтор/втрачена відповідь
+не повторюють запис (S09-04). Тест: `test/queue/executor.test.js` (фіксований годинник).

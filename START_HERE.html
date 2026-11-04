@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S09-09 Discord CAD preview/apply verified — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-10 /reschedule parcel verified — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1229,6 +1229,17 @@ Navigation retains up to16 snapshots in Mac bot memory for at most14min from ori
 Overview has separate parcel summaries and no combined scan history. Selected parcel history uses bold separated scan entries and colored status badges/border; sole parcel opens automatically. Yellow Goods Held, light green Delivered, red failed/Carded, pink Pending. No POD/placeholder in find. Optional map is one scan pin, no geocoding needed; only bound Delivered/Carded coordinates with valid time and no same-time conflicting status/location. Old extension/results lack per-scan coordinates: card still works but map is omitted. Update work-PC dist to6.3.0.87 for maps and to stop find POD requests. /report unchanged.
 
 Find bot0.2.26/extension6.3.0.88 supports red Failed Delivery/Incorrect Address with attempted-delivery GPS. Return to depot is red but does not contribute GPS. /report still uses Delivered/Carded only.
+
+## S09-10 — `/reschedule parcel` (2026-11-04)
+
+Режим увімкнено рішенням G_DISCORD_MODES. Бот (`validation.js`) і executor перевіряють
+дату одним `shared/depotCalendar.js` (майбутній робочий день Ірландії, без вихідних і
+свят, формат YYYY-MM-DD). Executor спершу робить точний lookup; далі йде лише один
+підтверджений consignment з внутрішнім ConsId. «0 matches», «N matches», «no scans» і
+відсутній ConsId зупиняють задачу до `depotMain` (виправлено: раніше «no scans» з номером
+доходив до depotMain, де давав REVIEW без запису). Dry-run за замовчуванням; live —
+лише `dry_run:false`, з повторним читанням і RECHECK перед Save. Повтор/втрачена відповідь
+не повторюють запис (S09-04). Тест: `test/queue/executor.test.js` (фіксований годинник).
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -2069,7 +2080,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-09 Discord CAD preview/apply verified — 2026-11-04</h1><pre class="markdown"># S09-09 Discord CAD preview/apply verified — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-10 /reschedule parcel verified — 2026-11-04</h1><pre class="markdown"># S09-10 /reschedule parcel verified — 2026-11-04
+
+Copilot; no active writer. Owner approved G_DISCORD_MODES. Fixed: lookup «no scans» no longer reaches depotMain; fixed-clock test covers unusable lookups and dates. Shared calendar confirmed for bot and executor.
+Root1.1.72/extension6.3.0.103; bot0.2.30. Full 249/249 PASS7. No live action.
+Next: remaining cards need owner decisions (G_DRIVE_POLICY → Drive/S09-11; G_GMAIL_POLICY/G_AI_PROVIDER → Gmail/AI; access/test accounts → S09-12).
+
+---
+
+# S09-09 Discord CAD preview/apply verified — 2026-11-04
 
 Copilot; no active writer. /reschedule all already used the shared protected path; added characterization (live never reuses preview list; busy tab stops live without another tab) with mutation proof. No product change, no version bump.
 Root1.1.71/extension6.3.0.102; bot0.2.30. Full 248/248 PASS7.
@@ -2999,6 +3018,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | Читабельність Discord: палітра статусів (погоджено), емодзі й відступи в /find, підсумки /reschedule рядками з емодзі, рядки посилок текстом замість блоку коду. 247/247, review ACCEPT; bot 0.2.30, root 1.1.70. Бот перезапускає власник. | Перевірити на телефоні; далі S09-09. |
 | 2026-11-04 | Copilot + власник | Виконано | Живий випадок: Pending + CAD сьогодні + «Cancelled OFD scan» ×2 → REVIEW через невідому назву. Точна назва зведена до правила скасованого OFD (рішення власника). RED → GREEN; 247/247; ext 6.3.0.102, root 1.1.71. | Оновити розширення; далі S09-09. |
 | 2026-11-04 | Copilot | Виконано | S09-09: `/reschedule all` уже йшов спільним захищеним шляхом; додано характеризаційний тест (live не бере список preview, зайнята вкладка зупиняє live) з доказом мутацією. Продукт не змінено. 248/248; [evidence](evidence/S09-09.json). | Решта карток чекає рішень власника. |
+| 2026-11-04 | Copilot + власник | Виконано | G_DISCORD_MODES погоджено. S09-10: «no scans» більше не доходить до depotMain (RED → GREEN), тест з фіксованим годинником на дати; 249/249; ext 6.3.0.103, root 1.1.72; [evidence](evidence/S09-10.json). | Далі потрібні рішення власника (Drive, Gmail/AI). |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4609,6 +4629,9 @@ Owner asked for bot messages that read comfortably on desktop and phone: more sp
 
 ### 2026-11-04 — &quot;Cancelled OFD scan&quot; is the depot&#39;s cancelled-OFD event
 Live parcel (Pending, CAD scan today, then two cancelled OFD scans) was not rescheduled: the tooltip text &quot;Cancelled OFD scan&quot; was unknown, so the latest scan went to REVIEW. Owner: a new Pending parcel with CAD today must be rescheduled no matter how many cancelled OFD scans follow. Exact normalized &quot;cancelled ofd scan&quot; now maps to the existing cancelled-OFD rule (Pending, no later return/delivery/out-for-delivery → next working day). Other descriptions still go to review. policyVersion IE-reschedule-2026-11-04.2. Synthetic regression mirrors the live history without identifiers.
+
+### G-DISCORD-MODES-2026-11-04 — owner approved
+Owner explicitly keeps the existing Discord `/reschedule parcel` and `/reschedule barcodes` modes enabled as they work today: default dry-run, live only with explicit `dry_run:false`, no second confirmation. This approves G_DISCORD_MODES for S09-10/S09-11 hardening; it is not a live-pilot or access approval (G_DISCORD_ACCESS/G_TEST_ACCOUNTS stay pending).
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -11876,6 +11899,14 @@ feat(discord): [S09-10] connect approved parcel mode
 ```
 
 Evidence: `.workflow/evidence/S09-10.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
+
+## Виконано 2026-11-04
+
+G_DISCORD_MODES погоджено. Тест у `test/queue/executor.test.js` (замість
+`test/discord/parcel.test.mjs`) з фіксованим годинником: непридатні lookup і дати не
+доходять до depotMain. Виправлено реальний дефект: «no scans» з номером проходив до
+depotMain. Критерії 3 і 5 закрито раніше (S03-03…S03-05, S09-04); previewId не
+вводиться через рішення про єдине підтвердження `dry_run:false`.
 </pre></article>
 <article id="doc-119" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-11.md">roadmap/tasks/S09-11.md</a></p><h1>S09-11 — Перевірити й укріпити наявний режим barcodes</h1><pre class="markdown"># S09-11 — Перевірити й укріпити наявний режим barcodes
 

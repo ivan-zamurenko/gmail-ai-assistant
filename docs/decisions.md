@@ -344,3 +344,6 @@ Owner asked for bot messages that read comfortably on desktop and phone: more sp
 
 ### 2026-11-04 — "Cancelled OFD scan" is the depot's cancelled-OFD event
 Live parcel (Pending, CAD scan today, then two cancelled OFD scans) was not rescheduled: the tooltip text "Cancelled OFD scan" was unknown, so the latest scan went to REVIEW. Owner: a new Pending parcel with CAD today must be rescheduled no matter how many cancelled OFD scans follow. Exact normalized "cancelled ofd scan" now maps to the existing cancelled-OFD rule (Pending, no later return/delivery/out-for-delivery → next working day). Other descriptions still go to review. policyVersion IE-reschedule-2026-11-04.2. Synthetic regression mirrors the live history without identifiers.
+
+### G-DISCORD-MODES-2026-11-04 — owner approved
+Owner explicitly keeps the existing Discord `/reschedule parcel` and `/reschedule barcodes` modes enabled as they work today: default dry-run, live only with explicit `dry_run:false`, no second confirmation. This approves G_DISCORD_MODES for S09-10/S09-11 hardening; it is not a live-pilot or access approval (G_DISCORD_ACCESS/G_TEST_ACCOUNTS stay pending).

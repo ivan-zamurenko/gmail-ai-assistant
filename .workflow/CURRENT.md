@@ -1,3 +1,11 @@
+# S09-10 /reschedule parcel verified — 2026-11-04
+
+Copilot; no active writer. Owner approved G_DISCORD_MODES. Fixed: lookup «no scans» no longer reaches depotMain; fixed-clock test covers unusable lookups and dates. Shared calendar confirmed for bot and executor.
+Root1.1.72/extension6.3.0.103; bot0.2.30. Full 249/249 PASS7. No live action.
+Next: remaining cards need owner decisions (G_DRIVE_POLICY → Drive/S09-11; G_GMAIL_POLICY/G_AI_PROVIDER → Gmail/AI; access/test accounts → S09-12).
+
+---
+
 # S09-09 Discord CAD preview/apply verified — 2026-11-04
 
 Copilot; no active writer. /reschedule all already used the shared protected path; added characterization (live never reuses preview list; busy tab stops live without another tab) with mutation proof. No product change, no version bump.

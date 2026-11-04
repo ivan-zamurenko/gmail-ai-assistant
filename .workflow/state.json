@@ -108,8 +108,8 @@
       "block_reason": null
     },
     "S04-03": {
-      "status": "todo",
-      "evidence": null,
+      "status": "done",
+      "evidence": ".workflow/evidence/S04-03.json",
       "block_reason": null
     },
     "S04-04": {
@@ -300,9 +300,9 @@
   },
   "gates": {
     "G_ARCHITECTURE": {
-      "status": "pending",
-      "evidence": null,
-      "note": "Существующая топология Chrome + Node bot + Firestore известна. Требуется допустимая глубина изменений и выбор устойчивого Drive execution context."
+      "status": "approved",
+      "evidence": "docs/decisions.md#g-architecture-2026-11-04--owner-approved-adr-for-s04-03",
+      "note": "Option A: popup starts/monitors, offscreen runs the shared barcode executor; no auto-resume; no new permissions"
     },
     "G_GMAIL_POLICY": {
       "status": "pending",

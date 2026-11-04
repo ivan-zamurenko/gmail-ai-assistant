@@ -92,6 +92,8 @@ test/
 ├── queue/
 │   ├── barcodeExecutor.test.js Discord Drive-label orchestration
 │   ├── executor.test.js     Queue validation and command boundary
+│   ├── labelScanJob.test.js  Popup label scan job record and sender rules
+│   ├── labelScanRoutes.test.js Background job routes: one job, accept, boot, orphans
 │   ├── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
 │   └── taskProgress.test.js PII-free coalesced progress transport
 ├── tooling/
@@ -685,6 +687,19 @@ test/
 - Об’єднує швидкі події, щоб progress-діагностика не стала bottleneck великого
   batch; значення обмежені розміром batch і двогодинним execution window.
 - Використовує injected writer без Firebase, Discord, фотографій та parcel data.
+
+### `test/queue/labelScanJob.test.js` і `test/queue/labelScanRoutes.test.js`
+
+**Popup label scan runs as one background job (S04-03)**
+
+- Запис задачі: створення, прогрес і завершення лише для тієї ж активної задачі,
+  обмеження довжини й етапу, «interrupted» лише для прийнятої або осиротілої задачі.
+- Кожен тип повідомлення приймається лише з власного контексту (popup, offscreen,
+  background); вкладка депо чи інше розширення — ніколи.
+- Маршрути: одна активна задача, конкурентні старти дають одну, недоступний runner
+  завершує задачу помилкою без роботи, boot не чіпає задачу в процесі передачі.
+- `listener.test.mjs`: offscreen виконує `label-scan-run` лише від background і чекає
+  за задачею Discord у спільній черзі (доведено мутацією).
 
 ### `test/queue/executor.test.js`
 

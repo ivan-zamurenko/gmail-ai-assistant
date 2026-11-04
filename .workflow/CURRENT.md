@@ -1,3 +1,11 @@
+# S04-03 popup label scan as background job — 2026-11-04
+
+Copilot; no active writer. Owner chose G_ARCHITECTURE A. Popup starts/watches a stored job; offscreen runs the shared barcode executor in the shared serial queue; closing the popup no longer stops a scan; restarts mark the job interrupted, never replayed.
+Root1.1.76/extension6.3.0.107; bot0.2.30. Full 272/272 PASS7; review finding (orphaned job) fixed. Not yet run in real Chrome.
+Next: owner smoke-tests popup dry-run scan (close/reopen mid-scan); then S04-04.
+
+---
+
 # Drive naming amendment done — 2026-11-04
 
 Copilot; no active writer. Owner changed label names to number first with parcel always: `123456789_p01_2026-11-04.jpg`, `unknown-007_2026-11-04.jpg`; earlier date-first files are recognised, not renamed. Drive policy drive-labels-2026-11-04.2.

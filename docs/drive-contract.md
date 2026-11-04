@@ -85,6 +85,20 @@ Live-проверка требует отдельной тестовой пап�
 
 S04-03/S09-11 проверяют существующие offscreen/worker компоненты и недостающие гарантии recovery; не создавать второй runner и не отключать реализованный режим по архивному описанию. Live подтверждается явным dry_run:false. Перед Save точные targets сохраняются локально для повторения server errors в тот же день; `/reschedule retry` не сканирует Drive повторно, а вчерашнюю партию удаляет. Неподтверждённый или disputed candidate не даёт права reschedule.
 
+## S04-03 — popup як пульт фонового сканування (G_ARCHITECTURE A, 2026-11-04)
+
+Popup «Scan Drive Labels» більше не виконує сканування сам. Він просить інтерактивну
+згоду Google (`getAuthToken`), надсилає `label-scan-start {dryRun}` у background і показує
+запис задачі з `chrome.storage.local` (`labelScanJob`: id, стан, етап, N/M, підсумок,
+деталі). Background приймає старт лише від popup (`authorizeSender`), тримає одну активну
+задачу, гарантує offscreen і передає `label-scan-run`; offscreen приймає лише від
+background, виконує той самий `executeBarcodeTask`, що й Discord, у тій самій черзі
+`serial` (ніколи паралельно з задачами Discord) і звітує `label-scan-progress/finish`.
+Закриття popup не зупиняє сканування. Перезапуск offscreen (`label-scan-boot`) позначає
+прийняту активну задачу «Interrupted… check Drive…; it was not repeated»; задачу, яку
+ніхто не запускає і яку не прийняв runner (помер service worker), позначає так само й
+новий старт. Автоматичного відновлення чи повтору немає. Нових manifest-дозволів немає.
+
 ## S01-04 — реалізована HTTP-межа, 2026-10-28
 
 Drive adapter та Gmail request використовують src/shared/apiErrors.js. Explicit

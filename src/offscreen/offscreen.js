@@ -23,8 +23,9 @@ import {
 
 import { loadConfig }         from '../config/config.js';
 import {
-  COMMANDS, RESCHEDULE_MODE, STATUS, TASKS_COLLECTION,
+  COMMANDS, RESCHEDULE_MODE, STATUS, TASKS_COLLECTION, TASK_SCHEMA_VERSION,
 } from '../queue/contract.js';
+import { authorizeSender }   from '../queue/labelScanJob.js';
 import { executeBarcodeTask } from '../queue/barcodeExecutor.js';
 import { createRuntimeStorage } from '../queue/runtimeStorage.js';
 import { createTaskProgressReporter } from '../queue/taskProgress.js';
@@ -109,6 +110,24 @@ async function claimTask(db, id) {
   });
 }
 
+// The ports shared by Discord barcodes and the popup label scan job.
+function barcodePorts(onProgress) {
+  return {
+    lookup: (number) => chrome.runtime.sendMessage({ type: 'label-lookup', number }),
+    reschedule: (options) => chrome.runtime.sendMessage({ type: 'label-reschedule', options }),
+    getAuthToken: async () => {
+      const response = await chrome.runtime.sendMessage({ type: 'drive-auth-token' });
+      if (response?.reason) throw new Error(response.reason);
+      return response?.token;
+    },
+    removeCachedAuthToken: (token) => chrome.runtime.sendMessage({
+      type: 'drive-remove-token', token,
+    }),
+    storage: createRuntimeStorage((message) => chrome.runtime.sendMessage(message)),
+    onProgress,
+  };
+}
+
 async function handle(db, id) {
   const started = Date.now();
   const progress = createTaskProgressReporter((value) => updateDoc(
@@ -127,25 +146,12 @@ async function handle(db, id) {
     const isBarcodeTask = task.command === COMMANDS.RESCHEDULE
       && task.args?.mode === RESCHEDULE_MODE.BARCODES;
     const result = isBarcodeTask
-      ? await executeBarcodeTask(task, {
-        lookup: (number) => chrome.runtime.sendMessage({ type: 'label-lookup', number }),
-        reschedule: (options) => chrome.runtime.sendMessage({ type: 'label-reschedule', options }),
-        getAuthToken: async () => {
-          const response = await chrome.runtime.sendMessage({ type: 'drive-auth-token' });
-          if (response?.reason) throw new Error(response.reason);
-          return response?.token;
-        },
-        removeCachedAuthToken: (token) => chrome.runtime.sendMessage({
-          type: 'drive-remove-token', token,
-        }),
-        storage: createRuntimeStorage((message) => chrome.runtime.sendMessage(message)),
-        onProgress: (current, total, stage) => {
-          const elapsedMs = Date.now() - started;
-          const count = total > 0 ? ` | ${current}/${total}` : '';
-          console.log(`[barcode] ${stage}${count} | ${elapsedMs}ms`);
-          progress.push(current, total, stage, elapsedMs);
-        },
-      })
+      ? await executeBarcodeTask(task, barcodePorts((current, total, stage) => {
+        const elapsedMs = Date.now() - started;
+        const count = total > 0 ? ` | ${current}/${total}` : '';
+        console.log(`[barcode] ${stage}${count} | ${elapsedMs}ms`);
+        progress.push(current, total, stage, elapsedMs);
+      }))
       : await chrome.runtime.sendMessage({ type: 'execute', task });
     if (isBarcodeTask) await progress.flush();
     await writeResult(db, id, { ...result, execMs: Date.now() - started });
@@ -158,6 +164,48 @@ async function handle(db, id) {
     scheduled.delete(id);
   }
 }
+
+// ── Popup label scan job (S04-03) ──────────────────────────────────────────────
+// Same executor and same serial queue as Discord, so the two never run at once.
+async function runLabelScan(jobId, dryRun) {
+  const started = Date.now();
+  const send = (message) => chrome.runtime.sendMessage({ ...message, jobId }).catch(() => {});
+  const progress = createTaskProgressReporter((value) => send({
+    type: 'label-scan-progress', stage: value.stage, current: value.current, total: value.total,
+  }));
+  try {
+    const result = await executeBarcodeTask({
+      schemaVersion: TASK_SCHEMA_VERSION,
+      command: COMMANDS.RESCHEDULE,
+      args: { mode: RESCHEDULE_MODE.BARCODES, dryRun },
+    }, barcodePorts((current, total, stage) => progress.push(current, total, stage, Date.now() - started)));
+    await progress.flush();
+    await send({ type: 'label-scan-finish', status: result.status, summary: result.summary, details: result.details });
+  } catch (err) {
+    await progress.flush().catch(() => {});
+    await send({ type: 'label-scan-finish', status: STATUS.ERROR, summary: safeErrorMessage(err, 'Label scan failed') });
+  }
+}
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'label-scan-run') return;
+  const context = {
+    runtimeId: chrome.runtime.id,
+    workerUrl: chrome.runtime.getURL('src/background/background.js'),
+  };
+  if (!authorizeSender(msg.type, sender, context) || typeof msg.jobId !== 'string'
+      || !/^[A-Za-z0-9-]{1,64}$/.test(msg.jobId) || typeof msg.dryRun !== 'boolean') {
+    sendResponse({ accepted: false });
+    return;
+  }
+  serial = serial.then(() => runLabelScan(msg.jobId, msg.dryRun)).catch((err) => {
+    console.error('[offscreen] label scan error:', safeErrorMessage(err));
+  });
+  sendResponse({ accepted: true });
+});
+
+// A fresh offscreen document means any job a previous one accepted is lost.
+chrome.runtime.sendMessage({ type: 'label-scan-boot' }).catch(() => {});
 
 function schedule(db, id) {
   if (!currentExecutor() || scheduled.has(id)) return;

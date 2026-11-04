@@ -17,8 +17,12 @@ import { LABEL_RESCHEDULE_RECOVERY_KEY } from '../depot/rescheduleRecovery.js';
 import { STATUS }      from '../queue/contract.js';
 import { CONSTANTS }   from '../utils/constants.js';
 import { safeErrorMessage } from '../utils/errors.js';
+import { authorizeSender } from '../queue/labelScanJob.js';
+import { createLabelScanRoutes } from './labelScanRoutes.js';
 
 const OFFSCREEN_URL   = 'src/offscreen/offscreen.html';
+const POPUP_URL       = 'src/popup/popup.html';
+const WORKER_URL      = 'src/background/background.js';
 const KEEPALIVE_ALARM = 'offscreen-keepalive';
 
 let creatingOffscreen = null;
@@ -39,7 +43,7 @@ function ensureOffscreen() {
         await chrome.offscreen.createDocument({
           url: OFFSCREEN_URL,
           reasons: ['WORKERS'],
-          justification: 'Maintain a realtime Firestore listener for the Discord task queue.',
+          justification: 'Maintain the Discord task queue listener and run Drive label scans that need a DOM canvas.',
         });
         logger.info('background: offscreen listener started');
       }
@@ -88,9 +92,39 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   warmDepotTabs();
 });
 
+// Popup label scan job (S04-03): popup starts it, offscreen runs it, we keep the record.
+const labelScan = createLabelScanRoutes({
+  storage: chrome.storage.local,
+  ensureOffscreen,
+  sendToRunner: (message) => chrome.runtime.sendMessage(message),
+  newId: () => globalThis.crypto.randomUUID(),
+});
+const LABEL_SCAN = {
+  'label-scan-start': (msg) => labelScan.start(msg),
+  'label-scan-progress': (msg) => labelScan.progress(msg),
+  'label-scan-finish': (msg) => labelScan.finish(msg),
+  'label-scan-boot': () => labelScan.boot(),
+};
+
 // The offscreen listener asks us to run a task in the depot tab; we own
 // chrome.scripting, it does not.
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (Object.hasOwn(LABEL_SCAN, msg?.type ?? '')) {
+    const context = {
+      runtimeId: chrome.runtime.id,
+      popupUrl: chrome.runtime.getURL(POPUP_URL),
+      offscreenUrl: chrome.runtime.getURL(OFFSCREEN_URL),
+      workerUrl: chrome.runtime.getURL(WORKER_URL),
+    };
+    if (!authorizeSender(msg.type, sender, context)) {
+      sendResponse({ reason: 'Untrusted runtime sender' });
+      return;
+    }
+    LABEL_SCAN[msg.type](msg).then(sendResponse).catch((err) => {
+      sendResponse({ reason: safeErrorMessage(err) });
+    });
+    return true;
+  }
   const supported = ['keepalive', 'execute', 'label-lookup', 'label-reschedule',
     'drive-auth-token', 'drive-remove-token', 'label-recovery-get',
     'label-recovery-set', 'label-recovery-remove'];

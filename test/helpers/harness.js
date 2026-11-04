@@ -67,6 +67,7 @@ export function useChrome(t, { storage = {}, token = 'synthetic-token', tokenErr
         async set(items) { Object.assign(data, globalThis.structuredClone(items)); },
         async remove(keys) { for (const k of [].concat(keys)) delete data[k]; },
       },
+      onChanged: { addListener() {}, removeListener() {} },
     },
     identity: {
       getAuthToken(options, callback) {

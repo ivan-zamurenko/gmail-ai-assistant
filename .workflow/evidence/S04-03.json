@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "task_id": "S04-03",
+  "outcome": "passed",
+  "scope": "Popup Drive label scan as a background job in the offscreen runner (G_ARCHITECTURE A); survives popup close; no auto-resume.",
+  "base_sha": "68e9f18",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/labelScanJob.test.js",
+      "exit_code": null,
+      "result": "N/A: new module written before the first run (module-missing would not be a behavioural RED); one wording assertion failed and was fixed",
+      "boundary": "local checkout; synthetic chrome/runtime/storage fakes and VM-loaded offscreen; no real Chrome/Drive",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/listener.test.mjs (mutation: run label scan outside the serial chain)",
+      "exit_code": 1,
+      "result": "'popup label scan waits behind a running Discord task' failed; code restored",
+      "boundary": "local checkout; synthetic chrome/runtime/storage fakes and VM-loaded offscreen; no real Chrome/Drive",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/labelScanRoutes.test.js",
+      "exit_code": 1,
+      "result": "orphaned unaccepted job blocked the next scan (found by code review)",
+      "boundary": "local checkout; synthetic chrome/runtime/storage fakes and VM-loaded offscreen; no real Chrome/Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/ test/depot/",
+      "exit_code": 0,
+      "result": "all pass",
+      "boundary": "local checkout; synthetic chrome/runtime/storage fakes and VM-loaded offscreen; no real Chrome/Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages: lint, 272/272, build, artifacts, docs, diff-check",
+      "boundary": "local checkout; synthetic chrome/runtime/storage fakes and VM-loaded offscreen; no real Chrome/Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "manual",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "code-review subagent",
+      "exit_code": null,
+      "result": "1 medium finding (orphaned job) fixed; MV3 sender.url for SW messages ~85% certain, failure mode is a safe 'runner unavailable'",
+      "boundary": "static review + tests",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "ADR G-ARCHITECTURE-2026-11-04 in decisions.md: popup starts/watches; background owns the job record; offscreen runs the shared executor in the shared serial queue.",
+    "Owner chose summary view (no per-photo lines) for the popup.",
+    "No automatic resume or replay after a runner restart; interrupted jobs ask the operator to check Drive.",
+    "No new manifest permissions; offscreen justification text updated.",
+    "Versions: extension 6.3.0.107, root 1.1.76."
+  ],
+  "gates": [
+    "G_ARCHITECTURE approved"
+  ],
+  "changed_paths": [
+    "src/queue/labelScanJob.js",
+    "src/background/labelScanRoutes.js",
+    "src/background/background.js",
+    "src/offscreen/offscreen.js",
+    "src/popup/depotFlow.js",
+    "test/queue/labelScanJob.test.js",
+    "test/queue/labelScanRoutes.test.js",
+    "test/queue/listener.test.mjs",
+    "test/helpers/harness.js",
+    "docs/decisions.md",
+    "docs/drive-contract.md",
+    "docs/TESTING.md",
+    "roadmap/tasks/S04-03.md",
+    "manifest.json",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Real Chrome: service-worker → offscreen messaging and MessageSender.url for SW messages",
+    "Popup UI rendering and storage.onChanged in Chrome",
+    "Worker suspension during a long scan"
+  ],
+  "residual_risk": [
+    "If Chrome does not set sender.url for SW messages, every popup scan reports 'runner unavailable' (safe, visible) until the check is adjusted.",
+    "An interrupted job may have completed some moves; the operator must check Drive."
+  ],
+  "blocker": null,
+  "next_step": "Owner: reload extension 6.3.0.107, run one popup dry-run label scan, close and reopen the popup mid-scan. Next card S04-04 (journal, cancel, reconcile uncertain writes).",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

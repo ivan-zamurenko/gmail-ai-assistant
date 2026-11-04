@@ -9,13 +9,10 @@ import { safeErrorMessage } from '../utils/errors.js';
  *   - Scan Drive Labels (barcode → depot → file under YYYY/MM)
  */
 
-import { loadConfig }                          from '../config/config.js';
-import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
-import { processLabels }                       from '../depot/driveScanner.js';
-import { depotLookup }                         from '../depot/lookup.js';
+import { getAuthToken }                        from '../auth/getAuthToken.js';
+import { LABEL_SCAN_JOB_KEY, isActive }        from '../queue/labelScanJob.js';
 import { depotMain }                           from '../depot/depotScript.js';
 import { assertDepotTab }                      from '../depot/depotTarget.js';
-import { createLabelVerifier, DEPOT_PROBE }     from '../depot/labelVerifier.js';
 import {
   addRecoveryTargets,
   applyRecoveryResult,
@@ -24,19 +21,19 @@ import {
 import { createLog }                           from './logView.js';
 import { setStatus }                           from './statusHelper.js';
 
-const STATE_LABELS = {
-  listing:     'Listing',
-  downloading: 'Downloading',
-  reading:     'Reading',
-  checking:    'Checking',
-  filing:      'Filing',
+const JOB_STAGES = {
+  queued:       'Waiting for the queue',
+  'depot-probe': 'Checking depot',
+  'depot-ready': 'Depot ready',
+  'drive-auth':  'Authorising Drive',
+  'drive-ready': 'Drive ready',
+  listing:      'Listing photos',
+  downloading:  'Downloading',
+  reading:      'Reading',
+  checking:     'Checking',
+  filing:       'Filing',
+  reschedule:   'Rescheduling',
 };
-
-function fatal(message) {
-  const err = new Error(message);
-  err.fatal = true;
-  return err;
-}
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
@@ -85,26 +82,6 @@ export function initDepotFlow({
     progressLabel.textContent = '';
   }
 
-  // Photos go past too fast to follow one by one, so the log keeps only the
-  // outcome of each: where it ended up, or why it did not.
-  function onScanProgress(current, total, state, entry) {
-    scanProgress.hidden = false;
-    const percent = Math.round((current / total) * 100);
-    progressFill.style.width = `${percent}%`;
-    progressLabel.textContent = state === 'listing'
-      ? 'Listing photos...'
-      : `${STATE_LABELS[state] ?? 'Working'} ${current} of ${total} · ${percent}%`;
-
-    if (state !== 'done') return;
-
-    const prefix = `${current}/${total}`;
-    const name   = entry.to?.split('/').pop();
-    if (entry.error)          log.fail(`${prefix} ✗ ${entry.from} — ${entry.error}`);
-    else if (!entry.number)   log.warn(`${prefix} ? ${name}${entry.review ? ` — ${entry.review}` : ''}`);
-    else if (entry.contested) log.warn(`${prefix} ✓ ${name} (contested)`);
-    else                      log.ok(`${prefix} ✓ ${name}`);
-  }
-
   async function getActiveDepotTab() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     return assertDepotTab(tab);
@@ -139,34 +116,7 @@ export function initDepotFlow({
     }
   });
 
-  // ── Scan Drive Labels ───────────────────────────────────────────────────────
-
-  // Asks the depot whether a number is a real parcel. Reuses the same lookup
-  // the email flow runs, so there is one definition of "this parcel is ours".
-  // A consignment of ten parcels repeats one number ten times, hence the cache.
-  function depotVerifier() {
-    return createLabelVerifier({
-      lookup: async (number) => {
-        const tab = await getActiveDepotTab();
-        let injection;
-        try {
-          [injection] = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func:   depotLookup,
-            args:   [[number], { identityOnly: true }],
-            world:  'MAIN',
-          });
-        } catch (err) {
-          throw fatal(`Cannot reach the depot tab — ${safeErrorMessage(err, 'Depot operation failed')}`);
-        }
-        if (!injection?.result) {
-          throw fatal('Depot lookup returned nothing — open the depot page in the active tab');
-        }
-        return injection.result[0];
-      },
-      onRejected: (number, reason) => log.warn(`  ${number} — ${reason}`),
-    });
-  }
+  // ── Exact reschedule of saved targets (retry) ───────────────────────────────
 
   async function runExactReschedule(targets, dryRun, expectedDay) {
     // Capture before persistence/tab awaits, and reject retry confirmation that
@@ -225,19 +175,6 @@ export function initDepotFlow({
       + (remaining.length ? ` | Retry saved: ${remaining.length}` : '');
   }
 
-  // Label verification already resolved exact depot targets. Reschedule those
-  // directly; a driver-scanned parcel can be PENDING without being in Pending List.
-  async function rescheduleFound(results, dryRun, targetsFor) {
-    const numbers = [...new Set(results.filter(r => r.number).map(r => r.number))];
-    if (numbers.length === 0) return '';
-
-    const { targets, unresolved } = targetsFor(numbers);
-    if (unresolved) log.warn(`${unresolved} verified parcel(s) had no exact depot target`);
-    if (targets.length === 0) return ' | Reschedule: no exact targets';
-
-    return runExactReschedule(targets, dryRun);
-  }
-
   retryRescheduleBtn.addEventListener('click', async () => {
     const expectedDay = irishDay();
     const targets = await refreshRetryButton();
@@ -273,77 +210,62 @@ export function initDepotFlow({
     log.fail(`Cannot load saved reschedules — ${safeErrorMessage(err, 'Depot operation failed')}`);
   });
 
+  // ── Scan Drive Labels: a background job (S04-03) ─────────────────────────────
+  // The popup only starts and watches it; offscreen runs it in the shared queue,
+  // so closing this window does not stop the batch.
+  let shownJob = null;
+
+  function renderLabelJob(job) {
+    if (!job || job.version !== 1) return;
+    const short = String(job.id).slice(0, 8);
+    const mode = job.dryRun ? 'Dry run' : 'Live';
+    if (isActive(job)) {
+      scanProgress.hidden = false;
+      const percent = job.total > 0 ? Math.round((job.current / job.total) * 100) : 0;
+      progressFill.style.width = `${percent}%`;
+      progressLabel.textContent = `${JOB_STAGES[job.stage] ?? 'Working'}`
+        + (job.total > 0 ? ` ${job.current} of ${job.total} · ${percent}%` : '');
+      setDepotStatus('running', `${mode} label scan ${short} running — you can close this window`);
+      setDepotButtons(true);
+      return;
+    }
+    hideProgress();
+    setDepotButtons(false);
+    const at = new Date(job.updatedAt).toLocaleTimeString();
+    setDepotStatus(job.state === 'done' ? 'done' : 'error', `${mode} label scan ${short} (${at}): ${job.summary ?? job.state}`);
+    if (shownJob !== job.id) {
+      shownJob = job.id;
+      for (const line of String(job.details ?? '').split('\n').filter(Boolean)) log.info(line);
+    }
+    refreshRetryButton().catch(() => {});
+  }
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes[LABEL_SCAN_JOB_KEY]) renderLabelJob(changes[LABEL_SCAN_JOB_KEY].newValue);
+  });
+  chrome.storage.local.get(LABEL_SCAN_JOB_KEY)
+    .then((stored) => {
+      const job = stored?.[LABEL_SCAN_JOB_KEY];
+      if (job) shownJob = isActive(job) ? null : job.id;
+      renderLabelJob(job);
+    })
+    .catch((err) => log.fail(`Cannot load label scan state — ${safeErrorMessage(err, 'Depot operation failed')}`));
+
   scanDriveBtn.addEventListener('click', async () => {
     const dryRun = dryRunToggle.checked;
     if (!dryRun && !window.confirm(
       'LIVE MODE: photos will be moved and parcel dates may change. Continue?',
     )) return;
-    log.start(dryRun ? 'Dry run — nothing will be moved or rescheduled' : 'Listing photos in Drive...');
-    setDepotStatus('running', 'Keep this window open — processing labels...');
     setDepotButtons(true);
-
+    log.start(dryRun ? 'Dry run label scan — nothing will be moved or rescheduled' : 'Live label scan');
     try {
-      const config = await loadConfig();
-      if (!config.driveFolderId) throw new Error('Drive Folder ID is missing from local configuration');
-
-      // Fail before touching Drive rather than halfway through the folder.
-      const depot = depotVerifier();
-      log.info('Checking depot connection...');
-      await depot.verify(DEPOT_PROBE);
-      log.ok('Depot is responding');
-
-      const run = (token) => processLabels({
-        folderInput: config.driveFolderId,
-        token,
-        verify: depot.verify,
-        dryRun,
-        onProgress:  onScanProgress,
-      });
-
-      const token = await getAuthToken();
-      let results;
-      try {
-        results = await run(token);
-      } catch (err) {
-        if (err.code === 'unauthenticated') await removeCachedAuthToken(token);
-        // Never replay a whole batch: earlier files may already be filed.
-        throw err;
-      }
-
-      if (results.length === 0) {
-        log.warn('No label photos found');
-        setDepotStatus('done', 'No label photos found in Drive folder');
-        return;
-      }
-
-      const failed = results.filter(r => r.error).length;
-      const read   = results.filter(r => r.number).length;
-      log.info(`${dryRun ? 'Would file' : 'Filed'} ${results.length - failed} of ${results.length} — read ${read}`);
-
-      const stopped = results.find(item => ['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied'].includes(item.errorCode));
-      if (stopped) {
-        const { targets } = depot.targetsFor(results.filter(item => item.number).map(item => item.number));
-        if (!dryRun && targets.length) {
-          await addRecoveryTargets(chrome.storage.local, targets);
-          await refreshRetryButton();
-        }
-        if (stopped.errorCode === 'unauthenticated') await removeCachedAuthToken(token);
-        setDepotStatus('error', `${dryRun ? 'Would file' : 'Filed'} ${results.length - failed}/${results.length} | Errors: ${failed} | Saved targets: ${dryRun ? 0 : targets.length} | ${stopped.error}`);
-        return;
-      }
-      const reschedule = await rescheduleFound(results, dryRun, depot.targetsFor);
-
-      setDepotStatus(failed ? 'error' : 'done',
-        `${dryRun ? 'Dry run' : 'Filed'} ${results.length - failed}/${results.length} — read ${read}`
-        + (failed ? ` | Errors: ${failed}` : '')
-        + reschedule
-      );
+      // Ask for Google consent here: the background runner can only use a token silently.
+      await getAuthToken();
+      const response = await chrome.runtime.sendMessage({ type: 'label-scan-start', dryRun });
+      if (!response?.jobId || response.reason) throw new Error(response?.reason ?? 'Label scan did not start');
+      log.info(`Label scan ${response.jobId.slice(0, 8)} started — it keeps running if you close this window`);
     } catch (err) {
-      const message = err.fatal ? `Stopped — ${safeErrorMessage(err, 'Depot operation failed')}` : safeErrorMessage(err, 'Depot operation failed');
-      log.fail(message);
-      setDepotStatus('error', message);
-    } finally {
-      hideProgress();
+      setDepotStatus('error', safeErrorMessage(err, 'Label scan did not start'));
       setDepotButtons(false);
     }
   });

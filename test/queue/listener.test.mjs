@@ -103,14 +103,22 @@ async function offscreen(db, { uid = 'executor-a', execute, heartbeat, signInErr
     serverTimestamp: () => db.timestamp(Date.now()), updateDoc: async () => {},
     executeBarcodeTask: async task => { effects.push(task.args.conId); return { status: 'done', summary: '' }; },
   };
-  const chrome = { runtime: { sendMessage: async message => {
-    if (message.type === 'keepalive') return heartbeat ? heartbeat() : { ok: true };
-    effects.push(message.task.args.conId);
-    return execute ? execute(message.task) : { status: 'done', summary: 'synthetic done' };
-  } } };
+  const sent = [];
+  let runtimeListener;
+  const chrome = { runtime: {
+    id: 'synthetic-extension', getURL: path => `chrome-extension://synthetic-extension/${path}`,
+    onMessage: { addListener: listener => { runtimeListener = listener; } },
+    sendMessage: async message => {
+      if (message.type === 'keepalive') return heartbeat ? heartbeat() : { ok: true };
+      if (message.type?.startsWith('label-scan-')) { sent.push(message); return { ok: true }; }
+      effects.push(message.task.args.conId);
+      return execute ? execute(message.task) : { status: 'done', summary: 'synthetic done' };
+    },
+  } };
   const ctx = context(offscreenCode, chrome, ports);
   await flush();
-  return { ...ctx, effects, filters, auth, get unsubscribed() { return unsubscribed; },
+  return { ...ctx, effects, filters, auth, sent, chrome, runtimeMessage: (...args) => runtimeListener?.(...args),
+    get unsubscribed() { return unsubscribed; },
     snapshot: (...ids) => snapshot?.({ forEach: callback => ids.forEach(id => callback({ id, data: () => db.records.get(id) })) }),
     failSnapshot: () => snapshotError?.(new Error('PRIVATE_MARKER')),
     changeIdentity: next => { auth.currentUser = next ? { uid: next } : null; authChanged?.(auth.currentUser); },
@@ -237,4 +245,43 @@ test('listener rejects foreign identity, stops on UID change, and reports worker
   const login = await offscreen(database(), { signInError: true });
   assert.equal(login.intervals.size, 0);
   assert.ok(!login.logs.join('\n').includes('PRIVATE_MARKER'));
+});
+
+test('offscreen runs a popup label scan only for background, in the shared serial queue', async () => {
+  const db = database();
+  const h = await offscreen(db);
+  const worker = { id: h.chrome.runtime.id, url: h.chrome.runtime.getURL('src/background/background.js') };
+  assert.deepEqual(JSON.parse(JSON.stringify(h.sent.map(m => m.type))), ['label-scan-boot'], 'a fresh runner reports itself once');
+
+  const responses = [];
+  for (const sender of [{ ...worker, url: h.chrome.runtime.getURL('src/popup/popup.html') }, { ...worker, tab: { id: 7 } }, { ...worker, id: 'other' }]) {
+    h.runtimeMessage({ type: 'label-scan-run', jobId: 'job-1', dryRun: true }, sender, r => responses.push(r));
+  }
+  h.runtimeMessage({ type: 'label-scan-run', jobId: 'bad id!', dryRun: true }, worker, r => responses.push(r));
+  h.runtimeMessage({ type: 'label-scan-run', jobId: 'job-1', dryRun: 'yes' }, worker, r => responses.push(r));
+  await flush();
+  assert.deepEqual(JSON.parse(JSON.stringify(responses)), Array(5).fill({ accepted: false }));
+  assert.equal(h.sent.length, 1, 'rejected requests never run');
+
+  h.runtimeMessage({ type: 'label-scan-run', jobId: 'job-1', dryRun: true }, worker, r => responses.push(r));
+  assert.deepEqual(JSON.parse(JSON.stringify(responses.at(-1))), { accepted: true }, 'accepted before the long scan finishes');
+  await flush();
+  const finish = h.sent.find(m => m.type === 'label-scan-finish');
+  assert.deepEqual(JSON.parse(JSON.stringify([finish?.jobId, finish?.status])), ['job-1', 'done']);
+});
+
+test('a popup label scan waits behind a running Discord task', async () => {
+  const db = database();
+  db.seed('discord-task');
+  const gate = deferred();
+  const h = await offscreen(db, { execute: async () => { await gate.promise; return { status: 'done', summary: '' }; } });
+  const worker = { id: h.chrome.runtime.id, url: h.chrome.runtime.getURL('src/background/background.js') };
+  h.snapshot('discord-task');
+  await flush();
+  h.runtimeMessage({ type: 'label-scan-run', jobId: 'job-2', dryRun: true }, worker, () => {});
+  await flush();
+  assert.equal(h.sent.some(m => m.type === 'label-scan-finish'), false, 'scan must not run beside the Discord task');
+  gate.resolve();
+  await flush();
+  assert.equal(h.sent.some(m => m.type === 'label-scan-finish' && m.jobId === 'job-2'), true);
 });

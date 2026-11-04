@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Drive naming amendment done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S04-03 popup label scan as background job — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2080,7 +2080,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Drive naming amendment done — 2026-11-04</h1><pre class="markdown"># Drive naming amendment done — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-03 popup label scan as background job — 2026-11-04</h1><pre class="markdown"># S04-03 popup label scan as background job — 2026-11-04
+
+Copilot; no active writer. Owner chose G_ARCHITECTURE A. Popup starts/watches a stored job; offscreen runs the shared barcode executor in the shared serial queue; closing the popup no longer stops a scan; restarts mark the job interrupted, never replayed.
+Root1.1.76/extension6.3.0.107; bot0.2.30. Full 272/272 PASS7; review finding (orphaned job) fixed. Not yet run in real Chrome.
+Next: owner smoke-tests popup dry-run scan (close/reopen mid-scan); then S04-04.
+
+---
+
+# Drive naming amendment done — 2026-11-04
 
 Copilot; no active writer. Owner changed label names to number first with parcel always: `123456789_p01_2026-11-04.jpg`, `unknown-007_2026-11-04.jpg`; earlier date-first files are recognised, not renamed. Drive policy drive-labels-2026-11-04.2.
 Root1.1.75/extension6.3.0.106; bot0.2.30. Full 259/259 PASS7. No real Drive action.
@@ -3046,6 +3054,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | G_DRIVE_POLICY погоджено. S02-03: ірландська дата завантаження, фото без дати не чіпається, вже названий файл лише при збігу номера (інакше на перевірку), детерміновані назви. RED 4 → GREEN; 253/253, review ACCEPT; ext 6.3.0.104, root 1.1.73; [evidence](evidence/S02-03.json). | S04-02. |
 | 2026-11-04 | Copilot | Виконано | S04-02: план Drive з ідентичністю файлу й версією правил; перед PATCH — перевірка змін (stale) і колізії назви; неоднозначні фото → unknown + перевірка (G_DRIVE_POLICY). RED → GREEN; 257/257, review ACCEPT; ext 6.3.0.105, root 1.1.74; [evidence](evidence/S04-02.json). | S04-03 — потрібне G_ARCHITECTURE. |
 | 2026-11-04 | Copilot + власник | Виконано | Назви фото Drive: номер спершу, посилка завжди (`123456789_p01_2026-11-04.jpg`), старі назви розпізнаються без перейменування. 259/259; ext 6.3.0.106, root 1.1.75. Власник обрав G_ARCHITECTURE варіант A для S04-03. | S04-03 малими кроками. |
+| 2026-11-04 | Copilot + власник | Виконано | G_ARCHITECTURE A погоджено. S04-03: сканування з popup — фонова задача в offscreen у спільній черзі з Discord; закриття popup не зупиняє; перезапуск → «interrupted», без повтору. 272/272; review: виправлено «осиротілу» задачу; ext 6.3.0.107, root 1.1.76; [evidence](evidence/S04-03.json). | Власнику — перевірити в Chrome; далі S04-04. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4665,6 +4674,9 @@ Owner chose the Drive label filing rules: (1) the filing date (name prefix and Y
 
 ### G-DRIVE-POLICY-NAMING-2026-11-04 — owner amendment
 Owner changed the label file name to number first with the parcel always present: `123456789_p01_2026-11-04.jpg` (parcel 2 → `_p02_`, second photo → `…_2026-11-04-2.jpg`, unreadable → `unknown-007_2026-11-04.jpg`). If the barcode carries no parcel number the `_pNN` segment is omitted rather than guessed (`123456789_2026-11-04.jpg`). The date part keeps the Irish upload day. Files already named in the earlier date-first format are not renamed and are still recognised on re-runs (same match-or-review rule); unknown numbering continues across both formats. Drive policy version `drive-labels-2026-11-04.2`.
+
+### G-ARCHITECTURE-2026-11-04 — owner approved (ADR for S04-03)
+Context: the popup&#39;s Scan Drive Labels runs inside the popup document; closing the popup stops the batch mid-way. Discord `barcodes` already runs in the offscreen document (DOM + canvas for ZXing), serialised with all queue tasks. Decision (option A): one runner. The popup only starts a job and shows its state; background validates that the start request comes from the popup, creates a job record in `chrome.storage.local` and forwards it to offscreen; offscreen runs the same `executeBarcodeTask` inside its serial queue (never in parallel with Discord tasks) and reports PII-free progress and the final summary back to background, which updates the job record. The popup shows progress and the summary/details (no per-photo lines, owner choice). Decoding stays in offscreen (DOM/canvas), never the service worker. If offscreen restarts while a job is active, the job is marked interrupted and is not resumed or replayed automatically. Messages are validated by type and browser-provided sender; depot pages cannot start jobs or obtain Google tokens. No new manifest permissions; extension identity unchanged. Alternatives rejected: B (remember progress only — still stops on close), C (separate extension tab — another UI that can still be closed).
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4999,6 +5011,20 @@ Live-проверка требует отдельной тестовой пап�
 `/reschedule barcodes` подключён через `src/queue/barcodeExecutor.js` в offscreen DOM. Он получает Drive token через внутренний bridge и вызывает общий scanner; depot lookup и точный reschedule выполняются в авторизованной вкладке. Не путать filing фотографий в YYYY/MM с изменением даты доставки по их номерам — это разные эффекты.
 
 S04-03/S09-11 проверяют существующие offscreen/worker компоненты и недостающие гарантии recovery; не создавать второй runner и не отключать реализованный режим по архивному описанию. Live подтверждается явным dry_run:false. Перед Save точные targets сохраняются локально для повторения server errors в тот же день; `/reschedule retry` не сканирует Drive повторно, а вчерашнюю партию удаляет. Неподтверждённый или disputed candidate не даёт права reschedule.
+
+## S04-03 — popup як пульт фонового сканування (G_ARCHITECTURE A, 2026-11-04)
+
+Popup «Scan Drive Labels» більше не виконує сканування сам. Він просить інтерактивну
+згоду Google (`getAuthToken`), надсилає `label-scan-start {dryRun}` у background і показує
+запис задачі з `chrome.storage.local` (`labelScanJob`: id, стан, етап, N/M, підсумок,
+деталі). Background приймає старт лише від popup (`authorizeSender`), тримає одну активну
+задачу, гарантує offscreen і передає `label-scan-run`; offscreen приймає лише від
+background, виконує той самий `executeBarcodeTask`, що й Discord, у тій самій черзі
+`serial` (ніколи паралельно з задачами Discord) і звітує `label-scan-progress/finish`.
+Закриття popup не зупиняє сканування. Перезапуск offscreen (`label-scan-boot`) позначає
+прийняту активну задачу «Interrupted… check Drive…; it was not repeated»; задачу, яку
+ніхто не запускає і яку не прийняв runner (помер service worker), позначає так само й
+новий старт. Автоматичного відновлення чи повтору немає. Нових manifest-дозволів немає.
 
 ## S01-04 — реалізована HTTP-межа, 2026-10-28
 
@@ -5788,6 +5814,8 @@ test/
 ├── queue/
 │   ├── barcodeExecutor.test.js Discord Drive-label orchestration
 │   ├── executor.test.js     Queue validation and command boundary
+│   ├── labelScanJob.test.js  Popup label scan job record and sender rules
+│   ├── labelScanRoutes.test.js Background job routes: one job, accept, boot, orphans
 │   ├── runtimeStorage.test.js Offscreen-to-background recovery storage bridge
 │   └── taskProgress.test.js PII-free coalesced progress transport
 ├── tooling/
@@ -6381,6 +6409,19 @@ test/
 - Об’єднує швидкі події, щоб progress-діагностика не стала bottleneck великого
   batch; значення обмежені розміром batch і двогодинним execution window.
 - Використовує injected writer без Firebase, Discord, фотографій та parcel data.
+
+### `test/queue/labelScanJob.test.js` і `test/queue/labelScanRoutes.test.js`
+
+**Popup label scan runs as one background job (S04-03)**
+
+- Запис задачі: створення, прогрес і завершення лише для тієї ж активної задачі,
+  обмеження довжини й етапу, «interrupted» лише для прийнятої або осиротілої задачі.
+- Кожен тип повідомлення приймається лише з власного контексту (popup, offscreen,
+  background); вкладка депо чи інше розширення — ніколи.
+- Маршрути: одна активна задача, конкурентні старти дають одну, недоступний runner
+  завершує задачу помилкою без роботи, boot не чіпає задачу в процесі передачі.
+- `listener.test.mjs`: offscreen виконує `label-scan-run` лише від background і чекає
+  за задачею Discord у спільній черзі (доведено мутацією).
 
 ### `test/queue/executor.test.js`
 
@@ -9445,6 +9486,14 @@ Evidence: `.workflow/evidence/S04-03.json`. Обновить существую�
 ## Адаптация к bot baseline v1.2
 
 Offscreen/worker уже существуют для Discord queue, но scanner не подключён к ним. Использовать их как baseline анализа, не создавать второй queue service и не объявлять Drive migration автоматически выполненной.
+
+## Виконано 2026-11-04
+
+G_ARCHITECTURE погоджено (варіант A, ADR у decisions.md). Нові модулі
+`src/queue/labelScanJob.js`, `src/background/labelScanRoutes.js`; зміни в
+`background.js`, `offscreen.js`, `popup/depotFlow.js`. Тести:
+`test/queue/labelScanJob.test.js`, `test/queue/labelScanRoutes.test.js`,
+`test/queue/listener.test.mjs`. Перевірка в справжньому Chrome — за власником.
 </pre></article>
 <article id="doc-90" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-04.md">roadmap/tasks/S04-04.md</a></p><h1>S04-04 — Добавить journal, cancel и сверку неопределённых writes</h1><pre class="markdown"># S04-04 — Добавить journal, cancel и сверку неопределённых writes
 

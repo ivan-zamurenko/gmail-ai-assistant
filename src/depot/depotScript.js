@@ -134,7 +134,12 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       }
       const stamp = `${day}T${time[1]}:${time[2]}:${time[3] ?? '00'}`;
       const entries = parcels.get(scan.parcel) ?? [];
-      entries.push({ ...scan, day, stamp, type: normalize(scan.type) });
+      const scanType = normalize(scan.type);
+      // NearRoute is a scan-row route code; its confirmed description is Nearest Route Assigned.
+      // Require that pair so a route label cannot hide OFD/delivery/unknown movement.
+      const type = normalize(scan.route) === 'nearroute' && scanType === 'nearest route assigned'
+        ? 'nearroute' : scanType;
+      entries.push({ ...scan, day, stamp, type });
       parcels.set(scan.parcel, entries);
     }
     let allowed = null;
@@ -308,7 +313,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         // textContent does not insert whitespace for <br> in detached depot HTML.
         // Fixed date width permits an unambiguous adjacent date/time boundary.
         const stamp = /^(\d{2}\/\d{2}\/\d{4})\s*(\d{2}:\d{2}(?::\d{2})?)$/.exec(text(cells[4]));
-        return [{ parcel, type: cells[3].getAttribute('title')?.trim() || text(cells[3]),
+        return [{ parcel, route: text(cells[1]), type: cells[3].getAttribute('title')?.trim() || text(cells[3]),
           date: stamp?.[1] ?? '', time: stamp?.[2] ?? '' }];
       });
     }

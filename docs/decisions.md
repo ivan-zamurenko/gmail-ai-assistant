@@ -330,3 +330,8 @@ Owner reports persistent Pending scan REVIEW and explicitly instructs to skip th
 
 ### 2026-11-04 — NearRoute and mixed two-parcel series
 Owner permits NearRoute and reiterates that one parcel OFD plus another remaining in depot with CAD permits changing the entire series. NearRoute is accepted case-insensitively as latest physical-parcel evidence today, parallel to CAD; stale or superseded NearRoute does not permit a write. Existing Pending-list source, next-working-day calendar, whole-series write and fresh evidence recheck remain. Goods Held retains its specific note-to-today rule.
+
+### 2026-11-04 — NearRoute is a scan-row route code
+Owner screenshot establishes that NearRoute appears in Route, while Scan Type Desc begins Nearest Route. Previous implementation incorrectly matched only type NearRoute. Scan parser now reads Route; exact normalized route NearRoute paired with exact confirmed description Nearest Route Assigned is classified as the approved event. Known OFD/Delivered and unknown descriptions cannot be hidden by that route. Latest/today/physical identity and whole-series rules unchanged; exact type NearRoute compatibility retained.
+
+Owner then confirmed the full tooltip exactly: Nearest Route Assigned. Replaced the rejected prefix approach with exact normalized matching; cancelled/out-for-delivery suffixes remain review.

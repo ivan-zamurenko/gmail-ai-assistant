@@ -240,3 +240,9 @@
 - 2026-11-04 root — implemented owner NearRoute eligibility alongside latest-today CAD; mixed OFD/CAD rule retained and expanded in existing regression. RED16/18→GREEN18/18; no live requests. Next reviewer/full gates, extension6.3.0.97/root1.1.65; bot unchanged.
 
 - 2026-11-04 root — NearRoute follow-up complete offline: full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.97/root1.1.65 package ready; bot unchanged. No real depot call. Next commit/push and owner extension update.
+
+- 2026-11-04 root — reproduced NearRoute column bug from owner screenshot structure: route code was not parsed; type-only implementation missed Nearest Route description. Added explicit route/type pair normalization, preserved movement guards. RED16/17→18/18; no real data retained. Next review/full gates and extension6.3.0.98.
+
+- 2026-11-04 root — review found prefix NearRoute mapping overaccepts unknown suffix. New regression RED16/17; prior full gate superseded. Requested exact tooltip text from owner; draft6.3.0.98 not released or committed. Next replace prefix with exact confirmed type, recheck/review/deliver. No live side effects.
+
+- 2026-11-04 root — owner confirmed exact tooltip Nearest Route Assigned; replaced prefix with exact route/type pair. Prefix-negative RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. Artifact6.3.0.98/root1.1.66; no bot restart/live action. Next commit/push and owner update.

@@ -93,9 +93,9 @@
     }
   ],
   "versions": {
-    "root": "1.1.65",
+    "root": "1.1.66",
     "bot": "0.2.29",
-    "extension": "6.3.0.97"
+    "extension": "6.3.0.98"
   },
   "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks. Console-progress diff ACCEPT; no request/policy changes or unsafe data.",
   "untested": [
@@ -180,6 +180,21 @@
     ],
     "untested": [
       "Installed extension/real NearRoute history"
+    ],
+    "live_actions": false
+  },
+  "nearroute_column_fix": {
+    "date": "2026-11-04",
+    "finding": "NearRoute is Route col1, not description; owner confirms exact type Nearest Route Assigned",
+    "fix": "Read scan route and normalize exact route/type pair; reject unknown suffixes and preserve later movement/tie checks",
+    "checks": [
+      "Column regression RED16/17→GREEN18/18",
+      "Review prefix-negative regression RED16/17→exact18/18",
+      "node tools/checks.mjs PASS7,236/236",
+      "calendar_review ACCEPT after exact tooltip confirmation"
+    ],
+    "untested": [
+      "Installed extension real depot save"
     ],
     "live_actions": false
   }

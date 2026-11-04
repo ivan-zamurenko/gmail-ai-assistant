@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">NearRoute eligibility ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">NearRoute exact column fix ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,28 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>NearRoute eligibility ready — 2026-11-04</h1><pre class="markdown"># NearRoute eligibility ready — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>NearRoute exact column fix ready — 2026-11-04</h1><pre class="markdown"># NearRoute exact column fix ready — 2026-11-04
+
+Root done; no active writer. Owner confirmed tooltip Nearest Route Assigned. Exact scan Route=NearRoute + Type=Nearest Route Assigned now maps to permitted latest-today event; prefix approach rejected/replaced.
+Root1.1.66/extension6.3.0.98; bot0.2.29 unchanged. Existing RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. No live depot action.
+Artifact /tmp/DPD-Assistance-6.3.0.98.zip. Next codex commit/push and owner extension update/preview.
+
+---
+
+# NearRoute column correction awaiting exact label — 2026-11-04
+
+Root owns uncommitted draft; do not deploy/commit as complete. Owner screenshot proves Route=NearRoute and clipped type Nearest Rout…; exact tooltip requested asynchronously, pending. Root initially added route+type-prefix mapping; reviewer found unknown suffix overacceptance. Added regression for Nearest Route cancelled/out for delivery: current test16/17 FAIL by design until exact confirmed allowlist replaces prefix. Earlier full236/236 PASS is superseded by this new failing regression.
+Draft versions root1.1.66/extension6.3.0.98, not released; installed/released latest6.3.0.97. No live request or bot change. Next obtain exact non-private scan tooltip, use exact match, complete tests/review/docs/artifact/commit/push. Existing draft docs below describe proposal, not delivered behavior.
+
+---
+
+# NearRoute column correction active — 2026-11-04
+
+Root sole writer. Owner screenshot locates NearRoute in Route column; Scan Type Desc is Nearest Rout… . Prior implementation tested synthetic type NearRoute only and missed actual column. Scope scan route projection/classification and existing tests; no private screenshot/data retained. Next reproduce then fix physical-event semantics without overriding movement types.
+
+---
+
+# NearRoute eligibility ready — 2026-11-04
 
 Root done; no active writer. Root1.1.65/extension6.3.0.97; bot0.2.29 unchanged. Latest today NearRoute accepted alongside CAD. Mixed OFD+remaining CAD/NearRoute physical parcel permits whole-series next-working-day change; later movement/recheck still blocks.
 Existing RED16/18→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. No live verification.
@@ -3100,6 +3121,12 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 root — implemented owner NearRoute eligibility alongside latest-today CAD; mixed OFD/CAD rule retained and expanded in existing regression. RED16/18→GREEN18/18; no live requests. Next reviewer/full gates, extension6.3.0.97/root1.1.65; bot unchanged.
 
 - 2026-11-04 root — NearRoute follow-up complete offline: full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.97/root1.1.65 package ready; bot unchanged. No real depot call. Next commit/push and owner extension update.
+
+- 2026-11-04 root — reproduced NearRoute column bug from owner screenshot structure: route code was not parsed; type-only implementation missed Nearest Route description. Added explicit route/type pair normalization, preserved movement guards. RED16/17→18/18; no real data retained. Next review/full gates and extension6.3.0.98.
+
+- 2026-11-04 root — review found prefix NearRoute mapping overaccepts unknown suffix. New regression RED16/17; prior full gate superseded. Requested exact tooltip text from owner; draft6.3.0.98 not released or committed. Next replace prefix with exact confirmed type, recheck/review/deliver. No live side effects.
+
+- 2026-11-04 root — owner confirmed exact tooltip Nearest Route Assigned; replaced prefix with exact route/type pair. Prefix-negative RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. Artifact6.3.0.98/root1.1.66; no bot restart/live action. Next commit/push and owner update.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4504,6 +4531,11 @@ Owner reports persistent Pending scan REVIEW and explicitly instructs to skip th
 
 ### 2026-11-04 — NearRoute and mixed two-parcel series
 Owner permits NearRoute and reiterates that one parcel OFD plus another remaining in depot with CAD permits changing the entire series. NearRoute is accepted case-insensitively as latest physical-parcel evidence today, parallel to CAD; stale or superseded NearRoute does not permit a write. Existing Pending-list source, next-working-day calendar, whole-series write and fresh evidence recheck remain. Goods Held retains its specific note-to-today rule.
+
+### 2026-11-04 — NearRoute is a scan-row route code
+Owner screenshot establishes that NearRoute appears in Route, while Scan Type Desc begins Nearest Route. Previous implementation incorrectly matched only type NearRoute. Scan parser now reads Route; exact normalized route NearRoute paired with exact confirmed description Nearest Route Assigned is classified as the approved event. Known OFD/Delivered and unknown descriptions cannot be hidden by that route. Latest/today/physical identity and whole-series rules unchanged; exact type NearRoute compatibility retained.
+
+Owner then confirmed the full tooltip exactly: Nearest Route Assigned. Replaced the rejected prefix approach with exact normalized matching; cancelled/out-for-delivery suffixes remain review.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6697,6 +6729,10 @@ Pending CAD incident: existing policy matrix now includes synthetic Order receiv
 Pending parser follow-up: existing matrix changed first RED16/17 then focused21/21. New owner policy supersedes zero-row guards: any exact Par#0 is ignored before name/time validation, but alone cannot allow a write. Physical blank identity, invalid dates/hours and trailing tokens still refuse. Synthetic adjacent date/time and newline fixtures cover br textContent semantics; serialized preview includes ignored invalid metadata plus adjacent physical CAD. Existing multi-parcel/latest/return protections remain. No live DOM/real identifiers used.
 
 NearRoute follow-up extends existing matrix/console groups test-first16/18→18/18: today/stale/case normalization, later OFD/delivery rejection, OFD+NearRoute on another parcel, explicit Pending/OFD+CAD two-parcel outcomes, serialized preview and fresh recheck preventing write after later delivery. NearRoute reason survives safe console redaction. No new test group/live service.
+
+NearRoute column correction: synthetic screenshot-shaped CAD followed by Route=NearRoute/Scan Type Desc=Nearest Route assigned reproduced RED16/17. Existing matrix now covers route/type pair, stale and superseded events, route label not overriding OFD/Delivered/unknown types, wrong route refusal, tied conflicting event, mixed two-parcel series and serialized preview. GREEN18/18 with diagnostics; no real screenshot/identifiers retained. Prior type-only tests were insufficient to model the actual column.
+
+Review added unknown suffix regressions (Nearest Route cancelled/out for delivery); RED16/17 exposed prefix overacceptance. Owner confirmed exact Nearest Route Assigned tooltip, exact pair restored GREEN18/18 and full236/236 PASS7.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

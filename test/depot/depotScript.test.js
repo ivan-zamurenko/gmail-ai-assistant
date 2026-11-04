@@ -449,6 +449,14 @@ test('parcel histories decide series eligibility, never route or aggregate statu
   const cases = [
     ['PENDING', [scan('1', 'CAD scan')], true],
     ['PENDING', [scan('1', 'NearRoute')], true],
+    ['PENDING', [scan('1', 'CAD scan', '03:07:44'), { ...scan('1', 'Nearest Route assigned', '09:30:38'), route: 'NearRoute' }], true],
+    ['PENDING', [{ ...scan('1', 'Nearest Route assigned'), route: ' nearroute ' }], true],
+    ['PENDING', [{ ...scan('1', 'Nearest Route assigned', '09:00:00', '02/11/2026'), route: 'NearRoute' }], false],
+    ['PENDING', [{ ...scan('1', 'Nearest Route assigned'), route: 'NearRoute' }, scan('1', 'Out for delivery', '10:00:00')], false],
+    ['PENDING', [{ ...scan('1', 'Delivered'), route: 'NearRoute' }], false],
+    ['PENDING', [{ ...scan('1', 'Out for delivery'), route: 'NearRoute' }], false],
+    ['PENDING', [{ ...scan('1', 'Nearest Route assigned'), route: 'other' }], false],
+    ['OFD', [scan('1', 'Out for delivery'), { ...scan('2', 'Nearest Route assigned'), route: 'NearRoute' }], true],
     ['PENDING', [scan('1', ' nearroute ')], true],
     ['PENDING', [scan('1', 'NearRoute', '09:00:00', '02/11/2026')], false],
     ['PENDING', [scan('1', 'NearRoute'), scan('1', 'Out for delivery', '10:00:00')], false],
@@ -485,7 +493,7 @@ test('parcel histories decide series eligibility, never route or aggregate statu
     assert.equal(result.logWrites, 0, 'reschedule must not call Log Call');
     assert.ok(result.result.results[0].reason);
   }
-  const nearPreview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [scan('1', 'NearRoute')] });
+  const nearPreview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [{ ...scan('1', 'Nearest Route assigned'), route: 'NearRoute' }] });
   assert.equal(nearPreview.result.eligible, 1);
   assert.match(nearPreview.result.results[0].reason, /NearRoute today/);
   assert.equal(nearPreview.saveWrites, 0);
@@ -521,6 +529,10 @@ test('missing or conflicting scan evidence refuses writes; changed evidence is c
     [{ ...scan('1', 'CAD scan'), dateTimeText: '31/02/202609:00:00' }],
     [{ ...scan('1', 'CAD scan'), dateTimeText: '03/11/202609:00:00 extra' }],
     [scan('0', '', '', ''), scan('', 'CAD scan')],
+    [{ ...scan('1', 'Nearest Route assigned'), route: 'NearRoute' }, scan('1', 'Delivered')],
+    [{ ...scan('1', 'Unknown latest movement'), route: 'NearRoute' }],
+    [{ ...scan('1', 'Nearest Route cancelled'), route: 'NearRoute' }],
+    [{ ...scan('1', 'Nearest Route out for delivery'), route: 'NearRoute' }],
   ]) {
     const result = await runReschedule('labels', { scans, logCallEnabled: true });
     assert.equal(result.saveWrites, 0);

@@ -1,3 +1,24 @@
+# NearRoute exact column fix ready — 2026-11-04
+
+Root done; no active writer. Owner confirmed tooltip Nearest Route Assigned. Exact scan Route=NearRoute + Type=Nearest Route Assigned now maps to permitted latest-today event; prefix approach rejected/replaced.
+Root1.1.66/extension6.3.0.98; bot0.2.29 unchanged. Existing RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. No live depot action.
+Artifact /tmp/DPD-Assistance-6.3.0.98.zip. Next codex commit/push and owner extension update/preview.
+
+---
+
+# NearRoute column correction awaiting exact label — 2026-11-04
+
+Root owns uncommitted draft; do not deploy/commit as complete. Owner screenshot proves Route=NearRoute and clipped type Nearest Rout…; exact tooltip requested asynchronously, pending. Root initially added route+type-prefix mapping; reviewer found unknown suffix overacceptance. Added regression for Nearest Route cancelled/out for delivery: current test16/17 FAIL by design until exact confirmed allowlist replaces prefix. Earlier full236/236 PASS is superseded by this new failing regression.
+Draft versions root1.1.66/extension6.3.0.98, not released; installed/released latest6.3.0.97. No live request or bot change. Next obtain exact non-private scan tooltip, use exact match, complete tests/review/docs/artifact/commit/push. Existing draft docs below describe proposal, not delivered behavior.
+
+---
+
+# NearRoute column correction active — 2026-11-04
+
+Root sole writer. Owner screenshot locates NearRoute in Route column; Scan Type Desc is Nearest Rout… . Prior implementation tested synthetic type NearRoute only and missed actual column. Scope scan route projection/classification and existing tests; no private screenshot/data retained. Next reproduce then fix physical-event semantics without overriding movement types.
+
+---
+
 # NearRoute eligibility ready — 2026-11-04
 
 Root done; no active writer. Root1.1.65/extension6.3.0.97; bot0.2.29 unchanged. Latest today NearRoute accepted alongside CAD. Mixed OFD+remaining CAD/NearRoute physical parcel permits whole-series next-working-day change; later movement/recheck still blocks.

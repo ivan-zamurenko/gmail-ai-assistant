@@ -498,6 +498,13 @@ test('parcel histories decide series eligibility, never route or aggregate statu
     ['PENDING', [scan('1', 'Cancelled out for delivery'), scan('1', 'Returned to depot', '10:00:00')], false],
     ['PENDING', [scan('1', 'Cancelled out for delivery'), scan('2', 'Return to depot')], true],
     ['PENDING', [scan('1', 'Cancelled out for delivery'), scan('1', 'Delivered', '10:00:00')], false],
+    // Owner 2026-11-04: the depot names the event "Cancelled OFD scan". New Pending parcel,
+    // CAD today, then any number of cancelled OFD scans → still rescheduled.
+    ['PENDING', [scan('0', 'Order received', '10:29:46', '02/11/2026'), scan('1', 'Received into depot', '22:09:26', '02/11/2026'),
+      scan('1', 'CAD scan', '06:54:56'), scan('1', 'Cancelled OFD scan', '08:24:48'), scan('1', 'Cancelled OFD scan', '08:24:52')], true],
+    ['PENDING', [scan('1', 'CAD scan'), scan('1', 'Cancelled OFD scan', '10:00:00'), scan('1', 'Out for delivery', '11:00:00')], false],
+    ['PENDING', [scan('1', 'CAD scan'), scan('1', 'Cancelled OFD scan', '10:00:00'), scan('1', 'Returned to depot', '11:00:00')], false],
+    ['PENDING', [scan('1', 'CAD scan'), scan('1', 'Cancelled OFD scanner', '10:00:00')], false],
   ];
   for (const [status, scans, allowed] of cases) {
     const result = await runReschedule('labels', { status, scans, logCallEnabled: true });
@@ -595,7 +602,7 @@ test('preview separates eligible, skipped, needs-review and failed parcels witho
     assert.equal(result.dryRun, true);
     assert.equal(result.date, '04/11/2026');
     assert.equal(result.calendarVersion, 'IE-BPFI-2026-2027-v1');
-    assert.match(result.policyVersion, /^IE-reschedule-\d{4}-\d{2}-\d{2}$/);
+    assert.match(result.policyVersion, /^IE-reschedule-\d{4}-\d{2}-\d{2}(?:\.\d+)?$/);
     assert.equal(result.results[0].consNumber, '123456789');
     assert.equal(result.results[0].consId, '7654321');
     if (name !== 'failed') assert.equal(result.results[0].checkedAt, '2026-11-03T12:00:00.000Z', name);

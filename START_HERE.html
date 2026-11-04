@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Discord readability done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Cancelled OFD scan fix — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Discord readability done — 2026-11-04</h1><pre class="markdown"># Discord readability done — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Cancelled OFD scan fix — 2026-11-04</h1><pre class="markdown"># Cancelled OFD scan fix — 2026-11-04
+
+Copilot; no active writer. Live Pending parcel with CAD today + two &quot;Cancelled OFD scan&quot; went to REVIEW (unknown tooltip text). Owner rule: CAD today + any cancelled OFD → reschedule. Exact &quot;cancelled ofd scan&quot; mapped to the existing cancelled-OFD rule; policyVersion IE-reschedule-2026-11-04.2.
+Root1.1.71/extension6.3.0.102; bot0.2.30. RED (live history replay) → GREEN; full 247/247 PASS7. No live depot action.
+Next: owner updates extension to 6.3.0.102 (/tmp/DPD-Assistance-6.3.0.102.zip), restarts bot for 0.2.30 formatting; then S09-09.
+
+---
+
+# Discord readability done — 2026-11-04
 
 Copilot; no active writer. Owner-approved status palette (🟩🟦🟪🟨🟧🟥🩷🟫⬛⬜ + embed colours), emoji field labels and spacer lines in /find; reschedule/plain replies split summaries into labelled lines and show rows as text (code-block fallback over 2000 chars). Data, counts, privacy unchanged.
 Bot0.2.30, root1.1.70; extension6.3.0.101 unchanged. Full 247/247 PASS7; code-review ACCEPT. Bot restart by owner needed to apply (not done by agent).
@@ -2971,6 +2979,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Заблоковано | S03-05 частково: втрачена відповідь POST → «outcome uncertain», один live-запуск на вкладку, повідомлення видно в popup/Discord. Звірку «дата вже стоїть» прибрано за вибором власника до перевірки реальної форми (ризик мовчазного пропуску). 241/241; ext 6.3.0.100, root 1.1.68; [evidence](evidence/S03-05.json). | Власнику — read-only snippet форми; далі закрити S03-05. |
 | 2026-11-04 | Copilot + власник | Виконано | S03-05 закрито: власник перевірив, що форма за замовчуванням показує сьогоднішню дату; звірку повернуто (дата вже ціль → без POST, SKIP). 242/242; ext 6.3.0.101, root 1.1.69; [evidence](evidence/S03-05.json). | Оновити розширення; далі S09-09. |
 | 2026-11-04 | Copilot + власник | Виконано | Читабельність Discord: палітра статусів (погоджено), емодзі й відступи в /find, підсумки /reschedule рядками з емодзі, рядки посилок текстом замість блоку коду. 247/247, review ACCEPT; bot 0.2.30, root 1.1.70. Бот перезапускає власник. | Перевірити на телефоні; далі S09-09. |
+| 2026-11-04 | Copilot + власник | Виконано | Живий випадок: Pending + CAD сьогодні + «Cancelled OFD scan» ×2 → REVIEW через невідому назву. Точна назва зведена до правила скасованого OFD (рішення власника). RED → GREEN; 247/247; ext 6.3.0.102, root 1.1.71. | Оновити розширення; далі S09-09. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4578,6 +4587,9 @@ Owner checked the depot rearrange form for a parcel without a same-day change: t
 
 ### 2026-11-04 — Discord readability and status palette
 Owner asked for bot messages that read comfortably on desktop and phone: more spacing, moderate on-topic emoji, and a colour per kind of parcel status. Approved palette (badge + embed colour): 🟩 Delivered; 🟦 Out for delivery; 🟪 CAD scan / Nearest Route; 🟨 Goods Held; 🟧 plan changed (Optimize For Next Day, Cancelled out for delivery, Redirected, Rescheduled); 🟥 problem (Failed, Carded, Incorrect Address, Undelivered, Return(ed) to depot); 🩷 Pending; 🟫 hub/transit (Received into, Long lengths, In transit, HUB); ⬛ Order received; ⬜ unknown. /find fields get emoji labels and a zero-width spacer line; reschedule/plain replies split the one-line summary into labelled lines and show parcel rows as text instead of a sideways-scrolling code block, falling back to the compact block when the spaced text would exceed 2000 characters. Card language stays English; data, counts and privacy rules unchanged.
+
+### 2026-11-04 — &quot;Cancelled OFD scan&quot; is the depot&#39;s cancelled-OFD event
+Live parcel (Pending, CAD scan today, then two cancelled OFD scans) was not rescheduled: the tooltip text &quot;Cancelled OFD scan&quot; was unknown, so the latest scan went to REVIEW. Owner: a new Pending parcel with CAD today must be rescheduled no matter how many cancelled OFD scans follow. Exact normalized &quot;cancelled ofd scan&quot; now maps to the existing cancelled-OFD rule (Pending, no later return/delivery/out-for-delivery → next working day). Other descriptions still go to review. policyVersion IE-reschedule-2026-11-04.2. Synthetic regression mirrors the live history without identifiers.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6148,6 +6160,12 @@ test/
   решту batch.
 - Усі відповіді та ідентифікатори синтетичні; живий depot не викликається.
 
+
+**Cancelled OFD scan after CAD today (2026-11-04)**
+
+- Pending, CAD сьогодні, далі два «Cancelled OFD scan» → перенесення (повтор живого
+  випадку без ідентифікаторів). Після скасування — Out for delivery або Returned to
+  depot → без перенесення; схожа назва «Cancelled OFD scanner» → не приймається.
 
 **Preview separates eligible, skipped, needs-review and failed parcels (S03-04)**
 

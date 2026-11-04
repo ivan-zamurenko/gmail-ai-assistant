@@ -1,3 +1,11 @@
+# Cancelled OFD scan fix — 2026-11-04
+
+Copilot; no active writer. Live Pending parcel with CAD today + two "Cancelled OFD scan" went to REVIEW (unknown tooltip text). Owner rule: CAD today + any cancelled OFD → reschedule. Exact "cancelled ofd scan" mapped to the existing cancelled-OFD rule; policyVersion IE-reschedule-2026-11-04.2.
+Root1.1.71/extension6.3.0.102; bot0.2.30. RED (live history replay) → GREEN; full 247/247 PASS7. No live depot action.
+Next: owner updates extension to 6.3.0.102 (/tmp/DPD-Assistance-6.3.0.102.zip), restarts bot for 0.2.30 formatting; then S09-09.
+
+---
+
 # Discord readability done — 2026-11-04
 
 Copilot; no active writer. Owner-approved status palette (🟩🟦🟪🟨🟧🟥🩷🟫⬛⬜ + embed colours), emoji field labels and spacer lines in /find; reschedule/plain replies split summaries into labelled lines and show rows as text (code-block fallback over 2000 chars). Data, counts, privacy unchanged.

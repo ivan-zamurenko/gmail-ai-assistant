@@ -50,7 +50,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   // ── Constants ──────────────────────────────────────────────────────────────────
 
   // Bump whenever classify() rules change, so an old preview is recognisable.
-  const POLICY_VERSION = 'IE-reschedule-2026-11-04';
+  const POLICY_VERSION = 'IE-reschedule-2026-11-04.2';
 
   const STATUS = {
     PENDING:    'PENDING',
@@ -143,8 +143,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       const scanType = normalize(scan.type);
       // NearRoute is a scan-row route code; its confirmed description is Nearest Route Assigned.
       // Require that pair so a route label cannot hide OFD/delivery/unknown movement.
+      // The depot shows a cancelled OFD as "Cancelled OFD scan" (owner-confirmed tooltip);
+      // only that exact description joins the existing cancelled-OFD rule.
       const type = normalize(scan.route) === 'nearroute' && scanType === 'nearest route assigned'
-        ? 'nearroute' : scanType;
+        ? 'nearroute' : scanType === 'cancelled ofd scan' ? 'cancelled out for delivery' : scanType;
       entries.push({ ...scan, day, stamp, type });
       parcels.set(scan.parcel, entries);
     }

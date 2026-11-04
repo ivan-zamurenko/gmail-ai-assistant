@@ -565,6 +565,12 @@ test/
 - Усі відповіді та ідентифікатори синтетичні; живий depot не викликається.
 
 
+**Cancelled OFD scan after CAD today (2026-11-04)**
+
+- Pending, CAD сьогодні, далі два «Cancelled OFD scan» → перенесення (повтор живого
+  випадку без ідентифікаторів). Після скасування — Out for delivery або Returned to
+  depot → без перенесення; схожа назва «Cancelled OFD scanner» → не приймається.
+
 **Preview separates eligible, skipped, needs-review and failed parcels (S03-04)**
 
 - Чотири синтетичні dry-run: CAD → `CHANGE_DATE`, Goods Held → `SKIP`, невідома

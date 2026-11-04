@@ -1,3 +1,11 @@
+# S03-05 safe apply done — 2026-11-04
+
+Copilot; no active writer. Owner verified the rearrange form defaults to today; reconcile restored: form already at target date → no POST, SKIP. Lost POST response → «outcome uncertain»; one live run per tab.
+Root1.1.69/extension6.3.0.101; bot0.2.29. Full 242/242 PASS7. No live depot action.
+Next: owner updates to 6.3.0.101; next card S09-09 (Discord CAD via shared preview/apply).
+
+---
+
 # S03-05 safe apply partially done — 2026-11-04
 
 Copilot; no active writer. Live reschedule: lost POST response → ERROR «outcome uncertain» (stays in retry, never success/rollback); one live run per tab (page lock, dry-run allowed); messages reach popup/Discord. Reconcile «date already set» removed by owner choice until the real form is checked.

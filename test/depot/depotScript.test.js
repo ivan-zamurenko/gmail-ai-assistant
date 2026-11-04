@@ -38,6 +38,7 @@ async function runReschedule(mode, {
   requestedDate = '',
   formAction = '/save',
   fetchError = null,
+  formFields = [],
   postThrows = false,
   busy = false,
 } = {}) {
@@ -108,7 +109,7 @@ async function runReschedule(mode, {
     },
     form: {
       querySelector: (selector) => selector === 'form'
-        ? { getAttribute: () => formAction, elements: [] }
+        ? { getAttribute: () => formAction, elements: formFields }
         : null,
       body: fakeText(),
     },
@@ -613,6 +614,29 @@ test('a lost response after the date POST is uncertain and stays for a checked r
   assert.equal(lost.result.results[0].reason, 'Reschedule outcome uncertain; check the depot before retrying');
   assert.doesNotMatch(JSON.stringify(lost.result), /rolled back|Перенесено/);
   assert.equal(remainingRecoveryTargets(lost.result.results, lost.result).length, 1);
+});
+
+test('retry reconciles first: a form already at the target date sends nothing', async () => {
+  const field = (name, value) => ({ name, value, type: 'text' });
+  // Owner-verified: an untouched form pre-fills today's date. That must still be sent.
+  const fresh = await runReschedule('labels', {
+    serialized: true, formFields: [field('arranged-date', '03/11/2026')],
+  });
+  assert.equal(fresh.saveWrites, 1);
+  assert.equal(fresh.result.changed, 1);
+  assert.equal(new globalThis.URLSearchParams(fresh.saveBody).get('arranged-date'), '04/11/2026');
+
+  const already = await runReschedule('labels', {
+    serialized: true, formFields: [field('arranged-date', '04/11/2026')],
+  });
+  assert.equal(already.rescheduleReads, 1);
+  assert.equal(already.saveWrites, 0);
+  assert.equal(already.result.changed, 0);
+  assert.equal(already.result.skipped, 1);
+  assert.equal(already.result.results[0].action, 'SKIP');
+  assert.equal(already.result.results[0].reason, 'Already arranged for the target date; nothing sent');
+  assert.equal(remainingRecoveryTargets(already.result.results, already.result).length, 0);
+  assert.doesNotMatch(JSON.stringify(already.diagnostics), /Перенесено/);
 });
 
 test('a second live run in the same tab is refused while one is writing', async () => {

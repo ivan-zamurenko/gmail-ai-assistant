@@ -11,6 +11,7 @@ const REASONS = new Set([
   'Eligibility changed before save; manual review required',
   'Reschedule outcome uncertain; check the depot before retrying',
   'Another reschedule is already running in this tab',
+  'Already arranged for the target date; nothing sent',
 ]);
 const safeReason = reason => REASONS.has(reason) ? reason : safeErrorMessage(new Error(reason), 'Depot operation failed');
 

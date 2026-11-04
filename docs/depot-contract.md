@@ -66,17 +66,17 @@ RECHECK перед Save. REVIEW і ERROR лишаються в same-day retry. D
 `logCall` — самостоятельный эффект. Владелец должен решить, когда он нужен и что делать, если logCall успешен, а reschedule нет. Не добавлять fallback endpoint «на всякий случай». Ошибка logCall не должна скрываться как полностью успешная операция, если она является обязательной частью политики.
 
 
-**Реалізовано частково (S03-05, 2026-11-04):** live — CHECK → FORM → RECHECK → SAVE →
-підтвердження сервером. Якщо POST обірвався мережею — `ERROR` «Reschedule outcome
-uncertain; check the depot before retrying»: не success і не rollback, лишається в
-retry. Один live-запуск на вкладку (`window.__dpdAssistanceRescheduleLock` у MAIN,
-знімається у `finally`); dry-run не блокується; повідомлення доходить до popup і
-Discord. Окремого logCall немає (LOGCALL-REMOVE). Між вкладками блокування немає.
-**Не реалізовано:** звірка «дата вже стоїть» перед повторним POST. Відкладено, доки
-власник не підтвердить на реальній формі (read-only `snippets/discover_reschedule_form.js`),
-що поле `arranged-date` для посилки без перенесення порожнє, а не дата за
-замовчуванням; інакше звірка мовчки пропускала б перенесення. Exactly-once з боку
-depot не гарантується.
+**Реалізовано (S03-05, 2026-11-04):** live — CHECK → FORM → звірка → RECHECK → SAVE →
+підтвердження сервером. Звірка: якщо поле `arranged-date` форми вже дорівнює цільовій
+даті, POST не відправляється — `SKIP` «Already arranged for the target date; nothing
+sent». Власник перевірив: незмінена форма показує сьогоднішню дату, а ціль завжди
+пізніша, тож значення за замовчуванням не спрацює як «вже зроблено». POST, що обірвався
+мережею — `ERROR` «Reschedule outcome uncertain; check the depot before retrying»: не
+success і не rollback, лишається в retry, повтор спершу звіряє форму. Один live-запуск
+на вкладку (`window.__dpdAssistanceRescheduleLock` у MAIN, знімається у `finally`);
+dry-run не блокується; повідомлення доходять до popup і Discord. Окремого logCall немає
+(LOGCALL-REMOVE). Між вкладками блокування немає — захищають RECHECK і звірка.
+Exactly-once з боку depot не гарантується.
 ## 7. Обязательные сценарии
 
 Неверная вкладка; чужой form action; отсутствующий Route header; пустая таблица против неожиданной HTML-структуры; 0/1/много Quick Search matches; найден номер без scans; invalid timestamp; разные status; неподдерживаемый год; preview без эффектов; stale status перед apply; сохранение всех полей; lost response после Save; частично выполненная партия.

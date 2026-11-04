@@ -93,9 +93,9 @@
       "block_reason": null
     },
     "S03-05": {
-      "status": "blocked",
+      "status": "done",
       "evidence": ".workflow/evidence/S03-05.json",
-      "block_reason": "Критерій 4: звірка «дата вже стоїть» перед повторним POST потребує підтвердження реальної форми власником (поле arranged-date порожнє для посилки без перенесення). Решту реалізовано й закомічено."
+      "block_reason": null
     },
     "S04-01": {
       "status": "done",

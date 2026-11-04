@@ -335,3 +335,6 @@ Owner permits NearRoute and reiterates that one parcel OFD plus another remainin
 Owner screenshot establishes that NearRoute appears in Route, while Scan Type Desc begins Nearest Route. Previous implementation incorrectly matched only type NearRoute. Scan parser now reads Route; exact normalized route NearRoute paired with exact confirmed description Nearest Route Assigned is classified as the approved event. Known OFD/Delivered and unknown descriptions cannot be hidden by that route. Latest/today/physical identity and whole-series rules unchanged; exact type NearRoute compatibility retained.
 
 Owner then confirmed the full tooltip exactly: Nearest Route Assigned. Replaced the rejected prefix approach with exact normalized matching; cancelled/out-for-delivery suffixes remain review.
+
+### 2026-11-04 — Reschedule form date reconcile (S03-05)
+Owner checked the depot rearrange form for a parcel without a same-day change: the arranged-date field shows today's date. The target is always a later working day, so the default can never equal it. Before RECHECK/POST the extension now skips the POST when the enabled arranged-date already equals the target and reports SKIP «Already arranged for the target date; nothing sent» (retry treats it as completed). Lost POST responses stay «outcome uncertain». No live replay.

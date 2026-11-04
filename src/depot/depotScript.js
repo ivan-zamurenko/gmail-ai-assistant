@@ -32,6 +32,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       "Reschedule rejected by server",
       "Reschedule outcome uncertain; check the depot before retrying",
       "Another reschedule is already running in this tab",
+      "Already arranged for the target date; nothing sent",
       "Reschedule: server did not confirm. See console for details.",
       "Status not found — depot page structure may have changed",
       "Not the correct depot page (unexpected origin)",
@@ -341,6 +342,13 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
     const actionUrl = sameOrigin(form.getAttribute('action') ?? formUrl);
 
+    // Reconcile before writing: after a lost response the depot may already hold
+    // the target date. An untouched form shows today (owner-verified), and the
+    // target is always a later day, so a default can never be mistaken for done.
+    const currentDate = Array.from(form.elements ?? [])
+      .find(el => el?.name === 'arranged-date' && !el.disabled)?.value?.trim();
+    if (currentDate === tomorrowInput) return { already: true };
+
 
     // Echo every field back exactly as the server filled it — a field we omit
     // may be stored empty, and the date is the only thing we may change.
@@ -416,16 +424,24 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         progress('CHECK', 'Reading current status and parcel evidence');
         const initial = await readEligibility(pkg);
         const checkedAt = new Date().toISOString();
-        const { status, reason, action } = initial;
+        const { status } = initial;
+        let { reason, action } = initial;
         if (action === 'CHANGE_DATE') {
           if (!dryRun) {
             assertCalendarPlan();
-            await submitReschedule(pkg.consId, arrangedDate, async () => {
+            const saved = await submitReschedule(pkg.consId, arrangedDate, async () => {
               const fresh = await readEligibility(pkg);
               if (fresh.action !== 'CHANGE_DATE') throw new Error('Eligibility changed before save; manual review required');
             }, progress);
-            changed++;
-            progress('SAVED', 'Date change confirmed by server');
+            if (saved?.already) {
+              action = 'SKIP';
+              reason = 'Already arranged for the target date; nothing sent';
+              skipped++;
+              progress('SKIPPED', reason);
+            } else {
+              changed++;
+              progress('SAVED', 'Date change confirmed by server');
+            }
           } else {
             progress('WOULD_CHANGE', reason);
           }

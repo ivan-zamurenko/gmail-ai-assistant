@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S03-05 safe apply partially done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S03-05 safe apply done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S03-05 safe apply partially done — 2026-11-04</h1><pre class="markdown"># S03-05 safe apply partially done — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S03-05 safe apply done — 2026-11-04</h1><pre class="markdown"># S03-05 safe apply done — 2026-11-04
+
+Copilot; no active writer. Owner verified the rearrange form defaults to today; reconcile restored: form already at target date → no POST, SKIP. Lost POST response → «outcome uncertain»; one live run per tab.
+Root1.1.69/extension6.3.0.101; bot0.2.29. Full 242/242 PASS7. No live depot action.
+Next: owner updates to 6.3.0.101; next card S09-09 (Discord CAD via shared preview/apply).
+
+---
+
+# S03-05 safe apply partially done — 2026-11-04
 
 Copilot; no active writer. Live reschedule: lost POST response → ERROR «outcome uncertain» (stays in retry, never success/rollback); one live run per tab (page lock, dry-run allowed); messages reach popup/Discord. Reconcile «date already set» removed by owner choice until the real form is checked.
 Root1.1.68/extension6.3.0.100; bot0.2.29. RED→GREEN; full 241/241 PASS7; review finding fixed. No live depot action.
@@ -2953,6 +2961,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-10-28 | Codex / integrator | Погоджено | S01-03 доручено safe_diagnostics_impl; base bd81f76, Git чистий. Перевірити фактичні error/log виходи, включно з bot; мінімальні тести до зміни. | Незалежний review, без live. |
 | 2026-11-04 | Copilot + власник | Виконано | S03-04: preview розділяє Дозволено/Пропущено/Перевірка/Помилки (рішення власника), план має policyVersion і checkedAt; popup і Discord показують «Перевірка» окремо, retry зберігає REVIEW. RED 3 → GREEN; 238/238, review ACCEPT; ext 6.3.0.99, root 1.1.67; [evidence](evidence/S03-04.json). | Власнику — оновити розширення й зробити dry-run; далі S03-05. |
 | 2026-11-04 | Copilot + власник | Заблоковано | S03-05 частково: втрачена відповідь POST → «outcome uncertain», один live-запуск на вкладку, повідомлення видно в popup/Discord. Звірку «дата вже стоїть» прибрано за вибором власника до перевірки реальної форми (ризик мовчазного пропуску). 241/241; ext 6.3.0.100, root 1.1.68; [evidence](evidence/S03-05.json). | Власнику — read-only snippet форми; далі закрити S03-05. |
+| 2026-11-04 | Copilot + власник | Виконано | S03-05 закрито: власник перевірив, що форма за замовчуванням показує сьогоднішню дату; звірку повернуто (дата вже ціль → без POST, SKIP). 242/242; ext 6.3.0.101, root 1.1.69; [evidence](evidence/S03-05.json). | Оновити розширення; далі S09-09. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4554,6 +4563,9 @@ Owner permits NearRoute and reiterates that one parcel OFD plus another remainin
 Owner screenshot establishes that NearRoute appears in Route, while Scan Type Desc begins Nearest Route. Previous implementation incorrectly matched only type NearRoute. Scan parser now reads Route; exact normalized route NearRoute paired with exact confirmed description Nearest Route Assigned is classified as the approved event. Known OFD/Delivered and unknown descriptions cannot be hidden by that route. Latest/today/physical identity and whole-series rules unchanged; exact type NearRoute compatibility retained.
 
 Owner then confirmed the full tooltip exactly: Nearest Route Assigned. Replaced the rejected prefix approach with exact normalized matching; cancelled/out-for-delivery suffixes remain review.
+
+### 2026-11-04 — Reschedule form date reconcile (S03-05)
+Owner checked the depot rearrange form for a parcel without a same-day change: the arranged-date field shows today&#39;s date. The target is always a later working day, so the default can never equal it. Before RECHECK/POST the extension now skips the POST when the enabled arranged-date already equals the target and reports SKIP «Already arranged for the target date; nothing sent» (retry treats it as completed). Lost POST responses stay «outcome uncertain». No live replay.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4623,17 +4635,17 @@ RECHECK перед Save. REVIEW і ERROR лишаються в same-day retry. D
 `logCall` — самостоятельный эффект. Владелец должен решить, когда он нужен и что делать, если logCall успешен, а reschedule нет. Не добавлять fallback endpoint «на всякий случай». Ошибка logCall не должна скрываться как полностью успешная операция, если она является обязательной частью политики.
 
 
-**Реалізовано частково (S03-05, 2026-11-04):** live — CHECK → FORM → RECHECK → SAVE →
-підтвердження сервером. Якщо POST обірвався мережею — `ERROR` «Reschedule outcome
-uncertain; check the depot before retrying»: не success і не rollback, лишається в
-retry. Один live-запуск на вкладку (`window.__dpdAssistanceRescheduleLock` у MAIN,
-знімається у `finally`); dry-run не блокується; повідомлення доходить до popup і
-Discord. Окремого logCall немає (LOGCALL-REMOVE). Між вкладками блокування немає.
-**Не реалізовано:** звірка «дата вже стоїть» перед повторним POST. Відкладено, доки
-власник не підтвердить на реальній формі (read-only `snippets/discover_reschedule_form.js`),
-що поле `arranged-date` для посилки без перенесення порожнє, а не дата за
-замовчуванням; інакше звірка мовчки пропускала б перенесення. Exactly-once з боку
-depot не гарантується.
+**Реалізовано (S03-05, 2026-11-04):** live — CHECK → FORM → звірка → RECHECK → SAVE →
+підтвердження сервером. Звірка: якщо поле `arranged-date` форми вже дорівнює цільовій
+даті, POST не відправляється — `SKIP` «Already arranged for the target date; nothing
+sent». Власник перевірив: незмінена форма показує сьогоднішню дату, а ціль завжди
+пізніша, тож значення за замовчуванням не спрацює як «вже зроблено». POST, що обірвався
+мережею — `ERROR` «Reschedule outcome uncertain; check the depot before retrying»: не
+success і не rollback, лишається в retry, повтор спершу звіряє форму. Один live-запуск
+на вкладку (`window.__dpdAssistanceRescheduleLock` у MAIN, знімається у `finally`);
+dry-run не блокується; повідомлення доходять до popup і Discord. Окремого logCall немає
+(LOGCALL-REMOVE). Між вкладками блокування немає — захищають RECHECK і звірка.
+Exactly-once з боку depot не гарантується.
 ## 7. Обязательные сценарии
 
 Неверная вкладка; чужой form action; отсутствующий Route header; пустая таблица против неожиданной HTML-структуры; 0/1/много Quick Search matches; найден номер без scans; invalid timestamp; разные status; неподдерживаемый год; preview без эффектов; stale status перед apply; сохранение всех полей; lost response после Save; частично выполненная партия.
@@ -6121,15 +6133,16 @@ test/
 - REVIEW лишається в retry (`remainingRecoveryTargets`). `executor.test.js` перевіряє
   «Перевірка: N» окремо від «Помилки: N» у preview і live підсумках Discord.
 
-**Apply labels lost responses and allows one writer per tab (S03-05)**
+**Apply reconciles, labels lost responses and allows one writer per tab (S03-05)**
 
 - POST, що обірвався мережею: 1 запис, `ERROR` «outcome uncertain», не «Перенесено»,
   лишається в retry.
 - Зайнята вкладка: live відмовляє до будь-якого читання, dry-run працює; блокування
   знімається після успіху й після помилки. `test/utils/errors.test.js` — обидва
   повідомлення доходять до оператора без заміни на загальне.
-- Звірки «дата вже стоїть» немає (чекає перевірки реальної форми); не перевіряє
-  реальну поведінку depot при повторному POST і блокування між вкладками.
+- Звірка: форма з сьогоднішньою датою (як у реальній формі) — POST з цільовою датою;
+  форма вже з цільовою датою — 0 POST, `SKIP` «Already arranged…», retry завершено.
+- Не перевіряє реальну поведінку depot при повторному POST і блокування між вкладками.
 ### `test/depot/lookup.test.js`
 
 **Lookup requires the zero marker before searching a legacy eight-digit number**
@@ -8958,8 +8971,8 @@ node --test test/unit/depot-apply.test.mjs
 Виконано 2026-11-04: `node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js`
 (модульна структура `test/`). Критерії 1, 2, 5 уже закрили S01-02/S03-03 і рішення
 LOGCALL-REMOVE; ця картка додала uncertain для втраченої відповіді та блокування одного
-live-запуску на вкладку. Критерій 4 (звірка перед повтором) **не виконано**:
-потрібна перевірка реальної форми власником. Scope: також
+live-запуску на вкладку, а після перевірки форми власником (сьогоднішня дата за
+замовчуванням) — звірку «дата вже стоїть» перед повтором. Scope: також
 `src/depot/rescheduleDiagnostics.js`, `src/utils/errors.js` (whitelist повідомлень).
 
 Это целевая команда карточки: указанные product test files нужно создать при её выполнении. Их нет в исходном ZIP, и они не объявлены пройденными. Сначала подготовить harness по зависимостям. При изменении имени теста обновить карточку и evidence до заявления о GREEN.

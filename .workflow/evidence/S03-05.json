@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "task_id": "S03-05",
-  "outcome": "partial",
-  "scope": "Safe apply: lost-response labelling, one live writer per tab, operator-visible messages. Reconcile deferred.",
+  "outcome": "passed",
+  "scope": "Safe apply: reconcile before repeat POST, lost-response labelling, one live writer per tab, operator-visible messages.",
   "base_sha": "fb57de6",
   "branch": "codex",
   "checks": [
@@ -55,40 +55,71 @@
       "result": "1 medium finding (message hidden behind generic error) fixed; flagged unverified form assumption for reconcile -> reconcile removed",
       "boundary": "static review",
       "log": null
+    },
+    {
+      "phase": "manual",
+      "kind": "manual",
+      "cwd": "work PC depot UI",
+      "command": "Owner opened the rearrange form for a parcel without same-day change (no save)",
+      "exit_code": null,
+      "result": "arranged-date shows today's date",
+      "boundary": "owner observation, no data copied",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js",
+      "exit_code": 1,
+      "result": "reconcile test: form at target date still POSTed",
+      "boundary": "synthetic",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages: lint, 242/242, build, artifacts, docs, diff-check",
+      "boundary": "local checkout; synthetic",
+      "log": null
     }
   ],
   "decisions": [
     "Criteria 1, 2, 5 already met: live re-reads + RECHECK (S03-03), preserved form fields + sameOrigin (S01-02), logCall removed (LOGCALL-REMOVE-2026-11-04).",
-    "Owner chose to drop the form-date reconcile until the real form is checked with the read-only snippet; owner believes it would be fine but did not verify.",
     "Per-tab lock in page MAIN; cross-tab double writes are mitigated only by RECHECK.",
-    "Versions: extension 6.3.0.100, root 1.1.68."
+    "Owner verified the untouched form shows today's date; reconcile restored (decisions.md 2026-11-04). Regression covers today-default → POST and target-date → SKIP.",
+    "Versions: extension 6.3.0.101, root 1.1.69 (6.3.0.100 shipped lock + uncertain without reconcile)."
   ],
   "gates": [],
   "changed_paths": [
+    ".workflow/*",
+    "START_HERE.html",
+    "docs/TESTING.md",
+    "docs/decisions.md",
+    "docs/depot-contract.md",
+    "manifest.json",
+    "package-lock.json",
+    "package.json",
+    "roadmap/tasks/S03-05.md",
     "src/depot/depotScript.js",
     "src/depot/rescheduleDiagnostics.js",
     "src/utils/errors.js",
     "test/depot/depotScript.test.js",
-    "test/utils/errors.test.js",
-    "docs/depot-contract.md",
-    "docs/TESTING.md",
-    "roadmap/tasks/S03-05.md",
-    "manifest.json",
-    "package.json",
-    "package-lock.json",
-    "START_HERE.html",
-    ".workflow/*"
+    "test/utils/errors.test.js"
   ],
   "untested": [
-    "Real depot response to a repeated POST",
+    "Real depot form after a successful save (whether it shows the saved date)",
     "Cross-tab concurrent live runs",
-    "Real arranged-date pre-fill behaviour of the rearrange form"
+    "Real depot response to a repeated POST"
   ],
   "residual_risk": [
-    "After an uncertain outcome a retry POSTs again without reconcile (same target date)."
+    "If the form ever shows the saved date only after reload, reconcile simply never triggers and retry POSTs the same date again."
   ],
-  "blocker": "Критерій 4: звірка «дата вже стоїть» перед повторним POST потребує підтвердження реальної форми власником (поле arranged-date порожнє для посилки без перенесення). Решту реалізовано й закомічено.",
-  "next_step": "Owner: run snippets/discover_reschedule_form.js read-only for a parcel without rearrangement and report only arranged-date and the checked arrange option; then implement reconcile and close S03-05. S09-09 depends on S03-05.",
+  "blocker": null,
+  "next_step": "Owner: update to 6.3.0.101; next card S09-09.",
   "git": {
     "commit_sha": null,
     "commit_status": "performed",

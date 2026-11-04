@@ -125,8 +125,15 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     for (const scan of scans) {
       const day = civilDate(scan.date);
       const time = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(scan.time);
-      if (!/^[1-9]\d{0,5}$/.test(scan.parcel) || !/^\d{2}\/\d{2}\/\d{4}$/.test(scan.date) || !day || day > today
+      if (!/^\d{2}\/\d{2}\/\d{4}$/.test(scan.date) || !day || day > today
           || !time || Number(time[1]) > 23 || Number(time[2]) > 59 || Number(time[3] ?? 0) > 59 || !scan.type) {
+        return decision('REVIEW', 'Scan identity or timestamp invalid; manual review required');
+      }
+      // The depot records consignment creation as Order received / Par #0.
+      // It is not a physical parcel or movement evidence. Other zero/unknown
+      // identities still require review; never discard an unbound return/delivery.
+      if (scan.parcel === '0' && normalize(scan.type) === 'order received') continue;
+      if (!/^[1-9]\d{0,5}$/.test(scan.parcel)) {
         return decision('REVIEW', 'Scan identity or timestamp invalid; manual review required');
       }
       const stamp = `${day}T${time[1]}:${time[2]}:${time[3] ?? '00'}`;

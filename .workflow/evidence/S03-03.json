@@ -93,9 +93,9 @@
     }
   ],
   "versions": {
-    "root": "1.1.62",
+    "root": "1.1.63",
     "bot": "0.2.29",
-    "extension": "6.3.0.94"
+    "extension": "6.3.0.95"
   },
   "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks. Console-progress diff ACCEPT; no request/policy changes or unsafe data.",
   "untested": [
@@ -137,5 +137,20 @@
       "Original live depot failure remains unidentified"
     ],
     "runtime": "No bot change/restart or live depot request"
+  },
+  "pending_cad_incident": {
+    "date": "2026-11-04",
+    "finding": "Synthetic reproduction of creation Order received/Par#0 blocking valid physical-parcel CAD history",
+    "fix": "Ignore exact normalized creation row0 only after timestamp validation; no eligibility from administrative row",
+    "checks": [
+      "Existing matrix RED16/17→GREEN17/17",
+      "Serialized preview and zero/blank/unknown movement guards",
+      "node tools/checks.mjs PASS7,236/236",
+      "calendar_review diff ACCEPT"
+    ],
+    "untested": [
+      "Installed extension against live depot and complete real event title"
+    ],
+    "live_actions": false
   }
 }

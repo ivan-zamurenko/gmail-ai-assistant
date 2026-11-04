@@ -448,6 +448,8 @@ const scan = (parcel, type, time = '09:00:00', date = '03/11/2026') => ({ parcel
 test('parcel histories decide series eligibility, never route or aggregate status alone', async () => {
   const cases = [
     ['PENDING', [scan('1', 'CAD scan')], true],
+    ['PENDING', [scan('0', 'Order received', '14:59:47', '02/11/2026'), scan('1', 'Received into depot', '01:11:21'), scan('1', 'CAD scan', '07:25:26')], true],
+    ['PENDING', [scan('0', 'Order received')], false],
     ['  pending ', [scan('1', '  cad-SCAN  ')], true],
     ['PENDING', [scan('1', 'CAD scan', '09:00:00', '02/11/2026')], false],
     ['PENDING', [scan('1', 'Delivered')], false],
@@ -470,6 +472,9 @@ test('parcel histories decide series eligibility, never route or aggregate statu
   }
   const all = await runReschedule('cad', { route: 'other', scans: [scan('1', 'Cancelled out for delivery')] });
   assert.equal(all.saveWrites, 1, 'all must evaluate non-CAD candidates too');
+  const preview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [scan('0', 'Order received', '08:00:00'), scan('1', 'CAD scan')] });
+  assert.equal(preview.result.eligible, 1);
+  assert.equal(preview.saveWrites, 0);
 });
 
 test('Goods Held requires an exact non-negated valid note TO today, with no CAD requirement', async () => {
@@ -492,6 +497,11 @@ test('missing or conflicting scan evidence refuses writes; changed evidence is c
     [scan('1', 'CAD scan', '09:00:00', '31/02/2026')],
     [scan('1', 'CAD scan'), scan('1', 'Delivered')],
     [scan('1', 'CAD scan'), scan('', 'Delivered', '10:00:00')],
+    [scan('1', 'CAD scan'), scan('0', 'Delivered', '10:00:00')],
+    [scan('1', 'CAD scan'), scan('0', 'Return to depot')],
+    [scan('1', 'CAD scan'), scan('0', 'Unknown administrative event')],
+    [scan('1', 'CAD scan'), scan('', 'Order received')],
+    [scan('1', 'CAD scan'), scan('0', 'Order received', '25:00:00')],
   ]) {
     const result = await runReschedule('labels', { scans, logCallEnabled: true });
     assert.equal(result.saveWrites, 0);

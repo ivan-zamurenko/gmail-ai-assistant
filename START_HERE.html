@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Console con_id outcomes ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Pending CAD creation-row fix ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,22 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Console con_id outcomes ready — 2026-11-04</h1><pre class="markdown"># Console con_id outcomes ready — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Pending CAD creation-row fix ready — 2026-11-04</h1><pre class="markdown"># Pending CAD creation-row fix ready — 2026-11-04
+
+Root complete; no active writer. Root1.1.63/extension6.3.0.95; bot0.2.29 unchanged.
+Reproduced false review from Order received/Par#0 before valid parcel1 CAD. Exact creation row ignored after timestamp validation; zero/blank movement identity still blocks. Target remains next Irish working day.
+RED16/17→GREEN17/17; full236/236 PASS7, reviewer ACCEPT. Synthetic data only; live work-PC/full event title unverified.
+Artifact /tmp/DPD-Assistance-6.3.0.95.zip. Next scoped commit/push and owner extension update/dry-run. No live replay/restart/merge.
+
+---
+
+# Pending CAD incident active — 2026-11-04
+
+Root sole writer. Owner screenshot shows administrative Order received row Par#0 followed by physical parcel1 CAD today. Current policy rejects any zero identity. Scope narrow administrative-row handling in depotScript, existing regression, versions/docs. No real identifiers/images copied into fixtures. Next reproduce then repair; no live replay.
+
+---
+
+# Console con_id outcomes ready — 2026-11-04
 
 Root completed; no active writer. Root1.1.62/extension6.3.0.94, bot0.2.29 unchanged.
 Owner-approved public con_id + emoji outcome in depot MAIN and extension Console. Numeric number only; internal/customer/session fields remain excluded. No policy/network changes.
@@ -3045,6 +3060,10 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 root — implemented explicit owner request con_id + emoji Console outcomes. Narrow override permits validated public number only. Existing regression RED16/18→GREEN18/18; no policy/network changes. Next review/full gates and extension6.3.0.94 package.
 
 - 2026-11-04 root — complete: con_id/emoji Console follow-up full236/236 PASS7, reviewer ACCEPT. Artifact6.3.0.94; root1.1.62; bot unchanged. No live verification or depot request. Next scoped codex commit/push and owner extension update.
+
+- 2026-11-04 root — incident reproduced: administrative Order received/Par#0 caused false invalid-identity review before valid physical CAD. Narrow fix ignores that exact creation row only after timestamp validation. Existing tests RED16/17→GREEN17/17; no real data retained/live request. Next review/full gates and extension6.3.0.95.
+
+- 2026-11-04 root — complete offline: Pending CAD creation-row fix full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.95/root1.1.63; no bot change or live request. Next commit/push and owner extension update/preview to confirm real history.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4440,6 +4459,9 @@ Owner requests per-item extension-console outcomes and paged Discord output afte
 
 ### 2026-11-04 — Owner-approved con_id console outcomes
 Owner explicitly requests con_id followed by emoji result. This overrides the prior no-tracking-identifiers console rule only for the public consignment number in reschedule outcome lines. Validate8/9/14digits; never print internal ConsId, Notes, customer data, session or raw provider fields. Confirmed save uses ✅ Перенесено, dry-run uses 🔎 Буде перенесено, skips/errors/review remain distinct. Both depot MAIN and extension final mirror show it.
+
+### 2026-11-04 — Pending CAD administrative creation row
+Owner supplied a live example of Pending with creation row Par#0 followed by physical parcel1 received/CAD today. Reproduced false review in synthetic fixture. Ignore only normalized exact Order received at Par#0 after timestamp validation; it supplies no eligibility evidence. Physical parcel latest-CAD policy and unknown/return/delivery identity guards remain. Scheduled target stays next Irish working day. No original screenshot/customer/session/tracking fields retained.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6627,6 +6649,8 @@ Existing executor preview regression first failed10/11 until all30 rows survived
 Existing barcode DM delivery regression also checks full text attachment including last row and unACKed task during send. Escape-heavy producer fixture must pass consumer serialized-size validation.
 
 Console con_id follow-up: existing two diagnostic groups changed first16/18→18/18. They now require owner-approved numeric public number and emoji outcome while preserving internal-ID/raw-text redaction, malformed-number fallback, serialized MAIN execution, dry-run distinction and no false success after save failure. No new test group.
+
+Pending CAD incident: existing policy matrix now includes synthetic Order received/Par#0 → Received into depot/Par#1 → CAD today/Par#1. RED16/17→GREEN17/17; serialized preview eligible without writes. Creation-only history cannot permit a write. Zero Delivered/Return/unknown events, blank identity and invalid creation timestamps still refuse writes. Original screenshot and real identifiers are not fixtures.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

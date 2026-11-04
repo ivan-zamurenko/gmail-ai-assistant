@@ -228,3 +228,7 @@
 - 2026-11-04 root — implemented explicit owner request con_id + emoji Console outcomes. Narrow override permits validated public number only. Existing regression RED16/18→GREEN18/18; no policy/network changes. Next review/full gates and extension6.3.0.94 package.
 
 - 2026-11-04 root — complete: con_id/emoji Console follow-up full236/236 PASS7, reviewer ACCEPT. Artifact6.3.0.94; root1.1.62; bot unchanged. No live verification or depot request. Next scoped codex commit/push and owner extension update.
+
+- 2026-11-04 root — incident reproduced: administrative Order received/Par#0 caused false invalid-identity review before valid physical CAD. Narrow fix ignores that exact creation row only after timestamp validation. Existing tests RED16/17→GREEN17/17; no real data retained/live request. Next review/full gates and extension6.3.0.95.
+
+- 2026-11-04 root — complete offline: Pending CAD creation-row fix full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.95/root1.1.63; no bot change or live request. Next commit/push and owner extension update/preview to confirm real history.

@@ -321,3 +321,6 @@ Owner requests per-item extension-console outcomes and paged Discord output afte
 
 ### 2026-11-04 — Owner-approved con_id console outcomes
 Owner explicitly requests con_id followed by emoji result. This overrides the prior no-tracking-identifiers console rule only for the public consignment number in reschedule outcome lines. Validate8/9/14digits; never print internal ConsId, Notes, customer data, session or raw provider fields. Confirmed save uses ✅ Перенесено, dry-run uses 🔎 Буде перенесено, skips/errors/review remain distinct. Both depot MAIN and extension final mirror show it.
+
+### 2026-11-04 — Pending CAD administrative creation row
+Owner supplied a live example of Pending with creation row Par#0 followed by physical parcel1 received/CAD today. Reproduced false review in synthetic fixture. Ignore only normalized exact Order received at Par#0 after timestamp validation; it supplies no eligibility evidence. Physical parcel latest-CAD policy and unknown/return/delivery identity guards remain. Scheduled target stays next Irish working day. No original screenshot/customer/session/tracking fields retained.

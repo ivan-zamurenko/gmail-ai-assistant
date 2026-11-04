@@ -1,3 +1,18 @@
+# Pending CAD creation-row fix ready — 2026-11-04
+
+Root complete; no active writer. Root1.1.63/extension6.3.0.95; bot0.2.29 unchanged.
+Reproduced false review from Order received/Par#0 before valid parcel1 CAD. Exact creation row ignored after timestamp validation; zero/blank movement identity still blocks. Target remains next Irish working day.
+RED16/17→GREEN17/17; full236/236 PASS7, reviewer ACCEPT. Synthetic data only; live work-PC/full event title unverified.
+Artifact /tmp/DPD-Assistance-6.3.0.95.zip. Next scoped commit/push and owner extension update/dry-run. No live replay/restart/merge.
+
+---
+
+# Pending CAD incident active — 2026-11-04
+
+Root sole writer. Owner screenshot shows administrative Order received row Par#0 followed by physical parcel1 CAD today. Current policy rejects any zero identity. Scope narrow administrative-row handling in depotScript, existing regression, versions/docs. No real identifiers/images copied into fixtures. Next reproduce then repair; no live replay.
+
+---
+
 # Console con_id outcomes ready — 2026-11-04
 
 Root completed; no active writer. Root1.1.62/extension6.3.0.94, bot0.2.29 unchanged.

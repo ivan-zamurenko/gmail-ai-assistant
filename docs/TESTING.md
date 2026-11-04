@@ -1203,3 +1203,5 @@ Existing executor preview regression first failed10/11 until all30 rows survived
 Existing barcode DM delivery regression also checks full text attachment including last row and unACKed task during send. Escape-heavy producer fixture must pass consumer serialized-size validation.
 
 Console con_id follow-up: existing two diagnostic groups changed first16/18→18/18. They now require owner-approved numeric public number and emoji outcome while preserving internal-ID/raw-text redaction, malformed-number fallback, serialized MAIN execution, dry-run distinction and no false success after save failure. No new test group.
+
+Pending CAD incident: existing policy matrix now includes synthetic Order received/Par#0 → Received into depot/Par#1 → CAD today/Par#1. RED16/17→GREEN17/17; serialized preview eligible without writes. Creation-only history cannot permit a write. Zero Delivered/Return/unknown events, blank identity and invalid creation timestamps still refuse writes. Original screenshot and real identifiers are not fixtures.

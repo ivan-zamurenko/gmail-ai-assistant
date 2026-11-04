@@ -86,3 +86,16 @@ export function formatReport(summary, lines) {
   if (other.length) blocks.push(`📝 **Інше (${other.length})**\n${other.join('\n')}`);
   return blocks.length ? `${head}\n\u200b\n${blocks.join('\n\u200b\n')}` : head;
 }
+
+/** Splits a long message at line breaks into Discord-sized parts (no files). */
+export function splitMessage(text, limit = 2000) {
+  const parts = [];
+  let current = '';
+  for (const raw of String(text ?? '').split('\n')) {
+    const line = raw.length > limit ? raw.slice(0, limit) : raw;
+    if (current && current.length + 1 + line.length > limit) { parts.push(current); current = ''; }
+    current = current ? `${current}\n${line}` : line;
+  }
+  if (current) parts.push(current);
+  return parts;
+}

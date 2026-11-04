@@ -90,3 +90,10 @@ test('final report keeps only non-zero groups, with emoji and parcels grouped by
     '**929176034** · GOODS HELD\n↳ No confirmed delivery-date change to today',
   ].join('\n'));
 });
+
+test('a long report is split at line breaks into Discord-sized messages', () => {
+  const text = Array.from({ length: 300 }, (_, i) => `**${100000000 + i}** · PENDING`).join('\n');
+  const parts = messageFormat.splitMessage(text);
+  assert.ok(parts.length > 1 && parts.every(part => part.length <= 2000));
+  assert.equal(parts.join('\n'), text);
+});

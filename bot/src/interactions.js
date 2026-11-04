@@ -8,7 +8,7 @@ import { createResultRecovery } from './resultRecovery.js';
 import { MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { safeErrorMessage } from './errors.js';
-import { formatReport, formatRows, formatSummary } from './messageFormat.js';
+import { formatReport, formatRows, formatSummary, splitMessage } from './messageFormat.js';
 import { validateConsignmentNumber, validateFutureWorkday } from './validation.js';
 import { renderBarcodeProgress, shouldPublishBarcodeProgress } from './barcodeProgress.js';
 
@@ -211,13 +211,12 @@ export function createInteractionHandler({
             const lines = rescheduleLines(result);
             // Owner: the final report goes to the group channel, never to DMs.
             // The channel outlives the 15-minute interaction token of long scans.
+            // A long report becomes several consecutive messages; never a file.
             const summary = String(result.summary ?? 'Reschedule').slice(0, 500);
-            const report = lines ? formatReport(summary, lines) : null;
-            const payload = !lines ? resultMessage(result)
-              : report.length <= 2000 ? { content: report, allowedMentions: { parse: [] } }
-                : { content: `${formatSummary(summary)}\n\n📎 Повний список — у файлі.`, allowedMentions: { parse: [] },
-                  files: [{ attachment: Buffer.from(lines.join('\n')), name: 'reschedule-results.txt' }] };
-            await interaction.channel.send(typeof payload === 'string' ? { content: payload, allowedMentions: { parse: [] } } : payload);
+            const report = lines ? formatReport(summary, lines) : resultMessage(result);
+            for (const content of splitMessage(report)) {
+              await interaction.channel.send({ content, allowedMentions: { parse: [] } });
+            }
             delivered = true;
             await acknowledge(interaction, result);
             if (!interaction.autoCleanupExpired) await interaction.editReply('✅ Scan Drive Labels завершено — звіт у каналі.');

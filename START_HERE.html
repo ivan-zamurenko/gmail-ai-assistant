@@ -3078,6 +3078,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot | Виконано | S04-04: журнал переміщень Drive у задачі popup, кнопка Cancel (зупиняє нову роботу), звірка втраченого PATCH через Drive. 276/276; ext 6.3.0.108, root 1.1.79; [evidence](evidence/S04-04.json). | S04-05 — потрібні тестова папка/акаунти. |
 | 2026-11-04 | Copilot | Перевірено | S09-11: barcodes відповідає критеріям завдяки S01–S04, S09-04/09; без змін коду. Бот перезапущено на 0.2.32 за проханням власника. | Далі потрібні рішення власника. |
 | 2026-11-04 | Copilot + власник | Виконано | G_GMAIL_POLICY погоджено. S05-04: модуль правил відповіді (чернетка/перевірка/blocked, адресат, англійська, лише факти, без auto-send). S04-05 чекає ручного прогону власника в робочій папці. ext 6.3.0.109, root 1.1.80. | S05-05. |
+| 2026-11-04 | Copilot + власник | Виконано | S05-05: модуль чернетки Gmail (без send, одна на лист, звірка, мітки після успіху), шаблон із фактів, scope gmail.modify (дозвіл власника). ext 6.3.0.110, root 1.1.81. | S06 — рішення про AI-провайдера. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4709,6 +4710,9 @@ Owner has no separate test folder and explicitly chose to run the S04-05 Drive v
 
 ### G-GMAIL-POLICY-2026-11-04 — owner approved
 Drafts only, never sent automatically (OWNER-D01 unchanged). Source: only messages the owner labels `AI-Reply`. Language: English. Recipient: the sender, or its single Reply-To address; no CC/reply-all. Ignored without a draft (labelled for review): no-reply/mailer-daemon/postmaster senders, automated mail (Auto-Submitted other than `no`, List-Id, Precedence bulk/list/junk), and messages without a consignment number. A message about several consignments gets one draft with facts for each, flagged for review. The draft states only depot facts (status, scheduled date already in the depot); it never promises a date, compensation or an action, and a draft never grants permission to change a delivery date or labels.
+
+### 2026-11-04 — Gmail write scope for drafts (S05-05)
+Owner approved write access to Gmail for reply drafts and labels. The manifest scope `gmail.readonly` is replaced by `gmail.modify` (covers reading, drafts and labels; Google has no draft-only scope). Sending is never called: `src/gmail/drafts.js` uses only drafts.create, threads.get and messages.modify, and its test fails on any send endpoint. Chrome asks the owner to re-approve Google access once. Draft text is a facts-only English template until an AI provider is chosen (S06); later drafts may learn from the owner&#39;s edits (owner idea, S06).
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -10136,6 +10140,10 @@ Evidence: `.workflow/evidence/S05-05.json`. Обновить существую�
 ## Адаптация к bot baseline v1.2
 
 Новый manifest не выдаёт прав draft автоматически. Проверить и согласовать необходимые scopes до реального draft. Discord todo/confirm_live не разрешают письмо; OWNER-D01 сохраняется.
+
+## Виконано 2026-11-04
+
+`src/gmail/drafts.js` (одна чернетка на лист, той самий thread, звірка втраченої відповіді, мітки після успіху, без send), `src/workflow/draftTemplate.js` (лише факти депо), scope `gmail.modify`. Тест `test/gmail/drafts.test.js`. Кнопка в popup — S06-05.
 </pre></article>
 <article id="doc-97" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-01.md">roadmap/tasks/S06-01.md</a></p><h1>S06-01 — Зафиксировать контракт и выбор AI provider</h1><pre class="markdown"># S06-01 — Зафиксировать контракт и выбор AI provider
 

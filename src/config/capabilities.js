@@ -1,5 +1,7 @@
 /** Describes local availability only; never probes a provider or reveals values. */
 const GMAIL = 'https://www.googleapis.com/auth/gmail.readonly';
+// Owner 2026-11-04: drafts + labels. Covers reading too; send is never called (drafts.js).
+const GMAIL_MODIFY = 'https://www.googleapis.com/auth/gmail.modify';
 const DRIVE = 'https://www.googleapis.com/auth/drive';
 const state = (implemented, configured, permission) => ({
   implemented, configured, permission, verified: false,
@@ -12,10 +14,9 @@ export function getCapabilities({ config = {}, manifest = {} } = {}) {
   const scopes = Array.isArray(manifest?.oauth2?.scopes) ? manifest.oauth2.scopes : [];
   const identity = permissions.includes('identity');
   return {
-    gmailRead: state(true, true, identity && scopes.includes(GMAIL)),
+    gmailRead: state(true, true, identity && (scopes.includes(GMAIL) || scopes.includes(GMAIL_MODIFY))),
     driveLabels: state(true, typeof config?.driveFolderId === 'string' && !!config.driveFolderId.trim(), identity && scopes.includes(DRIVE)),
-    // A transport helper or saved key is not an implemented/approved workflow.
-    gmailModify: state(false, false, false),
+    gmailModify: state(true, true, identity && scopes.includes(GMAIL_MODIFY)),
     aiReply: state(false, false, false),
   };
 }

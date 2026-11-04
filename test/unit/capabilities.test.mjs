@@ -23,7 +23,8 @@ test('capabilities separate implementation/config/permission/verification and gu
   const net = useFetch(t, []);
   await assert.rejects(findLabelId('AI-Reply'), /permission is missing/);
   globalThis.chrome.runtime.getManifest = () => manifest;
-  await assert.rejects(moveLabels('synthetic', { add: ['Label_SYN'] }), /not available/);
+  // Implemented since S05-05, but a read-only manifest still lacks gmail.modify.
+  await assert.rejects(moveLabels('synthetic', { add: ['Label_SYN'] }), /permission is missing/);
   assert.deepEqual(net.calls, []);
   assert.deepEqual(net.unexpected, []);
 });

@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "task_id": "S05-05",
+  "outcome": "passed",
+  "scope": "Reply draft creation module with single-flight, reconcile and no send; facts-only template; gmail.modify scope.",
+  "base_sha": "afbc78c",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/gmail/drafts.test.js test/unit/capabilities.test.mjs",
+      "exit_code": 0,
+      "result": "pass",
+      "boundary": "synthetic Gmail fake",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Owner approved Gmail write scope; gmail.readonly replaced by gmail.modify.",
+    "Draft text: facts-only template until S06."
+  ],
+  "gates": [
+    "G_GMAIL_POLICY approved"
+  ],
+  "changed_paths": [
+    "manifest.json",
+    "src/config/capabilities.js",
+    "src/gmail/drafts.js",
+    "src/workflow/draftTemplate.js",
+    "test/gmail/drafts.test.js",
+    "test/unit/capabilities.test.mjs",
+    "docs/decisions.md",
+    "roadmap/tasks/S05-05.md"
+  ],
+  "untested": [
+    "Real Gmail drafts API and re-consent in Chrome",
+    "Popup wiring (S06-05)"
+  ],
+  "residual_risk": [
+    "gmail.modify technically permits sending; enforced only by code and tests."
+  ],
+  "blocker": null,
+  "next_step": "S06: AI provider decision (G_AI_PROVIDER, G_PRIVACY); S06-05 wires popup review + draft.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit"
+  },
+  "external_effects": []
+}

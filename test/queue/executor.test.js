@@ -475,3 +475,36 @@ test('reschedule summaries count needs-review separately from errors', async (t)
   });
   assert.match(live.summary, /Змінено: 1 \| Пропущено: 0 \| Перевірка: 1 \| Помилки: 1/);
 });
+
+test('live CAD never reuses a preview list; a busy tab stops live without trying another tab', async (t) => {
+  const originalChrome = globalThis.chrome;
+  t.after(() => { globalThis.chrome = originalChrome; });
+  const injections = [];
+  let busy = false;
+  globalThis.chrome = {
+    tabs: { query: async () => [1, 2].map(id => ({ id, url: 'http://synthetic.interlink.local/home' })), update: async () => ({}) },
+    scripting: { executeScript: async ({ target, args }) => {
+      injections.push({ tab: target.tabId, args: args[0] });
+      if (busy) return [{ result: { __error: 'Another reschedule is already running in this tab' } }];
+      return [{ result: args[0].dryRun
+        ? { dryRun: true, count: 1, eligible: 1, skipped: 0, review: 0, errors: 0, changed: 0, results: [{ consNumber: '123456789', consId: '7654321', action: 'CHANGE_DATE' }] }
+        : { changed: 1, skipped: 0, review: 0, errors: 0, results: [] } }];
+    } },
+  };
+  const run = dryRun => executeTask({ schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'all', dryRun } });
+
+  await run(true);
+  const live = await run(false);
+  assert.equal(live.status, 'done');
+  const liveArgs = injections[1].args;
+  assert.equal(liveArgs.mode, 'cad');
+  assert.equal(liveArgs.dryRun, false);
+  assert.deepEqual(liveArgs.targets ?? [], [], 'live re-reads the Pending list instead of applying the preview set');
+
+  injections.length = 0;
+  busy = true;
+  const blocked = await run(false);
+  assert.equal(blocked.status, 'error');
+  assert.match(blocked.summary, /already running in this tab/);
+  assert.deepEqual(injections.map(i => i.tab), [1], 'a busy tab must not push the live run to another tab');
+});

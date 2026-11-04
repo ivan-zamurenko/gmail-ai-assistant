@@ -1,3 +1,11 @@
+# S09-09 Discord CAD preview/apply verified — 2026-11-04
+
+Copilot; no active writer. /reschedule all already used the shared protected path; added characterization (live never reuses preview list; busy tab stops live without another tab) with mutation proof. No product change, no version bump.
+Root1.1.71/extension6.3.0.102; bot0.2.30. Full 248/248 PASS7.
+Next: all remaining cards need owner decisions (G_DISCORD_MODES, G_DRIVE_POLICY, G_GMAIL_POLICY, G_AI_PROVIDER, access/test accounts) or are S00-05.
+
+---
+
 # Cancelled OFD scan fix — 2026-11-04
 
 Copilot; no active writer. Live Pending parcel with CAD today + two "Cancelled OFD scan" went to REVIEW (unknown tooltip text). Owner rule: CAD today + any cancelled OFD → reschedule. Exact "cancelled ofd scan" mapped to the existing cancelled-OFD rule; policyVersion IE-reschedule-2026-11-04.2.

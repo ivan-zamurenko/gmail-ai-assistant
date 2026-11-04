@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-09",
+  "outcome": "passed",
+  "scope": "Discord /reschedule all uses the shared protected depot preview/apply; characterization of existing guarantees, no product change.",
+  "base_sha": "02253e2",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/executor.test.js",
+      "exit_code": 0,
+      "result": "13/13 incl. new characterization: live CAD has no preview targets; busy tab stops live on tab 1 only",
+      "boundary": "local checkout; synthetic chrome/executeScript fakes; network guard; no live depot or Discord",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/executor.test.js  (controlled mutation: 'already running' added to WRONG_PAGE)",
+      "exit_code": 1,
+      "result": "new test fails: live moved to the second tab; code restored afterwards",
+      "boundary": "local checkout; synthetic chrome/executeScript fakes; network guard; no live depot or Discord",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS after fixing a trailing blank line found by diff-check: lint, 248/248, build, artifacts, docs",
+      "boundary": "local checkout; synthetic chrome/executeScript fakes; network guard; no live depot or Discord",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Criterion 1: default dry-run + detailed preview — executor 'all mode defaults…' and S03-04 tests.",
+    "Criterion 2: dry_run:false is the only live confirmation (owner 2026-09-02); target/date/context re-read before Save (S03-03/S03-05 RECHECK).",
+    "Criterion 3: live never reuses the preview list (new test); changed evidence before save blocks (depotScript tests). No previewId introduced — would add a second approval, contrary to owner decision.",
+    "Criterion 4: uncertain/empty live injection stops without another tab (existing test), busy-tab lock stops too (new test); lost reply never replays (S09-04 delivery tests).",
+    "Criterion 5: summary counts incl. Перевірка match results; bounded details without session (S03-04, messageFormat tests).",
+    "No version bump: tests and docs only."
+  ],
+  "gates": [
+    "G_DEPOT_POLICY approved"
+  ],
+  "changed_paths": [
+    "test/queue/executor.test.js",
+    "docs/discord-bot.md",
+    "roadmap/tasks/S09-09.md",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Live /reschedule all on the work PC (S09-12 pilot)",
+    "Discord interaction retries in the real gateway"
+  ],
+  "residual_risk": [
+    "Cross-tab concurrent live runs are guarded only by RECHECK and reconcile."
+  ],
+  "blocker": null,
+  "next_step": "Remaining cards need owner decisions: S09-10/S09-11 (G_DISCORD_MODES), S09-12 (access/test accounts), Drive (G_DRIVE_POLICY), Gmail/AI (G_GMAIL_POLICY, G_AI_PROVIDER).",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

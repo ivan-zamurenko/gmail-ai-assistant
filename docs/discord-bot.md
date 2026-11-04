@@ -79,6 +79,16 @@ Discord slash interaction
 
 Явное `dry_run:false` является достаточным live-подтверждением по решению владельца; `confirm_live` отсутствует. В queue нет previewId/revision. S09-09 и S03-04/S03-05 могут укреплять внутреннюю проверку целей и актуальности, но не вводить второе операторское подтверждение без нового решения.
 
+**S09-09 (2026-11-04):** `/reschedule all` використовує той самий `depotMain`, що popup.
+Preview за замовчуванням (`dry_run` не вказано → dry-run) розділяє Дозволено/Пропущено/
+Перевірка/Помилки (S03-04). Live (`dry_run:false`) не бере список з preview: заново
+читає Pending, кожну посилку (CHECK) і повторно перевіряє перед Save (RECHECK), тож
+зміна статусу/дати/складу між preview і live вже враховується без previewId (S03-05).
+Невизначена ін'єкція або порожній результат live → «uncertain», без переходу на іншу
+вкладку; зайнята іншим live-запуском вкладка (`Another reschedule is already running
+in this tab`) теж зупиняє live на ній. Втрачена відповідь Discord не повторює depot-дію
+(S09-04, `test/queue/delivery.test.mjs`). Тести: `test/queue/executor.test.js`.
+
 ## 6. Известные ограничения, не потерянные при модернизации
 
 `finishWithResult()` в `bot/src/queue.js` инициирует удаление terminal document до успешного `editReply` в обработчике. После потери ответа нет доказанного durable recovery этого результата. `claimed` после сбоя также не имеет полноценного протокола восстановления. Транзакционный claim и последовательный Promise-chain полезны, но не доказывают exactly-once для depot writes или координацию popup и очереди.

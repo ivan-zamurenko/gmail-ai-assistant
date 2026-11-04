@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Cancelled OFD scan fix — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S09-09 Discord CAD preview/apply verified — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1000,6 +1000,16 @@ Discord slash interaction
 На входе сравнивается `interaction.guildId` с `cfg.guildId`; `/find` и `/reschedule` требуют Administrator. `/todo` ограничен тем же guild, но не требует этой depot-проверки. Сохранить фактические защиты до отдельного reviewed решения о ролях. Не назначать боту глобальные Administrator permissions только из-за того, что они проверяются у оператора.
 
 Явное `dry_run:false` является достаточным live-подтверждением по решению владельца; `confirm_live` отсутствует. В queue нет previewId/revision. S09-09 и S03-04/S03-05 могут укреплять внутреннюю проверку целей и актуальности, но не вводить второе операторское подтверждение без нового решения.
+
+**S09-09 (2026-11-04):** `/reschedule all` використовує той самий `depotMain`, що popup.
+Preview за замовчуванням (`dry_run` не вказано → dry-run) розділяє Дозволено/Пропущено/
+Перевірка/Помилки (S03-04). Live (`dry_run:false`) не бере список з preview: заново
+читає Pending, кожну посилку (CHECK) і повторно перевіряє перед Save (RECHECK), тож
+зміна статусу/дати/складу між preview і live вже враховується без previewId (S03-05).
+Невизначена ін&#39;єкція або порожній результат live → «uncertain», без переходу на іншу
+вкладку; зайнята іншим live-запуском вкладка (`Another reschedule is already running
+in this tab`) теж зупиняє live на ній. Втрачена відповідь Discord не повторює depot-дію
+(S09-04, `test/queue/delivery.test.mjs`). Тести: `test/queue/executor.test.js`.
 
 ## 6. Известные ограничения, не потерянные при модернизации
 
@@ -2059,7 +2069,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Cancelled OFD scan fix — 2026-11-04</h1><pre class="markdown"># Cancelled OFD scan fix — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S09-09 Discord CAD preview/apply verified — 2026-11-04</h1><pre class="markdown"># S09-09 Discord CAD preview/apply verified — 2026-11-04
+
+Copilot; no active writer. /reschedule all already used the shared protected path; added characterization (live never reuses preview list; busy tab stops live without another tab) with mutation proof. No product change, no version bump.
+Root1.1.71/extension6.3.0.102; bot0.2.30. Full 248/248 PASS7.
+Next: all remaining cards need owner decisions (G_DISCORD_MODES, G_DRIVE_POLICY, G_GMAIL_POLICY, G_AI_PROVIDER, access/test accounts) or are S00-05.
+
+---
+
+# Cancelled OFD scan fix — 2026-11-04
 
 Copilot; no active writer. Live Pending parcel with CAD today + two &quot;Cancelled OFD scan&quot; went to REVIEW (unknown tooltip text). Owner rule: CAD today + any cancelled OFD → reschedule. Exact &quot;cancelled ofd scan&quot; mapped to the existing cancelled-OFD rule; policyVersion IE-reschedule-2026-11-04.2.
 Root1.1.71/extension6.3.0.102; bot0.2.30. RED (live history replay) → GREEN; full 247/247 PASS7. No live depot action.
@@ -2980,6 +2998,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | S03-05 закрито: власник перевірив, що форма за замовчуванням показує сьогоднішню дату; звірку повернуто (дата вже ціль → без POST, SKIP). 242/242; ext 6.3.0.101, root 1.1.69; [evidence](evidence/S03-05.json). | Оновити розширення; далі S09-09. |
 | 2026-11-04 | Copilot + власник | Виконано | Читабельність Discord: палітра статусів (погоджено), емодзі й відступи в /find, підсумки /reschedule рядками з емодзі, рядки посилок текстом замість блоку коду. 247/247, review ACCEPT; bot 0.2.30, root 1.1.70. Бот перезапускає власник. | Перевірити на телефоні; далі S09-09. |
 | 2026-11-04 | Copilot + власник | Виконано | Живий випадок: Pending + CAD сьогодні + «Cancelled OFD scan» ×2 → REVIEW через невідому назву. Точна назва зведена до правила скасованого OFD (рішення власника). RED → GREEN; 247/247; ext 6.3.0.102, root 1.1.71. | Оновити розширення; далі S09-09. |
+| 2026-11-04 | Copilot | Виконано | S09-09: `/reschedule all` уже йшов спільним захищеним шляхом; додано характеризаційний тест (live не бере список preview, зайнята вкладка зупиняє live) з доказом мутацією. Продукт не змінено. 248/248; [evidence](evidence/S09-09.json). | Решта карток чекає рішень власника. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -11759,6 +11778,14 @@ fix(discord): [S09-09] bind CAD apply to approved preview
 ```
 
 Evidence: `.workflow/evidence/S09-09.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
+
+## Виконано 2026-11-04
+
+Поведінка вже відповідала критеріям після S03-03…S03-05, S09-02, S09-04, S09-05;
+продуктовий код не змінювався. Додано характеризаційний тест у `test/queue/executor.test.js`
+(замість `test/queue/cad-apply.test.mjs`): live CAD не повторно використовує список preview,
+а зайнята вкладка зупиняє live без переходу на іншу. Чутливість доведено контрольованою
+мутацією `WRONG_PAGE`. Відповідність критеріїв тестам — у `docs/discord-bot.md` (S09-09).
 </pre></article>
 <article id="doc-118" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-10.md">roadmap/tasks/S09-10.md</a></p><h1>S09-10 — Перевірити й укріпити наявний режим parcel</h1><pre class="markdown"># S09-10 — Перевірити й укріпити наявний режим parcel
 

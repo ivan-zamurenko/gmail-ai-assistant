@@ -34,7 +34,7 @@ function context(code, chrome, ports) {
   const logs = [];
   let counter = 0;
   vm.runInNewContext(code, {
-    chrome, __ports: ports, URL, setTimeout, clearTimeout,
+    chrome, __ports: ports, URL, setTimeout, clearTimeout, AbortController,
     setInterval: (fn, ms) => { const id = ++counter; intervals.set(id, { fn, ms }); return id; },
     clearInterval: id => intervals.delete(id),
     console: Object.fromEntries(['log', 'info', 'warn', 'error'].map(key => [key, (...args) => logs.push(args.join(' '))])),

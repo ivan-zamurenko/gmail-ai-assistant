@@ -22,7 +22,29 @@ export function createLabelScanJob({ id, dryRun, now }) {
   return {
     version: VERSION, id, dryRun, state: 'queued', stage: 'queued', accepted: false,
     current: 0, total: 0, startedAt: now, updatedAt: now, summary: null, details: null, status: null,
+    cancelRequested: false, items: [],
   };
+}
+
+const ITEM_STATES = new Set(['applying', 'applied', 'failed', 'uncertain']);
+const MAX_ITEMS = 500;
+
+/**
+ * Journal of Drive moves (S04-04): file id, target path and state only — never a
+ * token, image or session data. `applying` is written before the PATCH.
+ */
+export function applyItem(job, { jobId, fileId, to, state } = {}, now) {
+  if (!isActive(job) || jobId !== job.id || !ITEM_STATES.has(state)
+      || typeof fileId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(fileId)
+      || typeof to !== 'string' || !to || to.length > 300) return job;
+  const items = (job.items ?? []).filter(item => item.fileId !== fileId);
+  items.push({ fileId, to, state });
+  return { ...job, items: items.slice(-MAX_ITEMS), updatedAt: now };
+}
+
+export function requestCancel(job, jobId, now) {
+  if (!isActive(job) || jobId !== job.id) return job;
+  return { ...job, cancelRequested: true, updatedAt: now };
 }
 
 /** Offscreen confirmed it owns this job; only from now can a restart lose it. */
@@ -57,9 +79,13 @@ export function applyFinish(job, { jobId, status, summary, details } = {}, now) 
 export function interruptActive(job, now, { orphaned = false } = {}) {
   if (!isActive(job) || (!job.accepted && !orphaned)) return job;
   const at = job.total > 0 ? ` at ${job.current}/${job.total}` : '';
+  // A move that was in flight may or may not have happened.
+  const items = (job.items ?? []).map(item => (item.state === 'applying' ? { ...item, state: 'uncertain' } : item));
+  const uncertain = items.filter(item => item.state === 'uncertain').length;
   return {
-    ...job, state: 'interrupted', status: 'error', updatedAt: now,
-    summary: `Interrupted${at} — check Drive before starting again; it was not repeated`,
+    ...job, state: 'interrupted', status: 'error', updatedAt: now, items,
+    summary: `Interrupted${at} — check Drive before starting again; it was not repeated`
+      + (uncertain ? ` | Uncertain moves: ${uncertain}` : ''),
   };
 }
 
@@ -74,6 +100,9 @@ export function parseStart(msg) {
 export function authorizeSender(type, sender, { runtimeId, popupUrl, offscreenUrl, workerUrl }) {
   const expected = {
     'label-scan-start': popupUrl,
+    'label-scan-cancel': popupUrl,
+    'label-scan-item': offscreenUrl,
+    'label-scan-cancel-run': workerUrl,
     'label-scan-progress': offscreenUrl,
     'label-scan-finish': offscreenUrl,
     'label-scan-boot': offscreenUrl,

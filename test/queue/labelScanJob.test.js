@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   LABEL_SCAN_JOB_KEY, applyFinish, applyProgress, authorizeSender, createLabelScanJob,
-  interruptActive, isActive, markAccepted, parseStart,
+  applyItem, interruptActive, isActive, markAccepted, parseStart, requestCancel,
 } from '../../src/queue/labelScanJob.js';
 
 const ctx = {
@@ -20,6 +20,7 @@ test('a job is created once per start and survives as plain storage data', () =>
   assert.deepEqual(job, {
     version: 1, id: 'job-1', dryRun: true, state: 'queued', stage: 'queued', accepted: false,
     current: 0, total: 0, startedAt: T0, updatedAt: T0, summary: null, details: null, status: null,
+    cancelRequested: false, items: [],
   });
   assert.deepEqual(JSON.parse(JSON.stringify(job)), job);
   assert.equal(isActive(job), true);
@@ -78,6 +79,9 @@ test('each message type is accepted only from its own extension context', () => 
   const otherExtension = { id: 'evil', url: ctx.popupUrl };
   const table = {
     'label-scan-start': popup,
+    'label-scan-cancel': popup,
+    'label-scan-item': offscreen,
+    'label-scan-cancel-run': worker,
     'label-scan-progress': offscreen,
     'label-scan-finish': offscreen,
     'label-scan-boot': offscreen,
@@ -91,4 +95,19 @@ test('each message type is accepted only from its own extension context', () => 
     }
   }
   assert.equal(authorizeSender('drive-auth-token', popup, ctx), false, 'unknown types are not authorised here');
+});
+
+test('journal keeps the last state per file; an interrupted in-flight move becomes uncertain; cancel is a flag', () => {
+  let job = markAccepted(createLabelScanJob({ id: 'job-1', dryRun: false, now: T0 }), 'job-1', T0);
+  job = applyItem(job, { jobId: 'job-1', fileId: 'f1', to: '2026/11/a.jpg', state: 'applying' }, T0);
+  job = applyItem(job, { jobId: 'job-1', fileId: 'f1', to: '2026/11/a.jpg', state: 'applied' }, T0);
+  job = applyItem(job, { jobId: 'job-1', fileId: 'f2', to: '2026/11/b.jpg', state: 'applying' }, T0);
+  assert.equal(applyItem(job, { jobId: 'job-1', fileId: 'f3', to: 'x', state: 'done', token: 'secret' }, T0), job);
+  assert.deepEqual(job.items, [{ fileId: 'f1', to: '2026/11/a.jpg', state: 'applied' }, { fileId: 'f2', to: '2026/11/b.jpg', state: 'applying' }]);
+  const cancelled = requestCancel(job, 'job-1', T0);
+  assert.equal(cancelled.cancelRequested, true);
+  assert.equal(isActive(cancelled), true, 'cancel only stops new work; the runner finishes the job');
+  const interrupted = interruptActive(cancelled, T0);
+  assert.deepEqual(interrupted.items.map(i => i.state), ['applied', 'uncertain']);
+  assert.match(interrupted.summary, /Uncertain moves: 1/);
 });

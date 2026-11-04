@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S04-03 popup label scan as background job — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S04-04 done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2080,7 +2080,14 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-03 popup label scan as background job — 2026-11-04</h1><pre class="markdown"># S04-03 popup label scan as background job — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-04 done — 2026-11-04</h1><pre class="markdown"># S04-04 done — 2026-11-04
+
+Copilot; no active writer. Popup label scan has a move journal, Cancel button, and lost-PATCH reconcile. Ext 6.3.0.108, root 1.1.79, bot 0.2.32. 276/276 PASS7.
+Next: S04-05 needs owner G_TEST_ACCOUNTS/G_PRIVACY (separate test Drive folder).
+
+---
+
+# S04-03 popup label scan as background job — 2026-11-04
 
 Copilot; no active writer. Owner chose G_ARCHITECTURE A. Popup starts/watches a stored job; offscreen runs the shared barcode executor in the shared serial queue; closing the popup no longer stops a scan; restarts mark the job interrupted, never replayed.
 Root1.1.76/extension6.3.0.107; bot0.2.30. Full 272/272 PASS7; review finding (orphaned job) fixed. Not yet run in real Chrome.
@@ -3056,6 +3063,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | Назви фото Drive: номер спершу, посилка завжди (`123456789_p01_2026-11-04.jpg`), старі назви розпізнаються без перейменування. 259/259; ext 6.3.0.106, root 1.1.75. Власник обрав G_ARCHITECTURE варіант A для S04-03. | S04-03 малими кроками. |
 | 2026-11-04 | Copilot + власник | Виконано | G_ARCHITECTURE A погоджено. S04-03: сканування з popup — фонова задача в offscreen у спільній черзі з Discord; закриття popup не зупиняє; перезапуск → «interrupted», без повтору. 272/272; review: виправлено «осиротілу» задачу; ext 6.3.0.107, root 1.1.76; [evidence](evidence/S04-03.json). | Власнику — перевірити в Chrome; далі S04-04. |
 | 2026-11-04 | Copilot + власник | Виконано | Звіт barcodes — у канал команди, не в DM; лише ненульові групи з emoji, посилки згруповані за результатом; довгий список — файлом. 273/273; bot 0.2.31, root 1.1.77. «Unexpected error» поруч з успішним dry-run — причину уточнюю (ймовірно подвійна обробка після перезапуску бота). | Власнику — перезапустити бота; S04-04. |
+| 2026-11-04 | Copilot | Виконано | S04-04: журнал переміщень Drive у задачі popup, кнопка Cancel (зупиняє нову роботу), звірка втраченого PATCH через Drive. 276/276; ext 6.3.0.108, root 1.1.79; [evidence](evidence/S04-04.json). | S04-05 — потрібні тестова папка/акаунти. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -5029,6 +5037,17 @@ background, виконує той самий `executeBarcodeTask`, що й Disco
 прийняту активну задачу «Interrupted… check Drive…; it was not repeated»; задачу, яку
 ніхто не запускає і яку не прийняв runner (помер service worker), позначає так само й
 новий старт. Автоматичного відновлення чи повтору немає. Нових manifest-дозволів немає.
+
+## S04-04 — журнал, скасування, звірка (2026-11-04)
+
+Запис задачі popup має журнал переміщень (`items`: fileId, цільовий шлях, стан
+`applying` → `applied`/`failed`/`uncertain`, до 500 останніх; без токенів, зображень і
+session). `applying` записується до PATCH. Якщо відповідь PATCH втрачено, розширення
+читає файл у Drive: уже з новою назвою в новій папці → `applied`, інакше `uncertain` і
+зупинка партії. Перерваний runner переводить `applying` у `uncertain`; popup показує
+«Check in Drive: …» для кожного такого файлу. «Cancel label scan» лише зупиняє нову
+роботу (abort перед наступним запитом Drive); виконані переміщення лишаються, обірваний
+запис не називається скасованим. Історія `uncertain` не очищується автоматично.
 
 ## S01-04 — реалізована HTTP-межа, 2026-10-28
 
@@ -9585,6 +9604,12 @@ Evidence: `.workflow/evidence/S04-04.json`. Обновить существую�
 ## Адаптация к bot baseline v1.2
 
 Firestore tasks текущего бота не являются полноценным журналом Drive batch. Совместимость runner и queue ownership описать до внедрения, избегая второй конкурирующей модели результата.
+
+## Виконано 2026-11-04
+
+Журнал і скасування — у записі задачі S04-03 (`labelScanJob.js`, `labelScanRoutes.js`,
+offscreen, popup); звірка втраченого PATCH — у `driveLabels.js`. Критерій 1 закрито в
+S04-03. Тести: `test/queue/labelScanJob.test.js`, `test/depot/driveLabels.test.js`.
 </pre></article>
 <article id="doc-91" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-05.md">roadmap/tasks/S04-05.md</a></p><h1>S04-05 — Проверить Drive на разрешённой тестовой папке</h1><pre class="markdown"># S04-05 — Проверить Drive на разрешённой тестовой папке
 

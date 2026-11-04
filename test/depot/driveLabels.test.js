@@ -10,7 +10,7 @@ const DEPOT_LOOKUP = 'https://depot.synthetic.invalid/lookup';
 const ROOT = 'root-syn';
 const BARCODE = [{ text: '%000000000001234567892000000', format: 'CODE_128', reads: 3 }];
 
-function fakeServices(t, { folders = {}, names = {}, photos, meta = {}, existing = {} }) {
+function fakeServices(t, { folders = {}, names = {}, photos, meta = {}, existing = {}, lostPatch }) {
   const requests = [];
   const state = { folders: { ...folders }, created: 0 };
   const previous = globalThis.fetch;
@@ -55,7 +55,17 @@ function fakeServices(t, { folders = {}, names = {}, photos, meta = {}, existing
       state.folders[`${body.parents[0]}/${body.name}`] = id;
       return json({ id });
     }
-    if (url.pathname.startsWith('/drive/v3/files/') && method === 'PATCH') return json({ id: 'moved' });
+    if (url.pathname.startsWith('/drive/v3/files/') && method === 'PATCH') {
+      if (lostPatch) {
+        // The move happens (or not) but the response never arrives.
+        if (lostPatch === 'landed') {
+          const photo = photos.find(p => p.id === fileId);
+          Object.assign(photo, { name: JSON.parse(init.body).name, parents: [url.searchParams.get('addParents')] });
+        }
+        throw new TypeError('synthetic network failure');
+      }
+      return json({ id: 'moved' });
+    }
     throw new Error(`unexpected synthetic request: ${method} ${input}`);
   };
   t.after(() => { globalThis.fetch = previous; });
@@ -281,4 +291,18 @@ test('live: a same-named file that appeared in the month folder blocks the move'
   assert.equal(entry.errorCode, 'name-collision');
   assert.equal(entry.error, 'Target name already exists in the month folder; left untouched');
   assert.equal(entry.number, null);
+});
+
+test('a lost PATCH response is checked in Drive: landed counts as applied, otherwise uncertain', async (t) => {
+  for (const [lostPatch, expected] of [['landed', null], ['lost', 'uncertain-write']]) {
+    const journal = [];
+    fakeServices(t, { photos: [{ ...PHOTO }], lostPatch, folders: { [`${ROOT}/2026`]: 'year-syn', 'year-syn/10': 'month-syn' } });
+    const [entry] = await processDriveLabels({
+      folderInput: ROOT, token: 'synthetic-token', dryRun: false,
+      verify: async () => true, decodePhoto: async () => ({}), readCodes: async () => BARCODE,
+      journal: item => journal.push(item.state),
+    });
+    assert.equal(entry.errorCode ?? null, expected, lostPatch);
+    assert.deepEqual(journal, ['applying', expected ? 'uncertain' : 'applied'], lostPatch);
+  }
 });

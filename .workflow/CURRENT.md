@@ -1,3 +1,10 @@
+# S04-04 done — 2026-11-04
+
+Copilot; no active writer. Popup label scan has a move journal, Cancel button, and lost-PATCH reconcile. Ext 6.3.0.108, root 1.1.79, bot 0.2.32. 276/276 PASS7.
+Next: S04-05 needs owner G_TEST_ACCOUNTS/G_PRIVACY (separate test Drive folder).
+
+---
+
 # S04-03 popup label scan as background job — 2026-11-04
 
 Copilot; no active writer. Owner chose G_ARCHITECTURE A. Popup starts/watches a stored job; offscreen runs the shared barcode executor in the shared serial queue; closing the popup no longer stops a scan; restarts mark the job interrupted, never replayed.

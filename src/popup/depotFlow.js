@@ -37,7 +37,7 @@ const JOB_STAGES = {
 
 export function initDepotFlow({
   depotStatusDot, depotStatusLabel, depotMessage,
-  dryRunToggle, scanCADBtn, scanDriveBtn, retryRescheduleBtn,
+  dryRunToggle, scanCADBtn, scanDriveBtn, retryRescheduleBtn, cancelScanBtn,
   scanProgress, progressFill, progressLabel, depotLogEl,
 }) {
   const log = createLog(depotLogEl);
@@ -225,17 +225,25 @@ export function initDepotFlow({
       progressFill.style.width = `${percent}%`;
       progressLabel.textContent = `${JOB_STAGES[job.stage] ?? 'Working'}`
         + (job.total > 0 ? ` ${job.current} of ${job.total} · ${percent}%` : '');
-      setDepotStatus('running', `${mode} label scan ${short} running — you can close this window`);
+      setDepotStatus('running', job.cancelRequested
+        ? `${mode} label scan ${short} stopping — finishing the current photo`
+        : `${mode} label scan ${short} running — you can close this window`);
       setDepotButtons(true);
+      if (cancelScanBtn) { cancelScanBtn.hidden = false; cancelScanBtn.disabled = job.cancelRequested; cancelScanBtn.dataset.jobId = job.id; }
       return;
     }
     hideProgress();
     setDepotButtons(false);
+    if (cancelScanBtn) cancelScanBtn.hidden = true;
     const at = new Date(job.updatedAt).toLocaleTimeString();
     setDepotStatus(job.state === 'done' ? 'done' : 'error', `${mode} label scan ${short} (${at}): ${job.summary ?? job.state}`);
     if (shownJob !== job.id) {
       shownJob = job.id;
       for (const line of String(job.details ?? '').split('\n').filter(Boolean)) log.info(line);
+      // Moves whose result is unknown must be checked in Drive before any re-run.
+      for (const item of (job.items ?? []).filter(entry => entry.state === 'uncertain')) {
+        log.warn(`Check in Drive: ${item.to}`);
+      }
     }
     refreshRetryButton().catch(() => {});
   }
@@ -250,6 +258,18 @@ export function initDepotFlow({
       renderLabelJob(job);
     })
     .catch((err) => log.fail(`Cannot load label scan state — ${safeErrorMessage(err, 'Depot operation failed')}`));
+
+  cancelScanBtn?.addEventListener('click', async () => {
+    cancelScanBtn.disabled = true;
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'label-scan-cancel', jobId: cancelScanBtn.dataset.jobId });
+      if (response?.reason) throw new Error(response.reason);
+      log.warn('Cancel requested — no new photos will start; finished moves are kept');
+    } catch (err) {
+      cancelScanBtn.disabled = false;
+      log.fail(safeErrorMessage(err, 'Cancel failed'));
+    }
+  });
 
   scanDriveBtn.addEventListener('click', async () => {
     const dryRun = dryRunToggle.checked;

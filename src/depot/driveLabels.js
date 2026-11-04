@@ -120,7 +120,7 @@ async function moveAndRename(fileId, fromId, toId, name, token, signal) {
  * @param {(image: unknown) => Promise<unknown[]>} options.readCodes
  */
 export async function processDriveLabels({
-  folderInput, token, verify, dryRun, onProgress, decodePhoto, readCodes, signal, listLimits,
+  folderInput, token, verify, dryRun, onProgress, decodePhoto, readCodes, signal, listLimits, journal,
 }) {
   const rootId = parseFolderId(folderInput);
   const limits = listingLimits(listLimits);
@@ -187,7 +187,26 @@ export async function processDriveLabels({
       if (clash.length) {
         throw Object.assign(new Error('Target name already exists in the month folder; left untouched'), { code: 'name-collision' });
       }
-      return moveAndRename(photo.id, rootId, folder.id, name, token, signal);
+      const note = state => { try { journal?.({ fileId: photo.id, to: `${folder.path}/${name}`, state }); } catch { /* journal must not stop work */ } };
+      note('applying');
+      try {
+        await moveAndRename(photo.id, rootId, folder.id, name, token, signal);
+      } catch (err) {
+        if (err?.code === 'uncertain-write') {
+          // The PATCH may have landed: trust Drive, not the lost response.
+          const after = await driveGet(`files/${photo.id}?fields=id,name,parents,trashed`, token, signal).catch(() => null);
+          if (record(after) && after.name === name && after.trashed === false && Array.isArray(after.parents)
+              && after.parents.length === 1 && after.parents[0] === folder.id) {
+            note('applied');
+            return;
+          }
+          note('uncertain');
+        } else {
+          note('failed');
+        }
+        throw err;
+      }
+      note('applied');
     },
   });
   // processLabelBatch returns exactly one entry per photo, in order.

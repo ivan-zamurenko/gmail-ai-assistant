@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "task_id": "S04-04",
+  "outcome": "passed",
+  "scope": "Journal of Drive moves, cancel, and reconcile of lost PATCH responses for the popup label scan job.",
+  "base_sha": "4ec81b0",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/labelScanJob.test.js test/depot/driveLabels.test.js",
+      "exit_code": 0,
+      "result": "17/17 incl. journal/interrupt/cancel and lost-PATCH reconcile",
+      "boundary": "synthetic fakes",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages, 276/276",
+      "boundary": "local",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Owner asked for fewer tests: only risk tests added (no mutation/characterization runs).",
+    "Criterion 1 already met by S04-03 (one active job, shared serial queue).",
+    "Versions: extension 6.3.0.108, root 1.1.79."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "src/queue/labelScanJob.js",
+    "src/background/labelScanRoutes.js",
+    "src/background/background.js",
+    "src/depot/driveLabels.js",
+    "src/depot/driveScanner.js",
+    "src/queue/barcodeExecutor.js",
+    "src/offscreen/offscreen.js",
+    "src/popup/depotFlow.js",
+    "src/popup/popup.js",
+    "src/popup/popup.html",
+    "test/queue/labelScanJob.test.js",
+    "test/depot/driveLabels.test.js",
+    "test/queue/listener.test.mjs",
+    "docs/drive-contract.md",
+    "roadmap/tasks/S04-04.md"
+  ],
+  "untested": [
+    "Real Chrome cancel timing and popup button",
+    "Real Drive behaviour on a lost PATCH"
+  ],
+  "residual_risk": [
+    "Cancel takes effect at the next Drive request; a move already in flight completes or becomes uncertain."
+  ],
+  "blocker": null,
+  "next_step": "S04-05 needs G_TEST_ACCOUNTS/G_PRIVACY (test Drive folder).",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit"
+  },
+  "external_effects": []
+}

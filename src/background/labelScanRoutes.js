@@ -8,8 +8,8 @@
  */
 
 import {
-  LABEL_SCAN_JOB_KEY, applyFinish, applyProgress, createLabelScanJob, interruptActive,
-  isActive, markAccepted, parseStart,
+  LABEL_SCAN_JOB_KEY, applyFinish, applyItem, applyProgress, createLabelScanJob, interruptActive,
+  isActive, markAccepted, parseStart, requestCancel,
 } from '../queue/labelScanJob.js';
 
 const UNAVAILABLE = 'Label scan runner unavailable — nothing was changed';
@@ -69,6 +69,14 @@ export function createLabelScanRoutes({ storage, ensureOffscreen, sendToRunner, 
   return {
     start,
     progress: msg => update(current => applyProgress(current, msg, now())).then(() => ({ ok: true })),
+    item: msg => update(current => applyItem(current, msg, now())).then(() => ({ ok: true })),
+    // Cancel stops new work only; what was already done stays recorded.
+    cancel: async msg => {
+      const job = await update(current => requestCancel(current, msg?.jobId, now()));
+      if (!job?.cancelRequested || job.id !== msg?.jobId) return { reason: 'No running label scan to cancel' };
+      await sendToRunner({ type: 'label-scan-cancel-run', jobId: job.id }).catch(() => {});
+      return { ok: true };
+    },
     finish: msg => update(current => applyFinish(current, msg, now())).then(() => ({ ok: true })),
     boot: () => update(current => interruptActive(current, now(), { orphaned: orphaned(current) })).then(() => ({ ok: true })),
   };

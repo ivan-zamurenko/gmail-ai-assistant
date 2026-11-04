@@ -91,6 +91,8 @@ export async function executeBarcodeTask(task, ports = {}) {
       verify: verifier.verify,
       dryRun,
       onProgress: progress,
+      signal: ports.signal,
+      journal: ports.journal,
     });
   } catch (err) {
     if (err.code === 'unauthenticated') {

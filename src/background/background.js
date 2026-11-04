@@ -102,6 +102,8 @@ const labelScan = createLabelScanRoutes({
 const LABEL_SCAN = {
   'label-scan-start': (msg) => labelScan.start(msg),
   'label-scan-progress': (msg) => labelScan.progress(msg),
+  'label-scan-item': (msg) => labelScan.item(msg),
+  'label-scan-cancel': (msg) => labelScan.cancel(msg),
   'label-scan-finish': (msg) => labelScan.finish(msg),
   'label-scan-boot': () => labelScan.boot(),
 };

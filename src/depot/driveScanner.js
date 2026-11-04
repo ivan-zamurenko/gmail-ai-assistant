@@ -42,7 +42,7 @@ function blobToDataUrl(blob) {
  * @returns {Promise<Array<{ from, to: string|null, number: string|null,
  *                           contested: boolean, error: string|null }>>}
  */
-export function processLabels({ folderInput, token, verify, dryRun, onProgress, signal }) {
+export function processLabels({ folderInput, token, verify, dryRun, onProgress, signal, journal }) {
   return processDriveLabels({
     folderInput,
     token,
@@ -50,6 +50,7 @@ export function processLabels({ folderInput, token, verify, dryRun, onProgress, 
     dryRun,
     onProgress,
     signal,
+    journal,
     decodePhoto: async (blob) => loadImage(await blobToDataUrl(blob)),
     readCodes: readBarcodesFastFirst,
   });

@@ -167,8 +167,12 @@ async function handle(db, id) {
 
 // ── Popup label scan job (S04-03) ──────────────────────────────────────────────
 // Same executor and same serial queue as Discord, so the two never run at once.
+const labelScanControllers = new Map();
+
 async function runLabelScan(jobId, dryRun) {
   const started = Date.now();
+  const controller = labelScanControllers.get(jobId) ?? new globalThis.AbortController();
+  labelScanControllers.set(jobId, controller);
   const send = (message) => chrome.runtime.sendMessage({ ...message, jobId }).catch(() => {});
   const progress = createTaskProgressReporter((value) => send({
     type: 'label-scan-progress', stage: value.stage, current: value.current, total: value.total,
@@ -178,21 +182,36 @@ async function runLabelScan(jobId, dryRun) {
       schemaVersion: TASK_SCHEMA_VERSION,
       command: COMMANDS.RESCHEDULE,
       args: { mode: RESCHEDULE_MODE.BARCODES, dryRun },
-    }, barcodePorts((current, total, stage) => progress.push(current, total, stage, Date.now() - started)));
+    }, {
+      ...barcodePorts((current, total, stage) => progress.push(current, total, stage, Date.now() - started)),
+      signal: controller.signal,
+      journal: (item) => { void send({ type: 'label-scan-item', ...item }); },
+    });
     await progress.flush();
     await send({ type: 'label-scan-finish', status: result.status, summary: result.summary, details: result.details });
   } catch (err) {
     await progress.flush().catch(() => {});
     await send({ type: 'label-scan-finish', status: STATUS.ERROR, summary: safeErrorMessage(err, 'Label scan failed') });
+  } finally {
+    labelScanControllers.delete(jobId);
   }
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg?.type !== 'label-scan-run') return;
+  if (msg?.type !== 'label-scan-run' && msg?.type !== 'label-scan-cancel-run') return;
   const context = {
     runtimeId: chrome.runtime.id,
     workerUrl: chrome.runtime.getURL('src/background/background.js'),
   };
+  if (msg.type === 'label-scan-cancel-run') {
+    if (!authorizeSender(msg.type, sender, context)) { sendResponse({ ok: false }); return; }
+    // A queued job is aborted before it starts; a running one before its next photo.
+    const controller = labelScanControllers.get(msg.jobId) ?? new globalThis.AbortController();
+    labelScanControllers.set(msg.jobId, controller);
+    controller.abort();
+    sendResponse({ ok: true });
+    return;
+  }
   if (!authorizeSender(msg.type, sender, context) || typeof msg.jobId !== 'string'
       || !/^[A-Za-z0-9-]{1,64}$/.test(msg.jobId) || typeof msg.dryRun !== 'boolean') {
     sendResponse({ accepted: false });

@@ -71,8 +71,11 @@ test('one-off build emits every manifest entry point and console helpers', async
   assert.equal(built.key, source.key, 'extension identity must not change');
   assert.equal(built.version, source.version);
   assert.deepEqual(built.oauth2.scopes, source.oauth2.scopes);
-  assert.ok(built.oauth2.scopes.includes('https://www.googleapis.com/auth/gmail.readonly'));
-  assert.ok(!built.oauth2.scopes.includes('https://www.googleapis.com/auth/gmail.modify'));
+  // Owner 2026-11-04 (S05-05): drafts + labels need gmail.modify; nothing broader.
+  assert.ok(built.oauth2.scopes.includes('https://www.googleapis.com/auth/gmail.modify'));
+  for (const broader of ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.send']) {
+    assert.ok(!built.oauth2.scopes.includes(broader), broader);
+  }
 
   const required = [
     built.background.service_worker,

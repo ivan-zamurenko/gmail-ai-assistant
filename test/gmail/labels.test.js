@@ -44,10 +44,10 @@ test('listByLabel enumerates unique ids across pages and distinguishes an empty 
   assert.deepEqual(net.unused(), []);
 });
 
-test('label mutations remain unavailable until the approved workflow exists', async (t) => {
+test('label mutations require the gmail.modify permission', async (t) => {
   const chrome = useChrome(t);
   const net = useFetch(t, []);
-  await assert.rejects(moveLabels('msg-syn-001', { add: ['Label_SYN_2'] }), /not available/);
+  await assert.rejects(moveLabels('msg-syn-001', { add: ['Label_SYN_2'] }), /permission is missing/);
   assert.deepEqual(net.calls, []);
   assert.deepEqual(chrome.tokenRequests, []);
 });

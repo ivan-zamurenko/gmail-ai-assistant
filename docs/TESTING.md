@@ -551,6 +551,15 @@ test/
   решту batch.
 - Усі відповіді та ідентифікатори синтетичні; живий depot не викликається.
 
+
+**Preview separates eligible, skipped, needs-review and failed parcels (S03-04)**
+
+- Чотири синтетичні dry-run: CAD → `CHANGE_DATE`, Goods Held → `SKIP`, невідома
+  подія → `REVIEW`, збій читання → `ERROR`; лічильники не змішуються.
+- Жодного читання форми, Save чи logCall; план має дату, версії календаря й policy,
+  ідентичність серії та `checkedAt`; session і текст помилки не потрапляють у результат.
+- REVIEW лишається в retry (`remainingRecoveryTargets`). `executor.test.js` перевіряє
+  «Перевірка: N» окремо від «Помилки: N» у preview і live підсумках Discord.
 ### `test/depot/lookup.test.js`
 
 **Lookup requires the zero marker before searching a legacy eight-digit number**

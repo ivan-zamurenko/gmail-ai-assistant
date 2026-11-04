@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "task_id": "S03-04",
+  "outcome": "passed",
+  "scope": "Full non-mutating depot preview: per-item outcome classes, plan freshness fields, popup/Discord summaries. Owner-approved REVIEW/ERROR split and freshness fields.",
+  "base_sha": "7c44c29",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js",
+      "exit_code": 1,
+      "result": "2 failed: REVIEW mapped to ERROR; preview lacked review counter, policyVersion and checkedAt",
+      "boundary": "local checkout; synthetic depot pages and chrome fakes; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/executor.test.js",
+      "exit_code": 1,
+      "result": "Discord preview/live summaries had no separate 'Перевірка' count",
+      "boundary": "local checkout; synthetic depot pages and chrome fakes; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/ test/queue/",
+      "exit_code": 0,
+      "result": "115/115",
+      "boundary": "local checkout; synthetic depot pages and chrome fakes; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages: lint, 238/238 tests, build, dist artifacts, docs, diff-check",
+      "boundary": "local checkout; synthetic depot pages and chrome fakes; network guard; no live depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "manual",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "code-review subagent on the uncommitted diff",
+      "exit_code": null,
+      "result": "ACCEPT: no findings; retry keeps REVIEW, bot does not parse actions, counts add up, live recheck unchanged, injected function self-contained",
+      "boundary": "static review + npm test",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Most card criteria were already met by S03-02/S03-03 (dry-run reads detail+history, no form/save/logCall, apply re-reads and RECHECKs).",
+    "Owner 2026-11-04: show needs-review separately from errors in popup and Discord; add checkedAt and policyVersion.",
+    "policyVersion 'IE-reschedule-2026-11-04' lives inside depotMain and must be bumped when classify() rules change.",
+    "Two existing full-shape tests gained review:0/checkedAt; the ambiguous-evidence test now expects REVIEW and additionally asserts it stays recoverable. No expectation weakened.",
+    "No durable preview id / approval protocol introduced (left to S03-05/S09-09).",
+    "Versions: extension 6.3.0.99, root 1.1.67; bot unchanged 0.2.29."
+  ],
+  "gates": [],
+  "changed_paths": [
+    "src/depot/depotScript.js",
+    "src/popup/depotFlow.js",
+    "src/queue/executor.js",
+    "src/queue/barcodeExecutor.js",
+    "test/depot/depotScript.test.js",
+    "test/queue/executor.test.js",
+    "docs/depot-contract.md",
+    "docs/TESTING.md",
+    "roadmap/tasks/S03-04.md",
+    "manifest.json",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Live depot dry-run on the work PC with the new summary",
+    "Popup rendering in real Chrome",
+    "Discord message appearance with the extra counter"
+  ],
+  "residual_risk": [
+    "policyVersion is a manual label; a future classify() change without bumping it would show a stale version."
+  ],
+  "blocker": null,
+  "next_step": "Owner: update extension to 6.3.0.99 and run one dry-run preview; next card S03-05.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

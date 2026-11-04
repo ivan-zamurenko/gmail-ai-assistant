@@ -66,12 +66,12 @@ export function initDepotFlow({
 
   function showDepotResult(result) {
     if (result.dryRun) {
-      setDepotStatus('done', `Dry run: checked ${result.count} consignments | Eligible: ${result.eligible} | Skipped: ${result.skipped} | Errors: ${result.errors} | ${result.date} (${result.calendarTimeZone}; ${result.calendarVersion})`);
+      setDepotStatus('done', `Dry run: checked ${result.count} consignments | Eligible: ${result.eligible} | Skipped: ${result.skipped} | Review: ${result.review ?? 0} | Errors: ${result.errors} | ${result.date} (${result.calendarTimeZone}; ${result.calendarVersion}; ${result.policyVersion})`);
     } else if (result.warning) {
       setDepotStatus('done', result.warning);
     } else {
       setDepotStatus('done',
-        `Done — Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`
+        `Done — Changed: ${result.changed} | Skipped: ${result.skipped} | Review: ${result.review ?? 0} | Errors: ${result.errors}`
       );
     }
     for (const entry of (result.results ?? []).slice(0, 25)) {
@@ -198,9 +198,9 @@ export function initDepotFlow({
       return ` | Reschedule failed | Retry saved: ${remaining.length}`;
     }
     if (res.dryRun) {
-      log.info(`Dry run — checked ${res.count} | Eligible: ${res.eligible} | Skipped: ${res.skipped} | Errors: ${res.errors} | ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})`);
+      log.info(`Dry run — checked ${res.count} | Eligible: ${res.eligible} | Skipped: ${res.skipped} | Review: ${res.review ?? 0} | Errors: ${res.errors} | ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion}; ${res.policyVersion})`);
       for (const entry of (res.results ?? []).slice(0, 25)) log.info(`${entry.consNumber} — ${entry.action}: ${entry.reason ?? ''}`);
-      return ` | Would reschedule ${res.eligible} | Errors: ${res.errors}`;
+      return ` | Would reschedule ${res.eligible} | Review: ${res.review ?? 0} | Errors: ${res.errors}`;
     }
     if (res.warning) {
       log.warn(res.warning);
@@ -209,15 +209,18 @@ export function initDepotFlow({
 
     const errors = (res.results ?? []).filter(entry => entry.action === 'ERROR');
     const skipped = (res.results ?? []).filter(entry => entry.action === 'SKIP');
+    const review = (res.results ?? []).filter(entry => entry.action === 'REVIEW');
     for (const entry of errors.slice(0, 20)) log.fail(`${entry.consNumber} — reschedule failed`);
     if (errors.length > 20) log.fail(`...and ${errors.length - 20} more failed parcel(s)`);
+    for (const entry of review.slice(0, 20)) log.warn(`${entry.consNumber} — needs review (${entry.reason ?? 'manual review required'})`);
+    if (review.length > 20) log.warn(`...and ${review.length - 20} more parcel(s) need review`);
     for (const entry of skipped.slice(0, 20)) log.warn(`${entry.consNumber} — skipped (${entry.status})`);
     if (skipped.length > 20) log.warn(`...and ${skipped.length - 20} more skipped parcel(s)`);
 
     const remaining = await applyRecoveryResult(chrome.storage.local, res);
     await refreshRetryButton();
-    log.info(`Reschedule — Changed: ${res.changed} | Skipped: ${res.skipped} | Errors: ${res.errors}`);
-    if (remaining.length) log.warn(`${remaining.length} failed parcel(s) saved for retry`);
+    log.info(`Reschedule — Changed: ${res.changed} | Skipped: ${res.skipped} | Review: ${res.review ?? 0} | Errors: ${res.errors}`);
+    if (remaining.length) log.warn(`${remaining.length} failed or review parcel(s) saved for retry`);
     return ` | Rescheduled ${res.changed}`
       + (remaining.length ? ` | Retry saved: ${remaining.length}` : '');
   }

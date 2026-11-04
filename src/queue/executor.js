@@ -33,7 +33,7 @@ import { loadConfig }      from '../config/config.js';
 const done  = (summary, details) => ({ status: STATUS.DONE,  summary, ...(typeof details === 'object' ? details : { details }) });
 const error = (summary)          => ({ status: STATUS.ERROR, summary });
 
-const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
+const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', REVIEW: '⚠️', ERROR: '❌' };
 const config = loadConfig();
 
 async function findDepotTabs() {
@@ -67,9 +67,9 @@ function summarize(res) {
   // checked before the dry-run line that reads res.count.
   if (res.warning) return res.warning;
   if (res.dryRun)  return `Dry run: перевірено ${res.count} серій` + (Number.isInteger(res.eligible)
-    ? ` | Дозволено: ${res.eligible} | Пропущено: ${res.skipped} | Помилки: ${res.errors}` : '')
+    ? ` | Дозволено: ${res.eligible} | Пропущено: ${res.skipped} | Перевірка: ${res.review ?? 0} | Помилки: ${res.errors}` : '')
     + (res.date ? ` | Дата: ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})` : '');
-  return `Готово — Змінено: ${res.changed} | Пропущено: ${res.skipped} | Помилки: ${res.errors}`;
+  return `Готово — Змінено: ${res.changed} | Пропущено: ${res.skipped} | Перевірка: ${res.review ?? 0} | Помилки: ${res.errors}`;
 }
 
 /**

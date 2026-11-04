@@ -43,9 +43,19 @@ G_CALENDAR определяет timezone depot, cut-off, нерабочие да
 
 ## 5. Полноценный preview
 
-Текущий CAD Dry Run возвращает количество и список packages после фильтра route, но не проходит detail/classify. Следовательно, «would be processed» не равно «дата будет изменена у всех». Целевой preview показывает причины по каждому parcel, старую и целевую дату, источники фактов и предупреждения.
+Історично (до S03-03/S03-04) CAD Dry Run повертав кількість і список packages після фільтра route без detail/classify. Следовательно, «would be processed» не равно «дата будет изменена у всех». Целевой preview показывает причины по каждому parcel, старую и целевую дату, источники фактов и предупреждения.
 
 Ни logCall, ни reschedule во время preview не выполняются. Читающий поиск через POST может входить в preview только после подтверждения, что endpoint не изменяет бизнес-данные. Повтор после изменения status/session должен обновить preview.
+
+**Реалізовано (S03-04, 2026-11-04):** dry-run читає картку й Scanning History кожної
+серії (CHECK) і не завантажує форму, не робить Save/logCall. Кожен результат має
+`action`: `CHANGE_DATE` (дозволено), `SKIP` (відмова за правилами), `REVIEW`
+(неоднозначна історія — вирішує людина), `ERROR` (збій читання); окремі лічильники
+`eligible/skipped/review/errors`, `count` — лише кількість перевірених серій. План
+містить `consNumber/consId`, `date`, `calendarVersion`, `policyVersion` і `checkedAt`
+кожної серії, без session. Preview — не дозвіл: live заново читає все й робить
+RECHECK перед Save. REVIEW і ERROR лишаються в same-day retry. Durable preview ID
+для Discord-підтвердження не введено (S03-05/S09-09).
 
 ## 6. Формирование и подтверждение записи
 

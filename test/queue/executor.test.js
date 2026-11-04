@@ -439,3 +439,39 @@ test('find projection bounds optional values and excludes internal identity meta
   source = { ...source, scans: Array(1001).fill(oversizedScan) };
   assert.equal((await executeTask(task)).status, 'error', 'oversized history cannot silently lose latest or parcel counts');
 });
+
+test('reschedule summaries count needs-review separately from errors', async (t) => {
+  const originalChrome = globalThis.chrome;
+  const row = (action, reason) => ({ consNumber: '123456789', consId: '7654321', status: 'PENDING', action, reason });
+  let response;
+  globalThis.chrome = {
+    tabs: {
+      query: async () => [{ id: 7, url: 'http://synthetic.interlink.local/home' }],
+      update: async () => ({}),
+    },
+    scripting: { executeScript: async () => [{ result: response }] },
+  };
+  t.after(() => {
+    if (originalChrome === undefined) delete globalThis.chrome;
+    else globalThis.chrome = originalChrome;
+  });
+  const results = [
+    row('CHANGE_DATE', 'CAD today; parcel remains in depot'),
+    row('REVIEW', 'Unknown latest scan; manual review required'),
+    row('ERROR', 'Scan history unavailable or malformed'),
+  ];
+
+  response = { dryRun: true, count: 3, eligible: 1, changed: 0, skipped: 0, review: 1, errors: 1, results };
+  const preview = await executeTask({
+    schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'all', dryRun: true },
+  });
+  assert.match(preview.summary, /Дозволено: 1 \| Пропущено: 0 \| Перевірка: 1 \| Помилки: 1/);
+  assert.match(preview.details, /⚠️ REVIEW/);
+  assert.match(preview.details, /❌ ERROR/);
+
+  response = { changed: 1, skipped: 0, review: 1, errors: 1, results };
+  const live = await executeTask({
+    schemaVersion: TASK_SCHEMA_VERSION, command: 'reschedule', args: { mode: 'all', dryRun: false },
+  });
+  assert.match(live.summary, /Змінено: 1 \| Пропущено: 0 \| Перевірка: 1 \| Помилки: 1/);
+});

@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import { depotMain as injectedDepotMain } from '../../src/depot/depotScript.js';
 
 import { prepareDepotArgs, irishDay } from '../../shared/depotCalendar.js';
+import { remainingRecoveryTargets } from '../../src/depot/rescheduleRecovery.js';
 const depotMain = args => injectedDepotMain(prepareDepotArgs(args));
 const RealDate = Date;
 beforeEach(() => { globalThis.Date = class extends RealDate {
@@ -270,6 +271,7 @@ test('CAD and label targets share the same PENDING reschedule rules', async () =
   const expected = {
     changed: 1,
     skipped: 0,
+    review: 0,
     errors: 0,
     results: [{
       consNumber: '123456789',
@@ -277,6 +279,7 @@ test('CAD and label targets share the same PENDING reschedule rules', async () =
       status: 'PENDING',
       action: 'CHANGE_DATE',
       reason: 'CAD today; parcel remains in depot',
+      checkedAt: '2026-11-03T12:00:00.000Z',
     }],
   };
 
@@ -292,6 +295,7 @@ test('GOODS HELD without qualifying notes never reaches reschedule', async () =>
   assert.deepEqual(labels.result, {
     changed: 0,
     skipped: 1,
+    review: 0,
     errors: 0,
     results: [{
       consNumber: '123456789',
@@ -299,6 +303,7 @@ test('GOODS HELD without qualifying notes never reaches reschedule', async () =>
       status: 'GOODS HELD',
       action: 'SKIP',
       reason: 'No confirmed delivery-date change to today',
+      checkedAt: '2026-11-03T12:00:00.000Z',
     }],
   });
   assert.equal(labels.pendingReads, 0);
@@ -537,7 +542,10 @@ test('missing or conflicting scan evidence refuses writes; changed evidence is c
     const result = await runReschedule('labels', { scans, logCallEnabled: true });
     assert.equal(result.saveWrites, 0);
     assert.equal(result.logWrites, 0);
-    assert.equal(result.result.results[0].action, 'ERROR', 'ambiguous evidence remains recoverable for review');
+    assert.equal(result.result.results[0].action, 'REVIEW', 'ambiguous evidence goes to a human');
+    assert.equal(result.result.review, 1);
+    assert.equal(result.result.errors, 0);
+    assert.equal(remainingRecoveryTargets(result.result.results, result.result).length, 1, 'review stays recoverable');
   }
   for (const identity of [{ detailNumber: '987654321' }, { detailId: '999' }, { detailNumber: '' }]) {
     const mismatched = await runReschedule('labels', { ...identity, logCallEnabled: true });
@@ -552,4 +560,39 @@ test('missing or conflicting scan evidence refuses writes; changed evidence is c
     assert.equal(changed.saveWrites, 0);
     assert.equal(changed.result.errors, 1);
   }
+});
+
+test('preview separates eligible, skipped, needs-review and failed parcels without any write', async () => {
+  const cases = {
+    eligible: await runReschedule('labels', { dryRun: true, scans: [scan('1', 'CAD scan')] }),
+    skipped: await runReschedule('labels', { dryRun: true, status: 'GOODS HELD' }),
+    review: await runReschedule('labels', { dryRun: true, scans: [scan('1', 'New unknown depot event')] }),
+    failed: await runReschedule('labels', { dryRun: true, fetchError: 'synthetic outage' }),
+  };
+  const expected = {
+    eligible: { action: 'CHANGE_DATE', eligible: 1, skipped: 0, review: 0, errors: 0 },
+    skipped: { action: 'SKIP', eligible: 0, skipped: 1, review: 0, errors: 0 },
+    review: { action: 'REVIEW', eligible: 0, skipped: 0, review: 1, errors: 0 },
+    failed: { action: 'ERROR', eligible: 0, skipped: 0, review: 0, errors: 1 },
+  };
+  for (const [name, run] of Object.entries(cases)) {
+    const { action, ...counts } = expected[name];
+    const { result } = run;
+    assert.equal(result.results[0].action, action, name);
+    assert.deepEqual(
+      { eligible: result.eligible, skipped: result.skipped, review: result.review, errors: result.errors },
+      counts, name);
+    assert.equal(result.changed, 0, name);
+    assert.equal(run.rescheduleReads + run.saveWrites + run.logWrites, 0, `${name}: no form, save or log call`);
+    // Plan freshness: the proposal says which rules and when each parcel was read.
+    assert.equal(result.dryRun, true);
+    assert.equal(result.date, '04/11/2026');
+    assert.equal(result.calendarVersion, 'IE-BPFI-2026-2027-v1');
+    assert.match(result.policyVersion, /^IE-reschedule-\d{4}-\d{2}-\d{2}$/);
+    assert.equal(result.results[0].consNumber, '123456789');
+    assert.equal(result.results[0].consId, '7654321');
+    if (name !== 'failed') assert.equal(result.results[0].checkedAt, '2026-11-03T12:00:00.000Z', name);
+    assert.doesNotMatch(JSON.stringify(result), /session=|synthetic outage/);
+  }
+  assert.match(JSON.stringify(cases.review.diagnostics), /DONE.*Review: 1.*Errors: 0/);
 });

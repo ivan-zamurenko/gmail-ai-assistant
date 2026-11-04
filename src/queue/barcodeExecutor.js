@@ -16,7 +16,7 @@ import {
   COMMANDS, RESCHEDULE_MODE, STATUS, TASK_SCHEMA_VERSION,
 } from './contract.js';
 
-const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
+const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', REVIEW: '⚠️', ERROR: '❌' };
 
 const done = (summary, details) => ({ status: STATUS.DONE, summary, ...(typeof details === 'object' ? details : { details }) });
 const error = (summary, details) => ({ status: STATUS.ERROR, summary, ...(typeof details === 'object' ? details : details ? { details } : {}) });
@@ -129,7 +129,7 @@ export async function executeBarcodeTask(task, ports = {}) {
     return (photoErrors ? error : done)(
       `Dry run — Фото: ${results.length} | Розпізнано: ${recognized}`
       + ` | Reschedule: ${res.eligible ?? res.count ?? 0} | File errors: ${photoErrors}`
-      + (Number.isInteger(res.eligible) ? ` | Skipped: ${res.skipped} | Depot errors: ${res.errors}` : '')
+      + (Number.isInteger(res.eligible) ? ` | Skipped: ${res.skipped} | Review: ${res.review ?? 0} | Depot errors: ${res.errors}` : '')
       + (res.date ? ` | Date: ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})` : ''),
       detailsFor(res),
     );
@@ -139,7 +139,7 @@ export async function executeBarcodeTask(task, ports = {}) {
   return (photoErrors ? error : done)(
     `Фото: ${results.length - photoErrors}/${results.length} | Змінено: ${res.changed}`
     + ` | File errors: ${photoErrors}`
-    + ` | Пропущено: ${res.skipped} | Помилки: ${res.errors}`
+    + ` | Пропущено: ${res.skipped} | Перевірка: ${res.review ?? 0} | Помилки: ${res.errors}`
     + ` | Retry: ${remaining.length}`
     + (unresolved ? ` | Unresolved: ${unresolved}` : ''),
     detailsFor(res),

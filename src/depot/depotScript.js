@@ -46,6 +46,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   // ── Constants ──────────────────────────────────────────────────────────────────
 
+  // Bump whenever classify() rules change, so an old preview is recognisable.
+  const POLICY_VERSION = 'IE-reschedule-2026-11-04';
+
   const STATUS = {
     PENDING:    'PENDING',
     GOODS_HELD: 'GOODS HELD',
@@ -389,7 +392,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   // ── Process loop ───────────────────────────────────────────────────────────────
 
   async function processPackages(packages, arrangedDate) {
-    let changed = 0, skipped = 0, errors = 0, eligible = 0;
+    let changed = 0, skipped = 0, review = 0, errors = 0, eligible = 0;
     const results = [];
     for (const [index, pkg] of packages.entries()) {
       // Owner-approved public con_id on outcomes only. Internal ConsId, raw status,
@@ -404,8 +407,8 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       try {
         progress('CHECK', 'Reading current status and parcel evidence');
         const initial = await readEligibility(pkg);
-        const { status, reason } = initial;
-        const action = initial.action === 'REVIEW' ? 'ERROR' : initial.action;
+        const checkedAt = new Date().toISOString();
+        const { status, reason, action } = initial;
         if (action === 'CHANGE_DATE') {
           if (!dryRun) {
             assertCalendarPlan();
@@ -419,21 +422,21 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
             progress('WOULD_CHANGE', reason);
           }
           eligible++;
-        } else if (action === 'ERROR') {
-          errors++;
+        } else if (action === 'REVIEW') {
+          review++;
           console.warn(`${prefix} REVIEW | ${outcome('⚠️ Потрібна перевірка')} | ${reason}`);
         } else {
           skipped++;
           progress('SKIPPED', reason);
         }
-        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action, reason });
+        results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action, reason, checkedAt });
       } catch (err) {
         console.error(`${prefix} ERROR | ${outcome('❌ Помилка')} | ${safeFailure(err, 'Reschedule failed')}`);
         errors++;
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR', reason: safeFailure(err, 'Reschedule failed') });
       }
     }
-    return { changed, skipped, errors, results, ...(dryRun && { eligible }) };
+    return { changed, skipped, review, errors, results, ...(dryRun && { eligible }) };
   }
 
   // ── Entry point ────────────────────────────────────────────────────────────────
@@ -478,7 +481,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     const result = await processPackages(packages, arrangedDate);
     console.log(`[DPD reschedule] DONE | Checked: ${packages.length} | `
       + (dryRun ? `Eligible: ${result.eligible} | ` : '')
-      + `Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
+      + `Changed: ${result.changed} | Skipped: ${result.skipped} | Review: ${result.review} | Errors: ${result.errors}`);
     if (dryRun) {
       return {
         ...result,
@@ -487,6 +490,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         packages: packages.map(({ consNumber, consId }) => ({ consNumber, consId })),
         date: arrangedDate,
         calendarVersion: plan.version,
+        policyVersion: POLICY_VERSION,
         calendarTimeZone: plan.timeZone,
       };
     }

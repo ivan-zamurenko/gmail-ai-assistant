@@ -1,3 +1,11 @@
+# S03-04 depot preview done — 2026-11-04
+
+Copilot done; no active writer. Preview now separates eligible / skipped / needs-review (REVIEW) / failed (ERROR) with own counters; plan carries date, calendar+policy versions and per-item checkedAt. Popup and Discord show «Перевірка» separately (owner decision). REVIEW stays in same-day retry.
+Root1.1.67/extension6.3.0.99; bot0.2.29 unchanged. RED depotScript 2 + executor 1 → GREEN; full 238/238 PASS7; code-review ACCEPT. No live depot action.
+Next: owner updates extension to 6.3.0.99 and runs one dry-run; next card S03-05 (safe apply of confirmed reschedule).
+
+---
+
 # NearRoute exact column fix ready — 2026-11-04
 
 Root done; no active writer. Owner confirmed tooltip Nearest Route Assigned. Exact scan Route=NearRoute + Type=Nearest Route Assigned now maps to permitted latest-today event; prefix approach rejected/replaced.

@@ -246,3 +246,22 @@ https://bpfi.ie/wp-content/uploads/2025/10/Bank-Holidays-2025-2027-1.pdf
 операцію. Новий рік потребує перевірки джерела й оновлення версії даних.
 Довільні локальні закриття depot не вигадуємо. Погодження не змінює статусну
 policy/logCall і не дозволяє live-пілот. Work-PC недоступний.
+
+## DEPOT-POLICY-2026-11-04 — partial owner clarification
+
+Owner: a consignment-level DELIVERED/OFD does not alone determine eligibility.
+Example: parcels1/2 went OFD then Delivered, parcel3 stayed in depot; the remaining
+physical parcel is the reason to reschedule. Owner describes CAD scan or an
+undelivered parcel physically in depot; absence of Delivered alone is not yet a
+confirmed proof of depot presence. Exact scan evidence/recency still needs clarification.
+GOODS HELD: Notes recording a delivery-date change TO TODAY permits transfer to
+the next working day under the approved Irish calendar. No requirement that the
+note itself was created today or yesterday was stated.
+Owner asks what existing Log Call does; no removal/mandatory/best-effort decision
+yet. Source inspection: it attempts form POST, onclick URL or fallback endpoint;
+no button means no call; response status/body are not checked; thrown errors are
+warned and reschedule continues. This is code behavior, not an observed live failure.
+Current date-save form is addressed by consignment ConsId with no physical parcel
+selector. Do not claim parcel-specific mutation without depot evidence. G_DEPOT_POLICY
+remains pending; runtime unchanged. Manual parcel command retains chosen-date
+semantics unless owner explicitly changes it.

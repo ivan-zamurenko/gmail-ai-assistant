@@ -2879,6 +2879,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-03 | root + calendar_review | S03-02 implemented offline | shared2026–27 Irish calendar, aligned manual gates, dated previews, self-contained injection freshness, recoveryv3 | calendar RED0/2→GREEN4/4; recovery RED3/5→GREEN5/5; reviewer found midnight retry race, regression reproduced then fixed; focused38/38 before added popup check | next final gates/review; no runtime activation.
 
 - 2026-11-03 | root + calendar_review | S03-02 completed offline | Irish calendar shared across validators/callers; bounded coverage, dated previews, mutation freshness, recoveryv3 and retry midnight guards | full230/230 PASS7, independent35/35/review ACCEPT; evidence/S03-02.json | commit/push codex; no restart/merge/work-PC activation.
+
+- 2026-11-04 | owner + root | S03-03 partial policy clarification | remaining physical parcel in depot can justify transfer despite aggregate Delivered/OFD; GH note TO TODAY accepted; Log Call explanation requested | source inspected, no actual failure claimed; decisions DEPOT-POLICY-2026-11-04 | next exact depot-presence scan evidence and Log Call choice; no runtime edits.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4199,6 +4201,25 @@ https://bpfi.ie/wp-content/uploads/2025/10/Bank-Holidays-2025-2027-1.pdf
 операцію. Новий рік потребує перевірки джерела й оновлення версії даних.
 Довільні локальні закриття depot не вигадуємо. Погодження не змінює статусну
 policy/logCall і не дозволяє live-пілот. Work-PC недоступний.
+
+## DEPOT-POLICY-2026-11-04 — partial owner clarification
+
+Owner: a consignment-level DELIVERED/OFD does not alone determine eligibility.
+Example: parcels1/2 went OFD then Delivered, parcel3 stayed in depot; the remaining
+physical parcel is the reason to reschedule. Owner describes CAD scan or an
+undelivered parcel physically in depot; absence of Delivered alone is not yet a
+confirmed proof of depot presence. Exact scan evidence/recency still needs clarification.
+GOODS HELD: Notes recording a delivery-date change TO TODAY permits transfer to
+the next working day under the approved Irish calendar. No requirement that the
+note itself was created today or yesterday was stated.
+Owner asks what existing Log Call does; no removal/mandatory/best-effort decision
+yet. Source inspection: it attempts form POST, onclick URL or fallback endpoint;
+no button means no call; response status/body are not checked; thrown errors are
+warned and reschedule continues. This is code behavior, not an observed live failure.
+Current date-save form is addressed by consignment ConsId with no physical parcel
+selector. Do not claim parcel-specific mutation without depot evidence. G_DEPOT_POLICY
+remains pending; runtime unchanged. Manual parcel command retains chosen-date
+semantics unless owner explicitly changes it.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 

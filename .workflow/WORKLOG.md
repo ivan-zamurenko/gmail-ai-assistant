@@ -195,3 +195,5 @@
 - 2026-11-03 | root + calendar_review | S03-02 implemented offline | shared2026–27 Irish calendar, aligned manual gates, dated previews, self-contained injection freshness, recoveryv3 | calendar RED0/2→GREEN4/4; recovery RED3/5→GREEN5/5; reviewer found midnight retry race, regression reproduced then fixed; focused38/38 before added popup check | next final gates/review; no runtime activation.
 
 - 2026-11-03 | root + calendar_review | S03-02 completed offline | Irish calendar shared across validators/callers; bounded coverage, dated previews, mutation freshness, recoveryv3 and retry midnight guards | full230/230 PASS7, independent35/35/review ACCEPT; evidence/S03-02.json | commit/push codex; no restart/merge/work-PC activation.
+
+- 2026-11-04 | owner + root | S03-03 partial policy clarification | remaining physical parcel in depot can justify transfer despite aggregate Delivered/OFD; GH note TO TODAY accepted; Log Call explanation requested | source inspected, no actual failure claimed; decisions DEPOT-POLICY-2026-11-04 | next exact depot-presence scan evidence and Log Call choice; no runtime edits.

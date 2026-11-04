@@ -118,9 +118,9 @@
       "block_reason": null
     },
     "S04-05": {
-      "status": "todo",
+      "status": "blocked",
       "evidence": null,
-      "block_reason": null
+      "block_reason": "Чекає ручного прогону власника в робочій папці Drive: спершу Dry run (скрін + чи Drive не змінився), потім Live з Cancel."
     },
     "S05-01": {
       "status": "done",
@@ -138,8 +138,8 @@
       "block_reason": null
     },
     "S05-04": {
-      "status": "todo",
-      "evidence": null,
+      "status": "done",
+      "evidence": ".workflow/evidence/S05-04.json",
       "block_reason": null
     },
     "S05-05": {
@@ -305,9 +305,9 @@
       "note": "Option A: popup starts/monitors, offscreen runs the shared barcode executor; no auto-resume; no new permissions"
     },
     "G_GMAIL_POLICY": {
-      "status": "pending",
-      "evidence": null,
-      "note": "OWNER-D01 (2026-10-09): обязательная ручная проверка AI-ответов выбрана; auto-send сейчас вне scope. Остаются scope/exclusions, язык, адресаты/Reply-To, labels и внешний допуск; gate pending."
+      "status": "approved",
+      "evidence": "docs/decisions.md#g-gmail-policy-2026-11-04--owner-approved",
+      "note": "AI-Reply label only; English; sender/Reply-To only; exclusions noreply/automated/no number; facts only; no auto-send"
     },
     "G_DEPOT_POLICY": {
       "status": "approved",

@@ -81,6 +81,8 @@ test/
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
 ├── fixtures/
 │   └── gmail-labels.json    Synthetic Gmail labels/messages ("synthetic": true)
+├── workflow/
+│   └── replyPolicy.test.js  Owner Gmail reply policy (draft/review/blocked)
 ├── gmail/
 │   └── labels.test.js       Gmail label transport: status, auth, exact payload
 ├── helpers/

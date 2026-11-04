@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "task_id": "S05-04",
+  "outcome": "passed",
+  "scope": "Owner Gmail reply policy as a pure module; no sending, no UI wiring.",
+  "base_sha": "2fc8ccd",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/workflow/replyPolicy.test.js test/gmail/",
+      "exit_code": 0,
+      "result": "pass",
+      "boundary": "synthetic messages",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "G_GMAIL_POLICY approved 2026-11-04 (decisions.md).",
+    "Minimal tests per owner: one table test."
+  ],
+  "gates": [
+    "G_GMAIL_POLICY approved"
+  ],
+  "changed_paths": [
+    "src/workflow/replyPolicy.js",
+    "src/gmail/mime.js",
+    "test/workflow/replyPolicy.test.js",
+    "test/gmail/mime.test.js",
+    "docs/decisions.md",
+    "docs/TESTING.md",
+    "roadmap/tasks/S05-04.md"
+  ],
+  "untested": [
+    "Real Gmail headers"
+  ],
+  "residual_risk": [],
+  "blocker": null,
+  "next_step": "S05-05: create the confirmed draft without repeated effects.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit"
+  },
+  "external_effects": []
+}

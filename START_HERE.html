@@ -3077,6 +3077,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | Звіт barcodes — у канал команди, не в DM; лише ненульові групи з emoji, посилки згруповані за результатом; довгий список — файлом. 273/273; bot 0.2.31, root 1.1.77. «Unexpected error» поруч з успішним dry-run — причину уточнюю (ймовірно подвійна обробка після перезапуску бота). | Власнику — перезапустити бота; S04-04. |
 | 2026-11-04 | Copilot | Виконано | S04-04: журнал переміщень Drive у задачі popup, кнопка Cancel (зупиняє нову роботу), звірка втраченого PATCH через Drive. 276/276; ext 6.3.0.108, root 1.1.79; [evidence](evidence/S04-04.json). | S04-05 — потрібні тестова папка/акаунти. |
 | 2026-11-04 | Copilot | Перевірено | S09-11: barcodes відповідає критеріям завдяки S01–S04, S09-04/09; без змін коду. Бот перезапущено на 0.2.32 за проханням власника. | Далі потрібні рішення власника. |
+| 2026-11-04 | Copilot + власник | Виконано | G_GMAIL_POLICY погоджено. S05-04: модуль правил відповіді (чернетка/перевірка/blocked, адресат, англійська, лише факти, без auto-send). S04-05 чекає ручного прогону власника в робочій папці. ext 6.3.0.109, root 1.1.80. | S05-05. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4702,6 +4703,12 @@ Context: the popup&#39;s Scan Drive Labels runs inside the popup document; closi
 
 ### 2026-11-04 — Barcode report in the group channel, grouped and with emoji
 Owner: the final `/reschedule barcodes` report (and its error) is posted in the channel where the command was used, never sent as a DM; this supersedes the earlier DM delivery. The report shows only non-zero counts with emoji and lists parcels grouped by outcome (✅ перенесено / ⚠️ перевірка / ❌ помилки / ⏭️ пропущено). If the text would exceed 2000 characters it is split into several consecutive channel messages; no file is attached (owner). Consignment numbers and depot statuses appear in the channel by owner choice; recipient data is never included.
+
+### 2026-11-04 — S04-05 runs in the working Drive folder (owner risk acceptance)
+Owner has no separate test folder and explicitly chose to run the S04-05 Drive verification in the configured working folder, including live mode, accepting that recognised parcels may be rescheduled in the depot. Order: dry run first, live only after the dry-run result is reviewed. The folder id is not recorded in the repository. This approval covers the S04-05 run only; it is not general approval for other live pilots (S09-12/S08).
+
+### G-GMAIL-POLICY-2026-11-04 — owner approved
+Drafts only, never sent automatically (OWNER-D01 unchanged). Source: only messages the owner labels `AI-Reply`. Language: English. Recipient: the sender, or its single Reply-To address; no CC/reply-all. Ignored without a draft (labelled for review): no-reply/mailer-daemon/postmaster senders, automated mail (Auto-Submitted other than `no`, List-Id, Precedence bulk/list/junk), and messages without a consignment number. A message about several consignments gets one draft with facts for each, flagged for review. The draft states only depot facts (status, scheduled date already in the depot); it never promises a date, compensation or an action, and a draft never grants permission to change a delivery date or labels.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -5839,6 +5846,8 @@ test/
 │   └── rescheduleRecovery.test.js Local retry queue and result reconciliation
 ├── fixtures/
 │   └── gmail-labels.json    Synthetic Gmail labels/messages (&quot;synthetic&quot;: true)
+├── workflow/
+│   └── replyPolicy.test.js  Owner Gmail reply policy (draft/review/blocked)
 ├── gmail/
 │   └── labels.test.js       Gmail label transport: status, auth, exact payload
 ├── helpers/
@@ -10036,6 +10045,10 @@ feat(gmail): [S05-04] enforce approved reply policy
 ```
 
 Evidence: `.workflow/evidence/S05-04.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
+
+## Виконано 2026-11-04
+
+G_GMAIL_POLICY погоджено. Модуль `src/workflow/replyPolicy.js` (draft/review/blocked, адресат, мова, обмеження), заголовки Auto-Submitted/List-Id/Precedence у `src/gmail/mime.js`. Один табличний тест `test/workflow/replyPolicy.test.js`. Підключення до чернетки — S05-05.
 </pre></article>
 <article id="doc-96" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S05-05.md">roadmap/tasks/S05-05.md</a></p><h1>S05-05 — Создавать подтверждённый draft без повторных эффектов</h1><pre class="markdown"># S05-05 — Создавать подтверждённый draft без повторных эффектов
 

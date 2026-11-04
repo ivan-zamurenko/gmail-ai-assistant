@@ -2,6 +2,8 @@
 const HEADER_KEYS = {
   subject: 'subject', from: 'from', 'reply-to': 'replyTo', to: 'to',
   'message-id': 'messageId', 'in-reply-to': 'inReplyTo', references: 'references',
+  // Needed by the reply policy to skip automated mail (G_GMAIL_POLICY).
+  'auto-submitted': 'autoSubmitted', 'list-id': 'listId', precedence: 'precedence',
 };
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const identifier = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,256}$/.test(value);

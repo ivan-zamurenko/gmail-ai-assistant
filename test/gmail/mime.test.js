@@ -32,7 +32,7 @@ test('MIME normalization preserves Unicode, source headers and attachment metada
   assert.deepEqual(result.headers, {
     from: ['Sender <sender@example.invalid>'], replyTo: ['reply@example.invalid'], to: ['operator@example.invalid'],
     messageId: ['<rfc-id@example.invalid>'], subject: ['Where is parcel 123456789?', 'Duplicate header retained for review'],
-    inReplyTo: [], references: [],
+    inReplyTo: [], references: [], autoSubmitted: [], listId: [], precedence: [],
   });
   assert.deepEqual(result.attachments, [{ filename: '', mimeType: 'text/plain', size: 25 }, { filename: 'attachment.txt', mimeType: 'text/plain', size: 500, attachmentId: 'attachment-synthetic' }]);
   assert.equal(normalizeMessage(message(textPart('Plain'))).text, 'Plain');

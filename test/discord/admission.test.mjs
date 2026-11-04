@@ -5,12 +5,13 @@ import { commands } from '../../bot/src/commands.js';
 
 function fixture({ command = 'reschedule', sub = 'all', guild = 'synthetic-guild', admin = true,
   values = {}, options, userId = 'synthetic-actor', queueResult, queueError } = {}) {
-  const calls = { queue: [], todo: [], reply: [], defer: [], edit: [], dm: [] };
+  const calls = { queue: [], todo: [], reply: [], defer: [], edit: [], dm: [], channel: [] };
   const interaction = {
     isChatInputCommand: () => true,
     commandName: command, guildId: guild,
     memberPermissions: { has: () => admin },
     user: { id: userId, send: async value => calls.dm.push(value) },
+    channel: { send: async value => calls.channel.push(value) },
     options: options ?? {
       getSubcommand: () => sub,
       getBoolean: key => values[key] ?? null,
@@ -82,7 +83,7 @@ test('registered depot modes enqueue once with safe defaults and explicit false 
       assert.equal(task.args.dryRun, dryRun ?? true);
       assert.equal(task.requestedBy, 'synthetic-actor');
       assert.equal(h.calls.defer[0].flags, 64);
-      if (option.name === 'barcodes') assert.equal(h.calls.dm.length, 1);
+      if (option.name === 'barcodes') { assert.equal(h.calls.channel.length, 1); assert.equal(h.calls.dm.length, 0); }
     }
   }
   const h = fixture({ command: 'find', values: { con_id: '123456789' } });

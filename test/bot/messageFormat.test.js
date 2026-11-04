@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatRows, formatSummary } from '../../bot/src/messageFormat.js';
+import * as messageFormat from '../../bot/src/messageFormat.js';
+const { formatRows, formatSummary } = messageFormat;
 import { createRescheduleViews } from '../../bot/src/rescheduleViews.js';
 
 const SUMMARY = 'Dry run: перевірено 3 серій | Дозволено: 1 | Пропущено: 0 | Перевірка: 1 | Помилки: 1'
@@ -73,4 +74,19 @@ test('plain command replies are spaced, and fall back to the compact block when 
   const compact = typeof payload === 'string' ? payload : payload.content;
   assert.ok(compact.length <= 2000);
   assert.match(compact, /^❌ Помилка\n```/);
+});
+
+test('final report keeps only non-zero groups, with emoji and parcels grouped by outcome', () => {
+  const summary = 'Dry run — Фото: 4 | Розпізнано: 3 | Reschedule: 0 | File errors: 0 | Skipped: 3 | Review: 0'
+    + ' | Depot errors: 0 | Date: 05/11/2026 (Europe/Dublin; IE-BPFI-2026-2027-v1)';
+  const rows = ['749164969   ⏭️ SKIP (GOODS HELD) — No confirmed delivery-date change to today',
+    '929176034   ⏭️ SKIP (GOODS HELD) — No confirmed delivery-date change to today'];
+  const { formatReport } = messageFormat;
+  assert.equal(formatReport(summary, rows), [
+    '🔎 **Dry run — Фото: 4**', '', '🔍 Розпізнано: 3', '⏭️ Skipped: 3', '🗓️ Date: 05/11/2026',
+    '\u200b',
+    '⏭️ **Пропущено (2)**',
+    '**749164969** · GOODS HELD\n↳ No confirmed delivery-date change to today',
+    '**929176034** · GOODS HELD\n↳ No confirmed delivery-date change to today',
+  ].join('\n'));
 });

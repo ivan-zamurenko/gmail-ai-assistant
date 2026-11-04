@@ -8,7 +8,7 @@ import { createResultRecovery } from './resultRecovery.js';
 import { MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { safeErrorMessage } from './errors.js';
-import { formatRows, formatSummary } from './messageFormat.js';
+import { formatReport, formatRows, formatSummary } from './messageFormat.js';
 import { validateConsignmentNumber, validateFutureWorkday } from './validation.js';
 import { renderBarcodeProgress, shouldPublishBarcodeProgress } from './barcodeProgress.js';
 
@@ -209,15 +209,23 @@ export function createInteractionHandler({
             terminalReceived = true;
             await edits;
             const lines = rescheduleLines(result);
-            await interaction.user.send(lines ? { content: String(result.summary ?? 'Reschedule').slice(0, 500), allowedMentions: { parse: [] }, files: [{ attachment: Buffer.from(lines.join('\n')), name: 'reschedule-results.txt' }] } : resultMessage(result));
+            // Owner: the final report goes to the group channel, never to DMs.
+            // The channel outlives the 15-minute interaction token of long scans.
+            const summary = String(result.summary ?? 'Reschedule').slice(0, 500);
+            const report = lines ? formatReport(summary, lines) : null;
+            const payload = !lines ? resultMessage(result)
+              : report.length <= 2000 ? { content: report, allowedMentions: { parse: [] } }
+                : { content: `${formatSummary(summary)}\n\n📎 Повний список — у файлі.`, allowedMentions: { parse: [] },
+                  files: [{ attachment: Buffer.from(lines.join('\n')), name: 'reschedule-results.txt' }] };
+            await interaction.channel.send(typeof payload === 'string' ? { content: payload, allowedMentions: { parse: [] } } : payload);
             delivered = true;
             await acknowledge(interaction, result);
-            if (!interaction.autoCleanupExpired) await interaction.editReply('✅ Scan Drive Labels завершено — фінальний звіт надіслано в DM.');
+            if (!interaction.autoCleanupExpired) await interaction.editReply('✅ Scan Drive Labels завершено — звіт у каналі.');
           },
           async (err) => {
             await edits;
             const message = `⚠️ Scan Drive Labels: ${safeErrorMessage(err, 'Discord operation failed')}`;
-            await interaction.user.send(message);
+            await interaction.channel.send({ content: message, allowedMentions: { parse: [] } });
             if (!interaction.autoCleanupExpired) await interaction.editReply(message);
           },
         ).catch(async err => {

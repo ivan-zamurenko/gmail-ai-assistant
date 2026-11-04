@@ -169,24 +169,27 @@ test('recovery lists ambiguous results and rechecks button ownership without enq
   assert.equal(f.creates(), 1);
 });
 
-test('barcode DM is the final delivery boundary even if the progress message expires', async () => {
+test('barcode report goes to the channel as the final delivery boundary even if the progress message expires', async () => {
   const f = fixture({ terminal: { parcel: { rescheduleResults: { version: 1, lines: ['first row', 'last row'] } } } });
   const service = f.service();
+  let posted = 0;
   let dm = 0;
   let edits = 0;
   const handler = createInteractionHandler({ cfg: { guildId: actor.guildId }, ...service });
   const request = { ...interaction(async () => { if (++edits > 1) throw new Error('Synthetic expired interaction'); }),
     options: { getSubcommand: () => 'barcodes', getBoolean: () => true },
-    user: { id: actor.requestedBy, send: async payload => {
-      if (dm === 0) {
-        assert.equal(f.documents.size, 1, 'ACK waits for DM send');
-        assert.equal(payload.files[0].attachment.toString(), 'first row\nlast row');
+    user: { id: actor.requestedBy, send: async () => { dm++; } },
+    channel: { send: async payload => {
+      if (posted === 0) {
+        assert.equal(f.documents.size, 1, 'ACK waits for the channel post');
+        assert.match(payload.content, /first row[\s\S]*last row/);
       }
-      dm++;
+      posted++;
     } } };
   await handler(request);
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(dm, 1);
+  assert.equal(posted, 1);
+  assert.equal(dm, 0, 'owner: never DM the report');
   assert.equal(f.documents.size, 0);
   assert.equal(f.creates(), 1);
   const failed = createInteractionHandler({ cfg: { guildId: actor.guildId },
@@ -194,5 +197,6 @@ test('barcode DM is the final delivery boundary even if the progress message exp
   edits = 0;
   await failed(request);
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(dm, 2, 'expired progress must not prevent error DM');
+  assert.equal(posted, 2, 'expired progress must not prevent the error post');
+  assert.equal(dm, 0);
 });

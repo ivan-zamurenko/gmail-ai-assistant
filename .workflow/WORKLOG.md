@@ -222,3 +222,5 @@
 - 2026-11-04 root — analysis/implementation: owner clarified need for per-item extension Console and Discord pagination; actual depot failure unknown. Added bounded v1 result envelope, private snapshot pages/recovery, full barcode DM attachment, safe console mirror. Test-first executor10/11→focused22/22; new view/console tests initially failed missing modules. Reviewer calendar_review read-only; next full gates/review and package.
 
 - 2026-11-04 root — verified visibility follow-up: full236/236 PASS7; reviewer ACCEPT20/20. Review-found JSON byte mismatch reproduced then fixed; existing DM regression proves last-row attachment and ACK-after-send (7/7 DM/views). No live depot execution. Next commit/push, bot activation before work-PC extension6.3.0.93.
+
+- 2026-11-04 root — runtime activated: bot0.2.29 exact-process restart, ClientReady and detached liveness verified; no depot action/registration. Product commit8e4a76a. First push rejected remotely (commit_refs); retry succeeded; product commit pushed to codex. Extension6.3.0.93 still needs owner work-PC installation.

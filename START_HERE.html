@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Reschedule result visibility verified — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Reschedule pagination activated in bot — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,13 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Reschedule result visibility verified — 2026-11-04</h1><pre class="markdown"># Reschedule result visibility verified — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Reschedule pagination activated in bot — 2026-11-04</h1><pre class="markdown"># Reschedule pagination activated in bot — 2026-11-04
+
+Bot0.2.29 restarted after exact old PID/cwd check; ClientReady confirmed and process alive. No command registration/depot replay. Source8e4a76a; full236/236 PASS7 and review ACCEPT. Extension6.3.0.93 artifact /tmp/DPD-Assistance-6.3.0.93.zip requires work-PC installation. First push rejected by GitHub commit_refs failure; retry succeeded; product commit pushed to codex. No active product writer. Original depot failure still needs visible new output.
+
+---
+
+# Reschedule result visibility verified — 2026-11-04
 
 Root writer finishing delivery; reviewer calendar_review ACCEPT independent20/20.
 Root1.1.61/bot0.2.29/extension6.3.0.93. Full236/236 PASS7; DM/views7/7.
@@ -3018,6 +3024,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 root — analysis/implementation: owner clarified need for per-item extension Console and Discord pagination; actual depot failure unknown. Added bounded v1 result envelope, private snapshot pages/recovery, full barcode DM attachment, safe console mirror. Test-first executor10/11→focused22/22; new view/console tests initially failed missing modules. Reviewer calendar_review read-only; next full gates/review and package.
 
 - 2026-11-04 root — verified visibility follow-up: full236/236 PASS7; reviewer ACCEPT20/20. Review-found JSON byte mismatch reproduced then fixed; existing DM regression proves last-row attachment and ACK-after-send (7/7 DM/views). No live depot execution. Next commit/push, bot activation before work-PC extension6.3.0.93.
+
+- 2026-11-04 root — runtime activated: bot0.2.29 exact-process restart, ClientReady and detached liveness verified; no depot action/registration. Product commit8e4a76a. First push rejected remotely (commit_refs); retry succeeded; product commit pushed to codex. Extension6.3.0.93 still needs owner work-PC installation.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 

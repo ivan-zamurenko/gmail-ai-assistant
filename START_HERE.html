@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S03-05 safe apply done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Discord readability done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S03-05 safe apply done — 2026-11-04</h1><pre class="markdown"># S03-05 safe apply done — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Discord readability done — 2026-11-04</h1><pre class="markdown"># Discord readability done — 2026-11-04
+
+Copilot; no active writer. Owner-approved status palette (🟩🟦🟪🟨🟧🟥🩷🟫⬛⬜ + embed colours), emoji field labels and spacer lines in /find; reschedule/plain replies split summaries into labelled lines and show rows as text (code-block fallback over 2000 chars). Data, counts, privacy unchanged.
+Bot0.2.30, root1.1.70; extension6.3.0.101 unchanged. Full 247/247 PASS7; code-review ACCEPT. Bot restart by owner needed to apply (not done by agent).
+Next: owner restarts bot and checks /find and /reschedule dry-run on phone; then S09-09.
+
+---
+
+# S03-05 safe apply done — 2026-11-04
 
 Copilot; no active writer. Owner verified the rearrange form defaults to today; reconcile restored: form already at target date → no POST, SKIP. Lost POST response → «outcome uncertain»; one live run per tab.
 Root1.1.69/extension6.3.0.101; bot0.2.29. Full 242/242 PASS7. No live depot action.
@@ -2962,6 +2970,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | S03-04: preview розділяє Дозволено/Пропущено/Перевірка/Помилки (рішення власника), план має policyVersion і checkedAt; popup і Discord показують «Перевірка» окремо, retry зберігає REVIEW. RED 3 → GREEN; 238/238, review ACCEPT; ext 6.3.0.99, root 1.1.67; [evidence](evidence/S03-04.json). | Власнику — оновити розширення й зробити dry-run; далі S03-05. |
 | 2026-11-04 | Copilot + власник | Заблоковано | S03-05 частково: втрачена відповідь POST → «outcome uncertain», один live-запуск на вкладку, повідомлення видно в popup/Discord. Звірку «дата вже стоїть» прибрано за вибором власника до перевірки реальної форми (ризик мовчазного пропуску). 241/241; ext 6.3.0.100, root 1.1.68; [evidence](evidence/S03-05.json). | Власнику — read-only snippet форми; далі закрити S03-05. |
 | 2026-11-04 | Copilot + власник | Виконано | S03-05 закрито: власник перевірив, що форма за замовчуванням показує сьогоднішню дату; звірку повернуто (дата вже ціль → без POST, SKIP). 242/242; ext 6.3.0.101, root 1.1.69; [evidence](evidence/S03-05.json). | Оновити розширення; далі S09-09. |
+| 2026-11-04 | Copilot + власник | Виконано | Читабельність Discord: палітра статусів (погоджено), емодзі й відступи в /find, підсумки /reschedule рядками з емодзі, рядки посилок текстом замість блоку коду. 247/247, review ACCEPT; bot 0.2.30, root 1.1.70. Бот перезапускає власник. | Перевірити на телефоні; далі S09-09. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4566,6 +4575,9 @@ Owner then confirmed the full tooltip exactly: Nearest Route Assigned. Replaced 
 
 ### 2026-11-04 — Reschedule form date reconcile (S03-05)
 Owner checked the depot rearrange form for a parcel without a same-day change: the arranged-date field shows today&#39;s date. The target is always a later working day, so the default can never equal it. Before RECHECK/POST the extension now skips the POST when the enabled arranged-date already equals the target and reports SKIP «Already arranged for the target date; nothing sent» (retry treats it as completed). Lost POST responses stay «outcome uncertain». No live replay.
+
+### 2026-11-04 — Discord readability and status palette
+Owner asked for bot messages that read comfortably on desktop and phone: more spacing, moderate on-topic emoji, and a colour per kind of parcel status. Approved palette (badge + embed colour): 🟩 Delivered; 🟦 Out for delivery; 🟪 CAD scan / Nearest Route; 🟨 Goods Held; 🟧 plan changed (Optimize For Next Day, Cancelled out for delivery, Redirected, Rescheduled); 🟥 problem (Failed, Carded, Incorrect Address, Undelivered, Return(ed) to depot); 🩷 Pending; 🟫 hub/transit (Received into, Long lengths, In transit, HUB); ⬛ Order received; ⬜ unknown. /find fields get emoji labels and a zero-width spacer line; reschedule/plain replies split the one-line summary into labelled lines and show parcel rows as text instead of a sideways-scrolling code block, falling back to the compact block when the spaced text would exceed 2000 characters. Card language stays English; data, counts and privacy rules unchanged.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -5634,6 +5646,7 @@ test/
 ├── bot/
 │   ├── barcodeProgress.test.js Discord progress rendering and throttling
 │   ├── commands.test.js     Discord command contract
+│   ├── messageFormat.test.js Spaced, emoji-labelled summaries and result rows
 │   ├── render.test.js       Discord parcel-card presentation
 │   └── validation.test.js   Discord depot-command input validation
 ├── depot/
@@ -5697,6 +5710,18 @@ test/
 - Захищає від випадкового видалення або перейменування команди під час рефакторингу.
 - Fixture не потрібен: тест читає справжній command schema з production-коду.
 - Не перевіряє реєстрацію команд у Discord API або permissions у живому guild.
+
+### `test/bot/messageFormat.test.js`
+
+**Bot replies read well on desktop and phone without changing their data**
+
+- Підсумок `A | B: 1 | …` стає заголовком і окремими рядками з емодзі
+  (🟢 Дозволено, ⏭️ Пропущено, ⚠️ Перевірка, ❌ Помилки, 🗓️ Дата).
+- Рядки посилок — текст з номером, дією, статусом і причиною на окремому рядку, без
+  блоку коду; невідомий або ворожий текст екранується (без bold/посилань).
+- Сторінки reschedule і звичайні відповіді не перевищують 2000 символів; задовгий
+  текст повертається до компактного блоку.
+- `render.test.js` перевіряє палітру кольорів статусів і відступи картки `/find`.
 
 ### `test/bot/validation.test.js`
 

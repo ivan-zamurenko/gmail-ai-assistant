@@ -1,3 +1,11 @@
+# Discord readability done — 2026-11-04
+
+Copilot; no active writer. Owner-approved status palette (🟩🟦🟪🟨🟧🟥🩷🟫⬛⬜ + embed colours), emoji field labels and spacer lines in /find; reschedule/plain replies split summaries into labelled lines and show rows as text (code-block fallback over 2000 chars). Data, counts, privacy unchanged.
+Bot0.2.30, root1.1.70; extension6.3.0.101 unchanged. Full 247/247 PASS7; code-review ACCEPT. Bot restart by owner needed to apply (not done by agent).
+Next: owner restarts bot and checks /find and /reschedule dry-run on phone; then S09-09.
+
+---
+
 # S03-05 safe apply done — 2026-11-04
 
 Copilot; no active writer. Owner verified the rearrange form defaults to today; reconcile restored: form already at target date → no POST, SKIP. Lost POST response → «outcome uncertain»; one live run per tab.

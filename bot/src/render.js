@@ -8,14 +8,25 @@
 import { EmbedBuilder, AttachmentBuilder } from 'discord.js';
 import { scanMapImage } from './geo.js';
 
+// One colour per kind of event, checked in order (owner-approved palette).
+const STATUS_STYLES = [
+  [/^delivered\b/, 0x90ee90, '🟩'],                                            // delivered
+  [/goods held/, 0xf1c40f, '🟨'],                                               // held in depot
+  [/fail|carded|incorrect address|return(?:ed)? to depot|undelivered/, 0xe74c3c, '🟥'], // problem
+  [/pending/, 0xff8fcb, '🩷'],
+  [/cancelled out for delivery|optimi[sz]e for next day|redirect|reschedul/, 0xe67e22, '🟧'], // plan changed
+  [/out for delivery/, 0x3498db, '🟦'],                                        // on the van
+  [/\bcad\b|nearest route/, 0x9b59b6, '🟪'],                                   // in a depot bay
+  [/received into|long lengths|in transit|\bhub\b/, 0x8d6e63, '🟫'],             // hub / transit
+  [/order received/, 0x2c3e50, '⬛'],                                           // administrative
+];
 function statusStyle(status) {
   const s = (status || '').toLowerCase();
-  if (/^delivered\b/.test(s)) return { color: 0x90ee90, badge: '🟩' };
-  if (/goods held/.test(s)) return { color: 0xf1c40f, badge: '🟨' };
-  if (/fail|carded|incorrect address|return to depot/.test(s)) return { color: 0xe74c3c, badge: '🟥' };
-  if (/pending/.test(s)) return { color: 0xff8fcb, badge: '🩷' };
-  return { color: 0x95a5a6, badge: '⬜' };
+  const match = STATUS_STYLES.find(([pattern]) => pattern.test(s));
+  return match ? { color: match[1], badge: match[2] } : { color: 0x95a5a6, badge: '⬜' };
 }
+// A zero-width line gives each block room to breathe on desktop and phone.
+const breathe = value => `${value}\n\u200b`;
 const colorFor = status => statusStyle(status).color;
 const badgeFor = status => `${statusStyle(status).badge} **${status}**`;
 const validCoords = point => Number.isFinite(point?.lat) && Math.abs(point.lat) <= 90
@@ -164,26 +175,27 @@ function historyBlock(scans, showParcel, page = 0) {
     const identity = showParcel ? (numberedParcel(s.parcel) ? `P${s.parcel}` : 'Unassigned') : '';
     const bc = onwardBc(s);
     const dateTime = Number.isFinite(stamp(s)) ? `${shortDate(s.date)} ${hms(s.time)}` : 'Unknown time';
-    const context = [identity, route && `Route ${route}`, location, bc && `Onward ${bc}`].filter(Boolean).join(' · ');
+    const context = [identity, route && `🚚 Route ${route}`, location && `📍 ${location}`, bc && `🔁 Onward ${bc}`].filter(Boolean).join(' · ');
     return `**${dateTime}** · ${badgeFor(s.type)}${context ? `\n${context}` : ''}`;
   });
 
   const hidden = Math.max(0, scans.filter((s) => !isNearestRoute(s)).length - (page * MAX_HISTORY + lines.length));
   if (hidden > 0) lines.push(`… +${hidden} ${scans.some(scan => !Number.isFinite(stamp(scan))) ? 'not shown' : 'earlier'}`);
 
-  return lines.join('\n\n') || 'No scan history.';
+  return lines.join('\n\u200b\n') || 'No scan history.';
 }
 
 /** The headline already carries status; this field gives its time and context. */
 function lastEventLine(s) {
   const route = displayRoute(s.route);
   const bc = onwardBc(s);
+  const location = cadLocation(s);
   return [
-    Number.isFinite(stamp(s)) ? `${shortDate(s.date)} ${hms(s.time)}` : 'Time unavailable',
-    route && `Route ${route}`,
-    s.signature && `Signed for by: ${s.signature}`,
-    bc && `Onward barcode: ${bc}`,
-    cadLocation(s),
+    `📅 ${Number.isFinite(stamp(s)) ? `${shortDate(s.date)} ${hms(s.time)}` : 'Time unavailable'}`,
+    route && `🚚 Route ${route}`,
+    s.signature && `✍️ Signed for by: ${s.signature}`,
+    bc && `🔁 Onward barcode: ${bc}`,
+    location && `📍 ${location}`,
   ].filter(Boolean).join('\n');
 }
 
@@ -221,17 +233,17 @@ export async function buildParcelEmbed(parcel, apiKey, { parcelNumber, page = 0 
   if (unknownIdentity) desc.push('Some scans have an unassigned parcel identity; latest status cannot be confirmed.');
   if (invalidTime) desc.push('Some scan timestamps are invalid or missing; latest status cannot be confirmed.');
 
-  const fields = overview ? [] : [{ name: 'Latest event', value: `${lastEventLine(s)}${cadLocation(s) ? '' : '\nDepot position: not recorded in latest scan'}` }];
-  const details = [selected ? `Selected parcel: ${parcelNumber}` : `Parcels in scan history: ${allParcelNumbers.length || 'unknown'}`,
-    parcel.arrangedDate && `Planned delivery: ${parcel.arrangedDate}`, a.depot && `Delivery depot: ${a.depot}`].filter(Boolean);
-  fields.push({ name: 'Parcel details', value: details.join('\n') });
-  if (multi) fields.push({ name: 'Parcels', value: parcelsBlock(parcels) });
+  const fields = overview ? [] : [{ name: '🕒 Latest event', value: breathe(`${lastEventLine(s)}${cadLocation(s) ? '' : '\n📍 Depot position: not recorded in latest scan'}`) }];
+  const details = [selected ? `🔢 Selected parcel: ${parcelNumber}` : `🔢 Parcels in scan history: ${allParcelNumbers.length || 'unknown'}`,
+    parcel.arrangedDate && `🗓️ Planned delivery: ${parcel.arrangedDate}`, a.depot && `🏢 Delivery depot: ${a.depot}`].filter(Boolean);
+  fields.push({ name: '📋 Parcel details', value: breathe(details.join('\n')) });
+  if (multi) fields.push({ name: '📦 Parcels', value: breathe(parcelsBlock(parcels)) });
   const recipientFields = [];
 
   const addressParts = [...new Set([...(a.lines ?? []), a.town, a.county].filter(Boolean))];
-  recipientFields.push({ name: 'Delivery address', value: [consignee, ...addressParts, a.postCode].filter(Boolean).join('\n') || 'Address unavailable' });
+  recipientFields.push({ name: '🏠 Delivery address', value: breathe([consignee, ...addressParts, a.postCode].filter(Boolean).join('\n') || 'Address unavailable') });
   const contact = [a.mobile && `Phone: ${a.mobile}`, a.email].filter(Boolean);
-  if (contact.length) recipientFields.push({ name: 'Contact', value: contact.join('\n') });
+  if (contact.length) recipientFields.push({ name: '📞 Contact', value: breathe(contact.join('\n')) });
   const pageCount = Math.max(1, Math.ceil(scans.length / MAX_HISTORY));
   page = Math.min(Math.max(0, Number.isSafeInteger(page) ? page : 0), pageCount - 1);
   const historyStr = historyBlock(scans, multi || unknownIdentity, page);

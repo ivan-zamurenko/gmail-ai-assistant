@@ -62,6 +62,7 @@ test/
 ├── bot/
 │   ├── barcodeProgress.test.js Discord progress rendering and throttling
 │   ├── commands.test.js     Discord command contract
+│   ├── messageFormat.test.js Spaced, emoji-labelled summaries and result rows
 │   ├── render.test.js       Discord parcel-card presentation
 │   └── validation.test.js   Discord depot-command input validation
 ├── depot/
@@ -125,6 +126,18 @@ test/
 - Захищає від випадкового видалення або перейменування команди під час рефакторингу.
 - Fixture не потрібен: тест читає справжній command schema з production-коду.
 - Не перевіряє реєстрацію команд у Discord API або permissions у живому guild.
+
+### `test/bot/messageFormat.test.js`
+
+**Bot replies read well on desktop and phone without changing their data**
+
+- Підсумок `A | B: 1 | …` стає заголовком і окремими рядками з емодзі
+  (🟢 Дозволено, ⏭️ Пропущено, ⚠️ Перевірка, ❌ Помилки, 🗓️ Дата).
+- Рядки посилок — текст з номером, дією, статусом і причиною на окремому рядку, без
+  блоку коду; невідомий або ворожий текст екранується (без bold/посилань).
+- Сторінки reschedule і звичайні відповіді не перевищують 2000 символів; задовгий
+  текст повертається до компактного блоку.
+- `render.test.js` перевіряє палітру кольорів статусів і відступи картки `/find`.
 
 ### `test/bot/validation.test.js`
 

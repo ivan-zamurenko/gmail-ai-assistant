@@ -8,6 +8,7 @@ import { createResultRecovery } from './resultRecovery.js';
 import { MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { COMMANDS, RESCHEDULE_MODE, STATUS } from './contract.js';
 import { safeErrorMessage } from './errors.js';
+import { formatRows, formatSummary } from './messageFormat.js';
 import { validateConsignmentNumber, validateFutureWorkday } from './validation.js';
 import { renderBarcodeProgress, shouldPublishBarcodeProgress } from './barcodeProgress.js';
 
@@ -326,6 +327,11 @@ export function createInteractionHandler({
   function resultMessage(result) {
     const icon    = result.status === STATUS.CANCELLED ? '⚠️' : result.status === STATUS.ERROR ? '❌' : '✅';
     const summary = result.summary ?? (result.status === STATUS.ERROR ? 'Помилка виконання' : 'Готово');
+    const body = formatSummary(summary);
+    const lead = result.status === STATUS.DONE && !body.startsWith('**') ? '' : `${icon} `;
+    const spaced = `${lead}${body}${result.details ? `\n\u200b\n${formatRows(result.details)}` : ''}`;
+    if (spaced.length <= 2000) return spaced;
+    // Too long once spaced out: fall back to the compact block that always fits.
     const details = result.details ? `\n\`\`\`\n${result.details}\n\`\`\`` : '';
     return `${icon} ${summary}${details}`;
   }

@@ -25,10 +25,10 @@ test('the private parcel card renders full recipient details and CAD location', 
   assert.equal(output.files.length, 0);
   const [, history, recipient] = output.embeds.map((embed) => embed.toJSON());
   const plain = history.description.replaceAll('\u001b', '').replace(/\[[0-9;]*m/g, '');
-  assert.match(recipient.fields.find(field => field.name === 'Delivery address').value, /Jane Doe.*Example Ltd/s);
-  assert.match(recipient.fields.find(field => field.name === 'Contact').value, /0871234567/);
-  assert.match(recipient.fields.find(field => field.name === 'Delivery address').value, /D01AB12/);
-  assert.match(recipient.fields.find(field => field.name === 'Delivery address').value, /1 Main Street/);
+  assert.match(recipient.fields.find(field => field.name === '🏠 Delivery address').value, /Jane Doe.*Example Ltd/s);
+  assert.match(recipient.fields.find(field => field.name === '📞 Contact').value, /0871234567/);
+  assert.match(recipient.fields.find(field => field.name === '🏠 Delivery address').value, /D01AB12/);
+  assert.match(recipient.fields.find(field => field.name === '🏠 Delivery address').value, /1 Main Street/);
   assert.match(plain, /28 Aug 12:00:00.*Received.*cad.*Bay:32 Seq:5/s);
   assert.doesNotMatch(plain, /B32\/#5/);
 });
@@ -117,7 +117,7 @@ test('overview separates parcel summaries from individual paged histories', asyn
  const history=selected.embeds[1].toJSON();
  assert.match(history.title,/PARCEL 1/);assert.match(history.description,/13 Oct/);
  assert.doesNotMatch(history.description,/Delivered|14 Oct|Parcel 2/);
- assert.match(history.description,/\n\n/);assert.match(history.footer.text,/Page 1 of 2/);
+ assert.match(history.description,/\n\u200b\n/);assert.match(history.footer.text,/Page 1 of 2/);
 });
 
 test('malformed and oversized card values remain honest, bounded and cannot inject Discord formatting', async () => {
@@ -185,8 +185,12 @@ test('malformed and oversized card values remain honest, bounded and cannot inje
 });
 
 
-test('status colors and badges distinguish depot outcomes without changing source labels', async () => {
- for (const [type,color,badge] of [['Goods Held',0xf1c40f,'🟨'],['Delivered',0x90ee90,'🟩'],['Failed Delivered',0xe74c3c,'🟥'],['Carded',0xe74c3c,'🟥'],['Failed Delivery',0xe74c3c,'🟥'],['Incorrect Address',0xe74c3c,'🟥'],['Return to depot',0xe74c3c,'🟥'],['Pending',0xff8fcb,'🩷']]) {
+test('status colors and badges distinguish every depot status group without changing source labels', async () => {
+ for (const [type,color,badge] of [['Goods Held',0xf1c40f,'🟨'],['Delivered',0x90ee90,'🟩'],['Failed Delivered',0xe74c3c,'🟥'],['Carded',0xe74c3c,'🟥'],['Failed Delivery',0xe74c3c,'🟥'],['Incorrect Address',0xe74c3c,'🟥'],['Return to depot',0xe74c3c,'🟥'],['Pending',0xff8fcb,'🩷'],
+  ['Undelivered',0xe74c3c,'🟥'],['Out for delivery',0x3498db,'🟦'],['Cancelled out for delivery',0xe67e22,'🟧'],
+  ['Optimize For Next Day',0xe67e22,'🟧'],['Redirected',0xe67e22,'🟧'],['CAD scan',0x9b59b6,'🟪'],
+  ['Received into HUB',0x8d6e63,'🟫'],['Received into depot',0x8d6e63,'🟫'],['Long lengths',0x8d6e63,'🟫'],
+  ['Order received',0x2c3e50,'⬛'],['Something new from depot',0x95a5a6,'⬜']]) {
   const output=await buildParcelEmbed({scans:[{parcel:'1',type,date:'03/11/2026',time:'10:00:00'}]},'');
   assert.equal(output.embeds[0].toJSON().color,color);
   assert.ok(output.embeds[0].toJSON().description.includes(`${badge} **${type}**`));
@@ -244,5 +248,25 @@ test('operator find pages history, isolates selected parcels and never carries a
 
  assert.doesNotMatch(plainText(selected),/maps\/|attachment:\/\//);
  const overview=await buildParcelEmbed(parcel,'');
- assert.match(overview.embeds[0].toJSON().fields.find(f=>f.name==='Parcel details').value,/Delivery depot: 22/);
+ assert.match(overview.embeds[0].toJSON().fields.find(f=>f.name==='📋 Parcel details').value,/Delivery depot: 22/);
+});
+
+test('find card uses spaced, labelled sections that read well on a phone', async () => {
+  const output = await buildParcelEmbed({
+    consNumber: '123456789', arrangedDate: '03/11/2026',
+    address: { depot: 'SYNTHETIC - 22', lines: ['1 Synthetic Street'], mobile: '0870000000' },
+    scans: [
+      { parcel: '1', type: 'Goods Held', date: '04/11/2026', time: '11:26:06', route: 'D22' },
+      { parcel: '1', type: 'CAD scan', date: '03/11/2026', time: '07:28:38', route: 'cad', bay: '4', sequence: '68' },
+    ],
+  }, '');
+  const [main, history, recipient] = output.embeds.map(embed => embed.toJSON());
+  const field = (embed, name) => embed.fields.find(f => f.name === name)?.value ?? '';
+
+  assert.deepEqual(main.fields.map(f => f.name), ['🕒 Latest event', '📋 Parcel details']);
+  assert.match(field(main, '🕒 Latest event'), /^📅 04 Nov 11:26:06\n🚚 Route D22\n📍 Depot position: not recorded in latest scan/);
+  assert.match(field(main, '📋 Parcel details'), /🔢 Selected parcel: 1\n🗓️ Planned delivery: 03\/11\/2026\n🏢 Delivery depot: SYNTHETIC - 22/);
+  for (const f of [...main.fields, ...recipient.fields]) assert.ok(f.value.endsWith('\n\u200b'), `${f.name} needs breathing space`);
+  assert.deepEqual(recipient.fields.map(f => f.name), ['🏠 Delivery address', '📞 Contact']);
+  assert.match(history.description, /\*\*04 Nov 11:26:06\*\* · 🟨 \*\*Goods Held\*\*\n🚚 Route D22\n\u200b\n\*\*03 Nov 07:28:38\*\* · 🟪 \*\*CAD scan\*\*\n🚚 Route cad · 📍 Bay:4 Seq:68/);
 });

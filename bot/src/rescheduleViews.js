@@ -2,6 +2,7 @@ import { RESCHEDULE_RESULT_VERSION } from './contract.js';
 /** Private snapshot navigation only; this module has no queue/depot port. */
 import { randomUUID } from 'node:crypto';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
+import { formatRow, formatSummary } from './messageFormat.js';
 
 export function rescheduleLines(result) {
   const report = result.parcel?.rescheduleResults;
@@ -20,7 +21,7 @@ export function createRescheduleViews({ now = Date.now } = {}) {
     const button = (target, label) => new ButtonBuilder().setCustomId(`reschedule:${id}:${target}`).setLabel(label).setStyle(ButtonStyle.Secondary);
     if (page > 0) row.addComponents(button(page - 1, '← Назад'));
     if (page + 1 < state.pages.length) row.addComponents(button(page + 1, 'Далі →'));
-    return { content: `${state.summary}\nСторінка ${page + 1}/${state.pages.length}\n\`\`\`\n${state.pages[page]}\n\`\`\``,
+    return { content: `${state.summary}\n\n📄 Сторінка ${page + 1}/${state.pages.length}\n\u200b\n${state.pages[page]}`,
       components: row.components.length ? [row] : [], allowedMentions: { parse: [] } };
   }
   return {
@@ -29,14 +30,19 @@ export function createRescheduleViews({ now = Date.now } = {}) {
       if (!lines?.length) return null;
       sweep();
       while (sessions.size >= 16) drop(sessions.keys().next().value);
+      const summary = formatSummary(String(result.summary ?? 'Результат reschedule').slice(0, 500));
+      // Leave room for the summary and page line inside Discord's 2000 characters.
+      const budget = Math.max(600, 1900 - summary.length - 40);
       const pages = []; let current = '';
       for (const line of lines) {
-        if (current && current.length + line.length + 1 > 1300) { pages.push(current); current = ''; }
-        current += (current ? '\n' : '') + line;
+        const row = formatRow(line).slice(0, budget);
+        const gap = current ? '\n\u200b\n' : '';
+        if (current && current.length + gap.length + row.length > budget) { pages.push(current); current = ''; }
+        current += (current ? '\n\u200b\n' : '') + row;
       }
       if (current) pages.push(current);
       const id = randomUUID();
-      const state = { pages, summary: String(result.summary ?? 'Результат reschedule').slice(0, 500), owner: actor.user.id,
+      const state = { pages, summary, owner: actor.user.id,
         guild: actor.guildId, channel: actor.channelId, expires: Math.min(now(), actor.createdTimestamp ?? now()) + 14 * 60_000, busy: false };
       sessions.set(id, state);
       state.timer = setTimeout(() => drop(id), Math.max(0, state.expires - now())); state.timer.unref?.();

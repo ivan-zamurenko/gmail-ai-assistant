@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "task_id": "S02-03",
+  "outcome": "passed",
+  "scope": "Owner-approved filing date and deterministic naming for Drive label photos; already-named re-run policy; explicit date errors.",
+  "base_sha": "eef471c",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/labelName.test.js test/depot/labelBatch.test.js",
+      "exit_code": 1,
+      "result": "4 failed: UTC date used, invalid dates truncated, undated photo downloaded, mismatched already-named file kept/moved",
+      "boundary": "local checkout; synthetic photos/ports; no real Drive or depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/ test/queue/ test/utils/",
+      "exit_code": 0,
+      "result": "130/130; determinism test added (fixture fixed to cache month folders like the real resolver)",
+      "boundary": "local checkout; synthetic photos/ports; no real Drive or depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS after trailing-newline fix: lint, 253/253, build, artifacts, docs",
+      "boundary": "local checkout; synthetic photos/ports; no real Drive or depot",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "manual",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "code-review subagent",
+      "exit_code": null,
+      "result": "ACCEPT: DST/offset/fraction edges, legacy 8-digit names, consumers and batch-stop unaffected",
+      "boundary": "static review + tests",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "G_DRIVE_POLICY approved by owner 2026-11-04 (decisions.md): Irish upload day; contested → unknown + review; already-named kept only on match; missing date → error.",
+    "Contested-photo rename to unknown is deferred to S04-02 (currently left untouched with review error by earlier work).",
+    "My earlier UTC-day test was replaced by the owner's Irish-day policy (decision change, not weakening).",
+    "Versions: extension 6.3.0.104, root 1.1.73."
+  ],
+  "gates": [
+    "G_DRIVE_POLICY approved"
+  ],
+  "changed_paths": [
+    "src/depot/labelName.js",
+    "src/depot/labelBatch.js",
+    "src/utils/errors.js",
+    "test/depot/labelName.test.js",
+    "test/depot/labelBatch.test.js",
+    "docs/drive-contract.md",
+    "docs/decisions.md",
+    "docs/TESTING.md",
+    "roadmap/tasks/S02-03.md",
+    "manifest.json",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Real Drive createdTime values and folder contents",
+    "Existing production files named under the old UTC rule (no migration; they stay as named)"
+  ],
+  "residual_risk": [
+    "Photos uploaded 23:00–24:00 UTC in summer now file under the next day; earlier runs filed them under the UTC day, so one day may have mixed historic names."
+  ],
+  "blocker": null,
+  "next_step": "S04-02: Drive plan/apply and name collisions, including contested → unknown + review.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

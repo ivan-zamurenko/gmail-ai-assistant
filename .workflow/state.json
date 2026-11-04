@@ -63,8 +63,8 @@
       "block_reason": null
     },
     "S02-03": {
-      "status": "todo",
-      "evidence": null,
+      "status": "done",
+      "evidence": ".workflow/evidence/S02-03.json",
       "block_reason": null
     },
     "S02-04": {
@@ -320,9 +320,9 @@
       "note": "Owner: Europe/Dublin; next working day, no cutoff; exclude public/bank holidays and weekends. Bounded verified 2026–2027 calendar; no live authorization."
     },
     "G_DRIVE_POLICY": {
-      "status": "pending",
-      "evidence": null,
-      "note": "Источник filing date, unknown/ambiguous и existing names."
+      "status": "approved",
+      "evidence": "docs/decisions.md#g-drive-policy-2026-11-04--owner-approved",
+      "note": "Irish upload day; contested → unknown+review; already-named kept only on match; missing date → error"
     },
     "G_AI_PROVIDER": {
       "status": "pending",

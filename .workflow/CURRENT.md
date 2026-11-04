@@ -1,3 +1,11 @@
+# S02-03 Drive filing date and names done — 2026-11-04
+
+Copilot; no active writer. Owner approved G_DRIVE_POLICY. Filing day = Irish day of Drive upload; undated photo untouched with explicit error; already-named file kept only when the fresh verified number matches, else left for review (name-mismatch); deterministic names tested.
+Root1.1.73/extension6.3.0.104; bot0.2.30. Full 253/253 PASS7; review ACCEPT. No real Drive action.
+Next: S04-02 (Drive plan/apply, collisions, contested → unknown + review).
+
+---
+
 # S09-10 /reschedule parcel verified — 2026-11-04
 
 Copilot; no active writer. Owner approved G_DISCORD_MODES. Fixed: lookup «no scans» no longer reaches depotMain; fixed-clock test covers unusable lookups and dates. Shared calendar confirmed for bot and executor.

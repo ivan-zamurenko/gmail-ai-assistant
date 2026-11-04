@@ -345,3 +345,91 @@ test('ambiguous photo never reaches lookup, folder planning or filing in preview
     }
   }
 });
+
+test('missing upload time leaves the photo untouched before download or depot access', async () => {
+  const calls = [];
+  const results = await processLabelBatch({
+    photos: [{ id: 'p1', name: 'DRIVER.JPG' }],
+    dryRun: false,
+    verify: async () => { calls.push('verify'); return true; },
+    loadPhoto: async () => { calls.push('load'); return {}; },
+    readCodes: async () => [],
+    folderFor: async () => { calls.push('folder'); return { id: 'f', path: '2026/08', taken: new Set(), unknown: 0 }; },
+    movePhoto: async () => { calls.push('move'); },
+  });
+  assert.deepEqual(calls, []);
+  assert.equal(results[0].to, null);
+  assert.equal(results[0].number, null);
+  assert.equal(results[0].error, 'Photo upload time missing or invalid; left untouched');
+});
+
+test('an already-named file keeps its name only when the fresh verified read matches', async () => {
+  const BARCODE = [{ text: '%000000000001234567892000000', format: 'CODE_128', reads: 3 }];
+  async function rerun(name, { codes = BARCODE, knownNumbers = ['123456789'] } = {}) {
+    const moves = [];
+    const folder = { id: 'month', path: '2026/08', taken: new Set(), unknown: 4 };
+    const [result] = await processLabelBatch({
+      photos: [{ id: 'p1', name, createdTime: '2026-08-31T12:00:00.000Z' }],
+      dryRun: false,
+      verify: async number => knownNumbers.includes(number),
+      loadPhoto: async () => ({}),
+      readCodes: async () => codes,
+      folderFor: async () => folder,
+      movePhoto: async (photo, target, newName) => moves.push(newName),
+    });
+    return { result, moves };
+  }
+
+  const same = await rerun('2026-08-31_123456789-p02.jpg');
+  assert.deepEqual(same.moves, ['2026-08-31_123456789-p02.jpg']);
+  assert.equal(same.result.number, '123456789');
+
+  const unknownStill = await rerun('2026-08-31_unknown-003.jpg', { codes: [] });
+  assert.deepEqual(unknownStill.moves, ['2026-08-31_unknown-003.jpg']);
+
+  for (const [name, options] of [
+    ['2026-08-31_987654321-p02.jpg', {}],
+    ['2026-08-31_123456789-p02.jpg', { codes: [] }],
+    ['2026-08-31_123456789-p02.jpg', { knownNumbers: [] }],
+    ['2026-08-31_unknown-003.jpg', {}],
+  ]) {
+    const mismatch = await rerun(name, options);
+    assert.deepEqual(mismatch.moves, [], `${name} must not be moved or renamed`);
+    assert.equal(mismatch.result.to, null);
+    assert.equal(mismatch.result.number, null, 'a stale name never becomes a reschedule target');
+    assert.equal(mismatch.result.errorCode, 'name-mismatch');
+    assert.equal(mismatch.result.error, 'Existing name does not match the fresh read; left for review');
+  }
+});
+
+test('the same snapshot always produces the same names (known, parcel, unknown, collision)', async () => {
+  const BARCODE = [{ text: '%000000000001234567892000000', format: 'CODE_128', reads: 3 }];
+  const photos = [
+    { id: 'a', name: 'A.JPG', createdTime: '2026-08-31T23:30:00Z' },
+    { id: 'b', name: 'B.JPG', createdTime: '2026-08-31T23:31:00Z' },
+    { id: 'c', name: 'C.png', createdTime: '2026-08-31T10:00:00Z' },
+  ];
+  const run = () => {
+    // Like createMonthFolderResolver: one cached state per month within a run.
+    const folders = new Map();
+    return processLabelBatch({
+      photos, dryRun: true,
+      verify: async () => true,
+      loadPhoto: async photo => photo.id,
+      readCodes: async id => (id === 'c' ? [] : BARCODE),
+      folderFor: async date => {
+        const path = date.slice(0, 7).replace('-', '/');
+        if (!folders.has(path)) folders.set(path, { id: null, path, taken: new Set(['2026-09-01_123456789-p02.jpg']), unknown: 2 });
+        return folders.get(path);
+      },
+      movePhoto: async () => assert.fail('dry-run must not move'),
+    });
+  };
+  const first = await run();
+  assert.deepEqual(first.map(r => r.to), [
+    '2026/09/2026-09-01_123456789-p02-2.jpg',
+    '2026/09/2026-09-01_123456789-p02-3.jpg',
+    '2026/08/2026-08-31_unknown-003.png',
+  ]);
+  assert.deepEqual(await run(), first);
+});

@@ -347,3 +347,6 @@ Live parcel (Pending, CAD scan today, then two cancelled OFD scans) was not resc
 
 ### G-DISCORD-MODES-2026-11-04 — owner approved
 Owner explicitly keeps the existing Discord `/reschedule parcel` and `/reschedule barcodes` modes enabled as they work today: default dry-run, live only with explicit `dry_run:false`, no second confirmation. This approves G_DISCORD_MODES for S09-10/S09-11 hardening; it is not a live-pilot or access approval (G_DISCORD_ACCESS/G_TEST_ACCOUNTS stay pending).
+
+### G-DRIVE-POLICY-2026-11-04 — owner approved
+Owner chose the Drive label filing rules: (1) the filing date (name prefix and YYYY/MM folder) is the Drive upload time (`createdTime`) converted to the Irish calendar day (Europe/Dublin), not the UTC prefix; (2) a photo with several different consignment numbers is named `unknown`, flagged for review and never used for a reschedule target; (3) on a re-run, a file already named in our format keeps its name only if the freshly read and depot-verified number matches; otherwise it is left untouched and flagged for review (no rename); (4) a missing or invalid upload time leaves the photo untouched with an explicit error. Existing patterns `YYYY-MM-DD_number[-pNN][-N].ext` and `YYYY-MM-DD_unknown-NNN.ext` stay. This is not approval to run against the production Drive folder (S04-05 still needs G_TEST_ACCOUNTS/G_PRIVACY).

@@ -12,6 +12,10 @@
  * 01-09-26 before 31-08-26.
  */
 
+import { irishDay } from '../../shared/depotCalendar.js';
+
+const ISO_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
+
 function extensionOf(fileName) {
   const dot = fileName.lastIndexOf('.');
   return dot > 0 ? fileName.slice(dot).toLowerCase() : '.jpg';
@@ -45,7 +49,20 @@ export function makeUnique(name, taken) {
   return `${stem}-${copy}${ext}`;
 }
 
-/** Drive gives an ISO timestamp; only the day matters for the file name. */
+/**
+ * Owner policy (G_DRIVE_POLICY): the filing day is the Irish calendar day of the
+ * Drive upload, so a late-evening summer upload is not filed under yesterday.
+ * A missing or impossible timestamp is an error, never today or a guess.
+ */
 export function dateOf(createdTime) {
-  return createdTime.slice(0, 10);
+  const match = typeof createdTime === 'string' ? ISO_TIMESTAMP.exec(createdTime) : null;
+  const [, year, month, day] = match ?? [];
+  const calendarDay = match && new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  const time = match && new Date(createdTime);
+  if (!match || !Number.isFinite(time.getTime())
+      || calendarDay.getUTCFullYear() !== Number(year) || calendarDay.getUTCMonth() !== Number(month) - 1
+      || calendarDay.getUTCDate() !== Number(day)) {
+    throw new Error('Photo upload time missing or invalid; left untouched');
+  }
+  return irishDay(time);
 }

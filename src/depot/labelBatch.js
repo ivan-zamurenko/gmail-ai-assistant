@@ -27,6 +27,9 @@ export async function processLabelBatch({
     const done = (entry) => { results.push(entry); step('done', entry); };
 
     try {
+      // Before any download or depot read: an undated photo stays untouched.
+      const date = dateOf(photo.createdTime);
+
       step('downloading');
       const image = await loadPhoto(photo);
 
@@ -46,7 +49,21 @@ export async function processLabelBatch({
       step('checking');
       const known = pick ? await verify(pick.number) : false;
 
-      const date = dateOf(photo.createdTime);
+      // Owner policy: a previous name is kept only if the fresh verified read agrees.
+      const named = ALREADY_NAMED.exec(photo.name);
+      if (named) {
+        const namedNumber = /^unknown/i.test(named[1]) ? null : named[1].slice(0, 9);
+        const freshNumber = known ? pick.number : null;
+        if (namedNumber !== freshNumber) {
+          done({
+            from: photo.name, to: null, number: null, contested: false,
+            status: 'review', errorCode: 'name-mismatch',
+            error: 'Existing name does not match the fresh read; left for review',
+          });
+          continue;
+        }
+      }
+
       const folder = await folderFor(date);
       let name = photo.name;
 

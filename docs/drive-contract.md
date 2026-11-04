@@ -28,7 +28,17 @@ Legacy `labelParser.js` принимает другие текстовые фо�
 
 ## 4. План именования
 
-Текущий шаблон: `YYYY-MM-DD_number[-pNN][-N].ext` либо `YYYY-MM-DD_unknown-NNN.ext`. `dateOf()` сейчас использует начало `createdTime`; это наблюдение, а окончательную семантику даты определяет gate. Не обещать, что это дата доставки или съёмки.
+Шаблон: `YYYY-MM-DD_number[-pNN][-N].ext` либо `YYYY-MM-DD_unknown-NNN.ext`.
+
+**G_DRIVE_POLICY (2026-11-04, S02-03):** дата в назві й папці `YYYY/MM` — ірландський
+календарний день (Europe/Dublin) моменту завантаження в Drive (`createdTime`), а не
+перші 10 символів UTC. Відсутній або неможливий `createdTime` → фото не чіпається,
+помилка «Photo upload time missing or invalid; left untouched», без завантаження й
+запитів у depot. Повторний запуск: файл, уже названий у нашому форматі, зберігає назву
+лише якщо свіжо прочитаний і підтверджений номер збігається (для `unknown-NNN` —
+якщо номер і далі невідомий); інакше файл не переміщується й не перейменовується,
+`errorCode: name-mismatch`, «Existing name does not match the fresh read; left for
+review», і не стає ціллю reschedule. Це не дата доставки чи зйомки.
 
 Preview возвращает предполагаемое имя/путь и причины. Отсутствующие папки отражаются в plan без их создания. Проверять extension, already-named input, duplicate names, unknown numbering и несколько фото одного parcel.
 

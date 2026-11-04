@@ -36,11 +36,34 @@ export async function processLabelBatch({
       step('reading');
       const candidate = pickConsignment(await readCodes(image));
       if (candidate?.contested) {
+        // Owner policy (G_DRIVE_POLICY): never verified or rescheduled; filed as
+        // unknown so it leaves the inbox, and flagged for a person to check.
+        const named = ALREADY_NAMED.exec(photo.name);
+        if (named && !/^unknown/i.test(named[1])) {
+          done({
+            from: photo.name, to: null, number: null, contested: true,
+            status: 'review', errorCode: 'name-mismatch',
+            error: 'Existing name does not match the fresh read; left for review',
+          });
+          continue;
+        }
+        const folder = await folderFor(date);
+        let name = photo.name;
+        if (!named) {
+          folder.unknown += 1;
+          name = buildLabelName({ date, unknownIndex: folder.unknown, originalName: photo.name });
+        }
+        name = makeUnique(name, folder.taken);
+        if (!dryRun) {
+          step('filing');
+          await movePhoto(photo, folder, name);
+        }
+        folder.taken.add(name);
         done({
-          from: photo.name, to: null, number: null, contested: true,
+          from: photo.name, to: `${folder.path}/${name}`, number: null, contested: true,
           status: 'ambiguous', errorCode: 'ambiguous-barcode',
-          reason: candidate.reason, candidates: candidate.candidates,
-          error: 'Ambiguous barcode — manual review required',
+          reason: candidate.reason, candidates: candidate.candidates, error: null,
+          review: 'Several consignment numbers on the photo; filed as unknown — manual review required',
         });
         continue;
       }
@@ -97,7 +120,7 @@ export async function processLabelBatch({
       // unknown, so stop and keep what is already filed.
       if (err.fatal) throw err;
       const entry = { from: photo.name, to: null, number: null, contested: false, error: safeErrorMessage(err, 'Label processing failed') };
-      if (['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied', 'resource-exhausted', 'unavailable', 'deadline-exceeded', 'request-rejected'].includes(err.code)) entry.errorCode = err.code;
+      if (['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied', 'resource-exhausted', 'unavailable', 'deadline-exceeded', 'request-rejected', 'stale-drive-item', 'name-collision'].includes(err.code)) entry.errorCode = err.code;
       done(entry);
       if (['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied'].includes(err.code)) {
         // Stop effects, retain confirmed entries, and account for untouched files.

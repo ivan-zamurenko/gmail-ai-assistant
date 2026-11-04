@@ -10,7 +10,7 @@ const DEPOT_LOOKUP = 'https://depot.synthetic.invalid/lookup';
 const ROOT = 'root-syn';
 const BARCODE = [{ text: '%000000000001234567892000000', format: 'CODE_128', reads: 3 }];
 
-function fakeServices(t, { folders = {}, names = {}, photos }) {
+function fakeServices(t, { folders = {}, names = {}, photos, meta = {}, existing = {} }) {
   const requests = [];
   const state = { folders: { ...folders }, created: 0 };
   const previous = globalThis.fetch;
@@ -35,6 +35,16 @@ function fakeServices(t, { folders = {}, names = {}, photos }) {
       }
       const listing = q.match(/^'([^']+)' in parents and trashed=false$/);
       if (listing) return json({ files: (names[listing[1]] ?? []).map((name, index) => ({ id: `existing-${index}`, name })) });
+    }
+    // Fresh metadata of one photo right before the move (S04-02 stale check).
+    const fileId = url.pathname.slice('/drive/v3/files/'.length);
+    if (fileId && method === 'GET' && !url.searchParams.get('alt') && fileId !== ROOT) {
+      const photo = photos.find(p => p.id === fileId);
+      return json({ ...photo, ...(meta[fileId] ?? {}) });
+    }
+    if (url.origin + url.pathname === DRIVE && method === 'GET') {
+      const clash = (url.searchParams.get('q') ?? '').match(/^name='([^']+)' and '([^']+)' in parents and trashed=false$/);
+      if (clash) return json({ files: (existing[clash[2]] ?? []).filter(n => n === clash[1]).map(name => ({ id: 'someone-else', name })) });
     }
     if (url.pathname.startsWith('/drive/v3/files/') && url.searchParams.get('alt') === 'media' && method === 'GET') {
       return { ok: true, status: 200, blob: async () => new globalThis.Blob(['synthetic-image']) };
@@ -69,7 +79,7 @@ function run({ dryRun, readCodes = async () => BARCODE }) {
   });
 }
 
-const PHOTO = { mimeType: 'image/jpeg', trashed: false, parents: [ROOT], id: 'photo-syn-1', name: 'DRIVER-PHOTO.JPG', createdTime: '2026-10-09T12:00:00.000Z' };
+const PHOTO = { mimeType: 'image/jpeg', trashed: false, parents: [ROOT], id: 'photo-syn-1', name: 'DRIVER-PHOTO.JPG', createdTime: '2026-10-09T12:00:00.000Z', version: '7' };
 
 test('dry-run with missing YYYY/MM folders sends only Drive GETs and plans the path', async (t) => {
   const net = fakeServices(t, { photos: [PHOTO] });
@@ -87,6 +97,9 @@ test('dry-run with missing YYYY/MM folders sends only Drive GETs and plans the p
     number: '123456789',
     contested: false,
     error: null,
+    fileId: 'photo-syn-1',
+    source: { name: 'DRIVER-PHOTO.JPG', parents: [ROOT], version: '7' },
+    policyVersion: 'drive-labels-2026-11-04',
   }]);
   assert.doesNotMatch(results[0].to, /created-|root-syn/, 'preview must not invent a folder id');
 });
@@ -232,4 +245,40 @@ test('Drive rejects inaccessible folders and incomplete or malformed pagination 
     { listLimits: { maxPages: Infinity } }, { listLimits: { maxFiles: 0 } },
   ]) await assert.rejects(processDriveLabels(scanOptions(options)), /invalid/);
   assert.equal(calls.length, 0);
+});
+
+test('preview plan records file identity, source metadata and naming policy version', async (t) => {
+  fakeServices(t, { photos: [PHOTO] });
+  const [entry] = await run({ dryRun: true });
+  assert.equal(entry.fileId, 'photo-syn-1');
+  assert.deepEqual(entry.source, { name: 'DRIVER-PHOTO.JPG', parents: [ROOT], version: '7' });
+  assert.match(entry.policyVersion, /^drive-labels-\d{4}-\d{2}-\d{2}$/);
+  assert.equal(entry.to, '2026/10/2026-10-09_123456789-p02.jpg');
+});
+
+test('live: a photo changed after listing is left untouched (stale), never patched', async (t) => {
+  for (const change of [{ version: '8' }, { name: 'RENAMED.JPG' }, { parents: ['elsewhere'] }, { trashed: true }]) {
+    const net = fakeServices(t, {
+      photos: [PHOTO], meta: { [PHOTO.id]: change },
+      folders: { [`${ROOT}/2026`]: 'year-syn', 'year-syn/10': 'month-syn' },
+    });
+    const [entry] = await run({ dryRun: false });
+    assert.deepEqual(net.requests.filter(r => r.method === 'PATCH'), [], JSON.stringify(change));
+    assert.equal(entry.errorCode, 'stale-drive-item');
+    assert.equal(entry.error, 'Drive file changed since listing; left untouched');
+    assert.equal(entry.number, null, 'a stale photo never becomes a reschedule target');
+  }
+});
+
+test('live: a same-named file that appeared in the month folder blocks the move', async (t) => {
+  const net = fakeServices(t, {
+    photos: [PHOTO],
+    folders: { [`${ROOT}/2026`]: 'year-syn', 'year-syn/10': 'month-syn' },
+    existing: { 'month-syn': ['2026-10-09_123456789-p02.jpg'] },
+  });
+  const [entry] = await run({ dryRun: false });
+  assert.deepEqual(net.requests.filter(r => r.method === 'PATCH'), []);
+  assert.equal(entry.errorCode, 'name-collision');
+  assert.equal(entry.error, 'Target name already exists in the month folder; left untouched');
+  assert.equal(entry.number, null);
 });

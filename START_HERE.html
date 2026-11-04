@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S02-03 Drive filing date and names done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S04-02 Drive plan/apply done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2080,7 +2080,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S02-03 Drive filing date and names done — 2026-11-04</h1><pre class="markdown"># S02-03 Drive filing date and names done — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-02 Drive plan/apply done — 2026-11-04</h1><pre class="markdown"># S04-02 Drive plan/apply done — 2026-11-04
+
+Copilot; no active writer. Plan rows carry fileId/source/policyVersion; live re-reads file metadata before PATCH (stale → untouched) and refuses a same-named file in the month folder (collision → untouched). Contested photos filed as unknown + review, counted as «Фото на перевірку».
+Root1.1.74/extension6.3.0.105; bot0.2.30. Full 257/257 PASS7; review ACCEPT. No real Drive action.
+Next: S04-03 needs owner decision G_ARCHITECTURE (recoverable runner).
+
+---
+
+# S02-03 Drive filing date and names done — 2026-11-04
 
 Copilot; no active writer. Owner approved G_DRIVE_POLICY. Filing day = Irish day of Drive upload; undated photo untouched with explicit error; already-named file kept only when the fresh verified number matches, else left for review (name-mismatch); deterministic names tested.
 Root1.1.73/extension6.3.0.104; bot0.2.30. Full 253/253 PASS7; review ACCEPT. No real Drive action.
@@ -3028,6 +3036,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot | Виконано | S09-09: `/reschedule all` уже йшов спільним захищеним шляхом; додано характеризаційний тест (live не бере список preview, зайнята вкладка зупиняє live) з доказом мутацією. Продукт не змінено. 248/248; [evidence](evidence/S09-09.json). | Решта карток чекає рішень власника. |
 | 2026-11-04 | Copilot + власник | Виконано | G_DISCORD_MODES погоджено. S09-10: «no scans» більше не доходить до depotMain (RED → GREEN), тест з фіксованим годинником на дати; 249/249; ext 6.3.0.103, root 1.1.72; [evidence](evidence/S09-10.json). | Далі потрібні рішення власника (Drive, Gmail/AI). |
 | 2026-11-04 | Copilot + власник | Виконано | G_DRIVE_POLICY погоджено. S02-03: ірландська дата завантаження, фото без дати не чіпається, вже названий файл лише при збігу номера (інакше на перевірку), детерміновані назви. RED 4 → GREEN; 253/253, review ACCEPT; ext 6.3.0.104, root 1.1.73; [evidence](evidence/S02-03.json). | S04-02. |
+| 2026-11-04 | Copilot | Виконано | S04-02: план Drive з ідентичністю файлу й версією правил; перед PATCH — перевірка змін (stale) і колізії назви; неоднозначні фото → unknown + перевірка (G_DRIVE_POLICY). RED → GREEN; 257/257, review ACCEPT; ext 6.3.0.105, root 1.1.74; [evidence](evidence/S04-02.json). | S04-03 — потрібне G_ARCHITECTURE. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4938,6 +4947,18 @@ Preview возвращает предполагаемое имя/путь и п�
 
 Ранее отформатированное имя не служит доказательством актуальности: при повторной проверке имя и распознанный номер могут расходиться. В этом случае нельзя молча сохранять прежний verified-looking номер. S04-02 определяет outcome и согласованное действие.
 
+**S04-02 (2026-11-04):** кожен рядок плану має `fileId`, `source` (name, parents,
+version з лістингу) і `policyVersion` (`drive-labels-2026-11-04`). Перед кожним live
+PATCH розширення заново читає метадані файлу: інша назва, батьківська папка, версія
+або кошик → `stale-drive-item`, «Drive file changed since listing; left untouched».
+Потім перевіряє, чи немає в цільовій папці місяця файлу з такою самою назвою (Drive
+дозволяє дублікати) → `name-collision`, «Target name already exists in the month
+folder; left untouched». Обидва випадки не зупиняють решту партії й не дають цілі
+reschedule. Фото з кількома номерами (G_DRIVE_POLICY): без перевірки в depot,
+називається `unknown-NNN`, переміщується в папку місяця з `review` і рахується в
+Discord як «Фото на перевірку: N»; уже названий нашим форматом файл з номером не
+перейменовується на unknown (`name-mismatch`). Dry-run, як і раніше, лише GET.
+
 ## 5. Apply и ограничение эффектов
 
 До записи повторно проверить выбранную root folder, parent/source file, plan и допуск. Создание папки, изменение имени и перемещение считаются мутациями. Изменения должны быть минимальными: не менять sharing, owner, permissions, содержимое изображения или нерелевантные metadata.
@@ -6003,6 +6024,11 @@ test/
 - Live: list → download → verify → створення року й місяця → один PATCH з
   `addParents`/`removeParents`.
 - Мутації «прибрати `dryRun` з resolver/batch» ловляться (S01-01 evidence).
+- S04-02: план має `fileId`/`source`/`policyVersion`; live з іншою версією, назвою,
+  папкою або кошиком — без PATCH (`stale-drive-item`); однойменний файл у папці місяця —
+  без PATCH (`name-collision`). `labelBatch.test.js`: фото з кількома номерами без
+  depot-перевірки йде як `unknown` з `review`; `barcodeExecutor.test.js`: «Фото на
+  перевірку: N» і жодної цілі reschedule.
 - Не перевіряє справжні права Drive, ZXing і FileReader у браузері.
 
 ### `test/depot/monthFolders.test.js`
@@ -9294,6 +9320,15 @@ feat(drive): [S04-02] validate filing plans before apply
 ```
 
 Evidence: `.workflow/evidence/S04-02.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
+
+## Виконано 2026-11-04
+
+Тести в `test/depot/driveLabels.test.js`, `test/depot/labelBatch.test.js`,
+`test/queue/barcodeExecutor.test.js` (замість `test/unit/drive-plan-apply.test.mjs`).
+Scope розширено: `src/depot/driveLabels.js` (Drive-адаптер після S01-01),
+`src/depot/labelBatch.js` (неоднозначні фото за G_DRIVE_POLICY), `src/queue/barcodeExecutor.js`
+і `src/popup/depotFlow.js` (показ «на перевірку»), `src/utils/errors.js`. Критерій 4
+закрито в S02-03. Колізія вирішується ручною відмовою, без автоматичного перезапису.
 </pre></article>
 <article id="doc-89" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S04-03.md">roadmap/tasks/S04-03.md</a></p><h1>S04-03 — Выбрать и реализовать восстанавливаемый runner</h1><pre class="markdown"># S04-03 — Выбрать и реализовать восстанавливаемый runner
 

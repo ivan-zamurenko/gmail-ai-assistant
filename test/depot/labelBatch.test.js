@@ -318,7 +318,7 @@ test('uncertain folder creation, cancellation and auth stop new effects while pr
   }
 });
 
-test('ambiguous photo never reaches lookup, folder planning or filing in preview or live', async () => {
+test('ambiguous photo never reaches lookup; it is filed as unknown and flagged for review (G_DRIVE_POLICY)', async () => {
   const strip = (number, parcel) => ({ text: `%00000000000${number}${parcel}000000`, format: 'CODE_128', reads: 1 });
   for (const dryRun of [true, false]) {
     for (const codes of [
@@ -326,22 +326,24 @@ test('ambiguous photo never reaches lookup, folder planning or filing in preview
       [strip('123456789', 1), strip('123456789', 2)],
     ]) {
       const calls = [];
+      const folder = { path: '2026/08', taken: new Set(), unknown: 4 };
       const results = await processLabelBatch({
         photos: [{ id: 'synthetic-photo', name: 'synthetic.jpg', createdTime: '2026-08-31T12:00:00Z' }],
         dryRun,
         loadPhoto: async () => ({}), readCodes: () => codes,
         verify: async () => { calls.push('verify'); return true; },
-        folderFor: async () => { calls.push('folder'); return { path: '2026/08', taken: new Set(), unknown: 0 }; },
-        movePhoto: async () => { calls.push('move'); },
+        folderFor: async () => { calls.push('folder'); return folder; },
+        movePhoto: async (photo, target, name) => { calls.push(`move:${name}`); },
       });
-      assert.deepEqual(calls, []);
+      assert.deepEqual(calls, dryRun ? ['folder'] : ['folder', 'move:2026-08-31_unknown-005.jpg']);
+      assert.equal(results[0].to, '2026/08/2026-08-31_unknown-005.jpg');
       assert.equal(results[0].status, 'ambiguous');
       assert.equal(results[0].errorCode, 'ambiguous-barcode');
-      assert.equal(results[0].number, null);
-      assert.equal(results[0].to, null);
+      assert.equal(results[0].number, null, 'never a reschedule target');
       assert.equal(results[0].contested, true);
       assert.equal(results[0].candidates.length, 2);
-      assert.match(results[0].error, /manual review/i);
+      assert.equal(results[0].error, null);
+      assert.match(results[0].review, /several consignment numbers.*review/i);
     }
   }
 });

@@ -183,3 +183,32 @@ test('a stopped batch saves already-filed exact targets without rescheduling', a
   assert.match(result.summary, /File errors: 2.*uncertain/);
   assert.equal(storage.values[LABEL_RESCHEDULE_RECOVERY_KEY].targets[0].consNumber, '123456789');
 });
+
+test('photos filed as unknown for review are counted and never become targets', async () => {
+  let rescheduled = 0;
+  const reviewPhoto = {
+    from: 'TWO-LABELS.JPG', to: '2026/09/2026-09-01_unknown-001.jpg', number: null, contested: true,
+    status: 'ambiguous', errorCode: 'ambiguous-barcode', error: null,
+    review: 'Several consignment numbers on the photo; filed as unknown — manual review required',
+  };
+  const only = await executeBarcodeTask(task(true), {
+    loadConfig: () => ({ driveFolderId: 'synthetic-folder' }), getAuthToken: async () => 'synthetic-token', lookup,
+    processLabels: async () => [reviewPhoto], storage: memoryStorage(),
+    reschedule: async () => { rescheduled++; return { result: {} }; },
+  });
+  assert.equal(rescheduled, 0);
+  assert.match(only.summary, /Exact targets: 0/);
+  assert.match(only.summary, /Фото на перевірку: 1/);
+
+  const mixed = await executeBarcodeTask(task(true), {
+    loadConfig: () => ({ driveFolderId: 'synthetic-folder' }), getAuthToken: async () => 'synthetic-token', lookup,
+    processLabels: async (options) => [...await scanOne(options), reviewPhoto], storage: memoryStorage(),
+    reschedule: async ({ targets }) => {
+      rescheduled++;
+      assert.equal(targets.length, 1);
+      return { result: { dryRun: true, count: 1, eligible: 1, skipped: 0, review: 0, errors: 0, results: [] } };
+    },
+  });
+  assert.equal(rescheduled, 1);
+  assert.match(mixed.summary, /Фото на перевірку: 1/);
+});

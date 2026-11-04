@@ -343,6 +343,11 @@ test/
 - Live: list → download → verify → створення року й місяця → один PATCH з
   `addParents`/`removeParents`.
 - Мутації «прибрати `dryRun` з resolver/batch» ловляться (S01-01 evidence).
+- S04-02: план має `fileId`/`source`/`policyVersion`; live з іншою версією, назвою,
+  папкою або кошиком — без PATCH (`stale-drive-item`); однойменний файл у папці місяця —
+  без PATCH (`name-collision`). `labelBatch.test.js`: фото з кількома номерами без
+  depot-перевірки йде як `unknown` з `review`; `barcodeExecutor.test.js`: «Фото на
+  перевірку: N» і жодної цілі reschedule.
 - Не перевіряє справжні права Drive, ZXing і FileReader у браузері.
 
 ### `test/depot/monthFolders.test.js`

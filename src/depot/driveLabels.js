@@ -17,6 +17,8 @@ import { parseFolderId } from '../config/folderId.js';
 const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
+// Bump when naming/filing rules change, so a plan shows which rules produced it.
+export const DRIVE_POLICY_VERSION = 'drive-labels-2026-11-04';
 const IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/avif']);
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const identifier = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(value);
@@ -130,7 +132,7 @@ export async function processDriveLabels({
   }
   const listed = await listFiles(
     `'${rootId}' in parents and mimeType contains 'image/' and trashed=false`,
-    'id,name,createdTime,mimeType,trashed,parents',
+    'id,name,createdTime,mimeType,trashed,parents,version',
     token, signal, limits
   );
   const photos = [];
@@ -171,9 +173,32 @@ export async function processDriveLabels({
     loadPhoto: async (photo) => decodePhoto(await downloadBlob(photo.id, token, signal)),
     readCodes,
     folderFor,
-    movePhoto: (photo, folder, name) => (
-      moveAndRename(photo.id, rootId, folder.id, name, token, signal)
-    ),
+    movePhoto: async (photo, folder, name) => {
+      // Apply only the plan that was listed: same file, name, parent and version.
+      const fresh = await driveGet(`files/${photo.id}?fields=id,name,parents,version,trashed`, token, signal);
+      if (!record(fresh) || fresh.id !== photo.id || fresh.name !== photo.name || fresh.trashed !== false
+          || !Array.isArray(fresh.parents) || fresh.parents.length !== 1 || fresh.parents[0] !== rootId
+          || String(fresh.version) !== String(photo.version)) {
+        throw Object.assign(new Error('Drive file changed since listing; left untouched'), { code: 'stale-drive-item' });
+      }
+      // Drive allows duplicate names; never add a second file with the same name.
+      const quoted = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const clash = await listFiles(`name='${quoted}' and '${folder.id}' in parents and trashed=false`, 'id,name', token, signal, limits);
+      if (clash.length) {
+        throw Object.assign(new Error('Target name already exists in the month folder; left untouched'), { code: 'name-collision' });
+      }
+      return moveAndRename(photo.id, rootId, folder.id, name, token, signal);
+    },
   });
-  return [...results, ...skipped];
+  // processLabelBatch returns exactly one entry per photo, in order.
+  const planned = results.map((entry, index) => {
+    const photo = photos[index];
+    return photo ? {
+      ...entry,
+      fileId: photo.id,
+      source: { name: photo.name, parents: [...photo.parents], version: photo.version === undefined ? null : String(photo.version) },
+      policyVersion: DRIVE_POLICY_VERSION,
+    } : entry;
+  });
+  return [...planned, ...skipped];
 }

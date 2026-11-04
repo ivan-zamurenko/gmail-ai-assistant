@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "task_id": "S04-02",
+  "outcome": "passed",
+  "scope": "Drive plan/apply: plan identity, stale check and collision refusal before PATCH; contested photos filed as unknown for review (G_DRIVE_POLICY).",
+  "base_sha": "eb00eb4",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/driveLabels.test.js test/depot/labelBatch.test.js",
+      "exit_code": 1,
+      "result": "4 failed: no plan identity fields; stale photo patched; colliding name patched; contested photo left untouched instead of unknown+review",
+      "boundary": "local checkout; synthetic Drive/depot fetch fakes; network guard; no real Drive",
+      "log": null
+    },
+    {
+      "phase": "red",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/barcodeExecutor.test.js",
+      "exit_code": 1,
+      "result": "review photos not reported in summary",
+      "boundary": "local checkout; synthetic Drive/depot fetch fakes; network guard; no real Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/queue/ test/depot/",
+      "exit_code": 0,
+      "result": "128/128",
+      "boundary": "local checkout; synthetic Drive/depot fetch fakes; network guard; no real Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "PASS 7 stages: lint, 257/257, build, artifacts, docs, diff-check",
+      "boundary": "local checkout; synthetic Drive/depot fetch fakes; network guard; no real Drive",
+      "log": null
+    },
+    {
+      "phase": "green",
+      "kind": "manual",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "code-review subagent",
+      "exit_code": null,
+      "result": "ACCEPT: 1:1 index mapping, escaping, dry-run GET-only, counters",
+      "boundary": "static review + tests",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "Collision handled by manual refusal (no automatic suffix change at apply time, no overwrite).",
+    "Owner G_DRIVE_POLICY item 2 implemented here: contested → unknown-NNN + review, never verified or rescheduled; previously such photos stayed untouched (earlier test updated to the owner decision).",
+    "Plan fields added in driveLabels by index; Drive file IDs stay local (not sent to Firestore/Discord).",
+    "Versions: extension 6.3.0.105, root 1.1.74."
+  ],
+  "gates": [
+    "G_DRIVE_POLICY approved"
+  ],
+  "changed_paths": [
+    "src/depot/driveLabels.js",
+    "src/depot/labelBatch.js",
+    "src/queue/barcodeExecutor.js",
+    "src/popup/depotFlow.js",
+    "src/utils/errors.js",
+    "test/depot/driveLabels.test.js",
+    "test/depot/labelBatch.test.js",
+    "test/queue/barcodeExecutor.test.js",
+    "docs/drive-contract.md",
+    "docs/TESTING.md",
+    "roadmap/tasks/S04-02.md",
+    "manifest.json",
+    "package.json",
+    "package-lock.json",
+    "START_HERE.html",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Real Drive version semantics on move/rename",
+    "Real concurrent edits during a run"
+  ],
+  "residual_risk": [
+    "Two extra GETs per live photo (metadata + collision) slow large batches slightly."
+  ],
+  "blocker": null,
+  "next_step": "S04-03 needs G_ARCHITECTURE (recoverable runner choice).",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit; result in WORKLOG/handoff"
+  },
+  "external_effects": []
+}

@@ -106,6 +106,9 @@ export async function executeBarcodeTask(task, ports = {}) {
   const { targets, unresolved } = verifier.targetsFor(numbers);
   const photoErrors = results.filter(item => item.error).length;
   const recognized = results.filter(item => item.number).length;
+  // Photos filed as unknown with several numbers (G_DRIVE_POLICY) need a person.
+  const photoReview = results.filter(item => item.review).length;
+  const reviewNote = photoReview ? ` | Фото на перевірку: ${photoReview}` : '';
   const storage = ports.storage ?? globalThis.chrome?.storage?.local;
   if (!dryRun && targets.length) await addRecoveryTargets(storage, targets);
   const stopped = results.find(item => ['uncertain-write', 'aborted', 'unauthenticated', 'permission-denied'].includes(item.errorCode));
@@ -114,7 +117,7 @@ export async function executeBarcodeTask(task, ports = {}) {
     return error(`Фото: ${results.length - photoErrors}/${results.length} | File errors: ${photoErrors} | Saved targets: ${dryRun ? 0 : targets.length} | ${stopped.error}`);
   }
   if (targets.length === 0) {
-    return (photoErrors ? error : done)(`Фото: ${results.length} | Розпізнано: ${recognized} | Exact targets: 0 | File errors: ${photoErrors}`);
+    return (photoErrors ? error : done)(`Фото: ${results.length} | Розпізнано: ${recognized} | Exact targets: 0 | File errors: ${photoErrors}${reviewNote}`);
   }
 
 
@@ -128,7 +131,7 @@ export async function executeBarcodeTask(task, ports = {}) {
   if (dryRun) {
     return (photoErrors ? error : done)(
       `Dry run — Фото: ${results.length} | Розпізнано: ${recognized}`
-      + ` | Reschedule: ${res.eligible ?? res.count ?? 0} | File errors: ${photoErrors}`
+      + ` | Reschedule: ${res.eligible ?? res.count ?? 0} | File errors: ${photoErrors}${reviewNote}`
       + (Number.isInteger(res.eligible) ? ` | Skipped: ${res.skipped} | Review: ${res.review ?? 0} | Depot errors: ${res.errors}` : '')
       + (res.date ? ` | Date: ${res.date} (${res.calendarTimeZone}; ${res.calendarVersion})` : ''),
       detailsFor(res),
@@ -138,7 +141,7 @@ export async function executeBarcodeTask(task, ports = {}) {
   const remaining = await applyRecoveryResult(storage, res);
   return (photoErrors ? error : done)(
     `Фото: ${results.length - photoErrors}/${results.length} | Змінено: ${res.changed}`
-    + ` | File errors: ${photoErrors}`
+    + ` | File errors: ${photoErrors}${reviewNote}`
     + ` | Пропущено: ${res.skipped} | Перевірка: ${res.review ?? 0} | Помилки: ${res.errors}`
     + ` | Retry: ${remaining.length}`
     + (unresolved ? ` | Unresolved: ${unresolved}` : ''),

@@ -1,3 +1,11 @@
+# S04-02 Drive plan/apply done — 2026-11-04
+
+Copilot; no active writer. Plan rows carry fileId/source/policyVersion; live re-reads file metadata before PATCH (stale → untouched) and refuses a same-named file in the month folder (collision → untouched). Contested photos filed as unknown + review, counted as «Фото на перевірку».
+Root1.1.74/extension6.3.0.105; bot0.2.30. Full 257/257 PASS7; review ACCEPT. No real Drive action.
+Next: S04-03 needs owner decision G_ARCHITECTURE (recoverable runner).
+
+---
+
 # S02-03 Drive filing date and names done — 2026-11-04
 
 Copilot; no active writer. Owner approved G_DRIVE_POLICY. Filing day = Irish day of Drive upload; undated photo untouched with explicit error; already-named file kept only when the fresh verified number matches, else left for review (name-mismatch); deterministic names tested.

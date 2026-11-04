@@ -100,7 +100,7 @@ export function initDepotFlow({
     const prefix = `${current}/${total}`;
     const name   = entry.to?.split('/').pop();
     if (entry.error)          log.fail(`${prefix} ✗ ${entry.from} — ${entry.error}`);
-    else if (!entry.number)   log.warn(`${prefix} ? ${name}`);
+    else if (!entry.number)   log.warn(`${prefix} ? ${name}${entry.review ? ` — ${entry.review}` : ''}`);
     else if (entry.contested) log.warn(`${prefix} ✓ ${name} (contested)`);
     else                      log.ok(`${prefix} ✓ ${name}`);
   }

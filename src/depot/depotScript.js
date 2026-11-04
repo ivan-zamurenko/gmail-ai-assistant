@@ -129,10 +129,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
           || !time || Number(time[1]) > 23 || Number(time[2]) > 59 || Number(time[3] ?? 0) > 59 || !scan.type) {
         return decision('REVIEW', 'Scan identity or timestamp invalid; manual review required');
       }
-      // The depot records consignment creation as Order received / Par #0.
-      // It is not a physical parcel or movement evidence. Other zero/unknown
-      // identities still require review; never discard an unbound return/delivery.
-      if (scan.parcel === '0' && normalize(scan.type) === 'order received') continue;
       if (!/^[1-9]\d{0,5}$/.test(scan.parcel)) {
         return decision('REVIEW', 'Scan identity or timestamp invalid; manual review required');
       }
@@ -300,13 +296,19 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       if (!doc.getElementById('MAINTABLE')) throw new Error('Scan history unavailable or malformed');
       const rows = Array.from(doc.querySelectorAll('#MAINTABLE tbody tr'));
       if (rows.length > 1000) throw new Error('Scan history unavailable or malformed');
-      scans = rows.map(row => {
+      scans = rows.flatMap(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length < 12) throw new Error('Scan history unavailable or malformed');
         const text = cell => cell.textContent?.trim() ?? '';
-        const [date = '', time = '', ...extra] = text(cells[4]).split(/\s+/);
-        if (extra.length) throw new Error('Scan history unavailable or malformed');
-        return { parcel: text(cells[7]), type: cells[3].getAttribute('title')?.trim() || text(cells[3]), date, time };
+        const parcel = text(cells[7]);
+        // Owner: Par #0 is administrative, outside physical-parcel checks.
+        // Skip it before reading its name or timestamp (including malformed ones).
+        if (parcel === '0') return [];
+        // textContent does not insert whitespace for <br> in detached depot HTML.
+        // Fixed date width permits an unambiguous adjacent date/time boundary.
+        const stamp = /^(\d{2}\/\d{2}\/\d{4})\s*(\d{2}:\d{2}(?::\d{2})?)$/.exec(text(cells[4]));
+        return [{ parcel, type: cells[3].getAttribute('title')?.trim() || text(cells[3]),
+          date: stamp?.[1] ?? '', time: stamp?.[2] ?? '' }];
       });
     }
     return { status, ...classify(status, notes, scans, plan.today) };

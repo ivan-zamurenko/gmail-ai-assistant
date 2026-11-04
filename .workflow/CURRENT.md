@@ -1,3 +1,17 @@
+# Pending parser follow-up ready — 2026-11-04
+
+Root done; no active writer. Root1.1.64/extension6.3.0.96; bot0.2.29 unchanged. Owner explicitly excludes administrative row entirely: Par#0 is skipped before name/date/time checks. Strict adjacent date/time parser supports br textContent. Physical parcel policy unchanged; batch source remains Pending.
+RED16/17→focused21/21; full236/236 PASS7; reviewer ACCEPT. No live depot verification.
+Artifact /tmp/DPD-Assistance-6.3.0.96.zip. Next codex commit/push and owner work-PC update/preview. No restart/live/merge.
+
+---
+
+# Pending history parser follow-up active — 2026-11-04
+
+Root sole writer. Live incident persists, exact generic REVIEW supplied. Owner explicitly says skip administrative row completely. Scope ignore Par#0 before name/date/time parsing; support adjacent DD/MM/YYYYHH:mm:ss from br textContent; preserve physical history validation. Pending source unchanged. Root test-first; calendar_review read-only. No live replay/customer data retained.
+
+---
+
 # Pending CAD creation-row fix ready — 2026-11-04
 
 Root complete; no active writer. Root1.1.63/extension6.3.0.95; bot0.2.29 unchanged.

@@ -232,3 +232,7 @@
 - 2026-11-04 root — incident reproduced: administrative Order received/Par#0 caused false invalid-identity review before valid physical CAD. Narrow fix ignores that exact creation row only after timestamp validation. Existing tests RED16/17→GREEN17/17; no real data retained/live request. Next review/full gates and extension6.3.0.95.
 
 - 2026-11-04 root — complete offline: Pending CAD creation-row fix full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.95/root1.1.63; no bot change or live request. Next commit/push and owner extension update/preview to confirm real history.
+
+- 2026-11-04 root — owner explicitly excludes administrative row entirely after persistent generic REVIEW. Implemented Par#0 early skip and strict adjacent date/time parser for br textContent. RED16/17→focused21/21; preserved physical history validation. Pending source unchanged. Next reviewer/full gates and extension6.3.0.96; no live action.
+
+- 2026-11-04 root — verified parser follow-up full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.96/root1.1.64; bot unchanged. Artifact prepared; Pending list selection unchanged, real depot smoke remains unverified. Next scoped commit/push and owner update.

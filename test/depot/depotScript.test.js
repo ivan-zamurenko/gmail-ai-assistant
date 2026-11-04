@@ -98,7 +98,7 @@ async function runReschedule(mode, {
         const day = irishDay(new RealDate(now)).split('-').reverse().join('/');
         const history = (scanReads > 1 && afterScans) || scans || [{ parcel: '1', type: 'CAD scan', date: day, time: '09:00:00' }];
         return history.map(scan => ({ querySelectorAll: () => Array.from({ length: 12 }, (_, i) => ({
-          textContent: ({ 1: scan.route ?? 'cad', 3: scan.type, 4: `${scan.date} ${scan.time}`, 7: scan.parcel })[i] ?? '',
+          textContent: ({ 1: scan.route ?? 'cad', 3: scan.type, 4: scan.dateTimeText ?? `${scan.date} ${scan.time}`, 7: scan.parcel })[i] ?? '',
           getAttribute: () => null,
         })) }));
       },
@@ -450,6 +450,12 @@ test('parcel histories decide series eligibility, never route or aggregate statu
     ['PENDING', [scan('1', 'CAD scan')], true],
     ['PENDING', [scan('0', 'Order received', '14:59:47', '02/11/2026'), scan('1', 'Received into depot', '01:11:21'), scan('1', 'CAD scan', '07:25:26')], true],
     ['PENDING', [scan('0', 'Order received')], false],
+    ['PENDING', [scan('0', 'Order received via synthetic system', '', ''), { ...scan('1', 'CAD scan'), dateTimeText: '03/11/202609:00:00' }], true],
+    ['PENDING', [scan('0', '', '', ''), scan('1', 'CAD scan')], true],
+    ['PENDING', [scan('0', 'Unknown administrative event', '25:00:00'), scan('1', 'CAD scan')], true],
+    ['PENDING', [{ ...scan('1', 'CAD scan'), dateTimeText: '03/11/202609:00:00' }], true],
+    ['PENDING', [{ ...scan('1', 'CAD scan'), dateTimeText: '03/11/2026\n09:00:00' }], true],
+    ['PENDING', [scan('0', 'Order received', '', '')], false],
     ['  pending ', [scan('1', '  cad-SCAN  ')], true],
     ['PENDING', [scan('1', 'CAD scan', '09:00:00', '02/11/2026')], false],
     ['PENDING', [scan('1', 'Delivered')], false],
@@ -472,7 +478,7 @@ test('parcel histories decide series eligibility, never route or aggregate statu
   }
   const all = await runReschedule('cad', { route: 'other', scans: [scan('1', 'Cancelled out for delivery')] });
   assert.equal(all.saveWrites, 1, 'all must evaluate non-CAD candidates too');
-  const preview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [scan('0', 'Order received', '08:00:00'), scan('1', 'CAD scan')] });
+  const preview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [scan('0', 'Ignored administrative row', '', ''), { ...scan('1', 'CAD scan'), dateTimeText: '03/11/202609:00:00' }] });
   assert.equal(preview.result.eligible, 1);
   assert.equal(preview.saveWrites, 0);
 });
@@ -497,11 +503,11 @@ test('missing or conflicting scan evidence refuses writes; changed evidence is c
     [scan('1', 'CAD scan', '09:00:00', '31/02/2026')],
     [scan('1', 'CAD scan'), scan('1', 'Delivered')],
     [scan('1', 'CAD scan'), scan('', 'Delivered', '10:00:00')],
-    [scan('1', 'CAD scan'), scan('0', 'Delivered', '10:00:00')],
-    [scan('1', 'CAD scan'), scan('0', 'Return to depot')],
-    [scan('1', 'CAD scan'), scan('0', 'Unknown administrative event')],
     [scan('1', 'CAD scan'), scan('', 'Order received')],
-    [scan('1', 'CAD scan'), scan('0', 'Order received', '25:00:00')],
+    [{ ...scan('1', 'CAD scan'), dateTimeText: '03/11/202625:00:00' }],
+    [{ ...scan('1', 'CAD scan'), dateTimeText: '31/02/202609:00:00' }],
+    [{ ...scan('1', 'CAD scan'), dateTimeText: '03/11/202609:00:00 extra' }],
+    [scan('0', '', '', ''), scan('', 'CAD scan')],
   ]) {
     const result = await runReschedule('labels', { scans, logCallEnabled: true });
     assert.equal(result.saveWrites, 0);

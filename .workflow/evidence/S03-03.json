@@ -93,9 +93,9 @@
     }
   ],
   "versions": {
-    "root": "1.1.63",
+    "root": "1.1.64",
     "bot": "0.2.29",
-    "extension": "6.3.0.95"
+    "extension": "6.3.0.96"
   },
   "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks. Console-progress diff ACCEPT; no request/policy changes or unsafe data.",
   "untested": [
@@ -150,6 +150,23 @@
     ],
     "untested": [
       "Installed extension against live depot and complete real event title"
+    ],
+    "live_actions": false
+  },
+  "pending_parser_followup": {
+    "date": "2026-11-04",
+    "owner_decision": "Skip administrative Par#0 entirely before checking type/date/time; supersedes exact Order received exception",
+    "fixes": [
+      "Early zero-row exclusion",
+      "Anchored DD/MM/YYYY+optional whitespace+HH:mm[:ss] parser accepts br textContent adjacent form"
+    ],
+    "checks": [
+      "Existing test-first RED16/17→focused21/21",
+      "node tools/checks.mjs PASS7,236/236",
+      "calendar_review diff ACCEPT"
+    ],
+    "untested": [
+      "Real depot DOM and installed extension behavior"
     ],
     "live_actions": false
   }

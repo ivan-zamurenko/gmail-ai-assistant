@@ -324,3 +324,6 @@ Owner explicitly requests con_id followed by emoji result. This overrides the pr
 
 ### 2026-11-04 — Pending CAD administrative creation row
 Owner supplied a live example of Pending with creation row Par#0 followed by physical parcel1 received/CAD today. Reproduced false review in synthetic fixture. Ignore only normalized exact Order received at Par#0 after timestamp validation; it supplies no eligibility evidence. Physical parcel latest-CAD policy and unknown/return/delivery identity guards remain. Scheduled target stays next Irish working day. No original screenshot/customer/session/tracking fields retained.
+
+### 2026-11-04 — Skip administrative Par#0 completely
+Owner reports persistent Pending scan REVIEW and explicitly instructs to skip the administrative row without checking it. Supersedes the earlier exact Order received title/timestamp condition: Par#0 rows are now excluded before type/date/time parsing. Physical parcels1+ retain identity, timestamp, latest-movement and return policy. Date/time text accepts an adjacent fixed-width boundary because HTML br need not contribute whitespace to textContent. Batch source remains the existing Pending list; target remains next working day. Actual live failure cause beyond these reproduced parser gaps is not yet verified.

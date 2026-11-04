@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Pending CAD creation-row fix ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Pending parser follow-up ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2059,7 +2059,21 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Pending CAD creation-row fix ready — 2026-11-04</h1><pre class="markdown"># Pending CAD creation-row fix ready — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Pending parser follow-up ready — 2026-11-04</h1><pre class="markdown"># Pending parser follow-up ready — 2026-11-04
+
+Root done; no active writer. Root1.1.64/extension6.3.0.96; bot0.2.29 unchanged. Owner explicitly excludes administrative row entirely: Par#0 is skipped before name/date/time checks. Strict adjacent date/time parser supports br textContent. Physical parcel policy unchanged; batch source remains Pending.
+RED16/17→focused21/21; full236/236 PASS7; reviewer ACCEPT. No live depot verification.
+Artifact /tmp/DPD-Assistance-6.3.0.96.zip. Next codex commit/push and owner work-PC update/preview. No restart/live/merge.
+
+---
+
+# Pending history parser follow-up active — 2026-11-04
+
+Root sole writer. Live incident persists, exact generic REVIEW supplied. Owner explicitly says skip administrative row completely. Scope ignore Par#0 before name/date/time parsing; support adjacent DD/MM/YYYYHH:mm:ss from br textContent; preserve physical history validation. Pending source unchanged. Root test-first; calendar_review read-only. No live replay/customer data retained.
+
+---
+
+# Pending CAD creation-row fix ready — 2026-11-04
 
 Root complete; no active writer. Root1.1.63/extension6.3.0.95; bot0.2.29 unchanged.
 Reproduced false review from Order received/Par#0 before valid parcel1 CAD. Exact creation row ignored after timestamp validation; zero/blank movement identity still blocks. Target remains next Irish working day.
@@ -3064,6 +3078,10 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 root — incident reproduced: administrative Order received/Par#0 caused false invalid-identity review before valid physical CAD. Narrow fix ignores that exact creation row only after timestamp validation. Existing tests RED16/17→GREEN17/17; no real data retained/live request. Next review/full gates and extension6.3.0.95.
 
 - 2026-11-04 root — complete offline: Pending CAD creation-row fix full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.95/root1.1.63; no bot change or live request. Next commit/push and owner extension update/preview to confirm real history.
+
+- 2026-11-04 root — owner explicitly excludes administrative row entirely after persistent generic REVIEW. Implemented Par#0 early skip and strict adjacent date/time parser for br textContent. RED16/17→focused21/21; preserved physical history validation. Pending source unchanged. Next reviewer/full gates and extension6.3.0.96; no live action.
+
+- 2026-11-04 root — verified parser follow-up full236/236 PASS7, reviewer ACCEPT. Extension6.3.0.96/root1.1.64; bot unchanged. Artifact prepared; Pending list selection unchanged, real depot smoke remains unverified. Next scoped commit/push and owner update.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4462,6 +4480,9 @@ Owner explicitly requests con_id followed by emoji result. This overrides the pr
 
 ### 2026-11-04 — Pending CAD administrative creation row
 Owner supplied a live example of Pending with creation row Par#0 followed by physical parcel1 received/CAD today. Reproduced false review in synthetic fixture. Ignore only normalized exact Order received at Par#0 after timestamp validation; it supplies no eligibility evidence. Physical parcel latest-CAD policy and unknown/return/delivery identity guards remain. Scheduled target stays next Irish working day. No original screenshot/customer/session/tracking fields retained.
+
+### 2026-11-04 — Skip administrative Par#0 completely
+Owner reports persistent Pending scan REVIEW and explicitly instructs to skip the administrative row without checking it. Supersedes the earlier exact Order received title/timestamp condition: Par#0 rows are now excluded before type/date/time parsing. Physical parcels1+ retain identity, timestamp, latest-movement and return policy. Date/time text accepts an adjacent fixed-width boundary because HTML br need not contribute whitespace to textContent. Batch source remains the existing Pending list; target remains next working day. Actual live failure cause beyond these reproduced parser gaps is not yet verified.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6651,6 +6672,8 @@ Existing barcode DM delivery regression also checks full text attachment includi
 Console con_id follow-up: existing two diagnostic groups changed first16/18→18/18. They now require owner-approved numeric public number and emoji outcome while preserving internal-ID/raw-text redaction, malformed-number fallback, serialized MAIN execution, dry-run distinction and no false success after save failure. No new test group.
 
 Pending CAD incident: existing policy matrix now includes synthetic Order received/Par#0 → Received into depot/Par#1 → CAD today/Par#1. RED16/17→GREEN17/17; serialized preview eligible without writes. Creation-only history cannot permit a write. Zero Delivered/Return/unknown events, blank identity and invalid creation timestamps still refuse writes. Original screenshot and real identifiers are not fixtures.
+
+Pending parser follow-up: existing matrix changed first RED16/17 then focused21/21. New owner policy supersedes zero-row guards: any exact Par#0 is ignored before name/time validation, but alone cannot allow a write. Physical blank identity, invalid dates/hours and trailing tokens still refuse. Synthetic adjacent date/time and newline fixtures cover br textContent semantics; serialized preview includes ignored invalid metadata plus adjacent physical CAD. Existing multi-parcel/latest/return protections remain. No live DOM/real identifiers used.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

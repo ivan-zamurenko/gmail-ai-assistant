@@ -163,3 +163,14 @@ the rearrange form, exact identity/history recheck, POST Save with arranged-date
 and confirmation parsing remain. No guessed woLogCall endpoint or button/form
 submission survives in runtime. Historical standalone snippets are unchanged and
 are not bundled or used by popup/queue. Real server acceptance still needs smoke.
+
+## Console progress — 2026-11-04
+
+Open DevTools Console on the authenticated depot tab and filter `DPD reschedule`.
+MAIN-world execution writes fixed phase messages with batch position, e.g.2/10,
+not tracking/internal IDs. CHECK precedes evidence reads; FORM/RECHECK/SAVE locate
+network waits; SAVED follows accepted server confirmation only. Dry-run logs
+WOULD_CHANGE without write phases. SKIPPED/REVIEW/ERROR show static policy or safe
+error reasons. Final counts distinguish eligible previews from actual writes.
+No timer/polling logs, credentials, Notes, raw status/body or remote logging added.
+This is console-only progress; it does not stream intermediate messages to popup.

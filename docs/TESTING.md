@@ -1188,3 +1188,11 @@ but now require zero LogCall requests for every outcome, while maintaining exact
 allowed/denied date-save counts. RED15/17 before removal; no new test group.
 Form-field/confirmation, fresh eligibility and serialized dry-run tests remain.
 Live server requirements are unverified; historical snippets are outside runtime.
+
+### Reschedule console progress — 2026-11-04
+
+The existing depot diagnostic test now runs serialized MAIN and asserts ordered
+CHECK→FORM→RECHECK→SAVE→SAVED plus final counts. Dry-run has WOULD_CHANGE and no
+write phases; policy skip/review show reasons, failed POST never emits SAVED.
+Raw unknown status, provider text, consignment/internal IDs and session fields
+remain absent. Initial RED16/17; no new test group or live calls.

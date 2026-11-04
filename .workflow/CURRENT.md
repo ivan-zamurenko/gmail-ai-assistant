@@ -1,3 +1,39 @@
+# Reschedule console progress ready — 2026-11-04
+
+Root integrator complete; calendar_review ACCEPT; no active writer.
+Root1.1.60/extension6.3.0.92; running bot0.2.28 unchanged, no restart needed.
+Depot tab Console filter DPD reschedule: start/date/count, per-index check/form/
+recheck/save/confirmed-save, dry-run would-change, skip/review/error and totals.
+No parcel IDs/raw status/Notes/session/body logs. No policy/request-order changes.
+Existing test RED16/17→focused21/21; full233/233 PASS7; evidence/S03-03.json.
+Artifact /tmp/DPD-Assistance-6.3.0.92.zip. Live DevTools not verified.
+Next owner update/reload extension; F12 Console on depot tab, filter DPD reschedule.
+Scope ready for codex commit/push; no merge/deployment/live command.
+
+---
+
+# Reschedule console progress active — 2026-11-04
+
+Root sole writer, codex base511074f. Owner requests visible console progress.
+Scope self-contained depotScript diagnostics, existing regression, root/extension
+versions, docs/evidence. No policy/network/order changes; no PII/IDs/raw bodies.
+Logs belong to depot tab MAIN-world Console for popup and Discord-triggered runs.
+Prior dirty CURRENT/WORKLOG are this session's authorized bot-restart handoff.
+Next test-first lifecycle/error/dry-run messages, then review and full checks.
+
+---
+
+# Bot restarted by owner request — 2026-11-04
+
+Bot0.2.28 restarted on Mac; previous exact process/cwd verified, terminated,
+new detached process confirmed alive after launcher exit. Discord ClientReady
+observed; no startup/client/cleanup error markers. No command registration,
+extension update, depot action or merge. Source511074f.
+Extension6.3.0.91 still requires work-PC installation for latest depot behavior.
+No active writer. Next: owner smoke when work-PC available.
+
+---
+
 # Separate Log Call removed — 2026-11-04
 
 Root integrator done; calendar_review ACCEPT; no active writer.

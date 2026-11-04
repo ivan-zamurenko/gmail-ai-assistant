@@ -5,7 +5,7 @@
   "base_sha": "2be703a",
   "branch": "codex",
   "completed_on": "2026-11-04",
-  "scope": "Owner-confirmed whole-series eligibility from physical parcel history and GH Notes; fresh exact-identity recheck, policy-aware previews and bounded reasons. Owner follow-up removes separate LogCall; direct date form GET/POST retained.",
+  "scope": "Owner-confirmed whole-series eligibility from physical parcel history and GH Notes; fresh exact-identity recheck, policy-aware previews and bounded reasons. Owner follow-up removes separate LogCall; direct date form GET/POST retained. Owner follow-up adds safe per-index depot-console lifecycle progress.",
   "checks": [
     {
       "phase": "red",
@@ -72,19 +72,38 @@
       "command": "node tools/checks.mjs",
       "exit_code": 0,
       "result": "LogCall removal final PASS7/233 tests; lint/build/artifacts/docs/diff."
+    },
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js",
+      "exit_code": 1,
+      "result": "Console-progress expectation16/17; start/progress phases absent before change."
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js test/depot/calendar.test.js",
+      "exit_code": 0,
+      "result": "21/21; serialized ordered progress, safe failure/skip/review and dry-run without save phases."
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "Console-progress full PASS7/233 tests; lint/build/artifacts/docs/diff."
     }
   ],
   "versions": {
-    "root": "1.1.59",
+    "root": "1.1.60",
     "bot": "0.2.28",
-    "extension": "6.3.0.91"
+    "extension": "6.3.0.92"
   },
-  "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks.",
+  "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks. Console-progress diff ACCEPT; no request/policy changes or unsafe data.",
   "untested": [
     "Real depot CAD scan spelling/Notes HTML variants and history completeness",
     "Coverage of other depot sections beyond the currently opened list",
     "Live server acceptance without LogCall; real Chrome/Discord/depot operation",
-    "Runtime restart, command-description registration and work-PC update"
+    "Runtime restart, command-description registration and work-PC update",
+    "Live DevTools rendering of new console progress"
   ],
   "external_effects": [],
   "compatibility": "Queue schema unchanged; only additive local result fields/reasons. Current list candidates now all checked, not route-cad shortcut. Separate LogCall removed by owner decision LOGCALL-REMOVE-2026-11-04. Console futureDateCheck remains historical, non-authoritative.",

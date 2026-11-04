@@ -307,11 +307,12 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   // ── Actions ────────────────────────────────────────────────────────────────────
 
-  async function submitReschedule(consId, tomorrowInput, recheck) {
+  async function submitReschedule(consId, tomorrowInput, recheck, progress) {
     const { session } = getSessionParams();
     const formUrl = `/scripts/cgiip.exe/WService=wsInterlink/woRearrangeConsignment.p` +
       `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}`;
 
+    progress('FORM', 'Loading date form');
     const formDoc = await fetchDoc(formUrl);
     const form    = formDoc.querySelector('form');
     if (!form) {
@@ -341,8 +342,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     body.delete('arranged-cancel');
 
     assertCalendarPlan();
+    progress('RECHECK', 'Checking fresh identity and eligibility before Save');
     await recheck();
     assertCalendarPlan();
+    progress('SAVE', 'POST date form; waiting for server confirmation');
     const res = await fetch(actionUrl, {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -365,7 +368,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
     const savedDate = resultDoc.querySelector('[name="arranged-date"]')?.getAttribute('value');
     if (savedDate === tomorrowInput) return `arranged-date is now ${savedDate}`;
 
-    console.warn('[reschedule] UNCONFIRMED_RESPONSE');
     throw new Error(`Reschedule: server did not confirm. See console for details.`);
   }
 
@@ -374,8 +376,13 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   async function processPackages(packages, arrangedDate) {
     let changed = 0, skipped = 0, errors = 0, eligible = 0;
     const results = [];
-    for (const pkg of packages) {
+    for (const [index, pkg] of packages.entries()) {
+      // Fixed phase/reason strings and batch position only. Never log a target,
+      // raw status, Notes, session URL or form/server body. No polling/timer spam.
+      const prefix = `[DPD reschedule] [${index + 1}/${packages.length}]`;
+      const progress = (phase, message) => console.log(`${prefix} ${phase} | ${message}`);
       try {
+        progress('CHECK', 'Reading current status and parcel evidence');
         const initial = await readEligibility(pkg);
         const { status, reason } = initial;
         const action = initial.action === 'REVIEW' ? 'ERROR' : initial.action;
@@ -385,15 +392,23 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
             await submitReschedule(pkg.consId, arrangedDate, async () => {
               const fresh = await readEligibility(pkg);
               if (fresh.action !== 'CHANGE_DATE') throw new Error('Eligibility changed before save; manual review required');
-            });
+            }, progress);
             changed++;
+            progress('SAVED', 'Date change confirmed by server');
+          } else {
+            progress('WOULD_CHANGE', reason);
           }
           eligible++;
-        } else if (action === 'ERROR') errors++;
-        else skipped++;
+        } else if (action === 'ERROR') {
+          errors++;
+          console.warn(`${prefix} REVIEW | ${reason}`);
+        } else {
+          skipped++;
+          progress('SKIPPED', reason);
+        }
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status, action, reason });
       } catch (err) {
-        console.error('[reschedule]', safeFailure(err, 'Reschedule failed'));
+        console.error(`${prefix} ERROR | ${safeFailure(err, 'Reschedule failed')}`);
         errors++;
         results.push({ consNumber: pkg.consNumber, consId: pkg.consId, status: 'ERROR', action: 'ERROR', reason: safeFailure(err, 'Reschedule failed') });
       }
@@ -407,9 +422,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
     if (!isDepotPage()) throw new Error('Not the correct depot page (unexpected origin)');
     if (!['cad', 'labels', 'manual'].includes(mode)) throw new Error('Unsupported depot mode');
-    console.log(`DPD Depot | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'}`);
+    console.log(`[DPD reschedule] START | mode=${mode} | ${dryRun ? 'DRY RUN' : 'LIVE'}`);
     assertCalendarPlan();
     const arrangedDate = plan.targetDate.split('-').reverse().join('/');
+    console.log(`[DPD reschedule] TARGET_DATE | ${arrangedDate} | Europe/Dublin`);
     const allRows = mode === 'cad' ? await fetchPendingList() : [];
     const exactTargets = Array.isArray(targets) ? targets : [];
     const packages = mode === 'cad'
@@ -421,6 +437,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         return [[consId, { consNumber, consId, type: 'PopUp' }]];
       })).values());
 
+    console.log(`[DPD reschedule] TARGETS | ${packages.length} consignment(s)`);
     if (packages.length === 0) {
       let warning;
       if (mode === 'manual') {
@@ -433,13 +450,16 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         const routes = [...new Set(allRows.map(r => r.route))].filter(Boolean);
         warning = `No exact consignment targets among ${allRows.length} pending. Routes seen: ${routes.join(', ') || '(all blank)'}`;
       }
-      console.warn('[depotMain] NO_TARGETS');
+      console.warn('[DPD reschedule] NO_TARGETS | Nothing to process');
+      console.log('[DPD reschedule] DONE | Checked: 0 | Changed: 0 | Skipped: 0 | Errors: 0');
       return { changed: 0, skipped: 0, errors: 0, warning };
     }
 
     const result = await processPackages(packages, arrangedDate);
+    console.log(`[DPD reschedule] DONE | Checked: ${packages.length} | `
+      + (dryRun ? `Eligible: ${result.eligible} | ` : '')
+      + `Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
     if (dryRun) {
-      console.log(`DRY RUN — ${packages.length} parcel(s) would be processed.`);
       return {
         ...result,
         dryRun: true,
@@ -451,11 +471,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       };
     }
 
-    console.log(`Done | Changed: ${result.changed} | Skipped: ${result.skipped} | Errors: ${result.errors}`);
     return result;
 
   } catch (err) {
-    console.error('[depotMain] fatal:', safeFailure(err));
+    console.error('[DPD reschedule] FATAL |', safeFailure(err));
     return { __error: safeFailure(err) };
   }
 }

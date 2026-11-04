@@ -637,3 +637,11 @@ only, free prose remains unverified; no external AI data transmission.
 - Existing policy tests now assert zero LogCall requests even when the button is
   present, while allowed date saves still occur. Synthetic only; no live calls,
   credentials inspection, bot restart or deployment.
+
+## 2026-11-04 — reschedule console visibility
+
+- Added event-based progress using batch position and fixed phase/reason strings.
+  Raw status/notes/identities/customer details/form bodies/session URLs remain
+  excluded; no logging service, network request or clipboard access added.
+- Extended existing synthetic privacy regression for unknown status and failed
+  POST; successful write message is emitted only after confirmation.

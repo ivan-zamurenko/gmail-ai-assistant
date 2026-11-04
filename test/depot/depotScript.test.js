@@ -399,10 +399,34 @@ test('reschedule refuses a cross-origin form action before posting session field
 });
 
 
-test('depot diagnostics omit parcel identities and provider bodies while retaining failure', async () => {
-  const success = await runReschedule('labels');
+test('depot diagnostics show ordered progress without identities, raw bodies or false success', async () => {
+  const success = await runReschedule('labels', { serialized: true });
   assert.equal(success.result.changed, 1);
-  assert.doesNotMatch(JSON.stringify(success.diagnostics), /123456789|7654321/);
+  const lines = success.diagnostics.map(args => args.join(' '));
+  const log = lines.join('\n');
+  assert.match(log, /\[DPD reschedule\] START.*LIVE/);
+  assert.match(log, /TARGETS.*1/);
+  let previous = -1;
+  for (const phase of ['CHECK', 'FORM', 'RECHECK', 'SAVE', 'SAVED']) {
+    const index = lines.findIndex(line => line.includes(`[1/1] ${phase} |`));
+    assert.ok(index > previous, `${phase} must occur in order`);
+    previous = index;
+  }
+  assert.match(log, /DONE.*Changed: 1/);
+  assert.doesNotMatch(log, /123456789|7654321|session=|ConsId=/);
+  const preview = await runReschedule('labels', { dryRun: true });
+  const previewLog = JSON.stringify(preview.diagnostics);
+  assert.match(previewLog, /WOULD_CHANGE/);
+  assert.doesNotMatch(previewLog, /\[1\/1\] (?:FORM|RECHECK|SAVE|SAVED) \|/);
+  assert.match(previewLog, /DONE.*Eligible: 1.*Changed: 0/);
+  const skipped = await runReschedule('labels', { status: 'GOODS HELD' });
+  assert.match(JSON.stringify(skipped.diagnostics), /SKIPPED.*No confirmed delivery-date change/);
+  const review = await runReschedule('labels', { status: 'SYNTHETIC_PRIVATE_STATUS' });
+  assert.match(JSON.stringify(review.diagnostics), /REVIEW/);
+  assert.doesNotMatch(JSON.stringify(review.diagnostics), /SYNTHETIC_PRIVATE_STATUS/);
+  const rejected = await runReschedule('labels', { saveStatus: 500 });
+  assert.match(JSON.stringify(rejected.diagnostics), /\[1\/1\] ERROR/);
+  assert.doesNotMatch(JSON.stringify(rejected.diagnostics), /\[1\/1\] SAVED/);
   const failure = await runReschedule('labels', { fetchError: '<html>synthetic-secret Bearer synthetic-token</html>' });
   assert.equal(failure.result.errors, 1);
   assert.doesNotMatch(JSON.stringify(failure), /synthetic-secret|synthetic-token|<html>/);

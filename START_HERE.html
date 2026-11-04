@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Separate Log Call removed — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Reschedule console progress ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2053,7 +2053,43 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Separate Log Call removed — 2026-11-04</h1><pre class="markdown"># Separate Log Call removed — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Reschedule console progress ready — 2026-11-04</h1><pre class="markdown"># Reschedule console progress ready — 2026-11-04
+
+Root integrator complete; calendar_review ACCEPT; no active writer.
+Root1.1.60/extension6.3.0.92; running bot0.2.28 unchanged, no restart needed.
+Depot tab Console filter DPD reschedule: start/date/count, per-index check/form/
+recheck/save/confirmed-save, dry-run would-change, skip/review/error and totals.
+No parcel IDs/raw status/Notes/session/body logs. No policy/request-order changes.
+Existing test RED16/17→focused21/21; full233/233 PASS7; evidence/S03-03.json.
+Artifact /tmp/DPD-Assistance-6.3.0.92.zip. Live DevTools not verified.
+Next owner update/reload extension; F12 Console on depot tab, filter DPD reschedule.
+Scope ready for codex commit/push; no merge/deployment/live command.
+
+---
+
+# Reschedule console progress active — 2026-11-04
+
+Root sole writer, codex base511074f. Owner requests visible console progress.
+Scope self-contained depotScript diagnostics, existing regression, root/extension
+versions, docs/evidence. No policy/network/order changes; no PII/IDs/raw bodies.
+Logs belong to depot tab MAIN-world Console for popup and Discord-triggered runs.
+Prior dirty CURRENT/WORKLOG are this session&#39;s authorized bot-restart handoff.
+Next test-first lifecycle/error/dry-run messages, then review and full checks.
+
+---
+
+# Bot restarted by owner request — 2026-11-04
+
+Bot0.2.28 restarted on Mac; previous exact process/cwd verified, terminated,
+new detached process confirmed alive after launcher exit. Discord ClientReady
+observed; no startup/client/cleanup error markers. No command registration,
+extension update, depot action or merge. Source511074f.
+Extension6.3.0.91 still requires work-PC installation for latest depot behavior.
+No active writer. Next: owner smoke when work-PC available.
+
+---
+
+# Separate Log Call removed — 2026-11-04
 
 Root integrator done; calendar_review ACCEPT; no active writer.
 Owner explicitly removed separate LogCall. Runtime helper/call/fallback deleted;
@@ -2950,6 +2986,13 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 | owner + root | LogCall removal authorized and implemented | removed separate helper/call/fallback; direct rearrange GET/POST preserved | existing matrix RED15/17; no new test group | next focused/full checks and scoped release; no live activation.
 
 - 2026-11-04 | root + calendar_review | LogCall removal completed offline | separate helper/call/fallback removed; direct date form flow unchanged; extension6.3.0.91/root1.1.59 | RED15/17→GREEN17/17, full233/233 PASS7, diff review ACCEPT; evidence/S03-03.json | scoped commit/push; work-PC acceptance without LogCall still untested, no restart.
+
+- 2026-11-04 | owner + root | bot restart completed | exact old process/cwd verified and stopped; bot0.2.28 restarted detached, Discord ready, alive after launcher exit, no error markers | explicit owner request; no register/depot calls/extension update | next work-PC6.3.0.91 update and smoke.
+
+- 2026-11-04 | owner + root | console-progress implementation | depot MAIN lifecycle/per-index phases, truthful dry-run/save outcomes and static reasons, no identities/raw data | existing regression RED16/17→focused21/21 | next review/full gates; bot remains0.2.28, no restart needed.
+
+- 2026-11-04 | owner + root | Discord copy incident resolved | owner confirms buttons reappeared after Ctrl+R in Discord Chrome tab | local copy/report tests5/5, no code fix | refresh after extension updates.
+- 2026-11-04 | root + calendar_review | console progress completed offline | per-index phases and final totals with no sensitive data; extension6.3.0.92/root1.1.60 | focused21/21/full233/233 PASS7/review ACCEPT; evidence/S03-03.json | scoped commit/push, owner extension update/depot Console; no bot restart.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4329,6 +4372,16 @@ server confirmation checks remain. This supersedes the prior S03-03 decision to
 preserve best-effort LogCall. Local tests are not proof of the live server&#39;s
 prerequisites; work-PC smoke remains pending. Historical snippets are not runtime
 entrypoints and still describe their original behavior.
+
+## RESCHEDULE-CONSOLE-2026-11-04
+
+Owner requests visible console output during extension reschedule. Implement
+bounded event-based lifecycle messages in depot MAIN console, shared by popup and
+Discord-triggered execution: start/date/count; per-batch index check/form/recheck/
+POST/confirmed save, dry-run would-change, skip/review/error and final counts.
+No raw status/Notes/IDs/customer data/session URLs/bodies. No polling chatter or
+new outbound logger. Console progress does not change the approved status/date
+policy, confirmation criteria, direct form flow, or removed LogCall decision.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4495,6 +4548,17 @@ the rearrange form, exact identity/history recheck, POST Save with arranged-date
 and confirmation parsing remain. No guessed woLogCall endpoint or button/form
 submission survives in runtime. Historical standalone snippets are unchanged and
 are not bundled or used by popup/queue. Real server acceptance still needs smoke.
+
+## Console progress — 2026-11-04
+
+Open DevTools Console on the authenticated depot tab and filter `DPD reschedule`.
+MAIN-world execution writes fixed phase messages with batch position, e.g.2/10,
+not tracking/internal IDs. CHECK precedes evidence reads; FORM/RECHECK/SAVE locate
+network waits; SAVED follows accepted server confirmation only. Dry-run logs
+WOULD_CHANGE without write phases. SKIPPED/REVIEW/ERROR show static policy or safe
+error reasons. Final counts distinguish eligible previews from actual writes.
+No timer/polling logs, credentials, Notes, raw status/body or remote logging added.
+This is console-only progress; it does not stream intermediate messages to popup.
 </pre></article>
 <article id="doc-42" tabindex="-1" hidden><p class="path"><a href="docs/discord/TEST_MATRIX.md">docs/discord/TEST_MATRIX.md</a></p><h1>Discord и очередь — матрица проверок</h1><pre class="markdown"># Discord и очередь — матрица проверок
 
@@ -6490,6 +6554,14 @@ but now require zero LogCall requests for every outcome, while maintaining exact
 allowed/denied date-save counts. RED15/17 before removal; no new test group.
 Form-field/confirmation, fresh eligibility and serialized dry-run tests remain.
 Live server requirements are unverified; historical snippets are outside runtime.
+
+### Reschedule console progress — 2026-11-04
+
+The existing depot diagnostic test now runs serialized MAIN and asserts ordered
+CHECK→FORM→RECHECK→SAVE→SAVED plus final counts. Dry-run has WOULD_CHANGE and no
+write phases; policy skip/review show reasons, failed POST never emits SAVED.
+Raw unknown status, provider text, consignment/internal IDs and session fields
+remain absent. Initial RED16/17; no new test group or live calls.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

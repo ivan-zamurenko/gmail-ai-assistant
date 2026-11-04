@@ -211,3 +211,10 @@
 - 2026-11-04 | owner + root | LogCall removal authorized and implemented | removed separate helper/call/fallback; direct rearrange GET/POST preserved | existing matrix RED15/17; no new test group | next focused/full checks and scoped release; no live activation.
 
 - 2026-11-04 | root + calendar_review | LogCall removal completed offline | separate helper/call/fallback removed; direct date form flow unchanged; extension6.3.0.91/root1.1.59 | RED15/17→GREEN17/17, full233/233 PASS7, diff review ACCEPT; evidence/S03-03.json | scoped commit/push; work-PC acceptance without LogCall still untested, no restart.
+
+- 2026-11-04 | owner + root | bot restart completed | exact old process/cwd verified and stopped; bot0.2.28 restarted detached, Discord ready, alive after launcher exit, no error markers | explicit owner request; no register/depot calls/extension update | next work-PC6.3.0.91 update and smoke.
+
+- 2026-11-04 | owner + root | console-progress implementation | depot MAIN lifecycle/per-index phases, truthful dry-run/save outcomes and static reasons, no identities/raw data | existing regression RED16/17→focused21/21 | next review/full gates; bot remains0.2.28, no restart needed.
+
+- 2026-11-04 | owner + root | Discord copy incident resolved | owner confirms buttons reappeared after Ctrl+R in Discord Chrome tab | local copy/report tests5/5, no code fix | refresh after extension updates.
+- 2026-11-04 | root + calendar_review | console progress completed offline | per-index phases and final totals with no sensitive data; extension6.3.0.92/root1.1.60 | focused21/21/full233/233 PASS7/review ACCEPT; evidence/S03-03.json | scoped commit/push, owner extension update/depot Console; no bot restart.

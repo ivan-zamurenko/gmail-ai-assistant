@@ -305,3 +305,13 @@ server confirmation checks remain. This supersedes the prior S03-03 decision to
 preserve best-effort LogCall. Local tests are not proof of the live server's
 prerequisites; work-PC smoke remains pending. Historical snippets are not runtime
 entrypoints and still describe their original behavior.
+
+## RESCHEDULE-CONSOLE-2026-11-04
+
+Owner requests visible console output during extension reschedule. Implement
+bounded event-based lifecycle messages in depot MAIN console, shared by popup and
+Discord-triggered execution: start/date/count; per-batch index check/form/recheck/
+POST/confirmed save, dry-run would-change, skip/review/error and final counts.
+No raw status/Notes/IDs/customer data/session URLs/bodies. No polling chatter or
+new outbound logger. Console progress does not change the approved status/date
+policy, confirmation criteria, direct form flow, or removed LogCall decision.

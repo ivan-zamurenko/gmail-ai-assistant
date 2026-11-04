@@ -218,3 +218,7 @@
 
 - 2026-11-04 | owner + root | Discord copy incident resolved | owner confirms buttons reappeared after Ctrl+R in Discord Chrome tab | local copy/report tests5/5, no code fix | refresh after extension updates.
 - 2026-11-04 | root + calendar_review | console progress completed offline | per-index phases and final totals with no sensitive data; extension6.3.0.92/root1.1.60 | focused21/21/full233/233 PASS7/review ACCEPT; evidence/S03-03.json | scoped commit/push, owner extension update/depot Console; no bot restart.
+
+- 2026-11-04 root — analysis/implementation: owner clarified need for per-item extension Console and Discord pagination; actual depot failure unknown. Added bounded v1 result envelope, private snapshot pages/recovery, full barcode DM attachment, safe console mirror. Test-first executor10/11→focused22/22; new view/console tests initially failed missing modules. Reviewer calendar_review read-only; next full gates/review and package.
+
+- 2026-11-04 root — verified visibility follow-up: full236/236 PASS7; reviewer ACCEPT20/20. Review-found JSON byte mismatch reproduced then fixed; existing DM regression proves last-row attachment and ACK-after-send (7/7 DM/views). No live depot execution. Next commit/push, bot activation before work-PC extension6.3.0.93.

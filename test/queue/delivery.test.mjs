@@ -5,7 +5,7 @@ import { createInteractionHandler } from '../../bot/src/interactions.js';
 
 const actor = { requestedBy: 'synthetic-requester', guildId: 'synthetic-guild' };
 const stamp = value => ({ toMillis: () => value });
-function fixture({ automatic = true } = {}) {
+function fixture({ automatic = true, terminal = {} } = {}) {
   const documents = new Map();
   const listeners = new Map();
   let clock = 100000;
@@ -20,7 +20,7 @@ function fixture({ automatic = true } = {}) {
       creates++;
       documents.set(id, value);
       if (automatic) {
-        documents.set(id, { ...value, status: 'done', summary: 'Synthetic completed result', completedAt: stamp(clock) });
+        documents.set(id, { ...value, status: 'done', summary: 'Synthetic completed result', ...terminal, completedAt: stamp(clock) });
         queueMicrotask(() => listeners.get(id)?.(snapshot(id)));
       }
     },
@@ -170,14 +170,20 @@ test('recovery lists ambiguous results and rechecks button ownership without enq
 });
 
 test('barcode DM is the final delivery boundary even if the progress message expires', async () => {
-  const f = fixture();
+  const f = fixture({ terminal: { parcel: { rescheduleResults: { version: 1, lines: ['first row', 'last row'] } } } });
   const service = f.service();
   let dm = 0;
   let edits = 0;
   const handler = createInteractionHandler({ cfg: { guildId: actor.guildId }, ...service });
   const request = { ...interaction(async () => { if (++edits > 1) throw new Error('Synthetic expired interaction'); }),
     options: { getSubcommand: () => 'barcodes', getBoolean: () => true },
-    user: { id: actor.requestedBy, send: async () => { dm++; } } };
+    user: { id: actor.requestedBy, send: async payload => {
+      if (dm === 0) {
+        assert.equal(f.documents.size, 1, 'ACK waits for DM send');
+        assert.equal(payload.files[0].attachment.toString(), 'first row\nlast row');
+      }
+      dm++;
+    } } };
   await handler(request);
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(dm, 1);

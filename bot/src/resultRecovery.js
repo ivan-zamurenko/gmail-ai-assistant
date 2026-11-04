@@ -7,7 +7,7 @@ import { safeErrorMessage } from './errors.js';
 const PAGE_SIZE = 4;
 const button = (id, label) => new ButtonBuilder().setCustomId(id).setLabel(label).setStyle(ButtonStyle.Secondary);
 
-export function createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, renderFind, resultMessage, cfg }) {
+export function createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, renderFind, renderReschedule, resultMessage, cfg }) {
   return async function recover(interaction) {
     const actor = { requestedBy: interaction.user.id, guildId: interaction.guildId };
     let id;
@@ -56,7 +56,8 @@ export function createResultRecovery({ listResults, getResult, acknowledgeResult
         return;
       }
       const report = result.parcel?.report;
-      const payload = report ? await renderDriverReport(result.parcel, { resultId: result.id, eircode: result.args?.eircode, apiKey: cfg.googleMapsApiKey })
+      const reschedule = result.command === 'reschedule' && result.parcel?.rescheduleResults;
+      const payload = reschedule ? (renderReschedule?.(result, interaction) ?? resultMessage(result)) : report ? await renderDriverReport(result.parcel, { resultId: result.id, eircode: result.args?.eircode, apiKey: cfg.googleMapsApiKey })
         : result.parcel ? await (renderFind ? renderFind(result.parcel, interaction) : buildParcelEmbed(result.parcel, cfg.googleMapsApiKey)) : resultMessage(result);
       await interaction.editReply(payload);
       if (report?.state === 'choose') return;

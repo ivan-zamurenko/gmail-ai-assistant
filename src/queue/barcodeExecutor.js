@@ -1,5 +1,5 @@
 import { safeErrorMessage } from '../utils/errors.js';
-import { resultDetails } from './resultDetails.js';
+import { resultReport } from './resultDetails.js';
 /**
  * Executes `/reschedule barcodes` in the offscreen DOM context.
  * Drive image decoding stays here; authenticated depot access is delegated to
@@ -18,8 +18,8 @@ import {
 
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
 
-const done = (summary, details) => ({ status: STATUS.DONE, summary, details });
-const error = (summary, details) => ({ status: STATUS.ERROR, summary, ...(details ? { details } : {}) });
+const done = (summary, details) => ({ status: STATUS.DONE, summary, ...(typeof details === 'object' ? details : { details }) });
+const error = (summary, details) => ({ status: STATUS.ERROR, summary, ...(typeof details === 'object' ? details : details ? { details } : {}) });
 
 function fatal(message) {
   return Object.assign(new Error(message), { fatal: true });
@@ -37,7 +37,7 @@ function detailsFor(res) {
     : (res.results ?? []).map(item =>
       `${String(item.consNumber).padEnd(11)} ${ACTION_ICON[item.action] ?? '•'} ${item.action}`
       + (item.status ? ` (${item.status})` : '') + (item.reason ? ` — ${item.reason}` : ''));
-  return resultDetails(lines);
+  return resultReport(lines);
 }
 
 export async function executeBarcodeTask(task, ports = {}) {

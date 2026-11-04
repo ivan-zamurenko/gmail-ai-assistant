@@ -32,3 +32,6 @@ export const TASK_SCHEMA_VERSION = 2;
 
 // Firestore collection that carries tasks in both directions.
 export const TASKS_COLLECTION = 'tasks';
+
+// Optional parcel.rescheduleResults envelope; task request version stays unchanged.
+export const RESCHEDULE_RESULT_VERSION = 1;

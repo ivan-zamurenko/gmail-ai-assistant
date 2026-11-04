@@ -1,3 +1,4 @@
+import { createRescheduleViews, rescheduleLines } from './rescheduleViews.js';
 import { createFindViews } from './findViews.js';
 import { todoDisplayText, todoErrorMessage } from './todoService.js';
 import { normEircode } from './geo.js';
@@ -25,14 +26,16 @@ export function createInteractionHandler({
     catch (failure) { console.error('Result delivery failed:', safeErrorMessage(failure, 'Discord operation failed')); }
   }
 
+  const rescheduleViews = createRescheduleViews();
   const findViews = createFindViews({ buildParcelEmbed, apiKey: cfg.googleMapsApiKey });
-  const recoverResult = createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, renderFind: (parcel, interaction) => findViews.open(parcel, interaction), resultMessage, cfg });
+  const recoverResult = createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, renderFind: (parcel, interaction) => findViews.open(parcel, interaction), resultMessage, renderReschedule: (result, interaction) => rescheduleViews.open(result, interaction), cfg });
 
   async function handleInteraction(interaction) {
+    const rescheduleButton = interaction.isButton?.() && interaction.customId?.startsWith('reschedule:');
     const findButton = interaction.isButton?.() && interaction.customId?.startsWith('find:');
     const reportButton = interaction.isButton?.() && interaction.customId?.startsWith('report:');
     const recoveryButton = interaction.isButton?.() && interaction.customId?.startsWith('result:');
-    if (!interaction.isChatInputCommand() && !recoveryButton && !reportButton && !findButton) return;
+    if (!interaction.isChatInputCommand() && !recoveryButton && !reportButton && !findButton && !rescheduleButton) return;
 
     // Commands are guild-scoped at registration, but keep a runtime gate too: it
     // protects us if registration changes or an interaction is ever misrouted.
@@ -47,6 +50,10 @@ export function createInteractionHandler({
       return;
     }
 
+    if (rescheduleButton) {
+      await rescheduleViews.handle(interaction);
+      return;
+    }
     if (findButton) {
       await findViews.handle(interaction);
       return;
@@ -200,7 +207,8 @@ export function createInteractionHandler({
           async (result) => {
             terminalReceived = true;
             await edits;
-            await interaction.user.send(resultMessage(result));
+            const lines = rescheduleLines(result);
+            await interaction.user.send(lines ? { content: String(result.summary ?? 'Reschedule').slice(0, 500), allowedMentions: { parse: [] }, files: [{ attachment: Buffer.from(lines.join('\n')), name: 'reschedule-results.txt' }] } : resultMessage(result));
             delivered = true;
             await acknowledge(interaction, result);
             if (!interaction.autoCleanupExpired) await interaction.editReply('✅ Scan Drive Labels завершено — фінальний звіт надіслано в DM.');
@@ -323,7 +331,7 @@ export function createInteractionHandler({
   }
 
   async function replyWithResult(interaction, result) {
-    await interaction.editReply(resultMessage(result));
+    await interaction.editReply(rescheduleViews.open(result, interaction) ?? resultMessage(result));
   }
 
   return handleInteraction;

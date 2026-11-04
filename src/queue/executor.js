@@ -1,5 +1,6 @@
+import { logRescheduleResult } from '../depot/rescheduleDiagnostics.js';
 import { irishDay, manualDateMessage, prepareDepotArgs } from '../../shared/depotCalendar.js';
-import { resultDetails } from './resultDetails.js';
+import { resultReport } from './resultDetails.js';
 import { reportSelection } from '../depot/reportSelection.js';
 /**
  * src/queue/executor.js
@@ -29,7 +30,7 @@ import { CONSTANTS }       from '../utils/constants.js';
 import { safeErrorMessage } from '../utils/errors.js';
 import { loadConfig }      from '../config/config.js';
 
-const done  = (summary, details) => ({ status: STATUS.DONE,  summary, details });
+const done  = (summary, details) => ({ status: STATUS.DONE,  summary, ...(typeof details === 'object' ? details : { details }) });
 const error = (summary)          => ({ status: STATUS.ERROR, summary });
 
 const ACTION_ICON = { CHANGE_DATE: '✅', SKIP: '⏭️', ERROR: '❌' };
@@ -52,12 +53,12 @@ async function findDepotTabs() {
 function detailsFor(res) {
   if (res.dryRun && !res.results) {
     const lines = (res.packages ?? []).map((p) => `${String(p.consNumber).padEnd(11)} ${p.consId}`);
-    return resultDetails(lines);
+    return resultReport(lines);
   }
   const lines = (res.results ?? []).map((r) =>
     `${String(r.consNumber).padEnd(11)} ${ACTION_ICON[r.action] ?? '•'} ${r.action}` +
     (r.status ? ` (${r.status})` : '') + (r.reason ? ` — ${r.reason}` : ''));
-  return resultDetails(lines);
+  return resultReport(lines);
 }
 
 /** Mirrors the popup's showDepotResult, condensed to one Discord line. */
@@ -154,7 +155,9 @@ const injectDepot = async (args) => {
   let prepared;
   try { prepared = prepareDepotArgs(args); }
   catch (err) { return { reason: safeErrorMessage(err, 'Calendar preparation failed') }; }
-  return runInDepotTabs(depotMain, [prepared], classifyDepot, args.dryRun === false);
+  const response = await runInDepotTabs(depotMain, [prepared], classifyDepot, args.dryRun === false);
+  logRescheduleResult(response.result ?? { __error: response.reason });
+  return response;
 };
 const injectLookup = (conId, options) => runInDepotTabs(
   depotLookup,

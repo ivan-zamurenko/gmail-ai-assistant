@@ -645,3 +645,5 @@ only, free prose remains unverified; no external AI data transmission.
   excluded; no logging service, network request or clipboard access added.
 - Extended existing synthetic privacy regression for unknown status and failed
   POST; successful write message is emitted only after confirmation.
+
+- 2026-11-04 root — implemented owner-requested reschedule visibility: private bounded versioned result envelope, actor/guild/channel snapshot navigation, suppressed mentions and barcode DM text report. Extension console uses indexes and allowlisted reasons, no tracking/customer/session fields. Offline tests only; no new provider, live request or rule deployment.

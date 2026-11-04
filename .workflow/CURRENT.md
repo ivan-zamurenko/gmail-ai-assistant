@@ -1,3 +1,18 @@
+# Reschedule result visibility verified — 2026-11-04
+
+Root writer finishing delivery; reviewer calendar_review ACCEPT independent20/20.
+Root1.1.61/bot0.2.29/extension6.3.0.93. Full236/236 PASS7; DM/views7/7.
+Private pages and recovery, barcode full DM text, final extension Console mirror; live phases stay depot MAIN. No eligibility change/replay; original live failure still unidentified.
+Activate new bot before extension update due to optional result envelope. Next scoped commit/push and artifact; real work-PC/Discord smoke pending.
+
+---
+
+# Reschedule result visibility active — 2026-11-04
+
+Root sole writer; base f00dcb7. Owner requests per-item extension console and Discord pagination. Scope result formatter, extension callers, bot private views/recovery, tests and versions/docs. Reviewer calendar_review read-only. No live replay; actual failure not identified. Next test-first bounded full result transport and snapshot navigation.
+
+---
+
 # Reschedule console progress ready — 2026-11-04
 
 Root integrator complete; calendar_review ACCEPT; no active writer.

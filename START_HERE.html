@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">Reschedule console progress ready — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Reschedule result visibility verified — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -1442,6 +1442,12 @@ operator reload/rebinding may be required. This is not automatic lease recovery.
 Optional parcel.scans[].coords = {lat:number,lng:number} preserves row association. Producer whitelist: exact Delivered/Carded, positive1–6-digit parcel identity, finite lat[-90,90]/lng[-180,180]. No extra coordinate properties/event IDs/notes forwarded. Consumer validates again and requires valid timestamp; mixed history is never mapped as selected parcel. No fallback to global drop. Existing schema2/command shape unchanged: old consumers ignore field, new consumers omit map when field absent. /find no longer fetches POD; existing optional POD projector support remains for legacy tests/results, renderer ignores it.
 
 Find GPS whitelist extended in extension6.3.0.88: exact Failed Delivery and Incorrect Address join Delivered/Carded. Same per-scan parcel/finite-coordinate checks; Return to depot excluded. Optional field and schema2 compatibility unchanged.
+
+### Reschedule result pages v1 — 2026-11-04
+
+Optional `parcel.rescheduleResults = {version: 1, lines: string[]}` carries the private operator result; both contract mirrors define RESCHEDULE_RESULT_VERSION. Existing task schema2 and bounded details remain. Producer bounds4000 lines/600 chars/750000 serialized UTF-8 bytes plus explicit omitted marker; consumer validates4001 lines/600 chars/850000 serialized bytes. Existing rules permit the parcel map, no rule deployment needed. This map is not a find card. New bot must be activated before extension6.3.0.93: old bot normal replies use legacy details, but old /result misclassifies the envelope as find. Older extension results retain plain text fallback. Batch recovery uses /result without con_id; no new contained-number index.
+
+Reschedule pages are ephemeral actor/guild/channel-bound snapshots, max16 sessions, fixed14min lifetime; clicks never enqueue or ACK. Barcode completion DM carries full bounded text attachment because guild navigation is unavailable in DM. Result ACK follows successful delivery.
 </pre></article>
 <article id="doc-9" tabindex="-1" hidden><p class="path"><a href="docs/discord/RUNBOOK_RU.md">docs/discord/RUNBOOK_RU.md</a></p><h1>Discord + Firestore + Chrome — порядок подготовки и эксплуатации</h1><pre class="markdown"># Discord + Firestore + Chrome — порядок подготовки и эксплуатации
 
@@ -2053,7 +2059,22 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Reschedule console progress ready — 2026-11-04</h1><pre class="markdown"># Reschedule console progress ready — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Reschedule result visibility verified — 2026-11-04</h1><pre class="markdown"># Reschedule result visibility verified — 2026-11-04
+
+Root writer finishing delivery; reviewer calendar_review ACCEPT independent20/20.
+Root1.1.61/bot0.2.29/extension6.3.0.93. Full236/236 PASS7; DM/views7/7.
+Private pages and recovery, barcode full DM text, final extension Console mirror; live phases stay depot MAIN. No eligibility change/replay; original live failure still unidentified.
+Activate new bot before extension update due to optional result envelope. Next scoped commit/push and artifact; real work-PC/Discord smoke pending.
+
+---
+
+# Reschedule result visibility active — 2026-11-04
+
+Root sole writer; base f00dcb7. Owner requests per-item extension console and Discord pagination. Scope result formatter, extension callers, bot private views/recovery, tests and versions/docs. Reviewer calendar_review read-only. No live replay; actual failure not identified. Next test-first bounded full result transport and snapshot navigation.
+
+---
+
+# Reschedule console progress ready — 2026-11-04
 
 Root integrator complete; calendar_review ACCEPT; no active writer.
 Root1.1.60/extension6.3.0.92; running bot0.2.28 unchanged, no restart needed.
@@ -2993,6 +3014,10 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 
 - 2026-11-04 | owner + root | Discord copy incident resolved | owner confirms buttons reappeared after Ctrl+R in Discord Chrome tab | local copy/report tests5/5, no code fix | refresh after extension updates.
 - 2026-11-04 | root + calendar_review | console progress completed offline | per-index phases and final totals with no sensitive data; extension6.3.0.92/root1.1.60 | focused21/21/full233/233 PASS7/review ACCEPT; evidence/S03-03.json | scoped commit/push, owner extension update/depot Console; no bot restart.
+
+- 2026-11-04 root — analysis/implementation: owner clarified need for per-item extension Console and Discord pagination; actual depot failure unknown. Added bounded v1 result envelope, private snapshot pages/recovery, full barcode DM attachment, safe console mirror. Test-first executor10/11→focused22/22; new view/console tests initially failed missing modules. Reviewer calendar_review read-only; next full gates/review and package.
+
+- 2026-11-04 root — verified visibility follow-up: full236/236 PASS7; reviewer ACCEPT20/20. Review-found JSON byte mismatch reproduced then fixed; existing DM regression proves last-row attachment and ACK-after-send (7/7 DM/views). No live depot execution. Next commit/push, bot activation before work-PC extension6.3.0.93.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4382,6 +4407,9 @@ POST/confirmed save, dry-run would-change, skip/review/error and final counts.
 No raw status/Notes/IDs/customer data/session URLs/bodies. No polling chatter or
 new outbound logger. Console progress does not change the approved status/date
 policy, confirmation criteria, direct form flow, or removed LogCall decision.
+
+### 2026-11-04 — Reschedule result visibility
+Owner requests per-item extension-console outcomes and paged Discord output after reporting no date changes. Existing MAIN phase logs remain; final safe indexed outcomes also appear in extension caller Console. Private Discord snapshot pages preserve bounded full results; barcode DM uses a full text attachment. No policy changes or live replay. The actual depot failure remains unidentified until a new result is observed. Activate bot0.2.29 before installing extension6.3.0.93 due to the new optional result envelope.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -6562,6 +6590,11 @@ CHECK→FORM→RECHECK→SAVE→SAVED plus final counts. Dry-run has WOULD_CHANG
 write phases; policy skip/review show reasons, failed POST never emits SAVED.
 Raw unknown status, provider text, consignment/internal IDs and session fields
 remain absent. Initial RED16/17; no new test group or live calls.
+
+### Reschedule result pages — 2026-11-04
+Existing executor preview regression first failed10/11 until all30 rows survived the optional versioned result envelope. New grouped UI tests protect every row across bounded Discord pages, actor/channel/admin gates, expiry, recovery discrimination and no re-enqueue/ACK during navigation. Console regression checks safe per-index outcomes and fatal errors without identifiers/raw text. Synthetic only; installed extension/Discord components and the original live depot failure are unverified.
+
+Existing barcode DM delivery regression also checks full text attachment including last row and unACKed task during send. Escape-heavy producer fixture must pass consumer serialized-size validation.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

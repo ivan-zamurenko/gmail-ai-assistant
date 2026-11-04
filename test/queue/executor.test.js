@@ -366,6 +366,8 @@ test('all mode defaults an omitted dryRun to a depot preview', async (t) => {
   assert.match(result.details, /No eligible physical parcel/);
   assert.ok(result.details.length <= 2000, 'details must fit Firestore and Discord limits');
   assert.match(result.details, /ще/);
+  assert.equal(result.parcel.rescheduleResults.version, 1);
+  assert.equal(result.parcel.rescheduleResults.lines.length, 30);
   assert.deepEqual(injections, [{ name: 'depotMain', args: [prepareDepotArgs({ dryRun: true, mode: 'cad' })] }]);
 });
 

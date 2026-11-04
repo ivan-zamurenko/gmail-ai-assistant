@@ -1,3 +1,4 @@
+import { logRescheduleResult } from '../depot/rescheduleDiagnostics.js';
 import { irishDay, prepareDepotArgs } from '../../shared/depotCalendar.js';
 import { safeErrorMessage } from '../utils/errors.js';
 /**
@@ -127,6 +128,7 @@ export function initDepotFlow({
         // ordinary page requests, exactly like running the snippet in the console.
         world:  'MAIN',
       });
+      logRescheduleResult(injection.result);
       if (!injection.result) throw new Error('Depot script returned no result — check you are on the depot page');
       if (injection.result.__error) throw new Error(injection.result.__error);
       showDepotResult(injection.result);
@@ -189,6 +191,7 @@ export function initDepotFlow({
     });
 
     const res = injection?.result;
+    logRescheduleResult(res);
     if (!res || res.__error) {
       log.fail(`Reschedule: ${res?.__error ?? 'depot script returned nothing'}`);
       const remaining = await refreshRetryButton();

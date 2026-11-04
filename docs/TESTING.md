@@ -1196,3 +1196,8 @@ CHECK→FORM→RECHECK→SAVE→SAVED plus final counts. Dry-run has WOULD_CHANG
 write phases; policy skip/review show reasons, failed POST never emits SAVED.
 Raw unknown status, provider text, consignment/internal IDs and session fields
 remain absent. Initial RED16/17; no new test group or live calls.
+
+### Reschedule result pages — 2026-11-04
+Existing executor preview regression first failed10/11 until all30 rows survived the optional versioned result envelope. New grouped UI tests protect every row across bounded Discord pages, actor/channel/admin gates, expiry, recovery discrimination and no re-enqueue/ACK during navigation. Console regression checks safe per-index outcomes and fatal errors without identifiers/raw text. Synthetic only; installed extension/Discord components and the original live depot failure are unverified.
+
+Existing barcode DM delivery regression also checks full text attachment including last row and unACKed task during send. Escape-heavy producer fixture must pass consumer serialized-size validation.

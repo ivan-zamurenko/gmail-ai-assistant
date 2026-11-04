@@ -315,3 +315,6 @@ POST/confirmed save, dry-run would-change, skip/review/error and final counts.
 No raw status/Notes/IDs/customer data/session URLs/bodies. No polling chatter or
 new outbound logger. Console progress does not change the approved status/date
 policy, confirmation criteria, direct form flow, or removed LogCall decision.
+
+### 2026-11-04 — Reschedule result visibility
+Owner requests per-item extension-console outcomes and paged Discord output after reporting no date changes. Existing MAIN phase logs remain; final safe indexed outcomes also appear in extension caller Console. Private Discord snapshot pages preserve bounded full results; barcode DM uses a full text attachment. No policy changes or live replay. The actual depot failure remains unidentified until a new result is observed. Activate bot0.2.29 before installing extension6.3.0.93 due to the new optional result envelope.

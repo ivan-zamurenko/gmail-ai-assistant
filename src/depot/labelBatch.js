@@ -1,9 +1,7 @@
 import { safeErrorMessage } from '../utils/errors.js';
 import { acceptExactConsignment, pickConsignment } from './labelBarcode.js';
-import { buildLabelName, dateOf, makeUnique } from './labelName.js';
+import { buildLabelName, dateOf, makeUnique, namedIdentity } from './labelName.js';
 
-// A file named by an earlier run. Matches parcel suffixes and duplicate copies.
-const ALREADY_NAMED = /^\d{4}-\d{2}-\d{2}_(\d{9}(-p\d{2})?|unknown-\d+)(-\d+)?\.[a-z0-9]+$/i;
 
 /**
  * Processes an already-listed batch through injected image, depot and filing
@@ -38,8 +36,8 @@ export async function processLabelBatch({
       if (candidate?.contested) {
         // Owner policy (G_DRIVE_POLICY): never verified or rescheduled; filed as
         // unknown so it leaves the inbox, and flagged for a person to check.
-        const named = ALREADY_NAMED.exec(photo.name);
-        if (named && !/^unknown/i.test(named[1])) {
+        const named = namedIdentity(photo.name);
+        if (named?.number) {
           done({
             from: photo.name, to: null, number: null, contested: true,
             status: 'review', errorCode: 'name-mismatch',
@@ -73,11 +71,10 @@ export async function processLabelBatch({
       const known = pick ? await verify(pick.number) : false;
 
       // Owner policy: a previous name is kept only if the fresh verified read agrees.
-      const named = ALREADY_NAMED.exec(photo.name);
+      const named = namedIdentity(photo.name);
       if (named) {
-        const namedNumber = /^unknown/i.test(named[1]) ? null : named[1].slice(0, 9);
         const freshNumber = known ? pick.number : null;
-        if (namedNumber !== freshNumber) {
+        if (named.number !== freshNumber) {
           done({
             from: photo.name, to: null, number: null, contested: false,
             status: 'review', errorCode: 'name-mismatch',
@@ -90,7 +87,7 @@ export async function processLabelBatch({
       const folder = await folderFor(date);
       let name = photo.name;
 
-      if (!ALREADY_NAMED.test(name)) {
+      if (!namedIdentity(name)) {
         if (!known) folder.unknown += 1;
         name = buildLabelName({
           date,

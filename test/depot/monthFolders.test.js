@@ -109,3 +109,13 @@ test('month folder state is reused for every photo in the same batch month', asy
     ['list', 'month-id'],
   ]);
 });
+
+test('unknown numbering continues from both current and earlier name formats', async () => {
+  const resolve = createMonthFolderResolver({
+    rootId: 'root', dryRun: true,
+    findFolder: async (name) => `${name}-id`,
+    createFolder: async () => assert.fail('dry-run must not create'),
+    listNames: async () => ['unknown-009_2026-08-30.jpg', '2026-08-29_unknown-004.jpg', '123456789_p01_2026-08-30.jpg'],
+  });
+  assert.equal((await resolve('2026-08-31')).unknown, 9);
+});

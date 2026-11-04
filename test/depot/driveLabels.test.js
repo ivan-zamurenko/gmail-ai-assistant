@@ -93,13 +93,13 @@ test('dry-run with missing YYYY/MM folders sends only Drive GETs and plans the p
   }
   assert.deepEqual(results, [{
     from: 'DRIVER-PHOTO.JPG',
-    to: '2026/10/2026-10-09_123456789-p02.jpg',
+    to: '2026/10/123456789_p02_2026-10-09.jpg',
     number: '123456789',
     contested: false,
     error: null,
     fileId: 'photo-syn-1',
     source: { name: 'DRIVER-PHOTO.JPG', parents: [ROOT], version: '7' },
-    policyVersion: 'drive-labels-2026-11-04',
+    policyVersion: 'drive-labels-2026-11-04.2',
   }]);
   assert.doesNotMatch(results[0].to, /created-|root-syn/, 'preview must not invent a folder id');
 });
@@ -108,7 +108,7 @@ test('dry-run with an existing month folder and a name collision still changes n
   const net = fakeServices(t, {
     photos: [PHOTO, { ...PHOTO, id: 'photo-syn-2', name: 'SECOND.JPG' }],
     folders: { [`${ROOT}/2026`]: 'year-syn', 'year-syn/10': 'month-syn' },
-    names: { 'month-syn': ['2026-10-09_123456789-p02.jpg', '2026-10-09_unknown-004.jpg'] },
+    names: { 'month-syn': ['123456789_p02_2026-10-09.jpg', 'unknown-004_2026-10-09.jpg'] },
   });
   let call = 0;
 
@@ -116,8 +116,8 @@ test('dry-run with an existing month folder and a name collision still changes n
 
   assert.deepEqual(net.requests.filter(isDriveMutation), []);
   assert.deepEqual(results.map((r) => r.to), [
-    '2026/10/2026-10-09_123456789-p02-2.jpg',
-    '2026/10/2026-10-09_unknown-005.jpg',
+    '2026/10/123456789_p02_2026-10-09-2.jpg',
+    '2026/10/unknown-005_2026-10-09.jpg',
   ]);
   assert.deepEqual(results.map((r) => r.number), ['123456789', null]);
   assert.deepEqual(results.map((r) => r.error), [null, null]);
@@ -151,7 +151,7 @@ test('live run creates missing folders after verification, then moves once', asy
   assert.equal(move.pathname, '/drive/v3/files/photo-syn-1');
   assert.equal(move.searchParams.get('addParents'), 'created-2');
   assert.equal(move.searchParams.get('removeParents'), ROOT);
-  assert.equal(results[0].to, '2026/10/2026-10-09_123456789-p02.jpg');
+  assert.equal(results[0].to, '2026/10/123456789_p02_2026-10-09.jpg');
 });
 
 test('Drive uncertain create stops next photo, and abort stops before network', async (t) => {
@@ -252,8 +252,8 @@ test('preview plan records file identity, source metadata and naming policy vers
   const [entry] = await run({ dryRun: true });
   assert.equal(entry.fileId, 'photo-syn-1');
   assert.deepEqual(entry.source, { name: 'DRIVER-PHOTO.JPG', parents: [ROOT], version: '7' });
-  assert.match(entry.policyVersion, /^drive-labels-\d{4}-\d{2}-\d{2}$/);
-  assert.equal(entry.to, '2026/10/2026-10-09_123456789-p02.jpg');
+  assert.match(entry.policyVersion, /^drive-labels-\d{4}-\d{2}-\d{2}(?:\.\d+)?$/);
+  assert.equal(entry.to, '2026/10/123456789_p02_2026-10-09.jpg');
 });
 
 test('live: a photo changed after listing is left untouched (stale), never patched', async (t) => {
@@ -274,7 +274,7 @@ test('live: a same-named file that appeared in the month folder blocks the move'
   const net = fakeServices(t, {
     photos: [PHOTO],
     folders: { [`${ROOT}/2026`]: 'year-syn', 'year-syn/10': 'month-syn' },
-    existing: { 'month-syn': ['2026-10-09_123456789-p02.jpg'] },
+    existing: { 'month-syn': ['123456789_p02_2026-10-09.jpg'] },
   });
   const [entry] = await run({ dryRun: false });
   assert.deepEqual(net.requests.filter(r => r.method === 'PATCH'), []);

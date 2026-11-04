@@ -33,12 +33,12 @@ test('dry-run label batch plans a verified file without moving it', async () => 
   assert.deepEqual(moves, []);
   assert.deepEqual(results, [{
     from: 'DRIVER-PHOTO.JPG',
-    to: '2026/08/2026-08-31_123456789-p02.jpg',
+    to: '2026/08/123456789_p02_2026-08-31.jpg',
     number: '123456789',
     contested: false,
     error: null,
   }]);
-  assert.equal(folder.taken.has('2026-08-31_123456789-p02.jpg'), true);
+  assert.equal(folder.taken.has('123456789_p02_2026-08-31.jpg'), true);
 });
 
 test('depot-rejected barcode is filed under the next unknown name', async () => {
@@ -47,7 +47,7 @@ test('depot-rejected barcode is filed under the next unknown name', async () => 
   const folder = {
     id: 'synthetic-month',
     path: '2026/08',
-    taken: new Set(['2026-08-30_unknown-007.jpg']),
+    taken: new Set(['unknown-007_2026-08-30.jpg']),
     unknown: 7,
   };
   const photo = {
@@ -77,10 +77,10 @@ test('depot-rejected barcode is filed under the next unknown name', async () => 
   assert.equal(moves.length, 1);
   assert.equal(moves[0][0], photo);
   assert.equal(moves[0][1], folder);
-  assert.equal(moves[0][2], '2026-08-31_unknown-008.jpg');
+  assert.equal(moves[0][2], 'unknown-008_2026-08-31.jpg');
   assert.deepEqual(results, [{
     from: 'DRIVER-PHOTO.JPG',
-    to: '2026/08/2026-08-31_unknown-008.jpg',
+    to: '2026/08/unknown-008_2026-08-31.jpg',
     number: null,
     contested: false,
     error: null,
@@ -125,15 +125,15 @@ test('verified live label is moved once with its exact parcel filename', async (
   assert.equal(moves.length, 1);
   assert.equal(moves[0][0], photo);
   assert.equal(moves[0][1], folder);
-  assert.equal(moves[0][2], '2026-08-31_123456789-p10.jpg');
+  assert.equal(moves[0][2], '123456789_p10_2026-08-31.jpg');
   assert.deepEqual(results, [{
     from: 'DRIVER-PHOTO.JPG',
-    to: '2026/08/2026-08-31_123456789-p10.jpg',
+    to: '2026/08/123456789_p10_2026-08-31.jpg',
     number: '123456789',
     contested: false,
     error: null,
   }]);
-  assert.equal(folder.taken.has('2026-08-31_123456789-p10.jpg'), true);
+  assert.equal(folder.taken.has('123456789_p10_2026-08-31.jpg'), true);
 });
 
 test('legacy eight-digit card reaches verification with its zero marker', async () => {
@@ -170,7 +170,7 @@ test('legacy eight-digit card reaches verification with its zero marker', async 
 
   assert.deepEqual(verified, ['012345678']);
   assert.equal(moves.length, 1);
-  assert.equal(moves[0][2], '2026-09-01_012345678-p02.jpg');
+  assert.equal(moves[0][2], '012345678_p02_2026-09-01.jpg');
   assert.equal(results[0].number, '012345678');
 });
 
@@ -209,7 +209,7 @@ test('consignment without a physical parcel number still reaches depot verificat
   assert.deepEqual(verified, ['123456789']);
   assert.deepEqual(results, [{
     from: 'DRIVER-PHOTO.JPG',
-    to: '2026/09/2026-09-01_123456789.jpg',
+    to: '2026/09/123456789_2026-09-01.jpg',
     number: '123456789',
     contested: false,
     error: null,
@@ -266,7 +266,7 @@ test('batch contains photo failures but stops immediately on a fatal depot failu
     },
     {
       from: 'GOOD-PHOTO.JPG',
-      to: '2026/08/2026-08-31_123456789-p02.jpg',
+      to: '2026/08/123456789_p02_2026-08-31.jpg',
       number: '123456789',
       contested: false,
       error: null,
@@ -335,8 +335,8 @@ test('ambiguous photo never reaches lookup; it is filed as unknown and flagged f
         folderFor: async () => { calls.push('folder'); return folder; },
         movePhoto: async (photo, target, name) => { calls.push(`move:${name}`); },
       });
-      assert.deepEqual(calls, dryRun ? ['folder'] : ['folder', 'move:2026-08-31_unknown-005.jpg']);
-      assert.equal(results[0].to, '2026/08/2026-08-31_unknown-005.jpg');
+      assert.deepEqual(calls, dryRun ? ['folder'] : ['folder', 'move:unknown-005_2026-08-31.jpg']);
+      assert.equal(results[0].to, '2026/08/unknown-005_2026-08-31.jpg');
       assert.equal(results[0].status, 'ambiguous');
       assert.equal(results[0].errorCode, 'ambiguous-barcode');
       assert.equal(results[0].number, null, 'never a reschedule target');
@@ -421,7 +421,7 @@ test('the same snapshot always produces the same names (known, parcel, unknown, 
       readCodes: async id => (id === 'c' ? [] : BARCODE),
       folderFor: async date => {
         const path = date.slice(0, 7).replace('-', '/');
-        if (!folders.has(path)) folders.set(path, { id: null, path, taken: new Set(['2026-09-01_123456789-p02.jpg']), unknown: 2 });
+        if (!folders.has(path)) folders.set(path, { id: null, path, taken: new Set(['123456789_p02_2026-09-01.jpg']), unknown: 2 });
         return folders.get(path);
       },
       movePhoto: async () => assert.fail('dry-run must not move'),
@@ -429,9 +429,29 @@ test('the same snapshot always produces the same names (known, parcel, unknown, 
   };
   const first = await run();
   assert.deepEqual(first.map(r => r.to), [
-    '2026/09/2026-09-01_123456789-p02-2.jpg',
-    '2026/09/2026-09-01_123456789-p02-3.jpg',
-    '2026/08/2026-08-31_unknown-003.png',
+    '2026/09/123456789_p02_2026-09-01-2.jpg',
+    '2026/09/123456789_p02_2026-09-01-3.jpg',
+    '2026/08/unknown-003_2026-08-31.png',
   ]);
   assert.deepEqual(await run(), first);
+});
+
+test('re-run recognises current number-first names as well as earlier date-first ones', async () => {
+  const BARCODE = [{ text: '%000000000001234567892000000', format: 'CODE_128', reads: 3 }];
+  const rerun = async (name, codes = BARCODE) => {
+    const moves = [];
+    const [result] = await processLabelBatch({
+      photos: [{ id: 'p1', name, createdTime: '2026-08-31T12:00:00.000Z' }], dryRun: false,
+      verify: async number => number === '123456789', loadPhoto: async () => ({}), readCodes: async () => codes,
+      folderFor: async () => ({ id: 'm', path: '2026/08', taken: new Set(), unknown: 0 }),
+      movePhoto: async (photo, folder, newName) => moves.push(newName),
+    });
+    return { result, moves };
+  };
+  assert.deepEqual((await rerun('123456789_p02_2026-08-31.jpg')).moves, ['123456789_p02_2026-08-31.jpg']);
+  assert.deepEqual((await rerun('123456789_p02_2026-08-31-2.jpg')).moves, ['123456789_p02_2026-08-31-2.jpg']);
+  assert.deepEqual((await rerun('unknown-004_2026-08-31.jpg', [])).moves, ['unknown-004_2026-08-31.jpg']);
+  const mismatch = await rerun('987654321_p01_2026-08-31.jpg');
+  assert.deepEqual(mismatch.moves, []);
+  assert.equal(mismatch.result.errorCode, 'name-mismatch');
 });

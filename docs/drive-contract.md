@@ -28,7 +28,10 @@ Legacy `labelParser.js` принимает другие текстовые фо�
 
 ## 4. План именования
 
-Шаблон: `YYYY-MM-DD_number[-pNN][-N].ext` либо `YYYY-MM-DD_unknown-NNN.ext`.
+Шаблон (з 2026-11-04, рішення власника): `number_pNN_YYYY-MM-DD[-N].ext` (номер посилки
+завжди, без нього лише якщо його немає на етикетці) або `unknown-NNN_YYYY-MM-DD[-N].ext`.
+Попередній формат `YYYY-MM-DD_number[-pNN][-N].ext` / `YYYY-MM-DD_unknown-NNN.ext` не
+перейменовується і розпізнається при повторному запуску (`namedIdentity`).
 
 **G_DRIVE_POLICY (2026-11-04, S02-03):** дата в назві й папці `YYYY/MM` — ірландський
 календарний день (Europe/Dublin) моменту завантаження в Drive (`createdTime`), а не

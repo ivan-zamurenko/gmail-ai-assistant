@@ -1,3 +1,11 @@
+# Drive naming amendment done — 2026-11-04
+
+Copilot; no active writer. Owner changed label names to number first with parcel always: `123456789_p01_2026-11-04.jpg`, `unknown-007_2026-11-04.jpg`; earlier date-first files are recognised, not renamed. Drive policy drive-labels-2026-11-04.2.
+Root1.1.75/extension6.3.0.106; bot0.2.30. Full 259/259 PASS7. No real Drive action.
+Next: S04-03 — owner chose G_ARCHITECTURE option A (popup → offscreen runner, summary view); implement in small steps.
+
+---
+
 # S04-02 Drive plan/apply done — 2026-11-04
 
 Copilot; no active writer. Plan rows carry fileId/source/policyVersion; live re-reads file metadata before PATCH (stale → untouched) and refuses a same-named file in the month folder (collision → untouched). Contested photos filed as unknown + review, counted as «Фото на перевірку».

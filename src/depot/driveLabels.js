@@ -18,7 +18,7 @@ const DRIVE_API   = 'https://www.googleapis.com/drive/v3';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 
 // Bump when naming/filing rules change, so a plan shows which rules produced it.
-export const DRIVE_POLICY_VERSION = 'drive-labels-2026-11-04';
+export const DRIVE_POLICY_VERSION = 'drive-labels-2026-11-04.2';
 const IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/avif']);
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const identifier = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(value);

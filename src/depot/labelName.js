@@ -3,13 +3,15 @@
  * ======================
  * Builds the file name a label photo gets after its barcode is read.
  *
- *   2026-08-07_132999608.jpg        one parcel
- *   2026-08-07_132999608-p08.jpg    parcel 8 of a multi-parcel consignment
- *   2026-08-07_132999608-p08-2.jpg  a second photo of that same parcel
- *   2026-08-07_unknown-001.jpg      barcode unreadable
+ *   132999608_p01_2026-08-07.jpg    parcel 1 (owner: number first, parcel always)
+ *   132999608_p08_2026-08-07.jpg    parcel 8 of a multi-parcel consignment
+ *   132999608_p08_2026-08-07-2.jpg  a second photo of that same parcel
+ *   132999608_2026-08-07.jpg        the label carries no parcel number
+ *   unknown-001_2026-08-07.jpg      barcode unreadable
  *
- * The date is ISO so the folder sorts chronologically — the old DD-MM-YY put
- * 01-09-26 before 31-08-26.
+ * Sorting by name groups every photo of one consignment; the YYYY/MM folder
+ * keeps the month. Files named by the earlier date-first format stay as they are
+ * and are still recognised (see namedIdentity).
  */
 
 import { irishDay } from '../../shared/depotCalendar.js';
@@ -30,10 +32,24 @@ function pad(value, width) {
  */
 export function buildLabelName(label) {
   const stem = label.number
-    ? label.number + (label.parcel > 1 ? `-p${pad(label.parcel, 2)}` : '')
+    ? label.number + (Number.isInteger(label.parcel) && label.parcel > 0 ? `_p${pad(label.parcel, 2)}` : '')
     : `unknown-${pad(label.unknownIndex, 3)}`;
 
-  return `${label.date}_${stem}${extensionOf(label.originalName)}`;
+  return `${stem}_${label.date}${extensionOf(label.originalName)}`;
+}
+
+// Names produced by this tool: current number-first and earlier date-first.
+const NAMED_CURRENT = /^(\d{9}(?:_p\d{2,})?|unknown-\d+)_\d{4}-\d{2}-\d{2}(?:-\d+)?\.[a-z0-9]+$/i;
+const NAMED_LEGACY = /^\d{4}-\d{2}-\d{2}_(\d{9}(?:-p\d{2})?|unknown-\d+)(?:-\d+)?\.[a-z0-9]+$/i;
+
+/**
+ * For a file this tool already named: `{ number }` (null for unknown-NNN).
+ * For any other file name: null.
+ */
+export function namedIdentity(fileName) {
+  const match = NAMED_CURRENT.exec(fileName) ?? NAMED_LEGACY.exec(fileName);
+  if (!match) return null;
+  return { number: /^unknown/i.test(match[1]) ? null : match[1].slice(0, 9) };
 }
 
 /** Two photos of one parcel would otherwise overwrite each other. */

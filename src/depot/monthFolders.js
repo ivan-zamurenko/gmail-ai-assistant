@@ -1,4 +1,5 @@
-const UNKNOWN_INDEX = /_unknown-(\d+)/;
+// Current names start with unknown-NNN_; earlier ones had _unknown-NNN.
+const UNKNOWN_INDEX = /(?:^|_)unknown-(\d+)/i;
 
 /**
  * Resolves root/YYYY/MM and caches the names already stored there.

@@ -301,6 +301,13 @@ test/
 - Також перевіряє, що справді вільна назва залишається без зайвого суфікса.
 - Використовує лише `Set` синтетичних назв і не звертається до Drive API.
 
+**Number-first names (owner amendment 2026-11-04)**
+
+- `labelName.test.js`: `123456789_p01_2026-08-31.jpg`, `_p10_`, без номера посилки —
+  без `_pNN`, `unknown-007_…`, дублікати `-2/-3`. `labelBatch.test.js` розпізнає вже
+  названі файли в обох форматах; `monthFolders.test.js` продовжує нумерацію unknown з
+  обох форматів.
+
 **Irish filing day and explicit date errors (G_DRIVE_POLICY)**
 
 - `dateOf` дає ірландський день завантаження: літо (IST), зима (GMT), межа переходу на

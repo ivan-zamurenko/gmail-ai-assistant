@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S04-02 Drive plan/apply done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Drive naming amendment done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2080,7 +2080,15 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-02 Drive plan/apply done — 2026-11-04</h1><pre class="markdown"># S04-02 Drive plan/apply done — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Drive naming amendment done — 2026-11-04</h1><pre class="markdown"># Drive naming amendment done — 2026-11-04
+
+Copilot; no active writer. Owner changed label names to number first with parcel always: `123456789_p01_2026-11-04.jpg`, `unknown-007_2026-11-04.jpg`; earlier date-first files are recognised, not renamed. Drive policy drive-labels-2026-11-04.2.
+Root1.1.75/extension6.3.0.106; bot0.2.30. Full 259/259 PASS7. No real Drive action.
+Next: S04-03 — owner chose G_ARCHITECTURE option A (popup → offscreen runner, summary view); implement in small steps.
+
+---
+
+# S04-02 Drive plan/apply done — 2026-11-04
 
 Copilot; no active writer. Plan rows carry fileId/source/policyVersion; live re-reads file metadata before PATCH (stale → untouched) and refuses a same-named file in the month folder (collision → untouched). Contested photos filed as unknown + review, counted as «Фото на перевірку».
 Root1.1.74/extension6.3.0.105; bot0.2.30. Full 257/257 PASS7; review ACCEPT. No real Drive action.
@@ -3037,6 +3045,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | G_DISCORD_MODES погоджено. S09-10: «no scans» більше не доходить до depotMain (RED → GREEN), тест з фіксованим годинником на дати; 249/249; ext 6.3.0.103, root 1.1.72; [evidence](evidence/S09-10.json). | Далі потрібні рішення власника (Drive, Gmail/AI). |
 | 2026-11-04 | Copilot + власник | Виконано | G_DRIVE_POLICY погоджено. S02-03: ірландська дата завантаження, фото без дати не чіпається, вже названий файл лише при збігу номера (інакше на перевірку), детерміновані назви. RED 4 → GREEN; 253/253, review ACCEPT; ext 6.3.0.104, root 1.1.73; [evidence](evidence/S02-03.json). | S04-02. |
 | 2026-11-04 | Copilot | Виконано | S04-02: план Drive з ідентичністю файлу й версією правил; перед PATCH — перевірка змін (stale) і колізії назви; неоднозначні фото → unknown + перевірка (G_DRIVE_POLICY). RED → GREEN; 257/257, review ACCEPT; ext 6.3.0.105, root 1.1.74; [evidence](evidence/S04-02.json). | S04-03 — потрібне G_ARCHITECTURE. |
+| 2026-11-04 | Copilot + власник | Виконано | Назви фото Drive: номер спершу, посилка завжди (`123456789_p01_2026-11-04.jpg`), старі назви розпізнаються без перейменування. 259/259; ext 6.3.0.106, root 1.1.75. Власник обрав G_ARCHITECTURE варіант A для S04-03. | S04-03 малими кроками. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -4653,6 +4662,9 @@ Owner explicitly keeps the existing Discord `/reschedule parcel` and `/reschedul
 
 ### G-DRIVE-POLICY-2026-11-04 — owner approved
 Owner chose the Drive label filing rules: (1) the filing date (name prefix and YYYY/MM folder) is the Drive upload time (`createdTime`) converted to the Irish calendar day (Europe/Dublin), not the UTC prefix; (2) a photo with several different consignment numbers is named `unknown`, flagged for review and never used for a reschedule target; (3) on a re-run, a file already named in our format keeps its name only if the freshly read and depot-verified number matches; otherwise it is left untouched and flagged for review (no rename); (4) a missing or invalid upload time leaves the photo untouched with an explicit error. Existing patterns `YYYY-MM-DD_number[-pNN][-N].ext` and `YYYY-MM-DD_unknown-NNN.ext` stay. This is not approval to run against the production Drive folder (S04-05 still needs G_TEST_ACCOUNTS/G_PRIVACY).
+
+### G-DRIVE-POLICY-NAMING-2026-11-04 — owner amendment
+Owner changed the label file name to number first with the parcel always present: `123456789_p01_2026-11-04.jpg` (parcel 2 → `_p02_`, second photo → `…_2026-11-04-2.jpg`, unreadable → `unknown-007_2026-11-04.jpg`). If the barcode carries no parcel number the `_pNN` segment is omitted rather than guessed (`123456789_2026-11-04.jpg`). The date part keeps the Irish upload day. Files already named in the earlier date-first format are not renamed and are still recognised on re-runs (same match-or-review rule); unknown numbering continues across both formats. Drive policy version `drive-labels-2026-11-04.2`.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4931,7 +4943,10 @@ Legacy `labelParser.js` принимает другие текстовые фо�
 
 ## 4. План именования
 
-Шаблон: `YYYY-MM-DD_number[-pNN][-N].ext` либо `YYYY-MM-DD_unknown-NNN.ext`.
+Шаблон (з 2026-11-04, рішення власника): `number_pNN_YYYY-MM-DD[-N].ext` (номер посилки
+завжди, без нього лише якщо його немає на етикетці) або `unknown-NNN_YYYY-MM-DD[-N].ext`.
+Попередній формат `YYYY-MM-DD_number[-pNN][-N].ext` / `YYYY-MM-DD_unknown-NNN.ext` не
+перейменовується і розпізнається при повторному запуску (`namedIdentity`).
 
 **G_DRIVE_POLICY (2026-11-04, S02-03):** дата в назві й папці `YYYY/MM` — ірландський
 календарний день (Europe/Dublin) моменту завантаження в Drive (`createdTime`), а не
@@ -5981,6 +5996,13 @@ test/
 - Очікує наступну вільну назву `-3`, щоб Drive move/rename не створив колізію.
 - Також перевіряє, що справді вільна назва залишається без зайвого суфікса.
 - Використовує лише `Set` синтетичних назв і не звертається до Drive API.
+
+**Number-first names (owner amendment 2026-11-04)**
+
+- `labelName.test.js`: `123456789_p01_2026-08-31.jpg`, `_p10_`, без номера посилки —
+  без `_pNN`, `unknown-007_…`, дублікати `-2/-3`. `labelBatch.test.js` розпізнає вже
+  названі файли в обох форматах; `monthFolders.test.js` продовжує нумерацію unknown з
+  обох форматів.
 
 **Irish filing day and explicit date errors (G_DRIVE_POLICY)**
 

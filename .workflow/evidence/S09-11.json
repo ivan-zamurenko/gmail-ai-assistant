@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "task_id": "S09-11",
+  "outcome": "passed",
+  "scope": "Verification of existing Discord barcodes mode against acceptance; no code change.",
+  "base_sha": "d94b566",
+  "branch": "codex",
+  "checks": [
+    {
+      "phase": "green",
+      "kind": "automated",
+      "cwd": "/Users/fujibayashi/Documents/Coding/Projects/gmail-ai-assistant",
+      "command": "node tools/checks.mjs (last run at d94b566)",
+      "exit_code": 0,
+      "result": "276/276; covering tests listed in docs/discord-bot.md S09-11",
+      "boundary": "local synthetic",
+      "log": null
+    }
+  ],
+  "decisions": [
+    "All five criteria mapped to existing implementation and tests (S01-01, S02-03, S03-03..05, S04-02, S04-04, S09-04, S09-09).",
+    "Discord barcode runs do not keep the popup move journal; an interrupted Discord task stays claimed/uncertain (S09-04)."
+  ],
+  "gates": [
+    "G_DISCORD_MODES approved",
+    "G_DRIVE_POLICY approved"
+  ],
+  "changed_paths": [
+    "docs/discord-bot.md",
+    "roadmap/tasks/S09-11.md",
+    ".workflow/*"
+  ],
+  "untested": [
+    "Live barcodes run on the work PC (S09-12 pilot)"
+  ],
+  "residual_risk": [],
+  "blocker": null,
+  "next_step": "Remaining cards need owner decisions or access: S04-05/S09-12 (test accounts/folder), Gmail/AI gates.",
+  "git": {
+    "commit_sha": null,
+    "commit_status": "performed",
+    "push_status": "attempted after commit"
+  },
+  "external_effects": []
+}

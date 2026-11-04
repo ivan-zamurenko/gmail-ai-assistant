@@ -1240,6 +1240,18 @@ Find bot0.2.26/extension6.3.0.88 supports red Failed Delivery/Incorrect Address 
 доходив до depotMain, де давав REVIEW без запису). Dry-run за замовчуванням; live —
 лише `dry_run:false`, з повторним читанням і RECHECK перед Save. Повтор/втрачена відповідь
 не повторюють запис (S09-04). Тест: `test/queue/executor.test.js` (фіксований годинник).
+
+## S09-11 — `/reschedule barcodes` (2026-11-04)
+
+Режим увімкнено (G_DISCORD_MODES), правила Drive — G_DRIVE_POLICY. Читається лише
+налаштована inbox-папка; один запуск розкладає фото й переносить дати підтверджених
+посилок, live — лише `dry_run:false`. До плану йдуть тільки номери, підтверджені в
+depot; кілька номерів на фото → `unknown` + перевірка, без reschedule (S02-03, S04-02).
+Dry-run робить лише GET у Drive і жодного запису в depot (S01-01, S03-04). Live не
+використовує список preview: заново читає Drive, depot і робить RECHECK (S03-03…S03-05,
+S09-09). Перед кожним PATCH — перевірка змін і колізій (S04-02); втрачена відповідь
+звіряється з Drive (S04-04). Обрив задачі Discord лишається `claimed`/uncertain без
+повтору (S09-04). Підсумок — у каналі команди (рішення власника). Новий код не потрібен.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -3064,6 +3076,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 | 2026-11-04 | Copilot + власник | Виконано | G_ARCHITECTURE A погоджено. S04-03: сканування з popup — фонова задача в offscreen у спільній черзі з Discord; закриття popup не зупиняє; перезапуск → «interrupted», без повтору. 272/272; review: виправлено «осиротілу» задачу; ext 6.3.0.107, root 1.1.76; [evidence](evidence/S04-03.json). | Власнику — перевірити в Chrome; далі S04-04. |
 | 2026-11-04 | Copilot + власник | Виконано | Звіт barcodes — у канал команди, не в DM; лише ненульові групи з emoji, посилки згруповані за результатом; довгий список — файлом. 273/273; bot 0.2.31, root 1.1.77. «Unexpected error» поруч з успішним dry-run — причину уточнюю (ймовірно подвійна обробка після перезапуску бота). | Власнику — перезапустити бота; S04-04. |
 | 2026-11-04 | Copilot | Виконано | S04-04: журнал переміщень Drive у задачі popup, кнопка Cancel (зупиняє нову роботу), звірка втраченого PATCH через Drive. 276/276; ext 6.3.0.108, root 1.1.79; [evidence](evidence/S04-04.json). | S04-05 — потрібні тестова папка/акаунти. |
+| 2026-11-04 | Copilot | Перевірено | S09-11: barcodes відповідає критеріям завдяки S01–S04, S09-04/09; без змін коду. Бот перезапущено на 0.2.32 за проханням власника. | Далі потрібні рішення власника. |
 
 Шаблон нового рядка: `дата | агент | статус | результат + доказ/неперевірене | далі`.
 - 2026-10-28 | Codex/root + safe_diagnostics_impl/review | implemented S01-03 | Safe operation/code diagnostics, без raw body/parcel logs; no-replay advice збережено. Test-first, focused 76/76; full 167/167 + lint/build/artifacts/docs/diff PASS. Evidence: `.workflow/evidence/S01-03.json`; real browser/live не перевірено. Next: S01-04.
@@ -12171,6 +12184,10 @@ feat(discord): [S09-11] connect reviewed barcode mode
 ```
 
 Evidence: `.workflow/evidence/S09-11.json`. Обновить существующие CURRENT/state. SHA собственного создаваемого коммита не вписывать в него же; показать после выполнения или в следующем checkpoint. Не начинать непорученный live/optional этап после GREEN.
+
+## Виконано 2026-11-04
+
+Критерії закриті попередніми картками; відповідність — `docs/discord-bot.md` (S09-11). Без змін коду й нових тестів (рішення власника економити тести).
 </pre></article>
 <article id="doc-120" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S09-12.md">roadmap/tasks/S09-12.md</a></p><h1>S09-12 — Провести разрешённый пилот существующего бота</h1><pre class="markdown"># S09-12 — Провести разрешённый пилот существующего бота
 

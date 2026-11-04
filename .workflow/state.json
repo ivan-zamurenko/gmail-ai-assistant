@@ -312,7 +312,7 @@
     "G_DEPOT_POLICY": {
       "status": "approved",
       "evidence": "docs/decisions.md#depot-policy-implement-2026-11-04",
-      "note": "Confirmed parcel-history eligibility and whole-series date change; existing form/LogCall behavior retained. No new LogCall semantics or live authorization."
+      "note": "Confirmed parcel-history eligibility and whole-series date change; LogCall removed by explicit2026-11-04 follow-up. Existing date form contract preserved; no live authorization."
     },
     "G_CALENDAR": {
       "status": "approved",

@@ -1180,3 +1180,11 @@ No real depot mutations, Log Call, bot activation or command registration tested
 The existing all-preview case also supplies30 long reasons and asserts the2000-
 character Firestore/Discord bound plus an omitted-row indicator. Both executor
 paths use the same small resultDetails formatter; no duplicate suite was added.
+
+### S03-03 follow-up — no separate Log Call
+
+Existing depot policy and GH-note matrix tests enable a synthetic LogCall button
+but now require zero LogCall requests for every outcome, while maintaining exact
+allowed/denied date-save counts. RED15/17 before removal; no new test group.
+Form-field/confirmation, fresh eligibility and serialized dry-run tests remain.
+Live server requirements are unverified; historical snippets are outside runtime.

@@ -207,3 +207,7 @@
 - 2026-11-04 | root + calendar_review | S03-03 completed offline | parcel-isolated eligibility for whole-series changes, fresh exact-identity/read-before-save, read-only previews with reasons | full233/233 PASS7; independent32/32/review ACCEPT; evidence/S03-03.json | commit/push codex; no restart/register/merge; work-PC scan/Notes smoke pending.
 
 - 2026-11-04 | root | S03-03 final delivery check | long policy details exceeded Firestore2000 limit; existing preview regression RED then bounded shared formatter | final233/233 PASS7; tooling38/38 | package6.3.0.90 and scoped commit/push; runtime remains unchanged.
+
+- 2026-11-04 | owner + root | LogCall removal authorized and implemented | removed separate helper/call/fallback; direct rearrange GET/POST preserved | existing matrix RED15/17; no new test group | next focused/full checks and scoped release; no live activation.
+
+- 2026-11-04 | root + calendar_review | LogCall removal completed offline | separate helper/call/fallback removed; direct date form flow unchanged; extension6.3.0.91/root1.1.59 | RED15/17→GREEN17/17, full233/233 PASS7, diff review ACCEPT; evidence/S03-03.json | scoped commit/push; work-PC acceptance without LogCall still untested, no restart.

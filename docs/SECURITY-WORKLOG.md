@@ -628,3 +628,12 @@ only, free prose remains unverified; no external AI data transmission.
   identifiers plus static policy reasons, no raw Notes/session/response bodies.
 - Dry-run only reads detail/history/Notes. Existing best-effort LogCall unchanged;
   no live actions, credentials inspection, permission/rules/deployment changes.
+
+## 2026-11-04 — owner-requested Log Call removal
+
+- Removed the entire runtime LogCall helper and invocation, including guessed
+  fallback request. No substitute side effect added; direct date form GET/POST
+  remains with existing identity, origin, calendar and policy checks.
+- Existing policy tests now assert zero LogCall requests even when the button is
+  present, while allowed date saves still occur. Synthetic only; no live calls,
+  credentials inspection, bot restart or deployment.

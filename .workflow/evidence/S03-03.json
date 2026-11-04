@@ -5,7 +5,7 @@
   "base_sha": "2be703a",
   "branch": "codex",
   "completed_on": "2026-11-04",
-  "scope": "Owner-confirmed whole-series eligibility from physical parcel history and GH Notes; fresh exact-identity recheck, policy-aware previews and bounded reasons. Existing LogCall preserved.",
+  "scope": "Owner-confirmed whole-series eligibility from physical parcel history and GH Notes; fresh exact-identity recheck, policy-aware previews and bounded reasons. Owner follow-up removes separate LogCall; direct date form GET/POST retained.",
   "checks": [
     {
       "phase": "red",
@@ -54,21 +54,39 @@
       "command": "node tools/build-start-here.mjs; node tools/roadmap.mjs validate; node tools/check-docs.mjs; node --test tools/tests/*.test.mjs; git diff --check",
       "exit_code": 0,
       "result": "Reader129 documents rebuilt, roadmap59 tasks valid, docs129 valid, tooling38/38, whitespace clean."
+    },
+    {
+      "phase": "red",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js",
+      "exit_code": 1,
+      "result": "LogCall removal follow-up:15/17; existing policy and GH matrices failed new zero-LogCall expectation."
+    },
+    {
+      "phase": "green",
+      "command": "node --test --import ./test/helpers/noNetwork.js test/depot/depotScript.test.js",
+      "exit_code": 0,
+      "result": "17/17 after helper/call removal; allowed date-save expectations preserved."
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "LogCall removal final PASS7/233 tests; lint/build/artifacts/docs/diff."
     }
   ],
   "versions": {
-    "root": "1.1.58",
+    "root": "1.1.59",
     "bot": "0.2.28",
-    "extension": "6.3.0.90"
+    "extension": "6.3.0.91"
   },
-  "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests.",
+  "review": "calendar_review ACCEPT; independent32/32 focused. Unknown scan and exact identity findings resolved. Final formatter diff ACCEPT; independent17/17 executor/barcode tests. LogCall removal diff ACCEPT; reviewer did not rerun checks.",
   "untested": [
     "Real depot CAD scan spelling/Notes HTML variants and history completeness",
     "Coverage of other depot sections beyond the currently opened list",
-    "Live LogCall effects, real Chrome/Discord/depot operation",
+    "Live server acceptance without LogCall; real Chrome/Discord/depot operation",
     "Runtime restart, command-description registration and work-PC update"
   ],
   "external_effects": [],
-  "compatibility": "Queue schema unchanged; only additive local result fields/reasons. Current list candidates now all checked, not route-cad shortcut. LogCall can already have run when final freshness recheck refuses Save. Console futureDateCheck remains historical, non-authoritative.",
+  "compatibility": "Queue schema unchanged; only additive local result fields/reasons. Current list candidates now all checked, not route-cad shortcut. Separate LogCall removed by owner decision LOGCALL-REMOVE-2026-11-04. Console futureDateCheck remains historical, non-authoritative.",
   "next_step": "Owner work-PC smoke when available; S03-04 preview follow-up remains separate."
 }

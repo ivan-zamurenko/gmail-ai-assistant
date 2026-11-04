@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S03-03 completed offline — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">Separate Log Call removed — 2026-11-04<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2053,7 +2053,31 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S03-03 completed offline — 2026-11-04</h1><pre class="markdown"># S03-03 completed offline — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>Separate Log Call removed — 2026-11-04</h1><pre class="markdown"># Separate Log Call removed — 2026-11-04
+
+Root integrator done; calendar_review ACCEPT; no active writer.
+Owner explicitly removed separate LogCall. Runtime helper/call/fallback deleted;
+direct rearrange form GET/POST, identity/history/calendar and confirmation retained.
+Root1.1.59/extension6.3.0.91; bot0.2.28 unchanged, no restart/registration.
+Existing tests RED15/17→GREEN17/17; full233/233 PASS7. Evidence/S03-03.json.
+Artifact /tmp/DPD-Assistance-6.3.0.91.zip. Real server acceptance without LogCall
+still needs work-PC smoke; no live/deployment/merge performed.
+Historical standalone snippets retain original behavior, not runtime entrypoints.
+Next: scoped codex commit/push; work-PC update and smoke when available.
+
+---
+
+# S03-03 follow-up: remove Log Call — 2026-11-04
+
+Root sole writer, codex baseef8c777. Owner explicitly requested removal of the
+separate Log Call step. Scope runtime depotScript, existing regressions,
+extension/root versions, decisions/security/testing docs and evidence.
+Direct reschedule GET/form POST and fresh identity/eligibility checks remain.
+No live requests, runtime activation or merge. Next test-first and full checks.
+
+---
+
+# S03-03 completed offline — 2026-11-04
 
 Root integrator done; calendar_review ACCEPT; no active writer.
 Root1.1.58/bot0.2.28/extension6.3.0.90; runtime not activated.
@@ -2922,6 +2946,10 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 | root + calendar_review | S03-03 completed offline | parcel-isolated eligibility for whole-series changes, fresh exact-identity/read-before-save, read-only previews with reasons | full233/233 PASS7; independent32/32/review ACCEPT; evidence/S03-03.json | commit/push codex; no restart/register/merge; work-PC scan/Notes smoke pending.
 
 - 2026-11-04 | root | S03-03 final delivery check | long policy details exceeded Firestore2000 limit; existing preview regression RED then bounded shared formatter | final233/233 PASS7; tooling38/38 | package6.3.0.90 and scoped commit/push; runtime remains unchanged.
+
+- 2026-11-04 | owner + root | LogCall removal authorized and implemented | removed separate helper/call/fallback; direct rearrange GET/POST preserved | existing matrix RED15/17; no new test group | next focused/full checks and scoped release; no live activation.
+
+- 2026-11-04 | root + calendar_review | LogCall removal completed offline | separate helper/call/fallback removed; direct date form flow unchanged; extension6.3.0.91/root1.1.59 | RED15/17→GREEN17/17, full233/233 PASS7, diff review ACCEPT; evidence/S03-03.json | scoped commit/push; work-PC acceptance without LogCall still untested, no restart.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4289,6 +4317,18 @@ Unknown/malformed/ambiguous evidence stops automation and explains the reason.
 This supersedes the earlier partial Pending/GH-only interpretation; CAD route in
 Pending List alone is not proof. Candidate list remains the current depot list;
 non-CAD rows must be checked too to support the cancelled/GH branches.
+
+## LOGCALL-REMOVE-2026-11-04 — owner approved
+
+Owner explicitly requested removal of the separate Log Call step after discussing
+manual Log Call → Reschedule → Save versus direct form submission. Runtime
+reschedule now only obtains the rearrange form and POSTs its preserved fields
+plus the selected arranged-date/Save values. Removed logCall helper and all three
+fallback strategies; no replacement request. Identity/calendar/eligibility and
+server confirmation checks remain. This supersedes the prior S03-03 decision to
+preserve best-effort LogCall. Local tests are not proof of the live server&#39;s
+prerequisites; work-PC smoke remains pending. Historical snippets are not runtime
+entrypoints and still describe their original behavior.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -4446,6 +4486,15 @@ formats fail closed. No new endpoint beyond the existing Scanning History lookup
 Policy detail summaries share a bounded formatter: at most25 displayed rows,
 1800 characters plus a remaining-row indicator, under the existing2000-character
 Firestore limit. Full history/Notes are never sent as reasons.
+
+## Log Call removal — 2026-11-04 follow-up
+
+Per LOGCALL-REMOVE-2026-11-04, runtime depotMain no longer invokes Log Call.
+The preceding S03-03 description of a best-effort LogCall is historical. GET of
+the rearrange form, exact identity/history recheck, POST Save with arranged-date
+and confirmation parsing remain. No guessed woLogCall endpoint or button/form
+submission survives in runtime. Historical standalone snippets are unchanged and
+are not bundled or used by popup/queue. Real server acceptance still needs smoke.
 </pre></article>
 <article id="doc-42" tabindex="-1" hidden><p class="path"><a href="docs/discord/TEST_MATRIX.md">docs/discord/TEST_MATRIX.md</a></p><h1>Discord и очередь — матрица проверок</h1><pre class="markdown"># Discord и очередь — матрица проверок
 
@@ -6433,6 +6482,14 @@ No real depot mutations, Log Call, bot activation or command registration tested
 The existing all-preview case also supplies30 long reasons and asserts the2000-
 character Firestore/Discord bound plus an omitted-row indicator. Both executor
 paths use the same small resultDetails formatter; no duplicate suite was added.
+
+### S03-03 follow-up — no separate Log Call
+
+Existing depot policy and GH-note matrix tests enable a synthetic LogCall button
+but now require zero LogCall requests for every outcome, while maintaining exact
+allowed/denied date-save counts. RED15/17 before removal; no new test group.
+Form-field/confirmation, fresh eligibility and serialized dry-run tests remain.
+Live server requirements are unverified; historical snippets are outside runtime.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

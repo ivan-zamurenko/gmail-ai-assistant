@@ -302,56 +302,10 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         return { parcel: text(cells[7]), type: cells[3].getAttribute('title')?.trim() || text(cells[3]), date, time };
       });
     }
-    return { status, consDoc, ...classify(status, notes, scans, plan.today) };
+    return { status, ...classify(status, notes, scans, plan.today) };
   }
 
   // ── Actions ────────────────────────────────────────────────────────────────────
-
-  async function logCall(consId, consDoc) {
-    // Fully best-effort — a logCall failure must never block the reschedule.
-    try {
-      const btn = consDoc.getElementById('btnLogCall');
-      if (!btn) return;
-
-      const { session, uid } = getSessionParams();
-
-      // Prefer form submission if available
-      const form = btn.closest('form');
-      if (form?.getAttribute('action')) {
-        const body = new URLSearchParams({ session, ConsId: consId });
-        for (const el of form.elements) {
-          if (el.name && el.type === 'hidden') body.set(el.name, el.value);
-        }
-        assertCalendarPlan();
-        await fetch(sameOrigin(form.getAttribute('action')), {
-          method: 'POST', credentials: 'include',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString(),
-        });
-        return;
-      }
-
-      // Try onclick URL
-      const om = (btn.getAttribute('onclick') ?? '').match(
-        /(?:window\.open|location(?:\.href)?\s*=|location\.assign\s*\()\s*['"]([/\w][^'"]+)['"]/
-      );
-      if (om) {
-        assertCalendarPlan();
-        await fetch(sameOrigin(om[1]), { credentials: 'include' });
-        return;
-      }
-
-      // Fallback: standard endpoint
-      assertCalendarPlan();
-      await fetch(
-        `/scripts/cgiip.exe/WService=wsInterlink/woLogCall.p` +
-        `?session=${encodeURIComponent(session)}&ConsId=${encodeURIComponent(consId)}&UID=${encodeURIComponent(uid)}`,
-        { credentials: 'include' }
-      );
-    } catch (e) {
-      console.warn('[logCall] non-fatal:', safeFailure(e, 'Call logging failed'));
-    }
-  }
 
   async function submitReschedule(consId, tomorrowInput, recheck) {
     const { session } = getSessionParams();
@@ -428,7 +382,6 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         if (action === 'CHANGE_DATE') {
           if (!dryRun) {
             assertCalendarPlan();
-            await logCall(pkg.consId, initial.consDoc);
             await submitReschedule(pkg.consId, arrangedDate, async () => {
               const fresh = await readEligibility(pkg);
               if (fresh.action !== 'CHANGE_DATE') throw new Error('Eligibility changed before save; manual review required');

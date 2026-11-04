@@ -440,7 +440,7 @@ test('parcel histories decide series eligibility, never route or aggregate statu
   for (const [status, scans, allowed] of cases) {
     const result = await runReschedule('labels', { status, scans, logCallEnabled: true });
     assert.equal(result.saveWrites, Number(allowed), JSON.stringify({ status, scans }));
-    assert.equal(result.logWrites, Number(allowed));
+    assert.equal(result.logWrites, 0, 'reschedule must not call Log Call');
     assert.ok(result.result.results[0].reason);
   }
   const all = await runReschedule('cad', { route: 'other', scans: [scan('1', 'Cancelled out for delivery')] });
@@ -458,7 +458,7 @@ test('Goods Held requires an exact non-negated valid note TO today, with no CAD 
   ]) {
     const result = await runReschedule('labels', { status: 'GOODS HELD', notes, scans: [], logCallEnabled: true });
     assert.equal(result.saveWrites, Number(allowed), notes);
-    assert.equal(result.logWrites, Number(allowed));
+    assert.equal(result.logWrites, 0, 'reschedule must not call Log Call');
   }
 });
 

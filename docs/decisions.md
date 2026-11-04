@@ -293,3 +293,15 @@ Unknown/malformed/ambiguous evidence stops automation and explains the reason.
 This supersedes the earlier partial Pending/GH-only interpretation; CAD route in
 Pending List alone is not proof. Candidate list remains the current depot list;
 non-CAD rows must be checked too to support the cancelled/GH branches.
+
+## LOGCALL-REMOVE-2026-11-04 — owner approved
+
+Owner explicitly requested removal of the separate Log Call step after discussing
+manual Log Call → Reschedule → Save versus direct form submission. Runtime
+reschedule now only obtains the rearrange form and POSTs its preserved fields
+plus the selected arranged-date/Save values. Removed logCall helper and all three
+fallback strategies; no replacement request. Identity/calendar/eligibility and
+server confirmation checks remain. This supersedes the prior S03-03 decision to
+preserve best-effort LogCall. Local tests are not proof of the live server's
+prerequisites; work-PC smoke remains pending. Historical snippets are not runtime
+entrypoints and still describe their original behavior.

@@ -154,3 +154,12 @@ formats fail closed. No new endpoint beyond the existing Scanning History lookup
 Policy detail summaries share a bounded formatter: at most25 displayed rows,
 1800 characters plus a remaining-row indicator, under the existing2000-character
 Firestore limit. Full history/Notes are never sent as reasons.
+
+## Log Call removal — 2026-11-04 follow-up
+
+Per LOGCALL-REMOVE-2026-11-04, runtime depotMain no longer invokes Log Call.
+The preceding S03-03 description of a best-effort LogCall is historical. GET of
+the rearrange form, exact identity/history recheck, POST Save with arranged-date
+and confirmation parsing remain. No guessed woLogCall endpoint or button/form
+submission survives in runtime. Historical standalone snippets are unchanged and
+are not bundled or used by popup/queue. Real server acceptance still needs smoke.

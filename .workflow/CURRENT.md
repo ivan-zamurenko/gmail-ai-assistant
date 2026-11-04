@@ -1,3 +1,27 @@
+# Separate Log Call removed — 2026-11-04
+
+Root integrator done; calendar_review ACCEPT; no active writer.
+Owner explicitly removed separate LogCall. Runtime helper/call/fallback deleted;
+direct rearrange form GET/POST, identity/history/calendar and confirmation retained.
+Root1.1.59/extension6.3.0.91; bot0.2.28 unchanged, no restart/registration.
+Existing tests RED15/17→GREEN17/17; full233/233 PASS7. Evidence/S03-03.json.
+Artifact /tmp/DPD-Assistance-6.3.0.91.zip. Real server acceptance without LogCall
+still needs work-PC smoke; no live/deployment/merge performed.
+Historical standalone snippets retain original behavior, not runtime entrypoints.
+Next: scoped codex commit/push; work-PC update and smoke when available.
+
+---
+
+# S03-03 follow-up: remove Log Call — 2026-11-04
+
+Root sole writer, codex baseef8c777. Owner explicitly requested removal of the
+separate Log Call step. Scope runtime depotScript, existing regressions,
+extension/root versions, decisions/security/testing docs and evidence.
+Direct reschedule GET/form POST and fresh identity/eligibility checks remain.
+No live requests, runtime activation or merge. Next test-first and full checks.
+
+---
+
 # S03-03 completed offline — 2026-11-04
 
 Root integrator done; calendar_review ACCEPT; no active writer.

@@ -263,3 +263,4 @@
 
 - 2026-11-04 root — owner confirmed exact tooltip Nearest Route Assigned; replaced prefix with exact route/type pair. Prefix-negative RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. Artifact6.3.0.98/root1.1.66; no bot restart/live action. Next commit/push and owner update.
 - 2026-11-05 Copilot — S06-03 done. Synthetic corpus + safety-weighted evaluator + offline runner; RED (missed "was sent automatically") → GREEN 3/3; runner 8/8. Thresholds proposed. Next: owner thresholds + AI gates.
+- 2026-11-05 Copilot — owner approved G_AI_PROVIDER (local Ollama, $0) and G_PRIVACY (email text with contacts masked + depot facts). Next: install Ollama with owner OK, then S06-01.

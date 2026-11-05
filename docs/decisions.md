@@ -372,3 +372,11 @@ Owner approved write access to Gmail for reply drafts and labels. The manifest s
 ## AI evaluation thresholds 2026-11-05 — owner approved
 
 S06-03 synthetic evaluation: critical violations = 0 and case pass rate ≥ 0.9. Any critical fails the suite. Not to be lowered without a new owner decision.
+
+## G_AI_PROVIDER 2026-11-05 — owner approved
+
+Provider: a local model on the owner's always-on Mac (M1 Pro, 16 GB) via Ollama; 7–8B class model (candidate `qwen2.5:7b` or `llama3.1:8b`, final tag fixed in S06-01 after the synthetic evaluation). Budget $0, no cloud API, no API key. The owner considered paid OpenAI API (a ChatGPT subscription does not cover API) and Gemini free tier (free-tier data may be used by Google) and chose local for cost and privacy. Switching provider later is a single adapter change plus a new decision. Not yet installed; installing Ollama/model is a separate owner-approved step.
+
+## G_PRIVACY 2026-11-05 — owner approved
+
+The AI may receive only the email text and grounded depot facts (Scanning History). Customer address, phone and email are not sent; email addresses, phone numbers and address-like lines are masked in the email text before the prompt is built. With the local provider nothing leaves the Mac. Drafts still require human review; no auto-send.

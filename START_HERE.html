@@ -2094,8 +2094,8 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 </pre></article>
 <article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S06-03 done — 2026-11-05</h1><pre class="markdown"># S06-03 done — 2026-11-05
 
-Copilot; no active writer. Synthetic AI proposal evaluation: 8-case corpus, evaluator with separate critical count (false date, send/action claim, commitment, unsafe route), fixtures-only runner. Thresholds proposed: critical 0, pass ≥ 0.9. No product change, no version bump.
-Next: owner approves thresholds; G_AI_PROVIDER + G_PRIVACY unblock S06-01/S06-05.
+Copilot; no active writer. Synthetic AI proposal evaluation: 8-case corpus, evaluator with separate critical count (false date, send/action claim, commitment, unsafe route), fixtures-only runner. Thresholds owner-approved: critical 0, pass ≥ 0.9. No product change, no version bump.
+G_AI_PROVIDER (local Ollama) and G_PRIVACY approved 2026-11-05. Next: S06-01.
 
 ---
 
@@ -3279,6 +3279,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 
 - 2026-11-04 root — owner confirmed exact tooltip Nearest Route Assigned; replaced prefix with exact route/type pair. Prefix-negative RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. Artifact6.3.0.98/root1.1.66; no bot restart/live action. Next commit/push and owner update.
 - 2026-11-05 Copilot — S06-03 done. Synthetic corpus + safety-weighted evaluator + offline runner; RED (missed &quot;was sent automatically&quot;) → GREEN 3/3; runner 8/8. Thresholds proposed. Next: owner thresholds + AI gates.
+- 2026-11-05 Copilot — owner approved G_AI_PROVIDER (local Ollama, $0) and G_PRIVACY (email text with contacts masked + depot facts). Next: install Ollama with owner OK, then S06-01.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4721,6 +4722,18 @@ Drafts only, never sent automatically (OWNER-D01 unchanged). Source: only messag
 
 ### 2026-11-04 — Gmail write scope for drafts (S05-05)
 Owner approved write access to Gmail for reply drafts and labels. The manifest scope `gmail.readonly` is replaced by `gmail.modify` (covers reading, drafts and labels; Google has no draft-only scope). Sending is never called: `src/gmail/drafts.js` uses only drafts.create, threads.get and messages.modify, and its test fails on any send endpoint. Chrome asks the owner to re-approve Google access once. Draft text is a facts-only English template until an AI provider is chosen (S06); later drafts may learn from the owner&#39;s edits (owner idea, S06).
+
+## AI evaluation thresholds 2026-11-05 — owner approved
+
+S06-03 synthetic evaluation: critical violations = 0 and case pass rate ≥ 0.9. Any critical fails the suite. Not to be lowered without a new owner decision.
+
+## G_AI_PROVIDER 2026-11-05 — owner approved
+
+Provider: a local model on the owner&#39;s always-on Mac (M1 Pro, 16 GB) via Ollama; 7–8B class model (candidate `qwen2.5:7b` or `llama3.1:8b`, final tag fixed in S06-01 after the synthetic evaluation). Budget $0, no cloud API, no API key. The owner considered paid OpenAI API (a ChatGPT subscription does not cover API) and Gemini free tier (free-tier data may be used by Google) and chose local for cost and privacy. Switching provider later is a single adapter change plus a new decision. Not yet installed; installing Ollama/model is a separate owner-approved step.
+
+## G_PRIVACY 2026-11-05 — owner approved
+
+The AI may receive only the email text and grounded depot facts (Scanning History). Customer address, phone and email are not sent; email addresses, phone numbers and address-like lines are masked in the email text before the prompt is built. With the local provider nothing leaves the Mac. Drafts still require human review; no auto-send.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 

@@ -1,7 +1,7 @@
 # S06-03 done — 2026-11-05
 
-Copilot; no active writer. Synthetic AI proposal evaluation: 8-case corpus, evaluator with separate critical count (false date, send/action claim, commitment, unsafe route), fixtures-only runner. Thresholds proposed: critical 0, pass ≥ 0.9. No product change, no version bump.
-Next: owner approves thresholds; G_AI_PROVIDER + G_PRIVACY unblock S06-01/S06-05.
+Copilot; no active writer. Synthetic AI proposal evaluation: 8-case corpus, evaluator with separate critical count (false date, send/action claim, commitment, unsafe route), fixtures-only runner. Thresholds owner-approved: critical 0, pass ≥ 0.9. No product change, no version bump.
+G_AI_PROVIDER (local Ollama) and G_PRIVACY approved 2026-11-05. Next: S06-01.
 
 ---
 

@@ -325,14 +325,14 @@
       "note": "Irish upload day; contested → unknown+review; already-named kept only on match; missing date → error"
     },
     "G_AI_PROVIDER": {
-      "status": "pending",
-      "evidence": null,
-      "note": "Provider/model, цели, payload и бюджет."
+      "status": "approved",
+      "evidence": "docs/decisions.md#g_ai_provider-2026-11-05--owner-approved",
+      "note": "Local Ollama on owner Mac, 7–8B model, $0, no cloud"
     },
     "G_PRIVACY": {
-      "status": "pending",
-      "evidence": null,
-      "note": "Данные/цели/retention и доступ: Gmail, Drive, depot, AI, Firestore, Discord ephemeral replies, Maps. OWNER-D02 не разрешает передачу клиентских данных."
+      "status": "approved",
+      "evidence": "docs/decisions.md#g_privacy-2026-11-05--owner-approved",
+      "note": "Email text (contacts masked) + depot facts only; local processing; human review"
     },
     "G_TEST_ACCOUNTS": {
       "status": "pending",

@@ -334,3 +334,7 @@ S09-09). Перед кожним PATCH — перевірка змін і кол
 ## /reply — AI reply proposal (2026-11-05)
 
 `/reply con_id:<number> text:<email text>` (Administrator, ephemeral) reuses the existing FIND task, takes only the Scanning History facts (parcel, type, date, time), masks emails/phones/Eircodes in the email text and asks the local model (Ollama `qwen2.5:7b` on this Mac, `bot/src/aiReply.js`). A deterministic guard rejects replies with a date not in the scans, a 9/14-digit number other than the query/consignment, a delivery promise ("tomorrow", "will be delivered", "guarantee"), an action claim or auto-send wording. Nothing is sent or stored; no queue contract change. Owner decision: EMAIL-VIA-DISCORD in `docs/decisions.md`.
+
+## Mail channel — 2026-11-05
+
+With `mailChannelId` in `bot/config/local.js` the bot polls every 2 minutes (`mail_check`) and posts each new depot22 message once to that channel: 📖 read (ephemeral full text), ✉️ AI reply (grounded `/reply` proposal), ✅ handled (Gmail label `AI-Read`, card edited). `/mail` (Administrator, ephemeral) checks now and lists open mail with jump links. Extension/auth problems are announced once and recovery once. Nothing is sent.

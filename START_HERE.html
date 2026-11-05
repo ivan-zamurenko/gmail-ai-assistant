@@ -1256,6 +1256,10 @@ S09-09). Перед кожним PATCH — перевірка змін і кол
 ## /reply — AI reply proposal (2026-11-05)
 
 `/reply con_id:&lt;number&gt; text:&lt;email text&gt;` (Administrator, ephemeral) reuses the existing FIND task, takes only the Scanning History facts (parcel, type, date, time), masks emails/phones/Eircodes in the email text and asks the local model (Ollama `qwen2.5:7b` on this Mac, `bot/src/aiReply.js`). A deterministic guard rejects replies with a date not in the scans, a 9/14-digit number other than the query/consignment, a delivery promise (&quot;tomorrow&quot;, &quot;will be delivered&quot;, &quot;guarantee&quot;), an action claim or auto-send wording. Nothing is sent or stored; no queue contract change. Owner decision: EMAIL-VIA-DISCORD in `docs/decisions.md`.
+
+## Mail channel — 2026-11-05
+
+With `mailChannelId` in `bot/config/local.js` the bot polls every 2 minutes (`mail_check`) and posts each new depot22 message once to that channel: 📖 read (ephemeral full text), ✉️ AI reply (grounded `/reply` proposal), ✅ handled (Gmail label `AI-Read`, card edited). `/mail` (Administrator, ephemeral) checks now and lists open mail with jump links. Extension/auth problems are announced once and recovery once. Nothing is sent.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -1485,6 +1489,10 @@ Find GPS whitelist extended in extension6.3.0.88: exact Failed Delivery and Inco
 Optional `parcel.rescheduleResults = {version: 1, lines: string[]}` carries the private operator result; both contract mirrors define RESCHEDULE_RESULT_VERSION. Existing task schema2 and bounded details remain. Producer bounds4000 lines/600 chars/750000 serialized UTF-8 bytes plus explicit omitted marker; consumer validates4001 lines/600 chars/850000 serialized bytes. Existing rules permit the parcel map, no rule deployment needed. This map is not a find card. New bot must be activated before extension6.3.0.93: old bot normal replies use legacy details, but old /result misclassifies the envelope as find. Older extension results retain plain text fallback. Batch recovery uses /result without con_id; no new contained-number index.
 
 Reschedule pages are ephemeral actor/guild/channel-bound snapshots, max16 sessions, fixed14min lifetime; clicks never enqueue or ACK. Barcode completion DM carries full bounded text attachment because guild navigation is unavailable in DM. Result ACK follows successful delivery.
+
+## Mail commands — 2026-11-05
+
+`mail_check` (args `{}`) → `done` with `parcel.mail`: up to 10 `{id, threadId, from, subject, date, text≤3500, noText}` for `in:inbox is:unread -label:AI-Read newer_than:3d`. `mail_mark` (args `{messageId}`) → adds the `AI-Read` label (created if missing). Both run non-interactive Gmail auth in the worker; missing auth is an explicit error. Task schema version unchanged (old extensions answer &quot;Невідома queue command&quot;); results use the existing terminal `parcel` map, so no rules deployment.
 </pre></article>
 <article id="doc-9" tabindex="-1" hidden><p class="path"><a href="docs/discord/RUNBOOK_RU.md">docs/discord/RUNBOOK_RU.md</a></p><h1>Discord + Firestore + Chrome — порядок подготовки и эксплуатации</h1><pre class="markdown"># Discord + Firestore + Chrome — порядок подготовки и эксплуатации
 
@@ -3286,6 +3294,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-05 Copilot — owner approved G_AI_PROVIDER (local Ollama, $0) and G_PRIVACY (email text with contacts masked + depot facts). Next: install Ollama with owner OK, then S06-01.
 - 2026-11-05 Copilot — Ollama + qwen2.5:7b installed on Mac (brew service), synthetic smoke OK; chrome-extension origin gets 403 (to configure). Owner approved EMAIL-VIA-DISCORD: review + per-email send button in private Discord, work PC ≠ Mac. Next: S06-01 provider in bot.
 - 2026-11-05 Copilot — /reply (bot 0.2.33): FIND facts → masked email → local qwen2.5:7b → grounding guard → ephemeral proposal, no send. Tests 4/4; live synthetic 3 cases: invented &quot;tomorrow 06/11&quot; rejected. Next: register + restart, owner tries /reply.
+- 2026-11-05 Copilot — Mail channel: ext 6.3.0.111 mail_check/mail_mark (Gmail read + AI-Read label, no send), bot 0.2.34 polls every 2 min → #emails-📩 cards (📖/✉️/✅) + /mail; root 1.1.82. Next: owner installs ext on work PC, authorizes Gmail in popup, sends test mail.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4751,6 +4760,10 @@ The owner works through Discord. The depot22 mailbox and the depot tab live on a
 - Discord buttons: ✅ draft, ✏️ edit, 🔁 regenerate, ⏭ skip, 📤 send. **Send is an explicit per-email owner action**, never automatic; one click = one email. Sending is executed by the work-PC extension (`gmail.modify` already covers send); an indeterminate send is reported as uncertain and never replayed.
 - This amends §8 of `docs/ai-boundary.md` (the bot becomes the AI transport for masked prompts) and the earlier &quot;draft only&quot; rule of G_GMAIL_POLICY. Masked email text and AI replies may pass through Firestore and the private Discord channel; nothing is posted to public channels or logs.
 - Requires new queue task types (contract version bump in both mirrors and rules) and the work PC running Chrome with the extension.
+
+## MAIL-IN-DISCORD 2026-11-05 — owner approved
+
+Owner wants depot22 mail visible in Discord. Approved: every unread Inbox message (last 3 days) without the `AI-Read` label is posted once to the private channel `#emails-📩` with sender, subject, detected consignment number(s) and a preview; contacts are shown as-is (private, owner-only channel). Buttons: 📖 read full text (ephemeral), ✉️ AI reply (same grounded proposal as `/reply`, only with exactly one number), ✅ handled → adds Gmail label `AI-Read` (owner chose a label instead of marking as read). `/mail` checks now and lists open mail. The extension never sends, deletes or marks mail as read; the bot keeps a 7-day local cache (`bot/data/`, gitignored). Polling every 2 minutes through the existing task queue; results ride in the terminal `parcel` map, so no Firestore rules deployment.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -7107,6 +7120,10 @@ Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.
 ## /reply AI proposal — 2026-11-05
 
 `test/bot/aiReply.test.js` protects: contacts masked before the prompt (consignment kept, address/signature/route never sent), and false date, foreign number, promise or action claim are rejected; model outage → safe `model_unavailable`. Model is a fake fetch; a live synthetic run against local Ollama is manual evidence only.
+
+## Mail channel — 2026-11-05
+
+`test/gmail/inbox.test.js`: the Inbox query excludes `AI-Read`, reading uses only GET, handling only adds the label (no send/draft/trash, no UNREAD change). `test/bot/mailWatch.test.js`: each message is posted once across polls; an error is announced once and recovery once; AI reply button only with exactly one consignment.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

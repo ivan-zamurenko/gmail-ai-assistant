@@ -7,6 +7,8 @@ import { enqueueAndWait, acknowledgeResult, sweepResults, listResults, getResult
 import { buildParcelEmbed } from './render.js';
 import { addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList } from './todo.js';
 import { createInteractionHandler } from './interactions.js';
+import { createMailStore } from './mailStore.js';
+import { createMailWatch } from './mailWatch.js';
 
 const cfg = loadConfig();
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -17,9 +19,24 @@ client.once(Events.ClientReady, (c) => {
 
 // A stray API error must never take the whole bot down.
 client.on(Events.Error, (err) => console.error('Client error:', safeErrorMessage(err, 'Discord client failed')));
+// Optional mail channel: only when local config names a private channel.
+const mailChannelId = /^\d{17,20}$/.test(cfg.mailChannelId ?? '') ? cfg.mailChannelId : null;
+const mailStore = mailChannelId ? createMailStore({ path: new globalThis.URL('../data/mail.json', import.meta.url).pathname }) : null;
+const mailWatch = mailChannelId ? createMailWatch({
+  enqueueAndWait, acknowledgeResult, store: mailStore, guildId: cfg.guildId,
+  getChannel: () => client.channels.fetch(mailChannelId),
+}) : null;
+client.once(Events.ClientReady, () => {
+  if (!mailWatch) return;
+  console.log('📨 Mail channel watch: every 2 min');
+  void mailWatch.poll();
+  globalThis.setInterval(() => void mailWatch.poll(), 120_000).unref();
+});
+
 const handleInteraction = createInteractionHandler({
   cfg, enqueueAndWait, acknowledgeResult, buildParcelEmbed, listResults, getResult,
   addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList,
+  mail: mailWatch ? { store: mailStore, poll: mailWatch.poll, channelId: mailChannelId } : null,
 });
 const withCleanup = createResponseLifecycle();
 client.on(Events.InteractionCreate, interaction => {

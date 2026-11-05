@@ -30,3 +30,6 @@ labels_example/
 *.ntvs*
 *.njsproj
 *.sln
+
+# Private — cached customer mail for the Discord mail channel
+bot/data/

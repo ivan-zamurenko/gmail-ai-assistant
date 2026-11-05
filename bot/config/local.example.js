@@ -32,4 +32,8 @@ export const LOCAL = {
   // Google Cloud console → APIs & Services → Credentials → Create API key,
   // then enable "Geocoding API" + "Maps Static API". Free within the monthly credit.
   googleMapsApiKey: '',
+
+  // ── Mail channel (optional) ──────────────────────────────────────────────
+  // Private channel ID for depot22 mail cards; omit to disable mail polling.
+  // mailChannelId: '000000000000000000',
 };

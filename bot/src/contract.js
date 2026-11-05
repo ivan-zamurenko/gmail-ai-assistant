@@ -10,6 +10,9 @@ export const COMMANDS = {
   RESCHEDULE:  'reschedule',
   FIND:        'find',
   REPORT:      'report',
+  // Mail-to-Discord (2026-11-05): read unread Inbox / add the AI-Read label.
+  MAIL_CHECK:  'mail_check',
+  MAIL_MARK:   'mail_mark',
 };
 
 // Sub-modes of /reschedule, carried in task.args.mode.

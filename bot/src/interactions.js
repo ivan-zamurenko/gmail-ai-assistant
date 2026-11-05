@@ -12,11 +12,12 @@ import { formatReport, formatRows, formatSummary, splitMessage } from './message
 import { validateConsignmentNumber, validateFutureWorkday } from './validation.js';
 import { renderBarcodeProgress, shouldPublishBarcodeProgress } from './barcodeProgress.js';
 import { proposeReply } from './aiReply.js';
+import { createMailViews } from './mailViews.js';
 
 export function createInteractionHandler({
   cfg, enqueueAndWait, buildParcelEmbed, acknowledgeResult = async () => {},
   addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList = () => {}, listResults, getResult,
-  propose = proposeReply,
+  propose = proposeReply, mail = null,
 }) {
   const actor = interaction => ({ requestedBy: interaction.user.id, guildId: interaction.guildId });
   async function acknowledge(interaction, result) {
@@ -29,6 +30,7 @@ export function createInteractionHandler({
     catch (failure) { console.error('Result delivery failed:', safeErrorMessage(failure, 'Discord operation failed')); }
   }
 
+  const mailViews = mail ? createMailViews({ ...mail, enqueueAndWait, acknowledge, propose, renderReply, guildId: cfg.guildId }) : null;
   const rescheduleViews = createRescheduleViews();
   const findViews = createFindViews({ buildParcelEmbed, apiKey: cfg.googleMapsApiKey });
   const recoverResult = createResultRecovery({ listResults, getResult, acknowledgeResult, buildParcelEmbed, renderFind: (parcel, interaction) => findViews.open(parcel, interaction), resultMessage, renderReschedule: (result, interaction) => rescheduleViews.open(result, interaction), cfg });
@@ -38,7 +40,8 @@ export function createInteractionHandler({
     const findButton = interaction.isButton?.() && interaction.customId?.startsWith('find:');
     const reportButton = interaction.isButton?.() && interaction.customId?.startsWith('report:');
     const recoveryButton = interaction.isButton?.() && interaction.customId?.startsWith('result:');
-    if (!interaction.isChatInputCommand() && !recoveryButton && !reportButton && !findButton && !rescheduleButton) return;
+    const mailButton = interaction.isButton?.() && interaction.customId?.startsWith('mail:');
+    if (!interaction.isChatInputCommand() && !recoveryButton && !reportButton && !findButton && !rescheduleButton && !mailButton) return;
 
     // Commands are guild-scoped at registration, but keep a runtime gate too: it
     // protects us if registration changes or an interaction is ever misrouted.
@@ -53,6 +56,14 @@ export function createInteractionHandler({
       return;
     }
 
+    if (mailButton || interaction.commandName === 'mail') {
+      if (!mailViews) {
+        await interaction.reply({ content: '⚠️ Канал пошти не налаштовано (mailChannelId).', flags: MessageFlags.Ephemeral });
+        return;
+      }
+      await (mailButton ? mailViews.handle(interaction) : mailViews.command(interaction));
+      return;
+    }
     if (rescheduleButton) {
       await rescheduleViews.handle(interaction);
       return;

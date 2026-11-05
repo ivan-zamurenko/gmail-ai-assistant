@@ -29,6 +29,8 @@ import {
 import { CONSTANTS }       from '../utils/constants.js';
 import { safeErrorMessage } from '../utils/errors.js';
 import { loadConfig }      from '../config/config.js';
+import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
+import { checkInbox, markHandled } from '../gmail/inbox.js';
 
 const done  = (summary, details) => ({ status: STATUS.DONE,  summary, ...(typeof details === 'object' ? details : { details }) });
 const error = (summary)          => ({ status: STATUS.ERROR, summary });
@@ -395,6 +397,16 @@ export async function executeTask(task) {
     return task.command === COMMANDS.REPORT ? runReport(task.args) : runFind(task.args);
   }
 
+  if (task.command === COMMANDS.MAIL_CHECK) return runMail(async token => {
+    const mail = await checkInbox({ token });
+    return done(`Нових листів: ${mail.length}`, { parcel: { mail } });
+  });
+  if (task.command === COMMANDS.MAIL_MARK) {
+    const messageId = task.args?.messageId;
+    if (typeof messageId !== 'string' || !/^[A-Za-z0-9_-]{1,256}$/.test(messageId)) return error('Некоректний ID листа');
+    return runMail(async token => { await markHandled({ token, messageId }); return done('Мітку AI-Read додано'); });
+  }
+
   if (task.command !== COMMANDS.RESCHEDULE) {
     return error('Невідома queue command');
   }
@@ -414,4 +426,18 @@ export async function executeTask(task) {
   }
 
   return error(`Режим "${mode}" ще не під'єднано в розширенні`);
+}
+
+/** Gmail work for the mail channel; never interactive (no sign-in window from the queue). */
+async function runMail(work) {
+  let token;
+  try { token = await getAuthToken({ interactive: false }); }
+  catch { return error('Gmail не авторизовано на робочому ПК — відкрийте popup і перевірте Gmail'); }
+  if (!token) return error('Gmail не авторизовано на робочому ПК — відкрийте popup і перевірте Gmail');
+  try {
+    return await work(token);
+  } catch (err) {
+    if (err?.status === 401) await removeCachedAuthToken(token).catch(() => {});
+    return error(err?.code === 'http' ? `Gmail відповів HTTP ${err.status}` : safeErrorMessage(err, 'Gmail недоступний'));
+  }
 }

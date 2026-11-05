@@ -1300,3 +1300,7 @@ Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.
 ## /reply AI proposal — 2026-11-05
 
 `test/bot/aiReply.test.js` protects: contacts masked before the prompt (consignment kept, address/signature/route never sent), and false date, foreign number, promise or action claim are rejected; model outage → safe `model_unavailable`. Model is a fake fetch; a live synthetic run against local Ollama is manual evidence only.
+
+## Mail channel — 2026-11-05
+
+`test/gmail/inbox.test.js`: the Inbox query excludes `AI-Read`, reading uses only GET, handling only adds the label (no send/draft/trash, no UNREAD change). `test/bot/mailWatch.test.js`: each message is posted once across polls; an error is announced once and recovery once; AI reply button only with exactly one consignment.

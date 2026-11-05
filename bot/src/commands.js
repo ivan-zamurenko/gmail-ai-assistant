@@ -89,5 +89,9 @@ export const commands = [
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption(o => o.setName('con_id').setDescription('Номер посилки (consignment)').setRequired(true))
     .addStringOption(o => o.setName('text').setDescription('Текст листа клієнта').setRequired(true).setMaxLength(4000)),
+  new SlashCommandBuilder()
+    .setName('mail')
+    .setDescription('Перевірити пошту depot22 і показати необроблені листи')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
 ];

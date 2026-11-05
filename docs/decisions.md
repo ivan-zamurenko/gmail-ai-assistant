@@ -380,3 +380,12 @@ Provider: a local model on the owner's always-on Mac (M1 Pro, 16 GB) via Ollama;
 ## G_PRIVACY 2026-11-05 — owner approved
 
 The AI may receive only the email text and grounded depot facts (Scanning History). Customer address, phone and email are not sent; email addresses, phone numbers and address-like lines are masked in the email text before the prompt is built. With the local provider nothing leaves the Mac. Drafts still require human review; no auto-send.
+
+## EMAIL-VIA-DISCORD 2026-11-05 — owner approved
+
+The owner works through Discord. The depot22 mailbox and the depot tab live on a separate work PC; the bot and Ollama run on the always-on Mac.
+
+- Flow: work-PC extension reads AI-Reply mail (Gmail API) → depot lookup → masks emails/phones/addresses → Firestore task → bot on the Mac calls the local model and validates the proposal (S06-02) → private admin-only Discord channel shows masked email text, consignment, scans and the proposed reply → owner decides per email.
+- Discord buttons: ✅ draft, ✏️ edit, 🔁 regenerate, ⏭ skip, 📤 send. **Send is an explicit per-email owner action**, never automatic; one click = one email. Sending is executed by the work-PC extension (`gmail.modify` already covers send); an indeterminate send is reported as uncertain and never replayed.
+- This amends §8 of `docs/ai-boundary.md` (the bot becomes the AI transport for masked prompts) and the earlier "draft only" rule of G_GMAIL_POLICY. Masked email text and AI replies may pass through Firestore and the private Discord channel; nothing is posted to public channels or logs.
+- Requires new queue task types (contract version bump in both mirrors and rules) and the work PC running Chrome with the extension.

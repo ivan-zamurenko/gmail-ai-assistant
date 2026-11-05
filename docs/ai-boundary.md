@@ -49,6 +49,8 @@ S06-04 измеряет поведение реальной модели на р
 
 ## 8. Существующий Discord-бот не является AI transport
 
+> **Изменено 2026-11-05 (EMAIL-VIA-DISCORD, docs/decisions.md):** бот на Mac вызывает локальную модель для замаскированных prompts и показывает проверку писем в приватном канале; отправка — только явной кнопкой владельца на каждое письмо.
+
 `bot/src` обслуживает depot commands, rendering, Maps и todo. Это не реализация model calls и не интерфейс одобрения email. Не отправлять prompt/письмо/AI output в Firestore tasks или Discord без новой утверждённой границы данных. OWNER-D01 и S06-05 сохраняют обязательную ручную проверку; успешный bot pilot не закрывает AI quality gate.
 
 ## S06-02 — prepared strict proposal boundary

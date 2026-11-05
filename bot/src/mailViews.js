@@ -15,38 +15,43 @@ export function consignmentsIn(entry) {
   return [...new Set(`${entry.subject ?? ''}\n${entry.text ?? ''}`.match(/\b(?:\d{14}|\d{9})\b/g) ?? [])];
 }
 
-function quote(text, max) {
-  const body = String(text ?? '').trim();
-  if (!body) return '> _(текст лише в HTML — відкрийте в Gmail)_';
-  const cut = body.length > max ? `${body.slice(0, max).trimEnd()}…` : body;
-  return cut.split('\n').slice(0, 12).map(row => `> ${row}`).join('\n');
+/** Display name only ("Jane <j@x>" → "Jane"); the address shows when expanded. */
+export function senderName(from) {
+  const value = line(from);
+  const name = value.replace(/<[^>]*>/g, '').replace(/^"|"$/g, '').trim();
+  return name || value || '—';
 }
 
-export function renderMailCard(entry, { handled = null } = {}) {
+/** First sentences without quoted history or links. */
+export function preview(text, max = 220) {
+  const body = String(text ?? '').split('\n').filter(row => !/^\s*>/.test(row) && !/^On .+wrote:$/.test(row.trim()))
+    .join(' ').replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim();
+  if (!body) return '';
+  const sentences = body.match(/[^.!?]+[.!?]+/g) ?? [body];
+  let out = '';
+  for (const sentence of sentences) { if ((out + sentence).length > max) break; out += sentence; }
+  out = (out || body.slice(0, max)).trim();
+  return out.length < body.length ? `${out.replace(/[.!?]*$/, '')}…` : out;
+}
+
+export function renderMailCard(entry, { handled = null, expanded = false } = {}) {
   const numbers = consignmentsIn(entry);
-  const content = [
-    `📨 **Новий лист** · ${stamp(entry.date || entry.seenAt)}`,
-    `👤 **Від:** ${line(entry.from) || '—'}`,
-    `📝 **Тема:** ${line(entry.subject) || '—'}`,
-    `📦 **Номер:** ${numbers.length ? numbers.join(', ') : '❔ не знайдено'}`,
-    '',
-    quote(entry.text, 500),
-    ...(handled ? ['', `✅ **Оброблено** · ${stamp(handled)}`] : []),
-  ].join('\n').slice(0, 1990);
-  if (handled) return { content, components: [] };
+  const head = `📨 **${senderName(entry.from)}** · <t:${Math.floor((entry.date || entry.seenAt) / 1000)}:R>`;
+  const subject = `**${line(entry.subject) || '(без теми)'}**${numbers.length ? ` · 📦 ${numbers.join(', ')}` : ''}`;
+  const body = expanded
+    ? [`✉️ ${line(entry.from)}`, '', String(entry.text ?? '').trim().slice(0, 1600) || '_(текст лише в HTML — відкрийте в Gmail)_'].join('\n')
+    : `> ${preview(entry.text) || '_(текст лише в HTML — відкрийте в Gmail)_'}`;
+  const content = [head, subject, body, ...(handled ? [`✅ Оброблено · ${stamp(handled)}`] : [])].join('\n').slice(0, 1990);
+  const toggle = new ButtonBuilder().setCustomId(`mail:${expanded ? 'less' : 'more'}:${entry.id}`)
+    .setLabel(expanded ? 'Згорнути' : 'Розгорнути').setEmoji(expanded ? '🔼' : '📖').setStyle(ButtonStyle.Secondary);
+  if (handled) return { content, components: [new ActionRowBuilder().addComponents(toggle)] };
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`mail:read:${entry.id}`).setLabel('Читати').setEmoji('📖').setStyle(ButtonStyle.Secondary),
+    toggle,
     new ButtonBuilder().setCustomId(`mail:reply:${entry.id}`).setLabel('AI-відповідь').setEmoji('✉️').setStyle(ButtonStyle.Primary)
       .setDisabled(numbers.length !== 1),
     new ButtonBuilder().setCustomId(`mail:done:${entry.id}`).setLabel('Оброблено').setEmoji('✅').setStyle(ButtonStyle.Success),
   );
   return { content, components: [row] };
-}
-
-function chunks(text, size = 1900) {
-  const out = [];
-  for (let i = 0; i < text.length && out.length < 3; i += size) out.push(text.slice(i, i + size));
-  return out;
 }
 
 export function createMailViews({ store, enqueueAndWait, acknowledge, propose, renderReply, poll, guildId, channelId }) {
@@ -57,11 +62,8 @@ export function createMailViews({ store, enqueueAndWait, acknowledge, propose, r
       await interaction.reply({ content: '⚠️ Лист уже не в кеші (зберігається 7 днів). Відкрийте його в Gmail.', flags: MessageFlags.Ephemeral });
       return;
     }
-    if (action === 'read') {
-      const full = [`👤 ${line(entry.from)}`, `📝 ${line(entry.subject)}`, '', entry.text?.trim() || '_(текст лише в HTML — відкрийте в Gmail)_'].join('\n');
-      const [first, ...rest] = chunks(full);
-      await interaction.reply({ content: first, flags: MessageFlags.Ephemeral });
-      for (const part of rest) await interaction.followUp({ content: part, flags: MessageFlags.Ephemeral });
+    if (action === 'more' || action === 'less') {
+      await interaction.update(renderMailCard(entry, { handled: entry.handled ?? null, expanded: action === 'more' }));
       return;
     }
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -95,8 +97,8 @@ export function createMailViews({ store, enqueueAndWait, acknowledge, propose, r
     await poll().catch(() => {});
     const open = store.open().slice(0, 10);
     if (!open.length) { await interaction.editReply('📭 Необроблених листів немає.'); return; }
-    const rows = open.map(entry => `• ${stamp(entry.date || entry.seenAt)} · 👤 ${line(entry.from).slice(0, 60)} — 📝 ${line(entry.subject).slice(0, 80) || '—'}`
-      + (entry.postedId ? ` → [відкрити](https://discord.com/channels/${guildId}/${channelId}/${entry.postedId})` : ''));
+    const rows = open.map(entry => `• **${senderName(entry.from).slice(0, 40)}** — ${line(entry.subject).slice(0, 70) || '(без теми)'}`
+      + (entry.postedId ? ` · [↗](https://discord.com/channels/${guildId}/${channelId}/${entry.postedId})` : ''));
     await interaction.editReply([`📬 **Необроблені листи: ${store.open().length}**`, '', ...rows].join('\n').slice(0, 1990));
   }
 

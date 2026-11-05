@@ -25,6 +25,8 @@ export function loadConfig() {
   return {
     geminiApiKey: text(LOCAL.geminiApiKey, 'geminiApiKey'),
     driveFolderId: folder ? parseFolderId(folder) : '',
+    gmailClientId: text(LOCAL.gmailClientId, 'gmailClientId').trim(),
+    gmailAccount: text(LOCAL.gmailAccount, 'gmailAccount').trim(),
     firebase: section('firebase', ['apiKey', 'projectId']),
     podAuth: section('podAuth', ['basicAuthorization', 'user', 'password', 'type']),
   };

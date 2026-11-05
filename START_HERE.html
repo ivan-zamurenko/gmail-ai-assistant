@@ -3295,6 +3295,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-05 Copilot — Ollama + qwen2.5:7b installed on Mac (brew service), synthetic smoke OK; chrome-extension origin gets 403 (to configure). Owner approved EMAIL-VIA-DISCORD: review + per-email send button in private Discord, work PC ≠ Mac. Next: S06-01 provider in bot.
 - 2026-11-05 Copilot — /reply (bot 0.2.33): FIND facts → masked email → local qwen2.5:7b → grounding guard → ephemeral proposal, no send. Tests 4/4; live synthetic 3 cases: invented &quot;tomorrow 06/11&quot; rejected. Next: register + restart, owner tries /reply.
 - 2026-11-05 Copilot — Mail channel: ext 6.3.0.111 mail_check/mail_mark (Gmail read + AI-Read label, no send), bot 0.2.34 polls every 2 min → #emails-📩 cards (📖/✉️/✅) + /mail; root 1.1.82. Next: owner installs ext on work PC, authorizes Gmail in popup, sends test mail.
+- 2026-11-05 Copilot — Mail read personal account (Chrome profile) → paused polling, wiped cache. Ext 6.3.0.112: separate work-mailbox sign-in with account check; bot 0.2.35 compact card with expand. Next: owner creates Web OAuth client, gives client ID + depot22 address.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -4764,6 +4765,10 @@ The owner works through Discord. The depot22 mailbox and the depot tab live on a
 ## MAIL-IN-DISCORD 2026-11-05 — owner approved
 
 Owner wants depot22 mail visible in Discord. Approved: every unread Inbox message (last 3 days) without the `AI-Read` label is posted once to the private channel `#emails-📩` with sender, subject, detected consignment number(s) and a preview; contacts are shown as-is (private, owner-only channel). Buttons: 📖 read full text (ephemeral), ✉️ AI reply (same grounded proposal as `/reply`, only with exactly one number), ✅ handled → adds Gmail label `AI-Read` (owner chose a label instead of marking as read). `/mail` checks now and lists open mail. The extension never sends, deletes or marks mail as read; the bot keeps a 7-day local cache (`bot/data/`, gitignored). Polling every 2 minutes through the existing task queue; results ride in the terminal `parcel` map, so no Firestore rules deployment.
+
+## MAIL-IN-DISCORD amendment 2026-11-05 — work mailbox only
+
+The first live run read the Chrome profile account (owner&#39;s personal mail) instead of depot22; polling was paused and the bot cache deleted. Owner chose option B: the extension signs in to the work Gmail separately from the Chrome account (`launchWebAuthFlow`, Web OAuth client, scope `gmail.modify`, `login_hint` = configured `gmailAccount`). Every new token is accepted only if Gmail&#39;s profile confirms that exact address; any other account is refused and never read. Queue mail tasks never open a sign-in window; the owner signs in from the popup (&quot;Увійти в робочу пошту&quot;). Card format per owner: sender name, subject, first sentences; 📖 expands/collapses in place.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -7124,6 +7129,8 @@ Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.
 ## Mail channel — 2026-11-05
 
 `test/gmail/inbox.test.js`: the Inbox query excludes `AI-Read`, reading uses only GET, handling only adds the label (no send/draft/trash, no UNREAD change). `test/bot/mailWatch.test.js`: each message is posted once across polls; an error is announced once and recovery once; AI reply button only with exactly one consignment.
+
+`test/gmail/mailAuth.test.js` (2026-11-05): a token for any account other than the configured work mailbox is refused and not cached; queue refresh is non-interactive with `login_hint`; missing config fails closed. `test/bot/mailWatch.test.js` also covers the collapsed card (name, subject, first sentences; address only when expanded).
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

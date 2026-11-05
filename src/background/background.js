@@ -10,6 +10,7 @@ import { logger }      from '../utils/logger.js';
 import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
 import {
   executeTask,
+  mailAuth,
   lookupLabelTarget,
   rescheduleLabelTargets,
 } from '../queue/executor.js';
@@ -111,6 +112,17 @@ const LABEL_SCAN = {
 // The offscreen listener asks us to run a task in the depot tab; we own
 // chrome.scripting, it does not.
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Popup "sign in to the work mailbox": the auth window outlives the popup.
+  if (msg?.type === 'mail-signin') {
+    if (sender?.id !== chrome.runtime.id || sender?.url !== chrome.runtime.getURL(POPUP_URL) || sender?.tab !== undefined) {
+      sendResponse({ reason: 'Untrusted runtime sender' });
+      return;
+    }
+    mailAuth.forget().then(() => mailAuth.getToken({ interactive: true }))
+      .then(() => sendResponse({ ok: true }))
+      .catch((err) => sendResponse({ reason: err?.message || 'Sign-in failed' }));
+    return true;
+  }
   if (Object.hasOwn(LABEL_SCAN, msg?.type ?? '')) {
     const context = {
       runtimeId: chrome.runtime.id,

@@ -1304,3 +1304,5 @@ Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.
 ## Mail channel — 2026-11-05
 
 `test/gmail/inbox.test.js`: the Inbox query excludes `AI-Read`, reading uses only GET, handling only adds the label (no send/draft/trash, no UNREAD change). `test/bot/mailWatch.test.js`: each message is posted once across polls; an error is announced once and recovery once; AI reply button only with exactly one consignment.
+
+`test/gmail/mailAuth.test.js` (2026-11-05): a token for any account other than the configured work mailbox is refused and not cached; queue refresh is non-interactive with `login_hint`; missing config fails closed. `test/bot/mailWatch.test.js` also covers the collapsed card (name, subject, first sentences; address only when expanded).

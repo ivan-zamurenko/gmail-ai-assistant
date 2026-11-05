@@ -25,5 +25,14 @@ test('card offers AI reply only with exactly one consignment number', () => {
   const buttons = card => card.components[0].toJSON().components;
   assert.equal(buttons(renderMailCard({ ...mail[0], seenAt: 1 }))[1].disabled, false);
   assert.equal(buttons(renderMailCard({ ...mail[0], subject: 'Hi', seenAt: 1 }))[1].disabled, true);
-  assert.deepEqual(renderMailCard({ ...mail[0], seenAt: 1 }, { handled: 2 }).components, []);
+  assert.deepEqual(buttons(renderMailCard({ ...mail[0], seenAt: 1 }, { handled: 2 })).map(b => b.custom_id), ['mail:more:m1']);
+});
+
+test('collapsed card shows sender name, subject and first sentences only', () => {
+  const card = renderMailCard({ id: 'm1', from: 'Jane Doe <jane@example.com>', subject: 'Late parcel', seenAt: 1,
+    text: 'Hi there. My parcel is late again! Can you check? Thanks a lot for the help, this is a long tail sentence that should not fit in.\n> old quoted reply' });
+  assert.match(card.content, /\*\*Jane Doe\*\*/);
+  assert.doesNotMatch(card.content, /jane@example\.com|old quoted/);
+  assert.match(card.content, /> Hi there\. My parcel is late again! Can you check\?/);
+  assert.match(renderMailCard({ ...mail[0], from: 'Jane <jane@example.com>', seenAt: 1 }, { expanded: true }).content, /jane@example\.com/);
 });

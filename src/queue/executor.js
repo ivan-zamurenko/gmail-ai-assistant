@@ -29,7 +29,7 @@ import {
 import { CONSTANTS }       from '../utils/constants.js';
 import { safeErrorMessage } from '../utils/errors.js';
 import { loadConfig }      from '../config/config.js';
-import { getAuthToken, removeCachedAuthToken } from '../auth/getAuthToken.js';
+import { createMailAuth } from '../auth/mailAuth.js';
 import { checkInbox, markHandled } from '../gmail/inbox.js';
 
 const done  = (summary, details) => ({ status: STATUS.DONE,  summary, ...(typeof details === 'object' ? details : { details }) });
@@ -428,16 +428,21 @@ export async function executeTask(task) {
   return error(`Режим "${mode}" ще не під'єднано в розширенні`);
 }
 
-/** Gmail work for the mail channel; never interactive (no sign-in window from the queue). */
+/** Work mailbox for the mail channel; account-checked, never interactive from the queue. */
+export const mailAuth = createMailAuth({
+  identity: globalThis.chrome?.identity, storage: globalThis.chrome?.storage?.session,
+  clientId: config.gmailClientId, account: config.gmailAccount,
+  redirectUri: globalThis.chrome?.identity?.getRedirectURL?.(),
+});
+
 async function runMail(work) {
   let token;
-  try { token = await getAuthToken({ interactive: false }); }
-  catch { return error('Gmail не авторизовано на робочому ПК — відкрийте popup і перевірте Gmail'); }
-  if (!token) return error('Gmail не авторизовано на робочому ПК — відкрийте popup і перевірте Gmail');
+  try { token = await mailAuth.getToken({ interactive: false }); }
+  catch (err) { return error(err?.message || 'Gmail не авторизовано'); }
   try {
     return await work(token);
   } catch (err) {
-    if (err?.status === 401) await removeCachedAuthToken(token).catch(() => {});
+    if (err?.status === 401) await mailAuth.forget().catch(() => {});
     return error(err?.code === 'http' ? `Gmail відповів HTTP ${err.status}` : safeErrorMessage(err, 'Gmail недоступний'));
   }
 }

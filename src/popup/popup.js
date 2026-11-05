@@ -28,6 +28,7 @@ const gmailStatusDot    = document.getElementById('gmailStatusDot');
 const gmailStatusLabel  = document.getElementById('gmailStatusLabel');
 const gmailMessage      = document.getElementById('gmailMessage');
 const checkLabelBtn     = document.getElementById('checkLabel');
+const mailSigninBtn     = document.getElementById('mailSignin');
 
 // ── Feature modules ───────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ initDepotFlow({
 });
 
 initGmailFlow({
-  gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn,
+  gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn, mailSigninBtn,
 });
 
 // Local capability checks do not authenticate or contact providers.

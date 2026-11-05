@@ -12,7 +12,7 @@ const exportsByModule = {
   'firebase/firestore': ['getFirestore', 'collection', 'query', 'where', 'onSnapshot', 'doc', 'runTransaction', 'serverTimestamp', 'updateDoc'],
   '../config/config.js': ['loadConfig'],
   '../queue/barcodeExecutor.js': ['executeBarcodeTask'],
-  '../queue/executor.js': ['executeTask', 'lookupLabelTarget', 'rescheduleLabelTargets'],
+  '../queue/executor.js': ['executeTask', 'lookupLabelTarget', 'rescheduleLabelTargets', 'mailAuth'],
   '../auth/getAuthToken.js': ['getAuthToken', 'removeCachedAuthToken'],
 };
 async function bundle(entry) {
@@ -58,7 +58,7 @@ function background() {
     alarms: { create: async () => { calls.alarms++; if (fail) throw new Error('PRIVATE_MARKER'); }, onAlarm: hook('alarm') },
     storage: { local: Object.fromEntries(['get', 'set', 'remove'].map(name => [name, async () => { calls.effects++; return {}; }])) },
   };
-  const ports = Object.fromEntries(['executeTask', 'lookupLabelTarget', 'rescheduleLabelTargets', 'getAuthToken', 'removeCachedAuthToken']
+  const ports = Object.fromEntries(['executeTask', 'lookupLabelTarget', 'rescheduleLabelTargets', 'mailAuth', 'getAuthToken', 'removeCachedAuthToken']
     .map(name => [name, async () => { calls.effects++; return { status: 'done' }; }]));
   const ctx = context(backgroundCode, chrome, ports);
   return { ...ctx, listeners, calls, chrome, blockCreate: promise => { createGate = promise; }, setFailure: value => { fail = value; } };

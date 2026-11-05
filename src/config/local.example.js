@@ -4,6 +4,10 @@
 export const LOCAL = {
   geminiApiKey:  '',
   driveFolderId: '',
+  // Work mailbox read for the Discord mail channel, independent of the Chrome
+  // account. Web OAuth client with redirect https://<extension-id>.chromiumapp.org/
+  gmailClientId: '',
+  gmailAccount:  '',
   // Shared task queue with the Discord bot. Firebase console → Project settings →
   // General → Your apps → Web app config. apiKey is a public identifier, not a
   // secret — the tasks collection is protected by Firebase security rules.

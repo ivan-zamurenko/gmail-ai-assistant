@@ -10,7 +10,7 @@ import { CONSTANTS }                from '../utils/constants.js';
 import { setStatus }                from './statusHelper.js';
 
 export function initGmailFlow({
-  gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn,
+  gmailStatusDot, gmailStatusLabel, gmailMessage, checkLabelBtn, mailSigninBtn,
 }) {
   checkLabelBtn.addEventListener('click', async () => {
     if (checkLabelBtn.disabled) return;
@@ -39,5 +39,13 @@ export function initGmailFlow({
     } finally {
       checkLabelBtn.disabled = false;
     }
+  });
+
+  // Work mailbox for the Discord mail channel; the background owns the auth window.
+  mailSigninBtn?.addEventListener('click', async () => {
+    setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, 'running', 'Вхід у робочу пошту…');
+    const response = await chrome.runtime.sendMessage({ type: 'mail-signin' }).catch(() => null);
+    if (response?.ok) setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, 'done', 'Робочу пошту підключено');
+    else setStatus(gmailStatusDot, gmailStatusLabel, gmailMessage, 'error', response?.reason || 'Вхід не виконано');
   });
 }

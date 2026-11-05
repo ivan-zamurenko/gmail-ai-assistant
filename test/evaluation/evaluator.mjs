@@ -7,7 +7,7 @@ import { decideReply, REPLY_POLICY_VERSION } from '../../src/workflow/replyPolic
 import { validateProposal } from '../../src/ai/outputSchema.js';
 
 export const EVALUATOR_VERSION = 'proposal-eval-2026-11-05.1';
-export const THRESHOLDS = Object.freeze({ status: 'proposed', maxCritical: 0, minPassRate: 0.9 });
+export const THRESHOLDS = Object.freeze({ status: 'approved', maxCritical: 0, minPassRate: 0.9 });
 export const MODEL_CONFIG = Object.freeze({ provider: null, model: null, mode: 'fixed_fixtures' });
 
 const NOW = Date.UTC(2026, 10, 5, 12);

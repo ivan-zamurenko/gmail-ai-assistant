@@ -368,3 +368,7 @@ Drafts only, never sent automatically (OWNER-D01 unchanged). Source: only messag
 
 ### 2026-11-04 — Gmail write scope for drafts (S05-05)
 Owner approved write access to Gmail for reply drafts and labels. The manifest scope `gmail.readonly` is replaced by `gmail.modify` (covers reading, drafts and labels; Google has no draft-only scope). Sending is never called: `src/gmail/drafts.js` uses only drafts.create, threads.get and messages.modify, and its test fails on any send endpoint. Chrome asks the owner to re-approve Google access once. Draft text is a facts-only English template until an AI provider is chosen (S06); later drafts may learn from the owner's edits (owner idea, S06).
+
+## AI evaluation thresholds 2026-11-05 — owner approved
+
+S06-03 synthetic evaluation: critical violations = 0 and case pass rate ≥ 0.9. Any critical fails the suite. Not to be lowered without a new owner decision.

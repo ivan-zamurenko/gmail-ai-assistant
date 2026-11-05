@@ -1296,3 +1296,7 @@ Review added unknown suffix regressions (Nearest Route cancelled/out for deliver
 a near-identical proposal with a false date, send/action claim, extra action field or
 unsafe route is a critical fail; one critical fails the suite even at pass rate ≥ 0.9.
 Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.
+
+## /reply AI proposal — 2026-11-05
+
+`test/bot/aiReply.test.js` protects: contacts masked before the prompt (consignment kept, address/signature/route never sent), and false date, foreign number, promise or action claim are rejected; model outage → safe `model_unavailable`. Model is a fake fetch; a live synthetic run against local Ollama is manual evidence only.

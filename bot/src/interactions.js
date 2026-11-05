@@ -11,10 +11,12 @@ import { safeErrorMessage } from './errors.js';
 import { formatReport, formatRows, formatSummary, splitMessage } from './messageFormat.js';
 import { validateConsignmentNumber, validateFutureWorkday } from './validation.js';
 import { renderBarcodeProgress, shouldPublishBarcodeProgress } from './barcodeProgress.js';
+import { proposeReply } from './aiReply.js';
 
 export function createInteractionHandler({
   cfg, enqueueAndWait, buildParcelEmbed, acknowledgeResult = async () => {},
   addTodo, listTodos, markDone, clearDone, renderList, rememberTodoList = () => {}, listResults, getResult,
+  propose = proposeReply,
 }) {
   const actor = interaction => ({ requestedBy: interaction.user.id, guildId: interaction.guildId });
   async function acknowledge(interaction, result) {
@@ -88,6 +90,8 @@ export function createInteractionHandler({
       await handleReport(interaction, { conId: request.conId, ...(request.eircode && { eircode: request.eircode }) });
     } else if (interaction.commandName === COMMANDS.FIND) {
       await handleFind(interaction, request.conId);
+    } else if (interaction.commandName === 'reply') {
+      await handleReply(interaction, request);
     } else {
       await handleDepotCommand(interaction, request);
     }
@@ -109,6 +113,13 @@ export function createInteractionHandler({
         return Number.isSafeInteger(number) && number > 0 ? { sub, number } : invalid;
       }
       return { sub };
+    }
+    if (command === 'reply') {
+      const conId = interaction.options.getString('con_id');
+      const text = interaction.options.getString('text');
+      if (typeof conId !== 'string' || typeof text !== 'string' || !text.trim() || text.length > 4000) return invalid;
+      const error = validateConsignmentNumber(conId);
+      return error ? { error } : { conId, text };
     }
     if (command === COMMANDS.FIND || command === COMMANDS.REPORT) {
       const conId = interaction.options.getString('con_id');
@@ -294,6 +305,24 @@ export function createInteractionHandler({
   }
 
   /** Looks up one consignment and shows its latest status — read-only, no date. */
+  async function handleReply(interaction, { conId, text }) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    let retained = false;
+    try {
+      const result = await enqueueAndWait({ command: COMMANDS.FIND, args: { conId }, requestedBy: interaction.user.id });
+      retained = true;
+      if (!result.parcel) {
+        await replyWithResult(interaction, result);
+        await acknowledge(interaction, result);
+        return;
+      }
+      await interaction.editReply({ content: renderReply(await propose({ parcel: result.parcel, query: conId, text }), result.parcel) });
+      await acknowledge(interaction, result);
+    } catch (err) {
+      await deliveryError(interaction, err, retained);
+    }
+  }
+
   async function handleFind(interaction, conId) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -348,4 +377,26 @@ export function createInteractionHandler({
   }
 
   return handleInteraction;
+}
+
+const REPLY_REASONS = {
+  model_unavailable: 'локальна модель недоступна (Ollama не запущений?)',
+  invalid_output: 'модель повернула некоректну відповідь',
+  unsupported_date: 'у відповіді дата, якої немає у сканах',
+  unsupported_number: 'у відповіді номер, якого немає в запиті',
+  unsupported_commitment: 'відповідь обіцяє доставку/гарантію',
+  action_claim: 'відповідь стверджує, що дію вже виконано',
+  auto_send: 'відповідь згадує автоматичну відправку',
+};
+
+/** Ephemeral owner view of a reply proposal; never a send. */
+export function renderReply(result, parcel) {
+  const head = `✉️ **AI-чернетка відповіді** · 📦 ${parcel?.consNumber ?? '—'}`;
+  if (result.status === 'error') return `${head}\n⛔ ${REPLY_REASONS[result.reason] ?? result.reason}`;
+  const meta = `🧠 ${result.model} · 📋 фактів зі сканів: ${result.factCount ?? 0}`;
+  const body = `\`\`\`\n${String(result.replyText ?? '').replace(/```/g, "'''").slice(0, 1500)}\n\`\`\``;
+  const verdict = result.status === 'rejected'
+    ? `🟥 **Відхилено перевіркою:** ${REPLY_REASONS[result.reason] ?? result.reason}. Не використовуй цей текст.`
+    : result.needsHuman ? '🟨 **Потрібна ваша перевірка:** фактів недостатньо для повної відповіді.' : '🟩 Перевірку фактів пройдено.';
+  return [head, meta, '', body, verdict, '📭 Нічого не надіслано — це лише пропозиція.'].join('\n');
 }

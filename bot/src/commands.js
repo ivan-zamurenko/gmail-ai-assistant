@@ -83,5 +83,11 @@ export const commands = [
     .setDescription('Показати збережений результат без повторної дії в depot')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption(o => o.setName('con_id').setDescription('Номер посилки; без номера — список результатів')),
+  new SlashCommandBuilder()
+    .setName('reply')
+    .setDescription('AI-чернетка відповіді клієнту за фактами депо (нічого не надсилає)')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addStringOption(o => o.setName('con_id').setDescription('Номер посилки (consignment)').setRequired(true))
+    .addStringOption(o => o.setName('text').setDescription('Текст листа клієнта').setRequired(true).setMaxLength(4000)),
 
 ];

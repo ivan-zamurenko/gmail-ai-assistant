@@ -1252,6 +1252,10 @@ Dry-run робить лише GET у Drive і жодного запису в dep
 S09-09). Перед кожним PATCH — перевірка змін і колізій (S04-02); втрачена відповідь
 звіряється з Drive (S04-04). Обрив задачі Discord лишається `claimed`/uncertain без
 повтору (S09-04). Підсумок — у каналі команди (рішення власника). Новий код не потрібен.
+
+## /reply — AI reply proposal (2026-11-05)
+
+`/reply con_id:&lt;number&gt; text:&lt;email text&gt;` (Administrator, ephemeral) reuses the existing FIND task, takes only the Scanning History facts (parcel, type, date, time), masks emails/phones/Eircodes in the email text and asks the local model (Ollama `qwen2.5:7b` on this Mac, `bot/src/aiReply.js`). A deterministic guard rejects replies with a date not in the scans, a 9/14-digit number other than the query/consignment, a delivery promise (&quot;tomorrow&quot;, &quot;will be delivered&quot;, &quot;guarantee&quot;), an action claim or auto-send wording. Nothing is sent or stored; no queue contract change. Owner decision: EMAIL-VIA-DISCORD in `docs/decisions.md`.
 </pre></article>
 <article id="doc-8" tabindex="-1" hidden><p class="path"><a href="docs/queue-contract.md">docs/queue-contract.md</a></p><h1>Firestore queue — контракт бота и расширения</h1><pre class="markdown"># Firestore queue — контракт бота и расширения
 
@@ -3280,6 +3284,8 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 root — owner confirmed exact tooltip Nearest Route Assigned; replaced prefix with exact route/type pair. Prefix-negative RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. Artifact6.3.0.98/root1.1.66; no bot restart/live action. Next commit/push and owner update.
 - 2026-11-05 Copilot — S06-03 done. Synthetic corpus + safety-weighted evaluator + offline runner; RED (missed &quot;was sent automatically&quot;) → GREEN 3/3; runner 8/8. Thresholds proposed. Next: owner thresholds + AI gates.
 - 2026-11-05 Copilot — owner approved G_AI_PROVIDER (local Ollama, $0) and G_PRIVACY (email text with contacts masked + depot facts). Next: install Ollama with owner OK, then S06-01.
+- 2026-11-05 Copilot — Ollama + qwen2.5:7b installed on Mac (brew service), synthetic smoke OK; chrome-extension origin gets 403 (to configure). Owner approved EMAIL-VIA-DISCORD: review + per-email send button in private Discord, work PC ≠ Mac. Next: S06-01 provider in bot.
+- 2026-11-05 Copilot — /reply (bot 0.2.33): FIND facts → masked email → local qwen2.5:7b → grounding guard → ephemeral proposal, no send. Tests 4/4; live synthetic 3 cases: invented &quot;tomorrow 06/11&quot; rejected. Next: register + restart, owner tries /reply.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -3647,6 +3653,8 @@ S06-04 измеряет поведение реальной модели на р
 Генератор текста не должен владеть возможностью отправки. Будущий auto-send — отдельное изменение policy/orchestration после нового решения владельца; не создавать скрытый переключатель обхода review. Такое разделение позволяет развивать режимы поэтапно, но не является гарантией отсутствия последующей доработки.
 
 ## 8. Существующий Discord-бот не является AI transport
+
+&gt; **Изменено 2026-11-05 (EMAIL-VIA-DISCORD, docs/decisions.md):** бот на Mac вызывает локальную модель для замаскированных prompts и показывает проверку писем в приватном канале; отправка — только явной кнопкой владельца на каждое письмо.
 
 `bot/src` обслуживает depot commands, rendering, Maps и todo. Это не реализация model calls и не интерфейс одобрения email. Не отправлять prompt/письмо/AI output в Firestore tasks или Discord без новой утверждённой границы данных. OWNER-D01 и S06-05 сохраняют обязательную ручную проверку; успешный bot pilot не закрывает AI quality gate.
 
@@ -4734,6 +4742,15 @@ Provider: a local model on the owner&#39;s always-on Mac (M1 Pro, 16 GB) via Oll
 ## G_PRIVACY 2026-11-05 — owner approved
 
 The AI may receive only the email text and grounded depot facts (Scanning History). Customer address, phone and email are not sent; email addresses, phone numbers and address-like lines are masked in the email text before the prompt is built. With the local provider nothing leaves the Mac. Drafts still require human review; no auto-send.
+
+## EMAIL-VIA-DISCORD 2026-11-05 — owner approved
+
+The owner works through Discord. The depot22 mailbox and the depot tab live on a separate work PC; the bot and Ollama run on the always-on Mac.
+
+- Flow: work-PC extension reads AI-Reply mail (Gmail API) → depot lookup → masks emails/phones/addresses → Firestore task → bot on the Mac calls the local model and validates the proposal (S06-02) → private admin-only Discord channel shows masked email text, consignment, scans and the proposed reply → owner decides per email.
+- Discord buttons: ✅ draft, ✏️ edit, 🔁 regenerate, ⏭ skip, 📤 send. **Send is an explicit per-email owner action**, never automatic; one click = one email. Sending is executed by the work-PC extension (`gmail.modify` already covers send); an indeterminate send is reported as uncertain and never replayed.
+- This amends §8 of `docs/ai-boundary.md` (the bot becomes the AI transport for masked prompts) and the earlier &quot;draft only&quot; rule of G_GMAIL_POLICY. Masked email text and AI replies may pass through Firestore and the private Discord channel; nothing is posted to public channels or logs.
+- Requires new queue task types (contract version bump in both mirrors and rules) and the work PC running Chrome with the extension.
 </pre></article>
 <article id="doc-41" tabindex="-1" hidden><p class="path"><a href="docs/depot-contract.md">docs/depot-contract.md</a></p><h1>Depot: lookup, CAD и изменение даты</h1><pre class="markdown"># Depot: lookup, CAD и изменение даты
 
@@ -7086,6 +7103,10 @@ Review added unknown suffix regressions (Nearest Route cancelled/out for deliver
 a near-identical proposal with a false date, send/action claim, extra action field or
 unsafe route is a critical fail; one critical fails the suite even at pass rate ≥ 0.9.
 Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.
+
+## /reply AI proposal — 2026-11-05
+
+`test/bot/aiReply.test.js` protects: contacts masked before the prompt (consignment kept, address/signature/route never sent), and false date, foreign number, promise or action claim are rejected; model outage → safe `model_unavailable`. Model is a fake fetch; a live synthetic run against local Ollama is manual evidence only.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 

@@ -330,3 +330,7 @@ Dry-run робить лише GET у Drive і жодного запису в dep
 S09-09). Перед кожним PATCH — перевірка змін і колізій (S04-02); втрачена відповідь
 звіряється з Drive (S04-04). Обрив задачі Discord лишається `claimed`/uncertain без
 повтору (S09-04). Підсумок — у каналі команди (рішення власника). Новий код не потрібен.
+
+## /reply — AI reply proposal (2026-11-05)
+
+`/reply con_id:<number> text:<email text>` (Administrator, ephemeral) reuses the existing FIND task, takes only the Scanning History facts (parcel, type, date, time), masks emails/phones/Eircodes in the email text and asks the local model (Ollama `qwen2.5:7b` on this Mac, `bot/src/aiReply.js`). A deterministic guard rejects replies with a date not in the scans, a 9/14-digit number other than the query/consignment, a delivery promise ("tomorrow", "will be delivered", "guarantee"), an action claim or auto-send wording. Nothing is sent or stored; no queue contract change. Owner decision: EMAIL-VIA-DISCORD in `docs/decisions.md`.

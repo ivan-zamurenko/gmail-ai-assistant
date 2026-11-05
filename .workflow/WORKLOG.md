@@ -265,3 +265,4 @@
 - 2026-11-05 Copilot — S06-03 done. Synthetic corpus + safety-weighted evaluator + offline runner; RED (missed "was sent automatically") → GREEN 3/3; runner 8/8. Thresholds proposed. Next: owner thresholds + AI gates.
 - 2026-11-05 Copilot — owner approved G_AI_PROVIDER (local Ollama, $0) and G_PRIVACY (email text with contacts masked + depot facts). Next: install Ollama with owner OK, then S06-01.
 - 2026-11-05 Copilot — Ollama + qwen2.5:7b installed on Mac (brew service), synthetic smoke OK; chrome-extension origin gets 403 (to configure). Owner approved EMAIL-VIA-DISCORD: review + per-email send button in private Discord, work PC ≠ Mac. Next: S06-01 provider in bot.
+- 2026-11-05 Copilot — /reply (bot 0.2.33): FIND facts → masked email → local qwen2.5:7b → grounding guard → ephemeral proposal, no send. Tests 4/4; live synthetic 3 cases: invented "tomorrow 06/11" rejected. Next: register + restart, owner tries /reply.

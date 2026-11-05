@@ -63,7 +63,8 @@ test('wrong guild and non-admin depot actors are denied before effects', async (
 
 test('registered depot modes enqueue once with safe defaults and explicit false confirmation', async () => {
   const schema = commands.map(command => command.toJSON());
-  assert.deepEqual(schema.map(command => command.name), ['reschedule', 'find', 'todo', 'report', 'result']);
+  assert.deepEqual(schema.map(command => command.name), ['reschedule', 'find', 'todo', 'report', 'result', 'reply']);
+  assert.equal(schema[5].default_member_permissions, '8');
   assert.equal(schema[0].default_member_permissions, '8');
   assert.equal(schema[1].default_member_permissions, '8');
   assert.ok(!schema[2].default_member_permissions);

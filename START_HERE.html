@@ -21,7 +21,7 @@
 <a class="nav" href="#doc-18" data-target="doc-18">Discord, Firestore и extension executor<small>.github/instructions/discord-queue.instructions.md</small></a>
 <a class="nav" href="#doc-19" data-target="doc-19">Gmail и AI<small>.github/instructions/gmail-ai.instructions.md</small></a>
 <a class="nav" href="#doc-20" data-target="doc-20">Проверки<small>.github/instructions/tests.instructions.md</small></a>
-<a class="nav" href="#doc-21" data-target="doc-21">S04-04 done — 2026-11-04<small>.workflow/CURRENT.md</small></a>
+<a class="nav" href="#doc-21" data-target="doc-21">S06-03 done — 2026-11-05<small>.workflow/CURRENT.md</small></a>
 <a class="nav" href="#doc-22" data-target="doc-22">Спільний журнал DPD Assistance<small>.workflow/WORKLOG.md</small></a>
 <a class="nav" href="#doc-23" data-target="doc-23">Старт роботи Codex / Copilot<small>AGENT_START_RU.md</small></a>
 <a class="nav" href="#doc-24" data-target="doc-24">Конфигурация агентов: что применять и где<small>agent-config/README_RU.md</small></a>
@@ -2092,7 +2092,14 @@ description: &quot;Synthetic fixtures, evidence and meaningful RED/GREEN checks.
 
 Актуальний набір test/ описано у docs/TESTING.md; архівні чотири security cases були розділені між спеціалізованими тестами. Root test уже есть; bot dependencies устанавливаются отдельно. Дополнять, не удалять. Firestore rules проверять Emulator, а не строковым regex; fixtures не должны импортировать startup бота с live credentials. Для двух contract mirrors нужен тест равенства значений. Discord reply failure проверять отдельно от depot execution.
 </pre></article>
-<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S04-04 done — 2026-11-04</h1><pre class="markdown"># S04-04 done — 2026-11-04
+<article id="doc-21" tabindex="-1" hidden><p class="path"><a href=".workflow/CURRENT.md">.workflow/CURRENT.md</a></p><h1>S06-03 done — 2026-11-05</h1><pre class="markdown"># S06-03 done — 2026-11-05
+
+Copilot; no active writer. Synthetic AI proposal evaluation: 8-case corpus, evaluator with separate critical count (false date, send/action claim, commitment, unsafe route), fixtures-only runner. Thresholds proposed: critical 0, pass ≥ 0.9. No product change, no version bump.
+Next: owner approves thresholds; G_AI_PROVIDER + G_PRIVACY unblock S06-01/S06-05.
+
+---
+
+# S04-04 done — 2026-11-04
 
 Copilot; no active writer. Popup label scan has a move journal, Cancel button, and lost-PATCH reconcile. Ext 6.3.0.108, root 1.1.79, bot 0.2.32. 276/276 PASS7.
 Next: S04-05 needs owner G_TEST_ACCOUNTS/G_PRIVACY (separate test Drive folder).
@@ -3271,6 +3278,7 @@ Discord send/ACK boundaries винесені з index. Конкретний reco
 - 2026-11-04 root — review found prefix NearRoute mapping overaccepts unknown suffix. New regression RED16/17; prior full gate superseded. Requested exact tooltip text from owner; draft6.3.0.98 not released or committed. Next replace prefix with exact confirmed type, recheck/review/deliver. No live side effects.
 
 - 2026-11-04 root — owner confirmed exact tooltip Nearest Route Assigned; replaced prefix with exact route/type pair. Prefix-negative RED16/17→GREEN18/18; full236/236 PASS7; reviewer ACCEPT. Artifact6.3.0.98/root1.1.66; no bot restart/live action. Next commit/push and owner update.
+- 2026-11-05 Copilot — S06-03 done. Synthetic corpus + safety-weighted evaluator + offline runner; RED (missed &quot;was sent automatically&quot;) → GREEN 3/3; runner 8/8. Thresholds proposed. Next: owner thresholds + AI gates.
 </pre></article>
 <article id="doc-23" tabindex="-1" hidden><p class="path"><a href="AGENT_START_RU.md">AGENT_START_RU.md</a></p><h1>Старт роботи Codex / Copilot</h1><pre class="markdown"># Старт роботи Codex / Copilot
 
@@ -7058,6 +7066,13 @@ NearRoute follow-up extends existing matrix/console groups test-first16/18→18/
 NearRoute column correction: synthetic screenshot-shaped CAD followed by Route=NearRoute/Scan Type Desc=Nearest Route assigned reproduced RED16/17. Existing matrix now covers route/type pair, stale and superseded events, route label not overriding OFD/Delivered/unknown types, wrong route refusal, tied conflicting event, mixed two-parcel series and serialized preview. GREEN18/18 with diagnostics; no real screenshot/identifiers retained. Prior type-only tests were insufficient to model the actual column.
 
 Review added unknown suffix regressions (Nearest Route cancelled/out for delivery); RED16/17 exposed prefix overacceptance. Owner confirmed exact Nearest Route Assigned tooltip, exact pair restored GREEN18/18 and full236/236 PASS7.
+
+## S06-03 — synthetic proposal evaluation
+
+`test/evaluation/evaluator.test.mjs` protects: corpus covers the required categories;
+a near-identical proposal with a false date, send/action claim, extra action field or
+unsafe route is a critical fail; one critical fails the suite even at pass rate ≥ 0.9.
+Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.
 </pre></article>
 <article id="doc-55" tabindex="-1" hidden><p class="path"><a href="docs/toolchain.md">docs/toolchain.md</a></p><h1>Toolchain v1.2 — две установки и три уровня проверок</h1><pre class="markdown"># Toolchain v1.2 — две установки и три уровня проверок
 
@@ -10390,6 +10405,13 @@ test(ai): [S06-03] add safety-weighted proposal evaluation
 ```
 
 Evidence: `.workflow/evidence/S06-03.json`. Обновить существующие CURRENT/state, не заменять их шаблоном. Собственный SHA не записывать внутрь создаваемого коммита. В финале указать фактические RED/GREEN или честное N/A, commit/push status и один следующий task ID.
+
+## Виконано 2026-11-05
+
+Корпус `test/evaluation/cases.json` (8 synthetic cases), evaluator `test/evaluation/evaluator.mjs`,
+runner `test/evaluation/run.mjs` (тільки fixed fixtures, аргументи відхиляються), тест
+`test/evaluation/evaluator.test.mjs` 3/3. Thresholds запропоновані (critical 0, pass ≥ 0.9),
+очікують рішення власника. Опис: `docs/ai-evaluation.md`.
 </pre></article>
 <article id="doc-100" tabindex="-1" hidden><p class="path"><a href="roadmap/tasks/S06-04.md">roadmap/tasks/S06-04.md</a></p><h1>S06-04 — Проверить AI в разрешённом shadow режиме</h1><pre class="markdown"># S06-04 — Проверить AI в разрешённом shadow режиме
 

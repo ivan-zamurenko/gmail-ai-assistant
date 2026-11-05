@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "task_id": "S06-03",
+  "outcome": "passed",
+  "base_sha": "4908c17",
+  "branch": "codex",
+  "completed_on": "2026-11-05",
+  "scope": "Offline synthetic proposal evaluation: versioned corpus, safety-weighted evaluator, fixtures-only runner.",
+  "checks": [
+    {
+      "phase": "red",
+      "command": "node --test test/evaluation/evaluator.test.mjs",
+      "exit_code": 1,
+      "result": "2/3: 'was sent automatically' not flagged as auto_send"
+    },
+    {
+      "phase": "green",
+      "command": "node --test test/evaluation/evaluator.test.mjs",
+      "exit_code": 0,
+      "result": "3/3"
+    },
+    {
+      "phase": "green",
+      "command": "node test/evaluation/run.mjs",
+      "exit_code": 0,
+      "result": "8/8 PASS, critical 0"
+    },
+    {
+      "phase": "green",
+      "command": "node test/evaluation/run.mjs --live",
+      "exit_code": 2,
+      "result": "refused"
+    },
+    {
+      "phase": "green",
+      "command": "node tools/checks.mjs",
+      "exit_code": 0,
+      "result": "see commit gate"
+    }
+  ],
+  "untested": [
+    "Real model outputs (G_AI_PROVIDER pending)",
+    "Real customer mail distribution",
+    "Phrasings outside the regex lists"
+  ],
+  "external_effects": [],
+  "next_step": "Owner: approve thresholds and decide G_AI_PROVIDER/G_PRIVACY for S06-01/S06-05"
+}

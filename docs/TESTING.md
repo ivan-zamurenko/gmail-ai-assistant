@@ -1289,3 +1289,10 @@ NearRoute follow-up extends existing matrix/console groups test-first16/18→18/
 NearRoute column correction: synthetic screenshot-shaped CAD followed by Route=NearRoute/Scan Type Desc=Nearest Route assigned reproduced RED16/17. Existing matrix now covers route/type pair, stale and superseded events, route label not overriding OFD/Delivered/unknown types, wrong route refusal, tied conflicting event, mixed two-parcel series and serialized preview. GREEN18/18 with diagnostics; no real screenshot/identifiers retained. Prior type-only tests were insufficient to model the actual column.
 
 Review added unknown suffix regressions (Nearest Route cancelled/out for delivery); RED16/17 exposed prefix overacceptance. Owner confirmed exact Nearest Route Assigned tooltip, exact pair restored GREEN18/18 and full236/236 PASS7.
+
+## S06-03 — synthetic proposal evaluation
+
+`test/evaluation/evaluator.test.mjs` protects: corpus covers the required categories;
+a near-identical proposal with a false date, send/action claim, extra action field or
+unsafe route is a critical fail; one critical fails the suite even at pass rate ≥ 0.9.
+Fixtures are synthetic; no provider call. See `docs/ai-evaluation.md`.

@@ -1,3 +1,10 @@
+# S06-03 done — 2026-11-05
+
+Copilot; no active writer. Synthetic AI proposal evaluation: 8-case corpus, evaluator with separate critical count (false date, send/action claim, commitment, unsafe route), fixtures-only runner. Thresholds proposed: critical 0, pass ≥ 0.9. No product change, no version bump.
+Next: owner approves thresholds; G_AI_PROVIDER + G_PRIVACY unblock S06-01/S06-05.
+
+---
+
 # S04-04 done — 2026-11-04
 
 Copilot; no active writer. Popup label scan has a move journal, Cancel button, and lost-PATCH reconcile. Ext 6.3.0.108, root 1.1.79, bot 0.2.32. 276/276 PASS7.

@@ -397,3 +397,7 @@ Owner wants depot22 mail visible in Discord. Approved: every unread Inbox messag
 ## MAIL-IN-DISCORD amendment 2026-11-05 — work mailbox only
 
 The first live run read the Chrome profile account (owner's personal mail) instead of depot22; polling was paused and the bot cache deleted. Owner chose option B: the extension signs in to the work Gmail separately from the Chrome account (`launchWebAuthFlow`, Web OAuth client, scope `gmail.modify`, `login_hint` = configured `gmailAccount`). Every new token is accepted only if Gmail's profile confirms that exact address; any other account is refused and never read. Queue mail tasks never open a sign-in window; the owner signs in from the popup ("Увійти в робочу пошту"). Card format per owner: sender name, subject, first sentences; 📖 expands/collapses in place.
+
+## GOODS-HELD-NOTE-FORMAT 2026-11-06 — owner approved
+
+Live case: a Goods Held parcel rescheduled by us the day before was skipped the next day because the real depot note reads "<Name>, Depot NN PLACE - Reschedule requested by customer. Del. date changed FROM 05/11/26 TO 06/11/26." while the rule required the bare phrase. Owner chose the narrow fix: accept the optional depot author prefix, optional "- ", optional "Reschedule requested by customer." and an optional final period; any other prefix (e.g. "NOT", "Customer refused.") still SKIPs; the TO date must still be today. Policy version IE-reschedule-2026-11-06.1.

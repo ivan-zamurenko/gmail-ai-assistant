@@ -269,3 +269,4 @@
 - 2026-11-05 Copilot — Mail channel: ext 6.3.0.111 mail_check/mail_mark (Gmail read + AI-Read label, no send), bot 0.2.34 polls every 2 min → #emails-📩 cards (📖/✉️/✅) + /mail; root 1.1.82. Next: owner installs ext on work PC, authorizes Gmail in popup, sends test mail.
 - 2026-11-05 Copilot — Mail read personal account (Chrome profile) → paused polling, wiped cache. Ext 6.3.0.112: separate work-mailbox sign-in with account check; bot 0.2.35 compact card with expand. Next: owner creates Web OAuth client, gives client ID + depot22 address.
 - 2026-11-06 Copilot — mail channel: 🗑 hide button on cards and notices (deletes the Discord message only; Gmail untouched; hidden mail leaves /mail). Bot 0.2.36.
+- 2026-11-06 Copilot — Goods Held skipped next day: real depot note has author/"Reschedule requested by customer." prefix and final period. RED 20/21 → GREEN 21/21; policy IE-reschedule-2026-11-06.1; ext 6.3.0.113.

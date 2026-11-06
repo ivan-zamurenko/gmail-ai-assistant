@@ -50,7 +50,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   // ── Constants ──────────────────────────────────────────────────────────────────
 
   // Bump whenever classify() rules change, so an old preview is recognisable.
-  const POLICY_VERSION = 'IE-reschedule-2026-11-04.2';
+  const POLICY_VERSION = 'IE-reschedule-2026-11-06.1';
 
   const STATUS = {
     PENDING:    'PENDING',
@@ -117,7 +117,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   function classify(status, notes, scans, today) {
     if (status === STATUS.GOODS_HELD) {
       const confirmed = notes.some(note => {
-        const match = /^del\.\s*date\s+changed\s+from\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s+to\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s*$/i.exec(note.trim());
+        // Depot format: optional "<Name>, Depot NN PLACE - ", optional "- ", optional
+        // "Reschedule requested by customer.", the change itself, optional final period.
+        const match = /^(?:[^,\n]{1,80},\s*depot\s+\d{1,3}\b[^\n]{0,60}?\s-\s+)?(?:-\s*)?(?:reschedule\s+requested\s+by\s+customer\.\s*)?del\.\s*date\s+changed\s+from\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s+to\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\.?\s*$/i.exec(note.trim());
         return match && civilDate(match[1]) && civilDate(match[2]) === today;
       });
       return confirmed ? decision('CHANGE_DATE', 'Confirmed delivery-date change to today')

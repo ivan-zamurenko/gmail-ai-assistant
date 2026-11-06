@@ -531,6 +531,12 @@ test('Goods Held requires an exact non-negated valid note TO today, with no CAD 
     ['Del. date changed FROM 31/02/26 TO 03/11/26', false],
     ['Del. date changed FROM 01/01/20 TO 03/11/2600', false],
     ['Del. date changed FROM 01/01/20 TO 04/11/26', false],
+    // Real depot note format (owner screenshot 2026-11-06).
+    ['Reschedule requested by customer. Del. date changed FROM 02/11/26 TO 03/11/26.', true],
+    ['- Reschedule requested by customer. Del. date changed FROM 02/11/26 TO 03/11/26.', true],
+    ['Ivan Example, Depot 22 FARRANFORE - Reschedule requested by customer. Del. date changed FROM 02/11/26 TO 03/11/26.', true],
+    ['Customer refused. Del. date changed FROM 02/11/26 TO 03/11/26.', false],
+    ['Reschedule requested by customer. Del. date changed FROM 02/11/26 TO 04/11/26.', false],
   ]) {
     const result = await runReschedule('labels', { status: 'GOODS HELD', notes, scans: [], logCallEnabled: true });
     assert.equal(result.saveWrites, Number(allowed), notes);

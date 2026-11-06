@@ -17,7 +17,7 @@ export function createMailStore({ path, now = Date.now, read = readFileSync, wri
     get: id => (Object.hasOwn(entries, id) ? entries[id] : null),
     put(entry) { entries[entry.id] = entry; save(); },
     update(id, fields) { if (Object.hasOwn(entries, id)) { entries[id] = { ...entries[id], ...fields }; save(); } },
-    open: () => Object.values(entries).filter(entry => !entry.handled).sort((a, b) => b.seenAt - a.seenAt),
+    open: () => Object.values(entries).filter(entry => !entry.handled && !entry.hidden).sort((a, b) => b.seenAt - a.seenAt),
     prune() {
       const before = Object.keys(entries).length;
       entries = Object.fromEntries(Object.entries(entries).filter(([, entry]) => now() - entry.seenAt < MAIL_RETENTION_MS));

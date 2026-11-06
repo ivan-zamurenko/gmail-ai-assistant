@@ -25,7 +25,8 @@ test('card offers AI reply only with exactly one consignment number', () => {
   const buttons = card => card.components[0].toJSON().components;
   assert.equal(buttons(renderMailCard({ ...mail[0], seenAt: 1 }))[1].disabled, false);
   assert.equal(buttons(renderMailCard({ ...mail[0], subject: 'Hi', seenAt: 1 }))[1].disabled, true);
-  assert.deepEqual(buttons(renderMailCard({ ...mail[0], seenAt: 1 }, { handled: 2 })).map(b => b.custom_id), ['mail:more:m1']);
+  assert.deepEqual(buttons(renderMailCard({ ...mail[0], seenAt: 1 }, { handled: 2 })).map(b => b.custom_id), ['mail:more:m1', 'mail:hide:m1']);
+  assert.equal(buttons(renderMailCard({ ...mail[0], seenAt: 1 })).at(-1).custom_id, 'mail:hide:m1');
 });
 
 test('collapsed card shows sender name, subject and first sentences only', () => {

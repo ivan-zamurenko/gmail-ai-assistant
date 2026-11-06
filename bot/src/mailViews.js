@@ -34,6 +34,16 @@ export function preview(text, max = 220) {
   return out.length < body.length ? `${out.replace(/[.!?]*$/, '')}…` : out;
 }
 
+/** Removes the bot message from the channel only; Gmail is untouched. */
+export function hideButton(id = '-') {
+  return new ButtonBuilder().setCustomId(`mail:hide:${id}`).setEmoji('🗑️').setStyle(ButtonStyle.Secondary);
+}
+
+/** Service notice with its own hide button. */
+export function renderNotice(content) {
+  return { content, components: [new ActionRowBuilder().addComponents(hideButton())] };
+}
+
 export function renderMailCard(entry, { handled = null, expanded = false } = {}) {
   const numbers = consignmentsIn(entry);
   const head = `📨 **${senderName(entry.from)}** · <t:${Math.floor((entry.date || entry.seenAt) / 1000)}:R>`;
@@ -44,12 +54,13 @@ export function renderMailCard(entry, { handled = null, expanded = false } = {})
   const content = [head, subject, body, ...(handled ? [`✅ Оброблено · ${stamp(handled)}`] : [])].join('\n').slice(0, 1990);
   const toggle = new ButtonBuilder().setCustomId(`mail:${expanded ? 'less' : 'more'}:${entry.id}`)
     .setLabel(expanded ? 'Згорнути' : 'Розгорнути').setEmoji(expanded ? '🔼' : '📖').setStyle(ButtonStyle.Secondary);
-  if (handled) return { content, components: [new ActionRowBuilder().addComponents(toggle)] };
+  if (handled) return { content, components: [new ActionRowBuilder().addComponents(toggle, hideButton(entry.id))] };
   const row = new ActionRowBuilder().addComponents(
     toggle,
     new ButtonBuilder().setCustomId(`mail:reply:${entry.id}`).setLabel('AI-відповідь').setEmoji('✉️').setStyle(ButtonStyle.Primary)
       .setDisabled(numbers.length !== 1),
     new ButtonBuilder().setCustomId(`mail:done:${entry.id}`).setLabel('Оброблено').setEmoji('✅').setStyle(ButtonStyle.Success),
+    hideButton(entry.id),
   );
   return { content, components: [row] };
 }
@@ -57,6 +68,12 @@ export function renderMailCard(entry, { handled = null, expanded = false } = {})
 export function createMailViews({ store, enqueueAndWait, acknowledge, propose, renderReply, poll, guildId, channelId }) {
   async function handle(interaction) {
     const [, action, id] = interaction.customId.split(':');
+    if (action === 'hide') {
+      if (ID.test(id ?? '')) store.update(id, { hidden: true });
+      await interaction.deferUpdate().catch(() => {});
+      await interaction.message?.delete().catch(() => {});
+      return;
+    }
     const entry = ID.test(id ?? '') ? store.get(id) : null;
     if (!entry) {
       await interaction.reply({ content: '⚠️ Лист уже не в кеші (зберігається 7 днів). Відкрийте його в Gmail.', flags: MessageFlags.Ephemeral });

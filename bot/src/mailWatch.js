@@ -1,7 +1,7 @@
 /** Polls the work-PC extension for new depot22 mail and posts each message once. */
 import { COMMANDS } from './contract.js';
 import { safeErrorMessage } from './errors.js';
-import { renderMailCard } from './mailViews.js';
+import { renderMailCard, renderNotice } from './mailViews.js';
 
 export const MAIL_ACTOR = 'mail-watch';
 
@@ -10,7 +10,7 @@ export function createMailWatch({ enqueueAndWait, acknowledgeResult, getChannel,
   let problem = null;
 
   async function notify(text) {
-    try { await (await getChannel()).send({ content: text }); } catch (err) { log.error('Mail notice failed:', safeErrorMessage(err, 'Discord send failed')); }
+    try { await (await getChannel()).send(renderNotice(text)); } catch (err) { log.error('Mail notice failed:', safeErrorMessage(err, 'Discord send failed')); }
   }
 
   async function run() {

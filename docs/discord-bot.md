@@ -338,3 +338,7 @@ S09-09). Перед кожним PATCH — перевірка змін і кол
 ## Mail channel — 2026-11-05
 
 With `mailChannelId` in `bot/config/local.js` the bot polls every 2 minutes (`mail_check`) and posts each new depot22 message once to that channel: 📖 read (ephemeral full text), ✉️ AI reply (grounded `/reply` proposal), ✅ handled (Gmail label `AI-Read`, card edited). `/mail` (Administrator, ephemeral) checks now and lists open mail with jump links. Extension/auth problems are announced once and recovery once. Nothing is sent.
+
+## Always-on start on the Mac — 2026-11-06
+
+The bot runs as the LaunchAgent `com.dpd.assistant-bot` (`~/Library/LaunchAgents`, local, not in Git): starts at login, restarts on crash, log `~/Library/Logs/dpd-bot.log`. Control with `dpd-bot start|stop|restart|status|logs` (`~/.local/bin/dpd-bot`). Do not use `npm start` alongside it (its `prestart` kills the agent process and a second bot starts). `node` needs macOS Files and Folders access to Documents.

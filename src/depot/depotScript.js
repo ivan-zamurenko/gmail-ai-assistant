@@ -50,7 +50,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   // ── Constants ──────────────────────────────────────────────────────────────────
 
   // Bump whenever classify() rules change, so an old preview is recognisable.
-  const POLICY_VERSION = 'IE-reschedule-2026-11-06.1';
+  const POLICY_VERSION = 'IE-reschedule-2026-11-06.2';
 
   const STATUS = {
     PENDING:    'PENDING',
@@ -117,9 +117,9 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   function classify(status, notes, scans, today) {
     if (status === STATUS.GOODS_HELD) {
       const confirmed = notes.some(note => {
-        // Depot format: optional "<Name>, Depot NN PLACE - ", optional "- ", optional
+        // Depot row: optional "DD/MM/YYYY HH:MM", optional "<Name>, Depot NN PLACE - ", optional "- ", optional
         // "Reschedule requested by customer.", the change itself, optional final period.
-        const match = /^(?:[^,\n]{1,80},\s*depot\s+\d{1,3}\b[^\n]{0,60}?\s-\s+)?(?:-\s*)?(?:reschedule\s+requested\s+by\s+customer\.\s*)?del\.\s*date\s+changed\s+from\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s+to\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\.?\s*$/i.exec(note.trim());
+        const match = /^(?:\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}(?::\d{2})?\s+)?(?:[^,\n]{1,80},\s*depot\s+\d{1,3}\b[^\n]{0,60}?\s-\s+)?(?:-\s*)?(?:reschedule\s+requested\s+by\s+customer\.\s*)?del\.\s*date\s+changed\s+from\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s+to\s+(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\.?\s*$/i.exec(note.trim());
         return match && civilDate(match[1]) && civilDate(match[2]) === today;
       });
       return confirmed ? decision('CHANGE_DATE', 'Confirmed delivery-date change to today')
@@ -271,12 +271,23 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
 
   async function getNotes(consDoc) {
     for (const script of consDoc.querySelectorAll('script')) {
-      const match = script.textContent.match(/ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*['"]([^'"]+)['"]/);
-      if (!match) continue;
-      const doc = await fetchDoc(match[1]);
+      const text = script.textContent ?? '';
+      let url = text.match(/ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*['"]([^'"]+)['"]/)?.[1];
+      // Real page (2026-11-06): urlConNotes = '<base>ConsId=' + consReq + '&rnd=' + my_num + '&UID=…'.
+      if (!url && /ConsignmentsNotes['"]\s*\)\s*\.load\s*\(\s*urlConNotes\s*\)/.test(text)) {
+        const parts = /urlConNotes\s*=\s*'([^']*woConsignmentsNotes\.p[^']*)'\s*\+\s*consReq\s*\+\s*'([^']*)'\s*\+\s*my_num\s*\+\s*'([^']*)'/.exec(text);
+        const consReq = /consReq\s*=\s*'(\d{1,32})'/.exec(text)?.[1];
+        if (parts && consReq) url = `${parts[1]}${consReq}${parts[2]}${Math.random()}${parts[3]}`;
+      }
+      if (!url) continue;
+      const doc = await fetchDoc(url);
+      const clean = value => String(value ?? '').replace(/\s+/g, ' ').trim();
+      // Each note is a form row: date, time, author, depot, then the note text.
+      const rows = Array.from(doc.querySelectorAll('.form-row')).map(row => clean(row.textContent)).filter(Boolean);
+      if (rows.length) return rows;
       // Match complete note cells, not a substring in arbitrary/negated prose.
-      const cells = Array.from(doc.querySelectorAll('td')).map(cell => cell.textContent?.trim() ?? '');
-      return cells.length ? cells : [doc.body?.textContent?.trim() ?? ''];
+      const cells = Array.from(doc.querySelectorAll('td')).map(cell => clean(cell.textContent));
+      return cells.length ? cells : [clean(doc.body?.textContent)];
     }
     return [];
   }

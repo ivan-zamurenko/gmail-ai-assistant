@@ -29,6 +29,7 @@ async function runReschedule(mode, {
   logCallEnabled = false,
   serialized = false,
   notes = '',
+  realNotesPage = false,
   now = '2026-11-03T12:00:00Z',
   crossMidnight = false,
   saveStatus = 200,
@@ -83,7 +84,10 @@ async function runReschedule(mode, {
       querySelectorAll(selector) {
         if (selector === 'h1 b') return [fakeText('Consignment'), fakeText(status)];
         if (selector === 'script' && notes) {
-          return [fakeText("$('#ConsignmentsNotes').load('/notes')")];
+          // Real depot page (2026-11-06): URL built in a variable, then .load(urlConNotes).
+          return [fakeText(realNotesPage
+            ? "var my_num = Math.random(); var consReq = '4688011'; var urlConNotes = '/scripts/cgiip.exe/WService=wsInterlink/woConsignmentsNotes.p?session=S&ConsId=' + consReq + '&rnd=' + my_num + '&UID=U'; $(\"#ConsignmentsNotes\").load(urlConNotes);"
+            : "$('#ConsignmentsNotes').load('/notes')")];
         }
         return [];
       },
@@ -95,7 +99,7 @@ async function runReschedule(mode, {
       },
       querySelector: () => null,
     },
-    notes: { body: fakeText(notes), querySelectorAll: () => [] },
+    notes: { body: fakeText(notes), querySelectorAll: selector => (realNotesPage && selector === '.form-row' ? [fakeText(notes)] : []) },
     scans: {
       getElementById: id => id === 'MAINTABLE' ? {} : null,
       querySelectorAll: () => {
@@ -170,7 +174,7 @@ async function runReschedule(mode, {
     } else if (String(url).includes('woConsignmentDetails.p')) {
       currentConsId = new globalThis.URL(url).searchParams.get('ConsId'); body = 'detail';
     }
-    else if (String(url).endsWith('/notes')) body = 'notes';
+    else if (String(url).endsWith('/notes') || String(url).includes('woConsignmentsNotes.p?session=S&ConsId=4688011&rnd=')) body = 'notes';
     else if (String(url).includes('woRearrangeConsignment.p')) {
       rescheduleReads += 1;
       if (crossMidnight) now = '2026-11-04T00:00:00Z';
@@ -542,6 +546,14 @@ test('Goods Held requires an exact non-negated valid note TO today, with no CAD 
     assert.equal(result.saveWrites, Number(allowed), notes);
     assert.equal(result.logWrites, 0, 'reschedule must not call Log Call');
   }
+});
+
+test('Goods Held reads the real depot notes page: URL in a variable, notes as form rows', async () => {
+  const row = `05/11/2026\n    11:25 \u00a0\u00a0 Ivan Example, \n   Depot 22\u00a0FARRANFORE\n   \u00a0\u00a0- Reschedule requested by customer. Del. date changed FROM 02/11/26 TO 03/11/26.\n`;
+  const result = await runReschedule('labels', { status: 'GOODS HELD', notes: row, realNotesPage: true, scans: [] });
+  assert.equal(result.saveWrites, 1);
+  const other = await runReschedule('labels', { status: 'GOODS HELD', notes: row.replace('TO 03/11/26', 'TO 04/11/26'), realNotesPage: true, scans: [] });
+  assert.equal(other.saveWrites, 0);
 });
 
 test('missing or conflicting scan evidence refuses writes; changed evidence is checked before save', async () => {

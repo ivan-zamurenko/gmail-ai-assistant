@@ -271,3 +271,4 @@
 - 2026-11-06 Copilot — mail channel: 🗑 hide button on cards and notices (deletes the Discord message only; Gmail untouched; hidden mail leaves /mail). Bot 0.2.36.
 - 2026-11-06 Copilot — Goods Held skipped next day: real depot note has author/"Reschedule requested by customer." prefix and final period. RED 20/21 → GREEN 21/21; policy IE-reschedule-2026-11-06.1; ext 6.3.0.113.
 - 2026-11-06 Copilot — Goods Held still skipped: notes URL built in a variable and notes are .form-row, so notes were always empty. RED 21/22 → GREEN 22/22; policy IE-reschedule-2026-11-06.2; ext 6.3.0.114.
+- 2026-11-06 Copilot — Owner: Pending needs CAD today; NearRoute alone → SKIP. Tests updated per decision (RED → GREEN 23/23); policy IE-reschedule-2026-11-06.3; ext 6.3.0.115.

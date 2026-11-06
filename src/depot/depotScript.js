@@ -50,7 +50,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
   // ── Constants ──────────────────────────────────────────────────────────────────
 
   // Bump whenever classify() rules change, so an old preview is recognisable.
-  const POLICY_VERSION = 'IE-reschedule-2026-11-06.2';
+  const POLICY_VERSION = 'IE-reschedule-2026-11-06.3';
 
   const STATUS = {
     PENDING:    'PENDING',
@@ -153,6 +153,7 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
       parcels.set(scan.parcel, entries);
     }
     let allowed = null;
+    let nearRouteOnly = false;
     for (const entries of parcels.values()) {
       const lastStamp = entries.reduce((latest, entry) => entry.stamp > latest ? entry.stamp : latest, '');
       const latest = entries.filter(entry => entry.stamp === lastStamp);
@@ -165,15 +166,21 @@ export async function depotMain({ dryRun = true, mode = 'cad', date = '', target
         'failed delivery', 'incorrect address'].includes(last.type)) {
         return decision('REVIEW', 'Unknown latest scan; manual review required');
       }
+      // Owner 2026-11-06: a CAD scan today is required; NearRoute after it is fine, alone it is not.
+      const cadToday = entries.some(entry => ['cad', 'cad scan'].includes(entry.type) && entry.day === today);
       if (['cad', 'cad scan', 'nearroute'].includes(last.type) && last.day === today) {
-        allowed = decision('CHANGE_DATE', last.type === 'nearroute'
-          ? 'NearRoute today; parcel remains in depot' : 'CAD today; parcel remains in depot');
+        if (cadToday) {
+          allowed = decision('CHANGE_DATE', last.type === 'nearroute'
+            ? 'CAD today, then NearRoute; parcel remains in depot' : 'CAD today; parcel remains in depot');
+        } else {
+          nearRouteOnly = true;
+        }
       } else if (status === STATUS.PENDING && last.type === 'cancelled out for delivery'
           && !entries.some(entry => ['return to depot', 'returned to depot'].includes(entry.type))) {
         allowed ??= decision('CHANGE_DATE', 'Cancelled OFD; parcel never returned to depot');
       }
     }
-    return allowed ?? decision('SKIP', 'No eligible physical parcel in depot');
+    return allowed ?? decision('SKIP', nearRouteOnly ? 'NearRoute today without CAD scan' : 'No eligible physical parcel in depot');
   }
 
   // ── Origin guard ───────────────────────────────────────────────────────────────

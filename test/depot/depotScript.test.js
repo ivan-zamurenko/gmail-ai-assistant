@@ -464,20 +464,23 @@ const scan = (parcel, type, time = '09:00:00', date = '03/11/2026') => ({ parcel
 test('parcel histories decide series eligibility, never route or aggregate status alone', async () => {
   const cases = [
     ['PENDING', [scan('1', 'CAD scan')], true],
-    ['PENDING', [scan('1', 'NearRoute')], true],
+    // Owner 2026-11-06: Pending needs a CAD scan today; NearRoute alone is not enough.
+    ['PENDING', [scan('1', 'NearRoute')], false],
     ['PENDING', [scan('1', 'CAD scan', '03:07:44'), { ...scan('1', 'Nearest Route assigned', '09:30:38'), route: 'NearRoute' }], true],
-    ['PENDING', [{ ...scan('1', 'Nearest Route assigned'), route: ' nearroute ' }], true],
+    ['PENDING', [{ ...scan('1', 'Nearest Route assigned'), route: ' nearroute ' }], false],
     ['PENDING', [{ ...scan('1', 'Nearest Route assigned', '09:00:00', '02/11/2026'), route: 'NearRoute' }], false],
     ['PENDING', [{ ...scan('1', 'Nearest Route assigned'), route: 'NearRoute' }, scan('1', 'Out for delivery', '10:00:00')], false],
     ['PENDING', [{ ...scan('1', 'Delivered'), route: 'NearRoute' }], false],
     ['PENDING', [{ ...scan('1', 'Out for delivery'), route: 'NearRoute' }], false],
     ['PENDING', [{ ...scan('1', 'Nearest Route assigned'), route: 'other' }], false],
-    ['OFD', [scan('1', 'Out for delivery'), { ...scan('2', 'Nearest Route assigned'), route: 'NearRoute' }], true],
-    ['PENDING', [scan('1', ' nearroute ')], true],
+    ['OFD', [scan('1', 'Out for delivery'), { ...scan('2', 'Nearest Route assigned'), route: 'NearRoute' }], false],
+    ['OFD', [scan('1', 'Out for delivery'), scan('2', 'CAD scan', '03:30:00'), { ...scan('2', 'Nearest Route assigned'), route: 'NearRoute' }], true],
+    ['PENDING', [scan('1', 'CAD scan', '03:30:00', '02/11/2026'), { ...scan('1', 'Nearest Route assigned'), route: 'NearRoute' }], false],
+    ['PENDING', [scan('1', ' nearroute ')], false],
     ['PENDING', [scan('1', 'NearRoute', '09:00:00', '02/11/2026')], false],
     ['PENDING', [scan('1', 'NearRoute'), scan('1', 'Out for delivery', '10:00:00')], false],
     ['PENDING', [scan('1', 'NearRoute'), scan('1', 'Delivered', '10:00:00')], false],
-    ['OFD', [scan('1', 'Out for delivery'), scan('2', 'NearRoute')], true],
+    ['OFD', [scan('1', 'Out for delivery'), scan('2', 'NearRoute')], false],
     ['PENDING', [scan('1', 'Out for delivery'), scan('2', 'CAD scan')], true],
     ['OFD', [scan('1', 'Out for delivery'), scan('2', 'CAD scan', '09:00:00', '02/11/2026')], false],
     ['OFD', [scan('1', 'Out for delivery'), scan('2', 'CAD scan'), scan('2', 'Out for delivery', '10:00:00')], false],
@@ -517,8 +520,8 @@ test('parcel histories decide series eligibility, never route or aggregate statu
     assert.ok(result.result.results[0].reason);
   }
   const nearPreview = await runReschedule('labels', { serialized: true, dryRun: true, scans: [{ ...scan('1', 'Nearest Route assigned'), route: 'NearRoute' }] });
-  assert.equal(nearPreview.result.eligible, 1);
-  assert.match(nearPreview.result.results[0].reason, /NearRoute today/);
+  assert.equal(nearPreview.result.eligible, 0);
+  assert.match(nearPreview.result.results[0].reason, /NearRoute today without CAD/);
   assert.equal(nearPreview.saveWrites, 0);
   const all = await runReschedule('cad', { route: 'other', scans: [scan('1', 'Cancelled out for delivery')] });
   assert.equal(all.saveWrites, 1, 'all must evaluate non-CAD candidates too');
@@ -585,9 +588,9 @@ test('missing or conflicting scan evidence refuses writes; changed evidence is c
     assert.equal(mismatched.logWrites, 0);
     assert.equal(mismatched.scanReads, 0);
   }
-  for (const type of ['CAD scan', 'NearRoute']) {
+  for (const before of [[scan('1', 'CAD scan')], [scan('1', 'CAD scan', '03:00:00'), scan('1', 'NearRoute')]]) {
     const changed = await runReschedule('labels', {
-      scans: [scan('1', type)], afterScans: [scan('1', type), scan('1', 'Delivered', '10:00:00')],
+      scans: before, afterScans: [...before, scan('1', 'Delivered', '10:00:00')],
     });
     assert.equal(changed.saveWrites, 0);
     assert.equal(changed.result.errors, 1);
